@@ -1,0 +1,20 @@
+type ContractInteraction @entity {
+  id: ID!
+  owner: String! # address
+  contract: String! # address
+  timestamp: BigInt!
+  blockNumber: BigInt!
+}
+
+type ContractInteractionLifetimeCount @entity {
+  id: ID!
+  count: BigInt!
+}
+
+type ContractInteractionDaily @entity {
+ id: ID!
+ contract: String!
+ daySinceEpoch: String!
+ startDayTimestamp: BigInt!
+ count: BigInt!
+}
