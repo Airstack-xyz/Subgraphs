@@ -1033,6 +1033,7 @@ type AirDEXPool @entity {
   inputToken: [AirToken!]!
   weightage: [BigDecimal!]!
   outputToken: AirToken!
+  fee: BigInt!
 }
 
 type AirLiquidityPoolStats implements AirEntityStats @entity {

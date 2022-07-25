@@ -3337,6 +3337,7 @@ export class AirDEXPool extends Entity {
     this.set("inputToken", Value.fromStringArray(new Array(0)));
     this.set("weightage", Value.fromBigDecimalArray(new Array(0)));
     this.set("outputToken", Value.fromString(""));
+    this.set("fee", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -3390,6 +3391,15 @@ export class AirDEXPool extends Entity {
 
   set outputToken(value: string) {
     this.set("outputToken", Value.fromString(value));
+  }
+
+  get fee(): BigInt {
+    let value = this.get("fee");
+    return value!.toBigInt();
+  }
+
+  set fee(value: BigInt) {
+    this.set("fee", Value.fromBigInt(value));
   }
 }
 

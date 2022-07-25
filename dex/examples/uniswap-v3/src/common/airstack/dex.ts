@@ -10,13 +10,19 @@ import {
 import { ERC20 } from "../../../generated/Factory/ERC20";
 import { SupportsInterface } from "../../../generated/Factory/SupportsInterface";
 import {
+  AirAccount,
+  AirContract,
+  AirDailyAggregateEntity,
+  AirDailyAggregateEntityStats,
   AirDEXPool,
   AirEntityDailyChangeStats,
   AirLiquidityPoolInputTokenStats,
   AirLiquidityPoolOutputTokenStats,
+  AirLiquidityPoolStats,
   AirLiquidityPoolTransaction,
   AirToken,
   AirTokenStats,
+  AirTokenTransfer,
 } from "../../../generated/schema";
 import {
   AirTokenStandardType,
@@ -35,9 +41,9 @@ import {
   BIGDECIMAL_ZERO,
   BIGINT_ONE,
 } from "./constants";
-import { getDaysSinceEpoch } from "./datetime";
+import { getDayOpenTime, getDaysSinceEpoch } from "./datetime";
 
-function getAirDexPoolId(event: ethereum.Event): string {
+function getAirDexPoolId(poolAddress: string): string {
   const dexPoolId = dataSource
     .network()
     .concat("-")
@@ -45,7 +51,7 @@ function getAirDexPoolId(event: ethereum.Event): string {
     .concat("-")
     .concat("POOL")
     .concat("-")
-    .concat(event.address.toHexString());
+    .concat(poolAddress);
 
   return dexPoolId;
 }
@@ -54,7 +60,7 @@ function getAirLiquidityPoolStatsId(event: ethereum.Event): string {
   const timestamp = event.block.timestamp.toI32();
   let daySinceEpoch = getDaysSinceEpoch(timestamp);
 
-  const entityId = getAirDexPoolId(event)
+  const entityId = getAirDexPoolId(event.address.toHexString())
     .concat("-ADD-LP-STATS-")
     .concat(daySinceEpoch.toString());
 
@@ -65,7 +71,7 @@ function getAirLiquidityPoolTransactionId(event: ethereum.Event): string {
   const timestamp = event.block.timestamp.toI32();
   let daySinceEpoch = getDaysSinceEpoch(timestamp);
 
-  const entityId = getAirDexPoolId(event)
+  const entityId = getAirDexPoolId(event.address.toHexString())
     .concat("-LP-TRANSACTION-")
     .concat(event.block.hash.toHexString())
     .concat("-")
@@ -75,7 +81,7 @@ function getAirLiquidityPoolTransactionId(event: ethereum.Event): string {
 }
 
 function getAirTokenStatsId(
-  tokenAddress: Address,
+  tokenAddress: string,
   tokenUsageType: string,
   event: ethereum.Event,
   isPrevDay: boolean = false
@@ -85,61 +91,121 @@ function getAirTokenStatsId(
   if (isPrevDay) {
     daySinceEpoch = (parseInt(daySinceEpoch) - 1).toString();
   }
-  const tokenStatsId = getAirDexPoolId(event)
+  const tokenStatsId = getAirDexPoolId(event.address.toHexString())
     .concat("-")
     .concat(tokenUsageType)
     .concat("-")
-    .concat(tokenAddress.toHexString())
+    .concat(tokenAddress)
     .concat("-")
     .concat(daySinceEpoch.toString());
 
   return tokenStatsId;
 }
 
-export function createLiquidityPool(
-  event: ethereum.Event,
-  inputTokenAddresses: [Address],
-  inputTokenWeights: [BigDecimal]
-): void {
-  const dexPoolId = getAirDexPoolId(event);
+export function getOrCreateLiquidityPool(
+  poolAddress: string,
+  inputTokenAddresses: Array<string>,
+  inputTokenWeights: Array<BigDecimal>,
+  fee: BigInt
+): AirDEXPool {
+  const dexPoolId = getAirDexPoolId(poolAddress);
 
   let dexPool = AirDEXPool.load(dexPoolId);
   if (!dexPool) {
     dexPool = new AirDEXPool(dexPoolId);
-    let lpTokenNameArray: Array<string> = [];
+    const lpTokenNameArray: Array<string> = [];
     const inputTokenIds: Array<string> = [];
-    inputTokenAddresses.forEach((inputTokenAddress) => {
+    for (let index = 0; index < inputTokenAddresses.length; index++) {
+      const inputTokenAddress = inputTokenAddresses[index];
       const token = getOrCreateToken(inputTokenAddress);
       inputTokenIds.push(token.id);
       if (token.name) {
-        lpTokenNameArray.push(token.name);
+        lpTokenNameArray.push(token.name!);
       }
-    });
+    }
 
-    const lpToken = getOrCreateLPToken(event.address, inputTokenIds);
+    const lpToken = getOrCreateLPToken(poolAddress, inputTokenIds);
 
     dexPool.inputToken = inputTokenIds;
     dexPool.outputToken = lpToken.id;
     dexPool.weightage = inputTokenWeights;
+    dexPool.fee = fee;
     dexPool.save();
   }
+  return dexPool;
 }
 
-export function addLiquidity(event: ethereum.Event, amounts: [BigInt]): void {
-  const dexPoolId = getAirDexPoolId(event);
-  const dexPool = AirDEXPool.load(dexPoolId);
-  if (dexPool) {
-    const convertedAmounts: Array<BigDecimal> = [];
+export function addLiquidity(
+  inputTokenTransfer: Array<AirTokenTransfer>,
+  outputTokenTransfer: AirTokenTransfer,
+  event: ethereum.Event
+): void {
+  const liquidityPoolStatId = getAirLiquidityPoolStatsId(event);
+  let airLiquidityPoolStats = AirLiquidityPoolStats.load(liquidityPoolStatId);
+  if (airLiquidityPoolStats === null) {
+    airLiquidityPoolStats = new AirLiquidityPoolStats(liquidityPoolStatId);
 
-    dexPool.inputToken.forEach((inputTokenId, index) => {
-      const token = AirToken.load(inputTokenId);
-      if (token) {
-        const amount = amounts[index];
-        const convertedAmount = convertTokenToDecimal(amount, token.decimals);
-        convertedAmounts.push(convertedAmount);
-      }
-    });
+    const dexPoolId = getAirDexPoolId(event.address.toHexString());
+    airLiquidityPoolStats.dexPool = dexPoolId;
+    airLiquidityPoolStats.save();
   }
+
+  for (let index = 0; index < inputTokenTransfer.length; index++) {
+    const inputToken = inputTokenTransfer[index];
+    const tokenId = inputToken.token;
+    const token = AirToken.load(tokenId);
+    if (token) {
+      updateAirLiquidityPoolInputTokenStats(token.address, event);
+    }
+  }
+  // inputTokenTransfer.forEach((inputToken) => {
+  //   const tokenId = inputToken.token;
+  //   const token = AirToken.load(tokenId);
+  //   if (token) {
+  //     updateAirLiquidityPoolInputTokenStats(token.address, event);
+  //   }
+  // });
+
+  const outputTokenId = outputTokenTransfer.token;
+  const outputToken = AirToken.load(outputTokenId);
+  if (outputToken) {
+    updateAirLiquidityPoolOutputTokenStats(outputToken.address, event);
+  }
+
+  getOrCreateAirLiquidityPoolTransaction(
+    inputTokenTransfer,
+    outputTokenTransfer,
+    event
+  );
+
+  const aggregateEntity = getOrCreateAirDailyAggregateEntity(
+    event.address.toHexString(),
+    AirProtocolActionType.ADD_LIQUIDITY,
+    event
+  );
+
+  const stats = getOrCreateAirDailyAggregateEntityStats(
+    event.address.toHexString(),
+    AirProtocolActionType.ADD_LIQUIDITY,
+    event
+  );
+  stats.addPoolLiquidityStats = airLiquidityPoolStats.id;
+  stats.save();
+
+  // const dexPoolId = getAirDexPoolId(event);
+  // const dexPool = AirDEXPool.load(dexPoolId);
+  // if (dexPool) {
+  //   const convertedAmounts: Array<BigDecimal> = [];
+
+  //   dexPool.inputToken.forEach((inputTokenId, index) => {
+  //     const token = AirToken.load(inputTokenId);
+  //     if (token) {
+  //       const amount = amounts[index];
+  //       const convertedAmount = convertTokenToDecimal(amount, token.decimals);
+  //       convertedAmounts.push(convertedAmount);
+  //     }
+  //   });
+  // }
 }
 
 export function removeLiquidity(
@@ -152,19 +218,19 @@ export function swap(
   event: ethereum.Event,
   amount0: BigInt,
   amount1: BigInt,
-  to: Address,
-  from: Address,
+  to: string,
+  from: string,
   sqrtPriceX96: BigInt
 ): void {}
 
-function getOrCreateToken(address: Address): AirToken {
-  const tokenId = dataSource.network() + address;
+function getOrCreateToken(address: string): AirToken {
+  const tokenId = dataSource.network().concat(address);
   let token = AirToken.load(tokenId);
   if (!token) {
     token = new AirToken(tokenId);
-    token.address = address.toHexString();
+    token.address = address;
 
-    const erc20Contract = ERC20.bind(address);
+    const erc20Contract = ERC20.bind(Address.fromString(address));
     const decimals = erc20Contract.try_decimals();
     if (!decimals.reverted) {
       token.decimals = decimals.value;
@@ -185,7 +251,9 @@ function getOrCreateToken(address: Address): AirToken {
       token.totalSupply = totalSupply.value;
     }
 
-    const supportsInterfaceContract = SupportsInterface.bind(address);
+    const supportsInterfaceContract = SupportsInterface.bind(
+      Address.fromString(address)
+    );
     const isERC721 = supportsInterfaceContract.try_supportsInterface(
       Bytes.fromHexString(ERC721InterfaceId)
     );
@@ -208,24 +276,25 @@ function getOrCreateToken(address: Address): AirToken {
 }
 
 export function getOrCreateLPToken(
-  poolAddress: Address,
+  poolAddress: string,
   inputTokenIds: Array<string>
 ): AirToken {
-  const tokenId = dataSource.network().concat(poolAddress.toHexString());
+  const tokenId = dataSource.network().concat(poolAddress);
   let token = AirToken.load(tokenId);
   // fetch info if null
   if (token === null) {
     token = new AirToken(tokenId);
-    token.address = poolAddress.toHexString();
+    token.address = poolAddress;
 
     const tokenName: Array<string> = [];
 
-    inputTokenIds.forEach((inputTokenId) => {
+    for (let index = 0; index < inputTokenIds.length; index++) {
+      const inputTokenId = inputTokenIds[index];
       const token = AirToken.load(inputTokenId);
       if (token && token.name) {
-        tokenName.push(token.name);
+        tokenName.push(token.name!);
       }
-    });
+    }
 
     token.symbol = tokenName.join("/");
     token.name = token.symbol + " LP";
@@ -237,9 +306,9 @@ export function getOrCreateLPToken(
 }
 
 function updateAirLiquidityPoolInputTokenStats(
-  inputTokenAddress: Address,
+  inputTokenAddress: string,
   event: ethereum.Event
-) {
+): void {
   const tokenStatsId = getAirTokenStatsId(
     inputTokenAddress,
     AirTokenUsageType.LP,
@@ -303,9 +372,9 @@ function updateAirLiquidityPoolInputTokenStats(
 }
 
 function updateAirLiquidityPoolOutputTokenStats(
-  outputTokenAddress: Address,
+  outputTokenAddress: string,
   event: ethereum.Event
-) {
+): void {
   const tokenStatsId = getAirTokenStatsId(
     outputTokenAddress,
     AirTokenUsageType.LP,
@@ -381,6 +450,8 @@ function getOrCreateAirEntityDailyChangeStats(
 }
 
 function getOrCreateAirLiquidityPoolTransaction(
+  inputTokenTransfer: Array<AirTokenTransfer>,
+  outputTokenTransfer: AirTokenTransfer,
   event: ethereum.Event
 ): AirLiquidityPoolTransaction {
   const lpTransactionEntityId = getAirLiquidityPoolTransactionId(event);
@@ -388,14 +459,82 @@ function getOrCreateAirLiquidityPoolTransaction(
   if (lpTransaction === null) {
     lpTransaction = new AirLiquidityPoolTransaction(lpTransactionEntityId);
 
-    const dexPoolId = getAirDexPoolId(event);
+    const dexPoolId = getAirDexPoolId(event.address.toHexString());
     lpTransaction.dexPool = dexPoolId;
     const liquidityPoolStatId = getAirLiquidityPoolStatsId(event);
     lpTransaction.liquidityPoolStatsRef = liquidityPoolStatId;
     lpTransaction.hash = event.block.hash.toHexString();
+
+    const inputTokenTransferEntityIds: Array<string> = [];
+    for (let index = 0; index < inputTokenTransfer.length; index++) {
+      const tokenTransfer = inputTokenTransfer[index];
+      inputTokenTransferEntityIds.push(tokenTransfer.id);
+    }
+    // inputTokenTransfer.forEach((tokenTransfer: AirTokenTransfer) => {
+    //   inputTokenTransferEntityIds.push(tokenTransfer.id);
+    // });
+    lpTransaction.inputTokenTransfers = inputTokenTransferEntityIds;
+    lpTransaction.outputTokenTransfer = outputTokenTransfer.id;
+    lpTransaction.save();
   }
 
   return lpTransaction;
+}
+
+export function getOrCreateAirTokenTransfer(
+  tokenAddress: string,
+  from: string,
+  to: string,
+  amount: BigInt,
+  fee: BigInt,
+  event: ethereum.Event
+): AirTokenTransfer {
+  const entityId = dataSource
+    .network()
+    .concat("-TOKEN-TRANSFER-")
+    .concat(event.block.hash.toHexString())
+    .concat("-")
+    .concat(to)
+    .concat("-")
+    .concat(from)
+    .concat("-")
+    .concat(amount.toHexString())
+    .concat("-")
+    .concat(fee.toHexString());
+
+  let airTokenTransfer = AirTokenTransfer.load(entityId);
+  if (airTokenTransfer === null) {
+    airTokenTransfer = new AirTokenTransfer(entityId);
+    const fromAccount = getOrCreateAirAccount(from);
+    airTokenTransfer.from = fromAccount.id;
+
+    const toAccount = getOrCreateAirAccount(to);
+    airTokenTransfer.to = toAccount.id;
+
+    airTokenTransfer.amount = amount;
+    airTokenTransfer.fee = fee;
+
+    const token = getOrCreateToken(tokenAddress);
+    airTokenTransfer.token = token.id;
+  }
+  airTokenTransfer.save();
+
+  return airTokenTransfer;
+}
+
+function getOrCreateAirAccount(accountAddress: string): AirAccount {
+  const entityId = dataSource
+    .network()
+    .concat("-")
+    .concat(accountAddress);
+
+  let airAccount = AirAccount.load(entityId);
+  if (airAccount === null) {
+    airAccount = new AirAccount(entityId);
+    airAccount.address = accountAddress;
+    airAccount.save();
+  }
+  return airAccount;
 }
 
 function convertTokenToDecimal(
@@ -423,4 +562,100 @@ function calculatePercentage(val1: BigDecimal, val2: BigDecimal): BigDecimal {
     const percentage = val1.minus(val2).div(val2);
     return percentage;
   }
+}
+
+function getAirDailyAggregateEntityId(
+  contractAddress: string,
+  protocolActionType: string,
+  event: ethereum.Event
+): string {
+  const timestamp = event.block.timestamp.toI32();
+  let daySinceEpoch = getDaysSinceEpoch(timestamp);
+  const entityId = dataSource
+    .network()
+    .concat("-")
+    .concat(contractAddress)
+    .concat(AirProtocolType.EXCHANGE)
+    .concat("-")
+    .concat(protocolActionType)
+    .concat("-")
+    .concat(daySinceEpoch.toString());
+
+  return entityId;
+}
+function getOrCreateAirDailyAggregateEntity(
+  contractAddress: string,
+  protocolActionType: string,
+  event: ethereum.Event
+): AirDailyAggregateEntity {
+  const timestamp = event.block.timestamp.toI32();
+  let daySinceEpoch = getDaysSinceEpoch(timestamp);
+  const entityId = getAirDailyAggregateEntityId(
+    contractAddress,
+    protocolActionType,
+    event
+  );
+
+  let aggregateEntity = AirDailyAggregateEntity.load(entityId);
+  if (aggregateEntity == null) {
+    aggregateEntity = new AirDailyAggregateEntity(entityId);
+    aggregateEntity.network = dataSource.network();
+
+    const contractEntity = getOrCreateContract(contractAddress);
+    aggregateEntity.contract = contractEntity.id;
+
+    aggregateEntity.protocolType = AirProtocolType.EXCHANGE;
+    aggregateEntity.protocolActionType = protocolActionType;
+
+    aggregateEntity.daySinceEpoch = BigInt.fromString(daySinceEpoch);
+
+    const startDayTimestamp = getDayOpenTime(event.block.timestamp);
+    aggregateEntity.startDayTimestamp = startDayTimestamp;
+
+    aggregateEntity.updatedTimestamp = event.block.timestamp;
+
+    const stats = getOrCreateAirDailyAggregateEntityStats(
+      contractAddress,
+      protocolActionType,
+      event
+    );
+    aggregateEntity.stats = stats.id;
+    aggregateEntity.save();
+  }
+  return aggregateEntity;
+}
+
+function getOrCreateContract(address: string): AirContract {
+  const entityId = dataSource
+    .network()
+    .concat("-")
+    .concat(address);
+
+  let contractEntity = AirContract.load(entityId);
+  if (contractEntity == null) {
+    contractEntity = new AirContract(entityId);
+    contractEntity.address = address;
+    contractEntity.save();
+  }
+  return contractEntity;
+}
+
+function getOrCreateAirDailyAggregateEntityStats(
+  contractAddress: string,
+  protocolActionType: string,
+  event: ethereum.Event
+): AirDailyAggregateEntityStats {
+  const entityId = getAirDailyAggregateEntityId(
+    contractAddress,
+    protocolActionType,
+    event
+  );
+
+  let entity = AirDailyAggregateEntityStats.load(entityId);
+  if (entity == null) {
+    entity = new AirDailyAggregateEntityStats(entityId);
+    entity.protocolActionType = protocolActionType;
+    entity.save();
+  }
+  return entity;
 }
