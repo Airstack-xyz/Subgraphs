@@ -1,5 +1,5 @@
 // import { log } from '@graphprotocol/graph-ts'
-import { Address, BigInt } from "@graphprotocol/graph-ts";
+import { Address, BigInt, log } from "@graphprotocol/graph-ts";
 import { AirDEXPool, AirToken, AirTokenTransfer } from "../../generated/schema";
 import {
   Burn as BurnEvent,
@@ -39,6 +39,7 @@ export function handleSetFeeProtocol(event: SetFeeProtocol): void {
 
 // Handle a mint event emitted from a pool contract. Considered a deposit into the given liquidity pool.
 export function handleMint(event: MintEvent): void {
+  log.info("handleMint called", []);
   const dexPool = AirDEXPool.load(event.address.toHexString());
   if (dexPool) {
     const inputTokenTransfers: Array<AirTokenTransfer> = [];
@@ -89,6 +90,7 @@ export function handleMint(event: MintEvent): void {
 
 // Handle a burn event emitted from a pool contract. Considered a withdraw into the given liquidity pool.
 export function handleBurn(event: BurnEvent): void {
+  log.info("handleBurn called", []);
   // createWithdraw(event, event.params.amount0, event.params.amount1);
   // updateUsageMetrics(event, event.transaction.from, UsageType.WITHDRAW);
   // updateFinancials(event);
@@ -97,6 +99,7 @@ export function handleBurn(event: BurnEvent): void {
 
 // Handle a swap event emitted from a pool contract.
 export function handleSwap(event: SwapEvent): void {
+  log.info("handleSwap called", []);
   // createSwapHandleVolumeAndFees(
   //   event,
   //   event.params.amount0,

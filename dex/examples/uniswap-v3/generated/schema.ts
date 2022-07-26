@@ -2769,6 +2769,11 @@ export class AirDailyAggregateEntity extends Entity {
     this.set("startDayTimestamp", Value.fromBigInt(BigInt.zero()));
     this.set("updatedTimestamp", Value.fromBigInt(BigInt.zero()));
     this.set("stats", Value.fromString(""));
+    this.set("walletCount", Value.fromBigInt(BigInt.zero()));
+    this.set("tokenCount", Value.fromBigInt(BigInt.zero()));
+    this.set("transactionCount", Value.fromBigInt(BigInt.zero()));
+    this.set("volumeInUSD", Value.fromBigDecimal(BigDecimal.zero()));
+    this.set("dailyChange", Value.fromString(""));
   }
 
   save(): void {
@@ -2889,6 +2894,68 @@ export class AirDailyAggregateEntity extends Entity {
 
   set stats(value: string) {
     this.set("stats", Value.fromString(value));
+  }
+
+  get walletCount(): BigInt {
+    let value = this.get("walletCount");
+    return value!.toBigInt();
+  }
+
+  set walletCount(value: BigInt) {
+    this.set("walletCount", Value.fromBigInt(value));
+  }
+
+  get tokenCount(): BigInt {
+    let value = this.get("tokenCount");
+    return value!.toBigInt();
+  }
+
+  set tokenCount(value: BigInt) {
+    this.set("tokenCount", Value.fromBigInt(value));
+  }
+
+  get transactionCount(): BigInt {
+    let value = this.get("transactionCount");
+    return value!.toBigInt();
+  }
+
+  set transactionCount(value: BigInt) {
+    this.set("transactionCount", Value.fromBigInt(value));
+  }
+
+  get volumeInUSD(): BigDecimal {
+    let value = this.get("volumeInUSD");
+    return value!.toBigDecimal();
+  }
+
+  set volumeInUSD(value: BigDecimal) {
+    this.set("volumeInUSD", Value.fromBigDecimal(value));
+  }
+
+  get dailyChange(): string {
+    let value = this.get("dailyChange");
+    return value!.toString();
+  }
+
+  set dailyChange(value: string) {
+    this.set("dailyChange", Value.fromString(value));
+  }
+
+  get extraData(): Array<string> | null {
+    let value = this.get("extraData");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set extraData(value: Array<string> | null) {
+    if (!value) {
+      this.unset("extraData");
+    } else {
+      this.set("extraData", Value.fromStringArray(<Array<string>>value));
+    }
   }
 }
 
@@ -3409,6 +3476,11 @@ export class AirLiquidityPoolStats extends Entity {
     this.set("id", Value.fromString(id));
 
     this.set("dexPool", Value.fromString(""));
+    this.set("walletCount", Value.fromBigInt(BigInt.zero()));
+    this.set("tokenCount", Value.fromBigInt(BigInt.zero()));
+    this.set("transactionCount", Value.fromBigInt(BigInt.zero()));
+    this.set("volumeInUSD", Value.fromBigDecimal(BigDecimal.zero()));
+    this.set("dailyChange", Value.fromString(""));
   }
 
   save(): void {
@@ -3477,59 +3549,67 @@ export class AirLiquidityPoolStats extends Entity {
   set transactions(value: Array<string>) {
     this.set("transactions", Value.fromStringArray(value));
   }
-}
 
-export class AirTokenStats extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-
-    this.set("token", Value.fromString(""));
-    this.set("type", Value.fromString(""));
+  get walletCount(): BigInt {
+    let value = this.get("walletCount");
+    return value!.toBigInt();
   }
 
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save AirTokenStats entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        "Cannot save AirTokenStats entity with non-string ID. " +
-          'Considering using .toHex() to convert the "id" to a string.'
-      );
-      store.set("AirTokenStats", id.toString(), this);
+  set walletCount(value: BigInt) {
+    this.set("walletCount", Value.fromBigInt(value));
+  }
+
+  get tokenCount(): BigInt {
+    let value = this.get("tokenCount");
+    return value!.toBigInt();
+  }
+
+  set tokenCount(value: BigInt) {
+    this.set("tokenCount", Value.fromBigInt(value));
+  }
+
+  get transactionCount(): BigInt {
+    let value = this.get("transactionCount");
+    return value!.toBigInt();
+  }
+
+  set transactionCount(value: BigInt) {
+    this.set("transactionCount", Value.fromBigInt(value));
+  }
+
+  get volumeInUSD(): BigDecimal {
+    let value = this.get("volumeInUSD");
+    return value!.toBigDecimal();
+  }
+
+  set volumeInUSD(value: BigDecimal) {
+    this.set("volumeInUSD", Value.fromBigDecimal(value));
+  }
+
+  get dailyChange(): string {
+    let value = this.get("dailyChange");
+    return value!.toString();
+  }
+
+  set dailyChange(value: string) {
+    this.set("dailyChange", Value.fromString(value));
+  }
+
+  get extraData(): Array<string> | null {
+    let value = this.get("extraData");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
     }
   }
 
-  static load(id: string): AirTokenStats | null {
-    return changetype<AirTokenStats | null>(store.get("AirTokenStats", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get token(): string {
-    let value = this.get("token");
-    return value!.toString();
-  }
-
-  set token(value: string) {
-    this.set("token", Value.fromString(value));
-  }
-
-  get type(): string {
-    let value = this.get("type");
-    return value!.toString();
-  }
-
-  set type(value: string) {
-    this.set("type", Value.fromString(value));
+  set extraData(value: Array<string> | null) {
+    if (!value) {
+      this.unset("extraData");
+    } else {
+      this.set("extraData", Value.fromStringArray(<Array<string>>value));
+    }
   }
 }
 
@@ -3773,7 +3853,6 @@ export class AirLiquidityPoolOutputTokenStats extends Entity {
     this.set("transactionCount", Value.fromBigInt(BigInt.zero()));
     this.set("volumeInUSD", Value.fromBigDecimal(BigDecimal.zero()));
     this.set("dailyChange", Value.fromString(""));
-    this.set("extraData", Value.fromStringArray(new Array(0)));
   }
 
   save(): void {
@@ -3879,13 +3958,21 @@ export class AirLiquidityPoolOutputTokenStats extends Entity {
     this.set("dailyChange", Value.fromString(value));
   }
 
-  get extraData(): Array<string> {
+  get extraData(): Array<string> | null {
     let value = this.get("extraData");
-    return value!.toStringArray();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
   }
 
-  set extraData(value: Array<string>) {
-    this.set("extraData", Value.fromStringArray(value));
+  set extraData(value: Array<string> | null) {
+    if (!value) {
+      this.unset("extraData");
+    } else {
+      this.set("extraData", Value.fromStringArray(<Array<string>>value));
+    }
   }
 }
 
@@ -4078,6 +4165,11 @@ export class AirPoolFarmRewardStats extends Entity {
 
     this.set("dexPool", Value.fromString(""));
     this.set("transactions", Value.fromStringArray(new Array(0)));
+    this.set("walletCount", Value.fromBigInt(BigInt.zero()));
+    this.set("tokenCount", Value.fromBigInt(BigInt.zero()));
+    this.set("transactionCount", Value.fromBigInt(BigInt.zero()));
+    this.set("volumeInUSD", Value.fromBigDecimal(BigDecimal.zero()));
+    this.set("dailyChange", Value.fromString(""));
   }
 
   save(): void {
@@ -4164,6 +4256,68 @@ export class AirPoolFarmRewardStats extends Entity {
 
   set transactions(value: Array<string>) {
     this.set("transactions", Value.fromStringArray(value));
+  }
+
+  get walletCount(): BigInt {
+    let value = this.get("walletCount");
+    return value!.toBigInt();
+  }
+
+  set walletCount(value: BigInt) {
+    this.set("walletCount", Value.fromBigInt(value));
+  }
+
+  get tokenCount(): BigInt {
+    let value = this.get("tokenCount");
+    return value!.toBigInt();
+  }
+
+  set tokenCount(value: BigInt) {
+    this.set("tokenCount", Value.fromBigInt(value));
+  }
+
+  get transactionCount(): BigInt {
+    let value = this.get("transactionCount");
+    return value!.toBigInt();
+  }
+
+  set transactionCount(value: BigInt) {
+    this.set("transactionCount", Value.fromBigInt(value));
+  }
+
+  get volumeInUSD(): BigDecimal {
+    let value = this.get("volumeInUSD");
+    return value!.toBigDecimal();
+  }
+
+  set volumeInUSD(value: BigDecimal) {
+    this.set("volumeInUSD", Value.fromBigDecimal(value));
+  }
+
+  get dailyChange(): string {
+    let value = this.get("dailyChange");
+    return value!.toString();
+  }
+
+  set dailyChange(value: string) {
+    this.set("dailyChange", Value.fromString(value));
+  }
+
+  get extraData(): Array<string> | null {
+    let value = this.get("extraData");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set extraData(value: Array<string> | null) {
+    if (!value) {
+      this.unset("extraData");
+    } else {
+      this.set("extraData", Value.fromStringArray(<Array<string>>value));
+    }
   }
 }
 
@@ -4303,6 +4457,11 @@ export class AirDEXSwapStats extends Entity {
     this.set("inputTokenStat", Value.fromString(""));
     this.set("outputTokensStat", Value.fromString(""));
     this.set("transactions", Value.fromStringArray(new Array(0)));
+    this.set("walletCount", Value.fromBigInt(BigInt.zero()));
+    this.set("tokenCount", Value.fromBigInt(BigInt.zero()));
+    this.set("transactionCount", Value.fromBigInt(BigInt.zero()));
+    this.set("volumeInUSD", Value.fromBigDecimal(BigDecimal.zero()));
+    this.set("dailyChange", Value.fromString(""));
   }
 
   save(): void {
@@ -4365,6 +4524,68 @@ export class AirDEXSwapStats extends Entity {
 
   set transactions(value: Array<string>) {
     this.set("transactions", Value.fromStringArray(value));
+  }
+
+  get walletCount(): BigInt {
+    let value = this.get("walletCount");
+    return value!.toBigInt();
+  }
+
+  set walletCount(value: BigInt) {
+    this.set("walletCount", Value.fromBigInt(value));
+  }
+
+  get tokenCount(): BigInt {
+    let value = this.get("tokenCount");
+    return value!.toBigInt();
+  }
+
+  set tokenCount(value: BigInt) {
+    this.set("tokenCount", Value.fromBigInt(value));
+  }
+
+  get transactionCount(): BigInt {
+    let value = this.get("transactionCount");
+    return value!.toBigInt();
+  }
+
+  set transactionCount(value: BigInt) {
+    this.set("transactionCount", Value.fromBigInt(value));
+  }
+
+  get volumeInUSD(): BigDecimal {
+    let value = this.get("volumeInUSD");
+    return value!.toBigDecimal();
+  }
+
+  set volumeInUSD(value: BigDecimal) {
+    this.set("volumeInUSD", Value.fromBigDecimal(value));
+  }
+
+  get dailyChange(): string {
+    let value = this.get("dailyChange");
+    return value!.toString();
+  }
+
+  set dailyChange(value: string) {
+    this.set("dailyChange", Value.fromString(value));
+  }
+
+  get extraData(): Array<string> | null {
+    let value = this.get("extraData");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set extraData(value: Array<string> | null) {
+    if (!value) {
+      this.unset("extraData");
+    } else {
+      this.set("extraData", Value.fromStringArray(<Array<string>>value));
+    }
   }
 }
 

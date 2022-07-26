@@ -942,7 +942,7 @@ interface AirEntityStats {
   transactionCount: BigInt! # number of transactions (not unique)
   volumeInUSD: BigDecimal! # call price oracle and get the data and +
   dailyChange: AirEntityDailyChangeStats!
-  extraData: [AirExtraData!]!
+  extraData: [AirExtraData!]
 }
 
 type AirDailyAggregateEntity implements AirEntityStats @entity {
@@ -957,6 +957,12 @@ type AirDailyAggregateEntity implements AirEntityStats @entity {
   accounts: [AirDailyAggregateEntityAccount!]
     @derivedFrom(field: "dailyAggregatedEntity")
   stats: AirDailyAggregateEntityStats!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
 }
 
 type AirDailyAggregateEntityStats @entity {
@@ -1046,13 +1052,25 @@ type AirLiquidityPoolStats implements AirEntityStats @entity {
     @derivedFrom(field: "liquidityPoolStatsRef")
   transactions: [AirLiquidityPoolTransaction!]!
     @derivedFrom(field: "liquidityPoolStatsRef")
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
 }
 
-type AirTokenStats implements AirEntityStats @entity {
+interface AirTokenStats implements AirEntityStats @entity {
   id: ID!
   #entityStat: AirEntityStats! # for reference
   token: AirToken!
   type: AirTokenUsageType!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
 }
 
 type AirEntityDailyChangeStats @entity {
@@ -1086,7 +1104,7 @@ type AirLiquidityPoolOutputTokenStats implements AirTokenStats @entity {
   transactionCount: BigInt! # number of transactions (not unique)
   volumeInUSD: BigDecimal! # call price oracle and get the data and +
   dailyChange: AirEntityDailyChangeStats!
-  extraData: [AirExtraData!]!
+  extraData: [AirExtraData!]
 }
 
 type AirLiquidityPoolTransaction @entity {
@@ -1114,6 +1132,12 @@ type AirPoolFarmRewardStats implements AirEntityStats @entity {
   inputTokenStats: [AirTokenStats!]
   outputTokensStats: [AirTokenStats!]
   transactions: [AirPoolFarmTransaction!]!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
 }
 
 enum FarmTransactionType {
@@ -1138,6 +1162,12 @@ type AirDEXSwapStats implements AirEntityStats @entity {
   inputTokenStat: AirTokenStats!
   outputTokensStat: AirTokenStats!
   transactions: [AirDEXSwapTransaction!]!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
 }
 
 type AirDEXSwapTransaction @entity {

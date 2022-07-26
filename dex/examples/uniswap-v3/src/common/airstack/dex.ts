@@ -21,7 +21,6 @@ import {
   AirLiquidityPoolStats,
   AirLiquidityPoolTransaction,
   AirToken,
-  AirTokenStats,
   AirTokenTransfer,
 } from "../../../generated/schema";
 import {
@@ -158,13 +157,6 @@ export function addLiquidity(
       updateAirLiquidityPoolInputTokenStats(token.address, event);
     }
   }
-  // inputTokenTransfer.forEach((inputToken) => {
-  //   const tokenId = inputToken.token;
-  //   const token = AirToken.load(tokenId);
-  //   if (token) {
-  //     updateAirLiquidityPoolInputTokenStats(token.address, event);
-  //   }
-  // });
 
   const outputTokenId = outputTokenTransfer.token;
   const outputToken = AirToken.load(outputTokenId);
@@ -438,9 +430,9 @@ function updateAirLiquidityPoolOutputTokenStats(
 }
 
 function getOrCreateAirEntityDailyChangeStats(
-  tokenStatsId: string
+  entityId: string
 ): AirEntityDailyChangeStats {
-  const dailyChangeStats = new AirEntityDailyChangeStats(tokenStatsId);
+  const dailyChangeStats = new AirEntityDailyChangeStats(entityId);
   dailyChangeStats.walletCountChangeInPercentage = BIGDECIMAL_ZERO;
   dailyChangeStats.tokenCountChangeInPercentage = BIGDECIMAL_ZERO;
   dailyChangeStats.transactionCountChangeInPercentage = BIGDECIMAL_ZERO;
@@ -567,10 +559,15 @@ function calculatePercentage(val1: BigDecimal, val2: BigDecimal): BigDecimal {
 function getAirDailyAggregateEntityId(
   contractAddress: string,
   protocolActionType: string,
-  event: ethereum.Event
+  event: ethereum.Event,
+  isPrevDay: boolean = false
 ): string {
   const timestamp = event.block.timestamp.toI32();
-  let daySinceEpoch = getDaysSinceEpoch(timestamp);
+  const daySinceEpochString = getDaysSinceEpoch(timestamp);
+  let daySinceEpoch = parseInt(daySinceEpochString);
+  if (isPrevDay) {
+    daySinceEpoch = daySinceEpoch - 1;
+  }
   const entityId = dataSource
     .network()
     .concat("-")
@@ -620,8 +617,55 @@ function getOrCreateAirDailyAggregateEntity(
       event
     );
     aggregateEntity.stats = stats.id;
-    aggregateEntity.save();
+    aggregateEntity.walletCount = BIGINT_ZERO;
+    aggregateEntity.tokenCount = BIGINT_ZERO;
+    aggregateEntity.transactionCount = BIGINT_ZERO;
+    aggregateEntity.volumeInUSD = BIGDECIMAL_ZERO;
+
+    const changeStats = getOrCreateAirEntityDailyChangeStats(entityId);
+    aggregateEntity.dailyChange = changeStats.id;
   }
+
+  aggregateEntity.walletCount = aggregateEntity.walletCount.plus(BIGINT_ONE);
+  aggregateEntity.tokenCount = aggregateEntity.tokenCount.plus(BIGINT_ONE);
+  aggregateEntity.transactionCount = aggregateEntity.transactionCount.plus(
+    BIGINT_ONE
+  );
+  // TODO: add price oracle.
+  aggregateEntity.volumeInUSD = aggregateEntity.volumeInUSD.plus(
+    BIGDECIMAL_ZERO
+  );
+
+  const prevEntityId = getAirDailyAggregateEntityId(
+    contractAddress,
+    protocolActionType,
+    event,
+    true
+  );
+
+  const prevAggregatedEntity = AirDailyAggregateEntity.load(prevEntityId);
+
+  if (prevAggregatedEntity) {
+    const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(entityId);
+    dailyChangeStats.walletCountChangeInPercentage = calculatePercentage(
+      aggregateEntity.walletCount.toBigDecimal(),
+      prevAggregatedEntity.walletCount.toBigDecimal()
+    );
+    dailyChangeStats.tokenCountChangeInPercentage = calculatePercentage(
+      aggregateEntity.tokenCount.toBigDecimal(),
+      prevAggregatedEntity.tokenCount.toBigDecimal()
+    );
+    dailyChangeStats.transactionCountChangeInPercentage = calculatePercentage(
+      aggregateEntity.transactionCount.toBigDecimal(),
+      prevAggregatedEntity.transactionCount.toBigDecimal()
+    );
+    dailyChangeStats.volumeInUSDChangeInPercentage = calculatePercentage(
+      aggregateEntity.volumeInUSD,
+      prevAggregatedEntity.volumeInUSD
+    );
+    dailyChangeStats.save();
+  }
+  aggregateEntity.save();
   return aggregateEntity;
 }
 
