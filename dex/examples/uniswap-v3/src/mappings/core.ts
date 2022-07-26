@@ -10,6 +10,7 @@ import {
 } from "../../generated/templates/Pool/Pool";
 import {
   addLiquidity,
+  getAirDexPoolId,
   getOrCreateAirTokenTransfer,
 } from "../common/airstack/dex";
 import { UsageType } from "../common/constants";
@@ -40,8 +41,18 @@ export function handleSetFeeProtocol(event: SetFeeProtocol): void {
 // Handle a mint event emitted from a pool contract. Considered a deposit into the given liquidity pool.
 export function handleMint(event: MintEvent): void {
   log.info("handleMint called", []);
-  const dexPool = AirDEXPool.load(event.address.toHexString());
+  log.info("getting pool info for = {}", [event.address.toHexString()]);
+  const dexPoolId = getAirDexPoolId(event.address.toHexString());
+  log.info("dexPoolId = {}", [dexPoolId]);
+  const dexPool = AirDEXPool.load(dexPoolId);
+
   if (dexPool) {
+    log.info("dexPool.id = {}, ipt0:{}, ipt1={}, lpt={}", [
+      dexPool.id,
+      dexPool.inputToken[0],
+      dexPool.inputToken[1],
+      dexPool.outputToken,
+    ]);
     const inputTokenTransfers: Array<AirTokenTransfer> = [];
     const inputToken0 = AirToken.load(dexPool.inputToken[0]);
     if (inputToken0) {
@@ -79,6 +90,8 @@ export function handleMint(event: MintEvent): void {
         BigInt.fromI32(0),
         event
       );
+
+      log.info("Calling add liquidity function", []);
       addLiquidity(inputTokenTransfers, outputTokenTransfer, event);
     }
   }

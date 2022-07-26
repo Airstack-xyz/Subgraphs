@@ -13,6 +13,7 @@ import {
   AirAccount,
   AirContract,
   AirDailyAggregateEntity,
+  AirDailyAggregateEntityAccount,
   AirDailyAggregateEntityStats,
   AirDEXPool,
   AirEntityDailyChangeStats,
@@ -42,7 +43,7 @@ import {
 } from "./constants";
 import { getDayOpenTime, getDaysSinceEpoch } from "./datetime";
 
-function getAirDexPoolId(poolAddress: string): string {
+export function getAirDexPoolId(poolAddress: string): string {
   const dexPoolId = dataSource
     .network()
     .concat("-")
@@ -146,6 +147,10 @@ export function addLiquidity(
 
     const dexPoolId = getAirDexPoolId(event.address.toHexString());
     airLiquidityPoolStats.dexPool = dexPoolId;
+    airLiquidityPoolStats.walletCount = BIGINT_ZERO;
+    airLiquidityPoolStats.tokenCount = BIGINT_ZERO;
+    airLiquidityPoolStats.transactionCount = BIGINT_ZERO;
+    airLiquidityPoolStats.volumeInUSD = BIGDECIMAL_ZERO;
     airLiquidityPoolStats.save();
   }
 
@@ -184,20 +189,32 @@ export function addLiquidity(
   stats.addPoolLiquidityStats = airLiquidityPoolStats.id;
   stats.save();
 
-  // const dexPoolId = getAirDexPoolId(event);
-  // const dexPool = AirDEXPool.load(dexPoolId);
-  // if (dexPool) {
-  //   const convertedAmounts: Array<BigDecimal> = [];
+  // TODO: Add volume in USD
+  getOrCreateAirDailyAggregateEntityAccount(
+    aggregateEntity.id,
+    outputTokenTransfer.to,
+    aggregateEntity.walletCount,
+    BIGDECIMAL_ZERO
+  );
+}
 
-  //   dexPool.inputToken.forEach((inputTokenId, index) => {
-  //     const token = AirToken.load(inputTokenId);
-  //     if (token) {
-  //       const amount = amounts[index];
-  //       const convertedAmount = convertTokenToDecimal(amount, token.decimals);
-  //       convertedAmounts.push(convertedAmount);
-  //     }
-  //   });
-  // }
+function getOrCreateAirDailyAggregateEntityAccount(
+  dailyAggregatedEntityId: string,
+  accountAddress: string,
+  walletCount: BigInt,
+  volumeInUSD: BigDecimal
+): void {
+  const entityId = dailyAggregatedEntityId.concat("-").concat(accountAddress);
+  let entity = AirDailyAggregateEntityAccount.load(entityId);
+  if (entity == null) {
+    entity = new AirDailyAggregateEntityAccount(entityId);
+    const account = getOrCreateAirAccount(accountAddress);
+    entity.account = account.id;
+    entity.dailyAggregatedEntity = dailyAggregatedEntityId;
+    entity.volumeInUSD = volumeInUSD;
+    entity.index = walletCount.plus(BIGINT_ONE);
+    entity.save();
+  }
 }
 
 export function removeLiquidity(
