@@ -31,7 +31,7 @@ export namespace nft {
         for (let i = 0; i < transactionCount; i++) {
 
             // SELL Daily AggregatedEntity
-            // todo call this function from getOrCreate Function
+             // todo call this function from getOrCreate Function
             let sellActionDailyAggregatedEntityId = getDailyAggregatedEntityId(contractAddressArray[i].toHexString(), timestamp, "SELL");
             let sellActionDailyAggregatedEntity = getOrCreateAirDailyAggregateEntity(sellActionDailyAggregatedEntityId, timestamp, "SELL");
             sellActionDailyAggregatedEntity.transactionCount = sellActionDailyAggregatedEntity.transactionCount.plus(BIG_INT_ONE);
@@ -52,15 +52,15 @@ export namespace nft {
 
             // AggregatedEntity Account
             let sellAggregatedEntityAccountId = getDailyAggregatedAccountId(sellActionDailyAggregatedEntityId, sellerAccount.id);
-            let sellAggregatedEntityAccount =  getOrCreateAirDailyAggregateEntityAccount(sellAggregatedEntityAccountId, sellerAccount.id);
+            let sellAggregatedEntityAccount = getOrCreateAirDailyAggregateEntityAccount(sellAggregatedEntityAccountId, sellerAccount.id, sellActionDailyAggregatedEntity.walletCount);
             let nftVolumeInUSD = volumeInUSD.div(BigDecimal.fromString(fromArray.length.toString()));
             sellAggregatedEntityAccount.volumeInUSD = sellAggregatedEntityAccount.volumeInUSD.plus(nftVolumeInUSD)
-            sellAggregatedEntityAccount.index = sellActionDailyAggregatedEntity.walletCount.plus(BigInt.fromI32(1));
+            //sellAggregatedEntityAccount.index = sellActionDailyAggregatedEntity.walletCount.plus(BigInt.fromI32(1));
 
             let buyAggregatedEntityAccountId = getDailyAggregatedAccountId(buyActionDailyAggregatedEntityId, buyerAccount.id);
-            let buyAggregatedEntityAccount =  getOrCreateAirDailyAggregateEntityAccount(buyAggregatedEntityAccountId, buyerAccount.id);
+            let buyAggregatedEntityAccount = getOrCreateAirDailyAggregateEntityAccount(buyAggregatedEntityAccountId, buyerAccount.id, buyActionDailyAggregatedEntity.walletCount);
             buyAggregatedEntityAccount.volumeInUSD = buyAggregatedEntityAccount.volumeInUSD.plus(nftVolumeInUSD)
-            buyAggregatedEntityAccount.index = buyActionDailyAggregatedEntity.walletCount.plus(BigInt.fromI32(1));
+            //buyAggregatedEntityAccount.index = buyActionDailyAggregatedEntity.walletCount.plus(BigInt.fromI32(1));
 
             let newBuyWalletCount = AirDailyAggregateEntityAccount.load(buyAggregatedEntityAccountId) == null ? 1 : 0;
             let newSellWalletCount = AirDailyAggregateEntityAccount.load(sellAggregatedEntityAccountId) == null ? 1 : 0;
@@ -113,7 +113,7 @@ export namespace nft {
             sellAggregatedEntityAccount.dailyAggregatedEntity = sellActionDailyAggregatedEntityId;
             buyAggregatedEntityAccount.dailyAggregatedEntity = buyActionDailyAggregatedEntityId;
 
-            sellDailyAggregateEntityStats.protocolActionType = "SELL" ;
+            sellDailyAggregateEntityStats.protocolActionType = "SELL";
             sellDailyAggregateEntityStats.saleStat = saleStatId;
 
             buyDailyAggregateEntityStats.protocolActionType = "BUY";
@@ -179,7 +179,7 @@ export namespace nft {
 
     }
 
-    export function getDailyAggregatedAccountId(dailyAggregatedEntityId:string, accountId: string): string {
+    export function getDailyAggregatedAccountId(dailyAggregatedEntityId: string, accountId: string): string {
         return dailyAggregatedEntityId.concat("-").concat(accountId);
     }
 
@@ -252,7 +252,7 @@ export namespace nft {
         return entity as AirAccount;
     }
 
-    export function getOrCreateAirDailyAggregateEntityAccount(id: string, accountId: string): AirDailyAggregateEntityAccount {
+    export function getOrCreateAirDailyAggregateEntityAccount(id: string, accountId: string, walletCount: BigInt): AirDailyAggregateEntityAccount {
 
         let entity = AirDailyAggregateEntityAccount.load(id);
 
@@ -260,20 +260,21 @@ export namespace nft {
             entity = new AirDailyAggregateEntityAccount(id);
             entity.volumeInUSD = BigDecimal.zero();
             entity.account = accountId;
+            entity.index = walletCount.plus(BIG_INT_ONE);
 
         }
         return entity as AirDailyAggregateEntityAccount;
     }
 
     function supportsInterface(contract: ERC721MetaData, interfaceId: string, expected: boolean = true): boolean {
-        let supports = contract.try_supportsInterface( Bytes.fromByteArray(Bytes.fromHexString(interfaceId)));
+        let supports = contract.try_supportsInterface(Bytes.fromByteArray(Bytes.fromHexString(interfaceId)));
         return !supports.reverted && supports.value == expected;
     }
     export function getOrCreateAirToken(id: string): AirToken {
         let entity = AirToken.load(id); //todo add network
         if (entity == null) {
             entity = new AirToken(id)
-            entity.address = id 
+            entity.address = id
             entity.standard = "ERC20";
 
             let contract = ERC721MetaData.bind(Address.fromString(id));  //todo should we do 1155? 
