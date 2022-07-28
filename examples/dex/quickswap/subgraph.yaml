@@ -1,0 +1,130 @@
+specVersion: 0.0.4
+repository: https://github.com/messari/subgraphs
+schema:
+  file: ./schema.graphql
+description: ...
+dataSources:
+  - kind: ethereum/contract
+    name: Factory
+    network: mainnet
+    source:
+      address: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
+      abi: Factory
+      startBlock: 10000834
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/mappings/factory.ts
+      entities:
+        - AirDailyAggregateEntity
+        - AirDailyAggregateEntityStats
+        - AirToken
+        - AirDailyAggregateEntityAccount
+        - AirAccount
+        - AirDEXPool
+        - AirLiquidityPoolStats
+        - AirTokenStats
+        - AirEntityDailyChangeStats
+        - AirLiquidityPoolInputTokenStats
+        - AirLiquidityPoolOutputTokenStats
+        - AirLiquidityPoolTransaction
+        - AirTokenTransfer
+        - AirPoolFarmRewardStats
+        - AirPoolFarmTransaction
+        - AirDEXSwapStats
+        - AirDEXSwapTransaction
+        - AirNFTSaleTransaction
+        - AirNFTSaleStats
+      abis:
+        - name: Factory
+          file: ./abis/quickswap/Factory.json
+        - name: TokenABI
+          file: ./abis/quickswap/ERC20.json
+        - name: ERC721MetaData
+          file: ./abis/common/ERC721.json
+        - name: ERC20
+          file: ./abis/common/ERC20.json
+      eventHandlers:
+        - event: PairCreated(indexed address,indexed address,address,uint256)
+          handler: handlePairCreated
+templates:
+  - kind: ethereum/contract
+    name: Pair
+    network: mainnet
+    source:
+      abi: Pair
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/mappings/pool.ts
+      entities:
+        - AirDailyAggregateEntity
+        - AirDailyAggregateEntityStats
+        - AirToken
+        - AirDailyAggregateEntityAccount
+        - AirAccount
+        - AirDEXPool
+        - AirLiquidityPoolStats
+        - AirTokenStats
+        - AirEntityDailyChangeStats
+        - AirLiquidityPoolInputTokenStats
+        - AirLiquidityPoolOutputTokenStats
+        - AirLiquidityPoolTransaction
+        - AirTokenTransfer
+        - AirPoolFarmRewardStats
+        - AirPoolFarmTransaction
+        - AirDEXSwapStats
+        - AirDEXSwapTransaction
+        - AirNFTSaleStats
+        - AirNFTSaleTransaction
+      abis:
+        - name: Pair
+          file: ./abis/quickswap/Pair.json
+        - name: Factory
+          file: ./abis/quickswap/Factory.json
+        - name: TokenABI
+          file: ./abis/quickswap/ERC20.json
+        - name: ERC721MetaData
+          file: ./abis/common/ERC721.json
+        - name: ERC20
+          file:
+            ./abis/common/ERC20.json
+            # Curve Contracts
+        - name: CurveRegistry
+          file: ./abis/common/Prices/Curve/Registry.json
+        - name: CurvePoolRegistry
+          file: ./abis/common/Prices/Curve/PoolRegistry.json
+        - name: CalculationsCurve
+          file: ./abis/common/Prices/Calculations/Curve.json
+        # YearnLens Contracts
+        - name: YearnLensContract
+          file: ./abis/common/Prices/YearnLens.json
+        # ChainLink Contracts
+        - name: ChainLinkContract
+          file: ./abis/common/Prices/ChainLink.json
+        # Uniswap Contracts
+        - name: UniswapRouter
+          file: ./abis/common/Prices/Uniswap/Router.json
+        - name: UniswapFactory
+          file: ./abis/common/Prices/Uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/common/Prices/Uniswap/Pair.json
+        # SushiSwap Contracts
+        - name: SushiSwapRouter
+          file: ./abis/common/Prices/SushiSwap/Router.json
+        - name: SushiSwapFactory
+          file: ./abis/common/Prices/SushiSwap/Factory.json
+        - name: SushiSwapPair
+          file: ./abis/common/Prices/SushiSwap/Pair.json
+        - name: CalculationsSushiSwap
+          file: ./abis/common/Prices/Calculations/SushiSwap.json
+
+      eventHandlers:
+        - event: Mint(indexed address,uint256,uint256)
+          handler: handleMint
+        - event: Burn(indexed address,uint256,uint256,indexed address)
+          handler: handleBurn
+        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+          handler: handleSwap
