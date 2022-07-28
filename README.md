@@ -1,6 +1,6 @@
 # Airstack Subgraphs
 
-### How to integrate the Airstack entities in to your subgraphs. Follow the below steps.
+### How to integrate the Airstack entities into your subgraphs. Follow the below steps.
 These are the common steps for all the projects.
 1. Identify the protocol of the project.
    The projects can belong to one of the following protocols.<br/>
@@ -12,7 +12,7 @@ These are the common steps for all the projects.
    f. Staking<br/>
    g. P2E<br/>
 
-2. Copy the following abi files in to your project's `abis` folder.
+2. Copy the following abi files into your project's `abis` folder.
 
    ```
      abis
@@ -24,9 +24,9 @@ These are the common steps for all the projects.
 
    ```
 
-3. Copy the contents of `airstack-common-schema.graphql` file in to your project's `schema.graphql` file.
+3. Copy the contents of `airstack-common-schema.graphql` file into your project's `schema.graphql` file.
 
-4. Copy the `airstack` and `prices` modules in to your project.
+4. Copy the `airstack` and `prices` modules into your project.
    ```
    modules/airstack
    modules/prices
@@ -79,14 +79,14 @@ These are the common steps for all the projects.
        - name: CalculationsSushiSwap
          file: ./abis/common/prices/calculations/SushiSwap.json
    ```
-6. Now you have added the common code in the project. From here follow the protocol specific steps.
+6. Now, you have added the common code to the project. From here, follow the protocol-specific steps.
 
 ### Integrate DEX
 
 Please make sure that you have followed the above steps (1 to 6) mentioned in `How to integrate` section<br/><br/>
 
-1.  Copy the contents of `airstack-dex-schema.graphql` file in to your project's `schema.graphql` file. These are the DEX specific entities.
-2.  Update the `subgraph.yaml` file to include the following.<br/>
+1. Copy the contents of `airstack-dex-schema.graphql` file in to your project's `schema.graphql` file. These are the DEX specific entities.
+2. Update the `subgraph.yaml` file to include the following.<br/>
     Add the common Airstack entities
 
 
@@ -138,8 +138,8 @@ Please make sure that you have followed the above steps (1 to 6) mentioned in `H
 
 ### Integrating NFT Marketplace
 Please make sure that you have followed the above steps (1 to 6) mentioned in `How to integrate` section<br/>
-1.  Copy the contents of `airstack-nftmarketplace-schema.graphql` file in to your project's `schema.graphql` file. These are the NFT marketplace specific entities.
-2.  Update the `subgraph.yaml` file to include the following.<br/>
+1. Copy the contents of `airstack-nftmarketplace-schema.graphql` file into your project's `schema.graphql` file. These are the NFT marketplace specific entities.
+2. Update the `subgraph.yaml` file to include the following.<br/>
     Add the common Airstack entities
 
 
