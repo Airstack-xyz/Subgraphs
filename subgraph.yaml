@@ -1,0 +1,74 @@
+specVersion: 0.0.4
+repository: https://github.com/Airstack-xyz/Subgraphs
+schema:
+  file: ./schema.graphql
+description: ...
+# graft:
+#   base: QmYH9eXvZoLX6gox87wamg7WcdnkKqWxc5YqjLwY6KpLFu # Subgraph ID of base subgraph
+#   block: 13639984 # Block number
+dataSources:
+  - kind: ethereum/contract
+    name: Airstack
+    network: mainnet
+    source:
+      abi: ERC20
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./mappings/index.ts
+      entities:
+        - AirDailyAggregateEntity
+        - AirDailyAggregateEntityStats
+        - AirToken
+        - AirTokenMetadata
+        - AirDailyAggregateEntityAccount
+        - AirAccount
+        - AirDEXPool
+        - AirLiquidityPoolStats
+        - AirTokenStats
+        - AirLiquidityPoolTransaction
+        - AirTokenTransfer
+        - AirPoolFarmRewardStats
+        - AirPoolFarmTransaction
+        - AirDEXSwapStats
+        - AirNFTSaleStats
+        - AirNFTSaleTransaction
+      abis:
+        - name: ERC721MetaData
+          file: ./abis/common/ERC721.json
+        - name: ERC20
+          file: ./abis/common/ERC20.json
+        - name: CurveRegistry
+          file: ./abis/common/prices/Curve/Registry.json
+        - name: ChainlinkOracle
+          file: ./abis/common/prices/ChainLink.json
+        - name: YearnLensContract
+          file: ./abis/common/prices/YearnLens.json
+        - name: UniswapFactory
+          file: ./abis/common/prices/uniswap/Factory.json
+        - name: UniswapFeeRouter
+          file: ./abis/common/prices/uniswap/FeeRouter.json
+        - name: UniswapPair
+          file: ./abis/common/prices/uniswap/Pair.json
+        - name: UniswapRouter
+          file: ./abis/common/prices/uniswap/Router.json
+        - name: SushiSwapRouter
+          file: ./abis/common/prices/sushiswap/Factory.json
+        - name: SushiSwapPair
+          file: ./abis/common/prices/sushiswap/Pair.json
+        - name: SushiSwapRouter
+          file: ./abis/common/prices/sushiswap/Router.json
+        - name: CurveFactory
+          file: ./abis/common/prices/curve/Factory.json
+        - name: CurvePoolRegistry
+          file: ./abis/common/prices/curve/PoolRegistry.json
+        - name: CurveRegistry
+          file: ./abis/common/prices/curve/Registry.json
+        - name: CalculationsCurve
+          file: ./abis/common/prices/calculations/Curve.json
+        - name: CalculationsSushiSwap
+          file: ./abis/common/prices/calculations/SushiSwap.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handle

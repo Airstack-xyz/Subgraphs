@@ -1,0 +1,145 @@
+type AirDEXPool @entity {
+  id: ID!
+  poolAddress: String!
+  inputToken: [AirToken!]!
+  weightage: [BigDecimal!]!
+  outputToken: AirToken!
+  fee: BigInt!
+}
+
+type AirLiquidityPoolStats implements AirEntityStats @entity {
+  id: ID!
+  dexPool: AirDEXPool!
+  # IMP: Please add the references carefully. This can be very specific in the actual implementation
+  inputTokensStats: [AirLiquidityPoolInputTokenStats!]!
+    @derivedFrom(field: "liquidityPoolStatsRef")
+  outputTokenStats: [AirLiquidityPoolOutputTokenStats!]!
+    @derivedFrom(field: "liquidityPoolStatsRef")
+  transactions: [AirLiquidityPoolTransaction!]!
+    @derivedFrom(field: "liquidityPoolStatsRef")
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+interface AirTokenStats implements AirEntityStats @entity {
+  id: ID!
+  #entityStat: AirEntityStats! # for reference
+  token: AirToken!
+  type: AirTokenUsageType!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+type AirEntityDailyChangeStats @entity {
+  id: ID!
+  walletCountChangeInPercentage: BigDecimal!
+  tokenCountChangeInPercentage: BigDecimal!
+  transactionCountChangeInPercentage: BigDecimal!
+  volumeInUSDChangeInPercentage: BigDecimal!
+}
+
+type AirLiquidityPoolInputTokenStats implements AirTokenStats @entity {
+  id: ID!
+  liquidityPoolStatsRef: AirLiquidityPoolStats! # for reference
+  token: AirToken!
+  type: AirTokenUsageType!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+type AirLiquidityPoolOutputTokenStats implements AirTokenStats @entity {
+  id: ID!
+  liquidityPoolStatsRef: AirLiquidityPoolStats! # for reference
+  token: AirToken!
+  type: AirTokenUsageType!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+type AirLiquidityPoolTransaction @entity {
+  id: ID!
+  dexPool: AirDEXPool!
+  liquidityPoolStatsRef: AirLiquidityPoolStats! # for reference
+  hash: String!
+  inputTokenTransfers: [AirTokenTransfer!]!
+  outputTokenTransfer: AirTokenTransfer!
+}
+
+type AirTokenTransfer @entity {
+  id: ID!
+  token: AirToken!
+  from: AirAccount!
+  to: AirAccount!
+  amount: BigInt!
+  fee: BigInt
+}
+
+type AirPoolFarmRewardStats implements AirEntityStats @entity {
+  id: ID!
+  dexPool: AirDEXPool!
+  # IMP: Please add the references carefully. This can be very specific in the actual implementation
+  inputTokenStats: [AirTokenStats!]
+  outputTokensStats: [AirTokenStats!]
+  transactions: [AirPoolFarmTransaction!]!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+enum FarmTransactionType {
+  STAKE
+  UNSTAKE
+  CLAIM
+}
+
+type AirPoolFarmTransaction @entity {
+  id: ID!
+  hash: String!
+  type: FarmTransactionType!
+  inputToken: AirToken
+  outputToken: AirToken
+  inputAmount: BigInt
+  outputAmount: BigInt
+}
+
+type AirDEXSwapStats implements AirEntityStats @entity {
+  id: ID!
+  dexPool: AirDEXPool!
+  inputTokenStat: AirTokenStats!
+  outputTokensStat: AirTokenStats!
+  transactions: [AirDEXSwapTransaction!]!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+type AirDEXSwapTransaction @entity {
+  id: ID!
+  dexPool: AirDEXPool!
+  entityStats: AirDEXSwapStats! # for reference
+  hash: String!
+  inputTokenTransfers: [AirTokenTransfer!]!
+  outputTokenTransfer: AirTokenTransfer!
+}

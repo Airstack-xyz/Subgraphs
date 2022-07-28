@@ -1,0 +1,41 @@
+enum AirTokenDisplayType {
+  IMAGE
+  VIDEO
+  AUDIO
+  TEXT_IMAGE
+  TEXT
+}
+enum AirNFTTransactionType {
+  SALE
+  MINT
+  GIFT
+}
+
+type AirNFTSaleStats implements AirEntityStats @entity {
+  id: ID!
+  token: AirToken!
+  # todo: Please check if the derived from can work here.
+  transactions: [AirNFTSaleTransaction!]! @derivedFrom(field: "saleStat")
+
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  #dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+type AirNFTSaleTransaction @entity {
+  id: ID!
+  hash: String!
+  saleStat: AirNFTSaleStats!
+  type: AirNFTTransactionType!
+  to: AirAccount! #Buyer
+  from: AirAccount! #Seller
+  transactionToken: AirToken!
+  paymentToken: AirToken
+  tokenId: BigInt!
+  paymentAmount: BigInt
+  fees: BigInt
+  tokenMetadata: AirTokenMetadata
+}
