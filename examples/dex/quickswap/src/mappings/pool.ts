@@ -43,4 +43,14 @@ export function handleSwap(event: Swap): void {
   // updateFinancials(event);
   // updatePoolMetrics(event);
   // updateUsageMetrics(event, event.transaction.from, UsageType.SWAP);
+
+  dex.swap(
+    event.address.toHexString(),
+    [event.params.amount0In, event.params.amount1In],
+    [event.params.amount0Out, event.params.amount1Out],
+    event.params.sender.toHexString(),
+    event.params.to.toHexString(),
+    event.block.hash.toHexString(),
+    event.block.timestamp
+  );
 }

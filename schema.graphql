@@ -82,14 +82,6 @@ enum AirProtocolActionType {
   CLAIM_REWARDS
 }
 
-enum AirTokenDisplayType {
-  IMAGE
-  VIDEO
-  AUDIO
-  TEXT_IMAGE
-  TEXT
-}
-
 type AirExtraData @entity {
   id: ID!
   name: String!
@@ -194,6 +186,32 @@ type AirAccount @entity {
     @derivedFrom(field: "account")
 }
 
+interface AirTokenStats implements AirEntityStats @entity {
+  id: ID!
+  #entityStat: AirEntityStats! # for reference
+  token: AirToken!
+  type: AirTokenUsageType!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+type AirEntityDailyChangeStats @entity {
+  id: ID!
+  walletCountChangeInPercentage: BigDecimal!
+  tokenCountChangeInPercentage: BigDecimal!
+  transactionCountChangeInPercentage: BigDecimal!
+  volumeInUSDChangeInPercentage: BigDecimal!
+}
+
+type AirContract @entity {
+  id: ID!
+  address: String!
+}
+
 type AirDEXPool @entity {
   id: ID!
   poolAddress: String!
@@ -219,27 +237,6 @@ type AirLiquidityPoolStats implements AirEntityStats @entity {
   volumeInUSD: BigDecimal! # call price oracle and get the data and +
   dailyChange: AirEntityDailyChangeStats!
   extraData: [AirExtraData!]
-}
-
-interface AirTokenStats implements AirEntityStats @entity {
-  id: ID!
-  #entityStat: AirEntityStats! # for reference
-  token: AirToken!
-  type: AirTokenUsageType!
-  walletCount: BigInt!
-  tokenCount: BigInt!
-  transactionCount: BigInt! # number of transactions (not unique)
-  volumeInUSD: BigDecimal! # call price oracle and get the data and +
-  dailyChange: AirEntityDailyChangeStats!
-  extraData: [AirExtraData!]
-}
-
-type AirEntityDailyChangeStats @entity {
-  id: ID!
-  walletCountChangeInPercentage: BigDecimal!
-  tokenCountChangeInPercentage: BigDecimal!
-  transactionCountChangeInPercentage: BigDecimal!
-  volumeInUSDChangeInPercentage: BigDecimal!
 }
 
 type AirLiquidityPoolInputTokenStats implements AirTokenStats @entity {
@@ -320,9 +317,37 @@ type AirPoolFarmTransaction @entity {
 type AirDEXSwapStats implements AirEntityStats @entity {
   id: ID!
   dexPool: AirDEXPool!
-  inputTokenStat: AirTokenStats!
-  outputTokensStat: AirTokenStats!
-  transactions: [AirDEXSwapTransaction!]!
+  inputTokensStats: [AirSwapInputTokenStats!]!
+    @derivedFrom(field: "swapStatsRef")
+  outputTokenStats: [AirSwapOutputTokenStats!]!
+    @derivedFrom(field: "swapStatsRef")
+  transactions: [AirDEXSwapTransaction!]! @derivedFrom(field: "swapStatsRef")
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+type AirSwapInputTokenStats implements AirTokenStats @entity {
+  id: ID!
+  swapStatsRef: AirDEXSwapStats! # for reference
+  token: AirToken!
+  type: AirTokenUsageType!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+type AirSwapOutputTokenStats implements AirTokenStats @entity {
+  id: ID!
+  swapStatsRef: AirDEXSwapStats! # for reference
+  token: AirToken!
+  type: AirTokenUsageType!
   walletCount: BigInt!
   tokenCount: BigInt!
   transactionCount: BigInt! # number of transactions (not unique)
@@ -334,17 +359,19 @@ type AirDEXSwapStats implements AirEntityStats @entity {
 type AirDEXSwapTransaction @entity {
   id: ID!
   dexPool: AirDEXPool!
-  entityStats: AirDEXSwapStats! # for reference
+  swapStatsRef: AirDEXSwapStats! # for reference
   hash: String!
-  inputTokenTransfers: [AirTokenTransfer!]!
+  inputTokenTransfer: AirTokenTransfer!
   outputTokenTransfer: AirTokenTransfer!
 }
 
-type AirContract @entity {
-  id: ID!
-  address: String!
+enum AirTokenDisplayType {
+  IMAGE
+  VIDEO
+  AUDIO
+  TEXT_IMAGE
+  TEXT
 }
-
 enum AirNFTTransactionType {
   SALE
   MINT
@@ -361,7 +388,7 @@ type AirNFTSaleStats implements AirEntityStats @entity {
   tokenCount: BigInt!
   transactionCount: BigInt! # number of transactions (not unique)
   volumeInUSD: BigDecimal! # call price oracle and get the data and +
-  #dailyChange: AirEntityDailyChangeStats!
+  dailyChange: AirEntityDailyChangeStats!
   extraData: [AirExtraData!]
 }
 

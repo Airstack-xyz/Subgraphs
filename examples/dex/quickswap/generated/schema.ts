@@ -1800,9 +1800,6 @@ export class AirDEXSwapStats extends Entity {
     this.set("id", Value.fromString(id));
 
     this.set("dexPool", Value.fromString(""));
-    this.set("inputTokenStat", Value.fromString(""));
-    this.set("outputTokensStat", Value.fromString(""));
-    this.set("transactions", Value.fromStringArray(new Array(0)));
     this.set("walletCount", Value.fromBigInt(BigInt.zero()));
     this.set("tokenCount", Value.fromBigInt(BigInt.zero()));
     this.set("transactionCount", Value.fromBigInt(BigInt.zero()));
@@ -1844,22 +1841,22 @@ export class AirDEXSwapStats extends Entity {
     this.set("dexPool", Value.fromString(value));
   }
 
-  get inputTokenStat(): string {
-    let value = this.get("inputTokenStat");
-    return value!.toString();
+  get inputTokensStats(): Array<string> {
+    let value = this.get("inputTokensStats");
+    return value!.toStringArray();
   }
 
-  set inputTokenStat(value: string) {
-    this.set("inputTokenStat", Value.fromString(value));
+  set inputTokensStats(value: Array<string>) {
+    this.set("inputTokensStats", Value.fromStringArray(value));
   }
 
-  get outputTokensStat(): string {
-    let value = this.get("outputTokensStat");
-    return value!.toString();
+  get outputTokenStats(): Array<string> {
+    let value = this.get("outputTokenStats");
+    return value!.toStringArray();
   }
 
-  set outputTokensStat(value: string) {
-    this.set("outputTokensStat", Value.fromString(value));
+  set outputTokenStats(value: Array<string>) {
+    this.set("outputTokenStats", Value.fromStringArray(value));
   }
 
   get transactions(): Array<string> {
@@ -1934,15 +1931,285 @@ export class AirDEXSwapStats extends Entity {
   }
 }
 
+export class AirSwapInputTokenStats extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("swapStatsRef", Value.fromString(""));
+    this.set("token", Value.fromString(""));
+    this.set("type", Value.fromString(""));
+    this.set("walletCount", Value.fromBigInt(BigInt.zero()));
+    this.set("tokenCount", Value.fromBigInt(BigInt.zero()));
+    this.set("transactionCount", Value.fromBigInt(BigInt.zero()));
+    this.set("volumeInUSD", Value.fromBigDecimal(BigDecimal.zero()));
+    this.set("dailyChange", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save AirSwapInputTokenStats entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type AirSwapInputTokenStats must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("AirSwapInputTokenStats", id.toString(), this);
+    }
+  }
+
+  static load(id: string): AirSwapInputTokenStats | null {
+    return changetype<AirSwapInputTokenStats | null>(
+      store.get("AirSwapInputTokenStats", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get swapStatsRef(): string {
+    let value = this.get("swapStatsRef");
+    return value!.toString();
+  }
+
+  set swapStatsRef(value: string) {
+    this.set("swapStatsRef", Value.fromString(value));
+  }
+
+  get token(): string {
+    let value = this.get("token");
+    return value!.toString();
+  }
+
+  set token(value: string) {
+    this.set("token", Value.fromString(value));
+  }
+
+  get type(): string {
+    let value = this.get("type");
+    return value!.toString();
+  }
+
+  set type(value: string) {
+    this.set("type", Value.fromString(value));
+  }
+
+  get walletCount(): BigInt {
+    let value = this.get("walletCount");
+    return value!.toBigInt();
+  }
+
+  set walletCount(value: BigInt) {
+    this.set("walletCount", Value.fromBigInt(value));
+  }
+
+  get tokenCount(): BigInt {
+    let value = this.get("tokenCount");
+    return value!.toBigInt();
+  }
+
+  set tokenCount(value: BigInt) {
+    this.set("tokenCount", Value.fromBigInt(value));
+  }
+
+  get transactionCount(): BigInt {
+    let value = this.get("transactionCount");
+    return value!.toBigInt();
+  }
+
+  set transactionCount(value: BigInt) {
+    this.set("transactionCount", Value.fromBigInt(value));
+  }
+
+  get volumeInUSD(): BigDecimal {
+    let value = this.get("volumeInUSD");
+    return value!.toBigDecimal();
+  }
+
+  set volumeInUSD(value: BigDecimal) {
+    this.set("volumeInUSD", Value.fromBigDecimal(value));
+  }
+
+  get dailyChange(): string {
+    let value = this.get("dailyChange");
+    return value!.toString();
+  }
+
+  set dailyChange(value: string) {
+    this.set("dailyChange", Value.fromString(value));
+  }
+
+  get extraData(): Array<string> | null {
+    let value = this.get("extraData");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set extraData(value: Array<string> | null) {
+    if (!value) {
+      this.unset("extraData");
+    } else {
+      this.set("extraData", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+}
+
+export class AirSwapOutputTokenStats extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("swapStatsRef", Value.fromString(""));
+    this.set("token", Value.fromString(""));
+    this.set("type", Value.fromString(""));
+    this.set("walletCount", Value.fromBigInt(BigInt.zero()));
+    this.set("tokenCount", Value.fromBigInt(BigInt.zero()));
+    this.set("transactionCount", Value.fromBigInt(BigInt.zero()));
+    this.set("volumeInUSD", Value.fromBigDecimal(BigDecimal.zero()));
+    this.set("dailyChange", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save AirSwapOutputTokenStats entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type AirSwapOutputTokenStats must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("AirSwapOutputTokenStats", id.toString(), this);
+    }
+  }
+
+  static load(id: string): AirSwapOutputTokenStats | null {
+    return changetype<AirSwapOutputTokenStats | null>(
+      store.get("AirSwapOutputTokenStats", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get swapStatsRef(): string {
+    let value = this.get("swapStatsRef");
+    return value!.toString();
+  }
+
+  set swapStatsRef(value: string) {
+    this.set("swapStatsRef", Value.fromString(value));
+  }
+
+  get token(): string {
+    let value = this.get("token");
+    return value!.toString();
+  }
+
+  set token(value: string) {
+    this.set("token", Value.fromString(value));
+  }
+
+  get type(): string {
+    let value = this.get("type");
+    return value!.toString();
+  }
+
+  set type(value: string) {
+    this.set("type", Value.fromString(value));
+  }
+
+  get walletCount(): BigInt {
+    let value = this.get("walletCount");
+    return value!.toBigInt();
+  }
+
+  set walletCount(value: BigInt) {
+    this.set("walletCount", Value.fromBigInt(value));
+  }
+
+  get tokenCount(): BigInt {
+    let value = this.get("tokenCount");
+    return value!.toBigInt();
+  }
+
+  set tokenCount(value: BigInt) {
+    this.set("tokenCount", Value.fromBigInt(value));
+  }
+
+  get transactionCount(): BigInt {
+    let value = this.get("transactionCount");
+    return value!.toBigInt();
+  }
+
+  set transactionCount(value: BigInt) {
+    this.set("transactionCount", Value.fromBigInt(value));
+  }
+
+  get volumeInUSD(): BigDecimal {
+    let value = this.get("volumeInUSD");
+    return value!.toBigDecimal();
+  }
+
+  set volumeInUSD(value: BigDecimal) {
+    this.set("volumeInUSD", Value.fromBigDecimal(value));
+  }
+
+  get dailyChange(): string {
+    let value = this.get("dailyChange");
+    return value!.toString();
+  }
+
+  set dailyChange(value: string) {
+    this.set("dailyChange", Value.fromString(value));
+  }
+
+  get extraData(): Array<string> | null {
+    let value = this.get("extraData");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set extraData(value: Array<string> | null) {
+    if (!value) {
+      this.unset("extraData");
+    } else {
+      this.set("extraData", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+}
+
 export class AirDEXSwapTransaction extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
 
     this.set("dexPool", Value.fromString(""));
-    this.set("entityStats", Value.fromString(""));
+    this.set("swapStatsRef", Value.fromString(""));
     this.set("hash", Value.fromString(""));
-    this.set("inputTokenTransfers", Value.fromStringArray(new Array(0)));
+    this.set("inputTokenTransfer", Value.fromString(""));
     this.set("outputTokenTransfer", Value.fromString(""));
   }
 
@@ -1985,13 +2252,13 @@ export class AirDEXSwapTransaction extends Entity {
     this.set("dexPool", Value.fromString(value));
   }
 
-  get entityStats(): string {
-    let value = this.get("entityStats");
+  get swapStatsRef(): string {
+    let value = this.get("swapStatsRef");
     return value!.toString();
   }
 
-  set entityStats(value: string) {
-    this.set("entityStats", Value.fromString(value));
+  set swapStatsRef(value: string) {
+    this.set("swapStatsRef", Value.fromString(value));
   }
 
   get hash(): string {
@@ -2003,13 +2270,13 @@ export class AirDEXSwapTransaction extends Entity {
     this.set("hash", Value.fromString(value));
   }
 
-  get inputTokenTransfers(): Array<string> {
-    let value = this.get("inputTokenTransfers");
-    return value!.toStringArray();
+  get inputTokenTransfer(): string {
+    let value = this.get("inputTokenTransfer");
+    return value!.toString();
   }
 
-  set inputTokenTransfers(value: Array<string>) {
-    this.set("inputTokenTransfers", Value.fromStringArray(value));
+  set inputTokenTransfer(value: string) {
+    this.set("inputTokenTransfer", Value.fromString(value));
   }
 
   get outputTokenTransfer(): string {

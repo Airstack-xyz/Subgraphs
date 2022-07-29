@@ -317,9 +317,37 @@ type AirPoolFarmTransaction @entity {
 type AirDEXSwapStats implements AirEntityStats @entity {
   id: ID!
   dexPool: AirDEXPool!
-  inputTokenStat: AirTokenStats!
-  outputTokensStat: AirTokenStats!
-  transactions: [AirDEXSwapTransaction!]!
+  inputTokensStats: [AirSwapInputTokenStats!]!
+    @derivedFrom(field: "swapStatsRef")
+  outputTokenStats: [AirSwapOutputTokenStats!]!
+    @derivedFrom(field: "swapStatsRef")
+  transactions: [AirDEXSwapTransaction!]! @derivedFrom(field: "swapStatsRef")
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+type AirSwapInputTokenStats implements AirTokenStats @entity {
+  id: ID!
+  swapStatsRef: AirDEXSwapStats! # for reference
+  token: AirToken!
+  type: AirTokenUsageType!
+  walletCount: BigInt!
+  tokenCount: BigInt!
+  transactionCount: BigInt! # number of transactions (not unique)
+  volumeInUSD: BigDecimal! # call price oracle and get the data and +
+  dailyChange: AirEntityDailyChangeStats!
+  extraData: [AirExtraData!]
+}
+
+type AirSwapOutputTokenStats implements AirTokenStats @entity {
+  id: ID!
+  swapStatsRef: AirDEXSwapStats! # for reference
+  token: AirToken!
+  type: AirTokenUsageType!
   walletCount: BigInt!
   tokenCount: BigInt!
   transactionCount: BigInt! # number of transactions (not unique)
@@ -331,9 +359,9 @@ type AirDEXSwapStats implements AirEntityStats @entity {
 type AirDEXSwapTransaction @entity {
   id: ID!
   dexPool: AirDEXPool!
-  entityStats: AirDEXSwapStats! # for reference
+  swapStatsRef: AirDEXSwapStats! # for reference
   hash: String!
-  inputTokenTransfers: [AirTokenTransfer!]!
+  inputTokenTransfer: AirTokenTransfer!
   outputTokenTransfer: AirTokenTransfer!
 }
 

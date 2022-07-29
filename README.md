@@ -1,7 +1,9 @@
 # Airstack Subgraphs
 
 ### How to integrate the Airstack entities into your subgraphs. Follow the below steps.
+
 These are the common steps for all the projects.
+
 1. Identify the protocol of the project.
    The projects can belong to one of the following protocols.<br/>
    a. NFT marketplace<br/>
@@ -87,7 +89,7 @@ Please make sure that you have followed the above steps (1 to 6) mentioned in `H
 
 1. Copy the contents of `airstack-dex-schema.graphql` file in to your project's `schema.graphql` file. These are the DEX specific entities.
 2. Update the `subgraph.yaml` file to include the following.<br/>
-    Add the common Airstack entities
+   Add the common Airstack entities
 
 
     ```
@@ -110,37 +112,53 @@ Please make sure that you have followed the above steps (1 to 6) mentioned in `H
 
    ```ts
    export function addDexPool(
-    poolAddress: string,
-    fee: BigInt,
-    inputTokens: Array<string>,
-    weights: Array<BigDecimal> | null = null,
-    outputToken: string | null = null
-   ): void
+     poolAddress: string,
+     fee: BigInt,
+     inputTokens: Array<string>,
+     weights: Array<BigDecimal> | null = null,
+     outputToken: string | null = null
+   ): void;
    ```
+
 4. From the mapping handler, call the `addLiquidity` function when liquidity is added, the function is available at `modules/airstack/index.ts`
 
    ```ts
    export function addLiquidity(
-    poolAddress: string,
-    inputAmounts: Array<BigInt>,
-    from: string,
-    to: string,
-    hash: string,
-    timestamp: BigInt
-   ): void
+     poolAddress: string,
+     inputAmounts: Array<BigInt>,
+     from: string,
+     to: string,
+     hash: string,
+     timestamp: BigInt
+   ): void;
    ```
+
 5. From the mapping handler, call the `removeLiquidity` function when liquidity is removed, the function is available at `modules/airstack/index.ts`
-    ```
-    ```
+
+   ```
+
+   ```
+
 6. From the mapping handler, call the `swapToken` function when the tokens are swapped, the function is available at `modules/airstack/index.ts`
-    ```
-    ```
+   ```ts
+   dex.swap(
+     event.address.toHexString(),
+     [event.params.amount0In, event.params.amount1In],
+     [event.params.amount0Out, event.params.amount1Out],
+     event.params.sender.toHexString(),
+     event.params.to.toHexString(),
+     event.block.hash.toHexString(),
+     event.block.timestamp
+   );
+   ```
 
 ### Integrating NFT Marketplace
+
 Please make sure that you have followed the above steps (1 to 6) mentioned in `How to integrate` section<br/>
+
 1. Copy the contents of `airstack-nftmarketplace-schema.graphql` file into your project's `schema.graphql` file. These are the NFT marketplace specific entities.
 2. Update the `subgraph.yaml` file to include the following.<br/>
-    Add the common Airstack entities
+   Add the common Airstack entities
 
 
     ```
@@ -148,16 +166,17 @@ Please make sure that you have followed the above steps (1 to 6) mentioned in `H
         - AirNFTSaleStats
         - AirNFTSaleTransaction
     ```
+
 3. From the mapping handler, call the `trackNFTSaleTransactions` function when a NFT sales take place, the function is available at `modules/airstack/index.ts`
-    ```ts
-    export function trackNFTSaleTransactions(
-      txHash: string,
-      fromArray: Address[],
-      toArray: Address[],
-      contractAddressArray: Address[],
-      nftIdArray: BigInt[],
-      paymentTokenAddress: Address,
-      paymentAmount: BigInt,
-      timestamp: BigInt
-    ): void 
-    ```
+   ```ts
+   export function trackNFTSaleTransactions(
+     txHash: string,
+     fromArray: Address[],
+     toArray: Address[],
+     contractAddressArray: Address[],
+     nftIdArray: BigInt[],
+     paymentTokenAddress: Address,
+     paymentAmount: BigInt,
+     timestamp: BigInt
+   ): void;
+   ```
