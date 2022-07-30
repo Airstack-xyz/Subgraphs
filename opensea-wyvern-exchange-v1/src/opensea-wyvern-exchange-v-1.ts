@@ -1,4 +1,4 @@
-import { Address, Bytes, BigInt } from "@graphprotocol/graph-ts";
+import { Address, Bytes, BigInt, log } from "@graphprotocol/graph-ts";
 import {
   AtomicMatch_Call,
 } from "../generated/OpenseaWyvernExchangeV1/OpenseaWyvernExchangeV1"
@@ -97,10 +97,16 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     let decoded = abi.decodeSingleNftData(
       buyOrder.callData!, sellOrder.callData!, buyOrder.replacementPattern!
     );
+
+    if (decoded == null) {
+      return;
+    }
+
     fromArray.push(decoded.from);
     toArray.push(decoded.to);
     contractAddressArray.push(contractAddress);
     nftIdArray.push(decoded.token);
+
   }
 
 

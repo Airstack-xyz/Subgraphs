@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
+import { Address, BigInt, ByteArray, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
 
 export namespace abi {
 
@@ -176,7 +176,9 @@ export namespace abi {
 			if (functionSelector == "0x23b872dd") {
 				addressList.push(decodedAddresses[i]);
 				let decoded = abi.decodeAbi_transferFrom_Method(calldata)
-				transfersList.push(decoded)
+				if(decoded != null) {
+					transfersList.push(decoded)
+				}
 
 			}
 
@@ -194,7 +196,7 @@ export namespace abi {
 
 	export function decodeSingleNftData(
 		buyCallData: Bytes, sellCallData: Bytes, replacementPattern: Bytes
-	): Decoded_TransferFrom_Result {
+	): Decoded_TransferFrom_Result | null {
 		/**
 		 * 
 		 * transferFrom(address,address,uint256)
@@ -214,7 +216,7 @@ export namespace abi {
 
 	}
 
-	export function decodeAbi_transferFrom_Method(callData: Bytes): Decoded_TransferFrom_Result {
+	export function decodeAbi_transferFrom_Method(callData: Bytes): Decoded_TransferFrom_Result | null {
 		/**
 		 * callData as bytes doesn't have a trailing 0x but represents a hex string
 		 * first 4 Bytes cointains 8 hex chars for the function selector
@@ -230,7 +232,13 @@ export namespace abi {
 		 *   - ERC721_SAFE_TRANSFER_FROM_SELECTOR = "0x42842e0e"
 		 *   - ERC155_SAFE_TRANSFER_FROM_SELECTOR = "0xf242432a" (partial handling, it has 2 more params: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/IERC1155.sol#L99)
 		 */
+
 		let dataWithoutFunctionSelector = Bytes.fromUint8Array(callData.subarray(4))
+
+		if(dataWithoutFunctionSelector.equals(ByteArray.fromHexString("0x"))) {
+			return null;
+		}
+
 		let decoded = ethereum.decode(
 			"(address,address,uint256)", dataWithoutFunctionSelector
 		)!.toTuple()

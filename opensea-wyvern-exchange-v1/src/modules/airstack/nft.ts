@@ -20,6 +20,10 @@ export namespace nft {
 
     ): void {
 
+          if(fromArray.length == 0) {
+            return;
+          }
+
         // Payment Token
         let paymentToken = getOrCreateAirToken(paymentTokenAddress.toHexString());
         paymentToken.save();
