@@ -27,7 +27,7 @@ dataSources:
           file: ./abis/ERC721.json
         - name: ERC20
           file: ./abis/ERC20.json
-                # Curve Contracts
+          # Curve Contracts
         - name: CurveRegistry
           file: ./abis/Prices/Curve/Registry.json
         - name: CurvePoolRegistry
