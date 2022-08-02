@@ -215,14 +215,14 @@ export namespace dex {
 
     const aggregatedAccountId = getDailyAggregatedAccountId(
       aggregateEntity.id,
-      outputTokenTransfer.from
+      outputTokenTransfer.to
     );
     const isAccountAlreadyAdded = isAirDailyAggregateEntityAccountAvailable(
       aggregatedAccountId
     );
     const aggregatedAccount = getOrCreateAirDailyAggregateEntityAccount(
       aggregatedAccountId,
-      outputTokenTransfer.from
+      outputTokenTransfer.to
     );
     aggregatedAccount.dailyAggregatedEntity = aggregateEntity.id;
     if (!isAccountAlreadyAdded) {
@@ -761,10 +761,10 @@ export namespace dex {
     );
     fromAggregatedAccount.dailyAggregatedEntity = aggregateEntity.id;
     if (!isFromAccountAlreadyAdded) {
-      aggregateEntity.walletCount = aggregateEntity.walletCount.plus(
-        BIGINT.ONE
-      );
-      fromAggregatedAccount.index = aggregateEntity.walletCount;
+      const currentCount = aggregateEntity.walletCount.plus(BIGINT.ONE);
+      aggregateEntity.walletCount = currentCount;
+      fromAggregatedAccount.index = currentCount;
+      fromAggregatedAccount.save();
     }
 
     const toAggregatedAccountId = getDailyAggregatedAccountId(
@@ -780,10 +780,10 @@ export namespace dex {
     );
     toAggregatedAccount.dailyAggregatedEntity = aggregateEntity.id;
     if (!isToAccountAlreadyAdded) {
-      aggregateEntity.walletCount = aggregateEntity.walletCount.plus(
-        BIGINT.ONE
-      );
-      toAggregatedAccount.index = aggregateEntity.walletCount;
+      const currentCount = aggregateEntity.walletCount.plus(BIGINT.ONE);
+      aggregateEntity.walletCount = currentCount;
+      toAggregatedAccount.index = currentCount;
+      toAggregatedAccount.save();
     }
 
     const aggStatsId = getAirDailyAggregateEntityStatsId(aggregateEntity.id);

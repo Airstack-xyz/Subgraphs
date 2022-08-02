@@ -75,7 +75,7 @@ export function getOrCreateAirDailyAggregateEntityStats(
 
 export function isAirDailyAggregateEntityAccountAvailable(id: string): boolean {
   let entity = AirDailyAggregateEntityAccount.load(id);
-  return entity !== null;
+  return !(entity == null);
 }
 
 export function getOrCreateAirDailyAggregateEntityAccount(
@@ -95,7 +95,10 @@ export function getOrCreateAirDailyAggregateEntityAccount(
 }
 
 export function getAirTokenId(address: string): string {
-  return dataSource.network().concat("-").concat(address);
+  return dataSource
+    .network()
+    .concat("-")
+    .concat(address);
 }
 
 function supportsInterface(

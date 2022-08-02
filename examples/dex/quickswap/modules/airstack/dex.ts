@@ -215,13 +215,14 @@ export namespace dex {
 
     const aggregatedAccountId = getDailyAggregatedAccountId(
       aggregateEntity.id,
-      outputTokenTransfer.from
+      outputTokenTransfer.to
     );
-    const isAccountAlreadyAdded =
-      isAirDailyAggregateEntityAccountAvailable(aggregatedAccountId);
+    const isAccountAlreadyAdded = isAirDailyAggregateEntityAccountAvailable(
+      aggregatedAccountId
+    );
     const aggregatedAccount = getOrCreateAirDailyAggregateEntityAccount(
       aggregatedAccountId,
-      outputTokenTransfer.from
+      outputTokenTransfer.to
     );
     aggregatedAccount.dailyAggregatedEntity = aggregateEntity.id;
     if (!isAccountAlreadyAdded) {
@@ -263,8 +264,9 @@ export namespace dex {
       );
     }
 
-    aggregateEntity.volumeInUSD =
-      aggregateEntity.volumeInUSD.plus(totalUSDPrice);
+    aggregateEntity.volumeInUSD = aggregateEntity.volumeInUSD.plus(
+      totalUSDPrice
+    );
 
     statsEntity.save();
     aggregatedAccount.save();
@@ -610,8 +612,9 @@ export namespace dex {
     currentEntityId: string,
     prevEntityId: string
   ): void {
-    const currentEntity =
-      getOrCreateAirLiquidityPoolInputTokenStats(currentEntityId);
+    const currentEntity = getOrCreateAirLiquidityPoolInputTokenStats(
+      currentEntityId
+    );
     const prevEntity = getOrCreateAirLiquidityPoolInputTokenStats(prevEntityId);
     const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(
       currentEntity.id
@@ -641,10 +644,12 @@ export namespace dex {
     currentEntityId: string,
     prevEntityId: string
   ): void {
-    const currentEntity =
-      getOrCreateAirLiquidityPoolOutputTokenStats(currentEntityId);
-    const prevEntity =
-      getOrCreateAirLiquidityPoolOutputTokenStats(prevEntityId);
+    const currentEntity = getOrCreateAirLiquidityPoolOutputTokenStats(
+      currentEntityId
+    );
+    const prevEntity = getOrCreateAirLiquidityPoolOutputTokenStats(
+      prevEntityId
+    );
     const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(
       currentEntity.id
     );
@@ -756,10 +761,10 @@ export namespace dex {
     );
     fromAggregatedAccount.dailyAggregatedEntity = aggregateEntity.id;
     if (!isFromAccountAlreadyAdded) {
-      aggregateEntity.walletCount = aggregateEntity.walletCount.plus(
-        BIGINT.ONE
-      );
-      fromAggregatedAccount.index = aggregateEntity.walletCount;
+      const currentCount = aggregateEntity.walletCount.plus(BIGINT.ONE);
+      aggregateEntity.walletCount = currentCount;
+      fromAggregatedAccount.index = currentCount;
+      fromAggregatedAccount.save();
     }
 
     const toAggregatedAccountId = getDailyAggregatedAccountId(
@@ -775,10 +780,10 @@ export namespace dex {
     );
     toAggregatedAccount.dailyAggregatedEntity = aggregateEntity.id;
     if (!isToAccountAlreadyAdded) {
-      aggregateEntity.walletCount = aggregateEntity.walletCount.plus(
-        BIGINT.ONE
-      );
-      toAggregatedAccount.index = aggregateEntity.walletCount;
+      const currentCount = aggregateEntity.walletCount.plus(BIGINT.ONE);
+      aggregateEntity.walletCount = currentCount;
+      toAggregatedAccount.index = currentCount;
+      toAggregatedAccount.save();
     }
 
     const aggStatsId = getAirDailyAggregateEntityStatsId(aggregateEntity.id);
@@ -822,8 +827,9 @@ export namespace dex {
       aggregateEntity.daySinceEpoch
     );
 
-    aggregateEntity.volumeInUSD =
-      aggregateEntity.volumeInUSD.plus(totalUSDPrice);
+    aggregateEntity.volumeInUSD = aggregateEntity.volumeInUSD.plus(
+      totalUSDPrice
+    );
 
     dexStatsEntity.save();
     fromAggregatedAccount.save();
