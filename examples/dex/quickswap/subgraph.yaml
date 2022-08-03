@@ -36,6 +36,7 @@ dataSources:
         - AirDEXSwapTransaction
         - AirNFTSaleTransaction
         - AirNFTSaleStats
+        - AirMeta
       abis:
         - name: Factory
           file: ./abis/quickswap/Factory.json
@@ -79,6 +80,7 @@ templates:
         - AirDEXSwapTransaction
         - AirNFTSaleStats
         - AirNFTSaleTransaction
+        - AirMeta
       abis:
         - name: Pair
           file: ./abis/quickswap/Pair.json

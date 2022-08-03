@@ -17,6 +17,7 @@ import {
   AirDailyAggregateEntityAccount,
   AirDailyAggregateEntityStats,
   AirEntityDailyChangeStats,
+  AirMeta,
   AirToken,
 } from "../../generated/schema";
 import { ERC721MetaData } from "../../generated/templates/Pair/ERC721MetaData";
@@ -280,4 +281,21 @@ export function updateAirDailyAggregateEntityDailyChangePercentage(
   );
 
   dailyChangeStats.save();
+}
+
+export function updateAirMeta(event: ethereum.Event): void {
+  const entityId = "AirMeta";
+  let airMeta = AirMeta.load(entityId);
+  if (airMeta == null) {
+    airMeta = new AirMeta(entityId);
+  }
+
+  airMeta.blockNumber = event.block.number;
+
+  const daySinceEpoch = BigInt.fromString(
+    getDaysSinceEpoch(event.block.timestamp.toI32())
+  );
+  airMeta.daySinceEpoch = daySinceEpoch;
+
+  airMeta.save();
 }

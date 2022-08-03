@@ -406,3 +406,9 @@ type AirNFTSaleTransaction @entity {
   fees: BigInt
   tokenMetadata: AirTokenMetadata
 }
+
+type AirMeta @entity{
+  id: ID!
+  daySinceEpoch: BigInt!
+  blockNumber: BigInt!
+}

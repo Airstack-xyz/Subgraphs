@@ -8,6 +8,7 @@ import {
   Sync,
 } from "../../generated/templates/Pair/Pair";
 import { dex } from "../../modules/airstack";
+import { updateAirMeta } from "../../modules/airstack/common";
 
 // Handle a mint event emitted from a pool contract. Considered a deposit into the given liquidity pool.
 export function handleMint(event: Mint): void {
@@ -19,6 +20,7 @@ export function handleMint(event: Mint): void {
     event.block.hash.toHexString(),
     event.block.timestamp
   );
+  updateAirMeta(event);
 }
 
 // Handle a burn event emitted from a pool contract. Considered a withdraw into the given liquidity pool.
@@ -53,4 +55,5 @@ export function handleSwap(event: Swap): void {
     event.block.hash.toHexString(),
     event.block.timestamp
   );
+  updateAirMeta(event);
 }

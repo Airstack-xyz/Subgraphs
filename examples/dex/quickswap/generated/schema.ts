@@ -2583,3 +2583,56 @@ export class AirNFTSaleTransaction extends Entity {
     }
   }
 }
+
+export class AirMeta extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("daySinceEpoch", Value.fromBigInt(BigInt.zero()));
+    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save AirMeta entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type AirMeta must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("AirMeta", id.toString(), this);
+    }
+  }
+
+  static load(id: string): AirMeta | null {
+    return changetype<AirMeta | null>(store.get("AirMeta", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get daySinceEpoch(): BigInt {
+    let value = this.get("daySinceEpoch");
+    return value!.toBigInt();
+  }
+
+  set daySinceEpoch(value: BigInt) {
+    this.set("daySinceEpoch", Value.fromBigInt(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value!.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+}
