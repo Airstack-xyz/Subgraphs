@@ -107,4 +107,5 @@ dist
 .tern-port
 
 /generated
+/generated/
 /build
