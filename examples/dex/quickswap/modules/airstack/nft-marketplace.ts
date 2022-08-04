@@ -53,7 +53,8 @@ export namespace nft {
         contractAddressArray[i].toHexString(),
         AirProtocolType.NFT_MARKET_PLACE,
         AirProtocolActionType.SELL,
-        timestamp
+        timestamp,
+        ""
       );
       const sellActionDailyAggregatedEntityId =
         sellActionDailyAggregatedEntity.id;
@@ -71,7 +72,8 @@ export namespace nft {
         contractAddressArray[i].toHexString(),
         AirProtocolType.NFT_MARKET_PLACE,
         AirProtocolActionType.BUY,
-        timestamp
+        timestamp,
+        ""
       );
       const buyActionDailyAggregatedEntityId =
         buyActionDailyAggregatedEntity.id;

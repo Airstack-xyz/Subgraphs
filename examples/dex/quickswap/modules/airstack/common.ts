@@ -30,6 +30,7 @@ export function getDailyAggregatedEntityId(
   protocolType: string,
   protocolActionType: string,
   timestamp: BigInt,
+  appendId: string,
   daySinceEpoch: BigInt | null = null
 ): string {
   let entityId = dataSource
@@ -40,7 +41,8 @@ export function getDailyAggregatedEntityId(
     .concat(protocolType)
     .concat("-")
     .concat(protocolActionType)
-    .concat("-");
+    .concat("-")
+    .concat(appendId);
 
   if (daySinceEpoch !== null) {
     entityId = entityId.concat(daySinceEpoch.toString());
@@ -196,6 +198,7 @@ export function getOrCreateAirDailyAggregateEntity(
   protocolType: string,
   protocolActionType: string,
   timestamp: BigInt,
+  appendId: string,
   daySinceEpoch: BigInt | null = null
 ): AirDailyAggregateEntity {
   const id = getDailyAggregatedEntityId(
@@ -203,6 +206,7 @@ export function getOrCreateAirDailyAggregateEntity(
     protocolType,
     protocolActionType,
     timestamp,
+    appendId,
     daySinceEpoch
   );
 

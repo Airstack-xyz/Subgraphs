@@ -206,7 +206,8 @@ export namespace dex {
       dexPool.poolAddress,
       AirProtocolType.EXCHANGE,
       AirProtocolActionType.ADD_LIQUIDITY,
-      timestamp
+      timestamp,
+      ""
     );
 
     let totalTokensAdded = BIGINT.ZERO;
@@ -304,6 +305,7 @@ export namespace dex {
       AirProtocolType.EXCHANGE,
       AirProtocolActionType.ADD_LIQUIDITY,
       timestamp,
+      "",
       aggregateEntity.daySinceEpoch.minus(BIGINT.ONE)
     );
 
@@ -765,7 +767,8 @@ export namespace dex {
       poolAddress,
       AirProtocolType.EXCHANGE,
       AirProtocolActionType.SWAP,
-      timestamp
+      timestamp,
+      inputTokenAddress
     );
     aggregateEntity.tokenCount = aggregateEntity.tokenCount.plus(BIGINT.ONE);
     aggregateEntity.transactionCount = aggregateEntity.transactionCount.plus(
@@ -877,6 +880,7 @@ export namespace dex {
       AirProtocolType.EXCHANGE,
       AirProtocolActionType.SWAP,
       timestamp,
+      inputTokenAddress,
       aggregateEntity.daySinceEpoch.minus(BIGINT.ONE)
     );
 
