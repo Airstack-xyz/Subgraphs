@@ -773,6 +773,8 @@ export namespace dex {
       BIGINT.ONE
     );
 
+    let walletCount = BIGINT.ZERO;
+
     const fromAggregatedAccountId = getDailyAggregatedAccountId(
       aggregateEntity.id,
       from
@@ -786,6 +788,7 @@ export namespace dex {
     );
     fromAggregatedAccount.dailyAggregatedEntity = aggregateEntity.id;
     if (!isFromAccountAlreadyAdded) {
+      walletCount = walletCount.plus(BIGINT.ONE);
       const currentCount = aggregateEntity.walletCount.plus(BIGINT.ONE);
       aggregateEntity.walletCount = currentCount;
       fromAggregatedAccount.index = currentCount;
@@ -805,6 +808,7 @@ export namespace dex {
     );
     toAggregatedAccount.dailyAggregatedEntity = aggregateEntity.id;
     if (!isToAccountAlreadyAdded) {
+      walletCount = walletCount.plus(BIGINT.ONE);
       const currentCount = aggregateEntity.walletCount.plus(BIGINT.ONE);
       aggregateEntity.walletCount = currentCount;
       toAggregatedAccount.index = currentCount;
@@ -838,7 +842,7 @@ export namespace dex {
       inputAmounts[inputTokenIndex],
       inputPriceInUsd,
       aggregateEntity.daySinceEpoch,
-      !isFromAccountAlreadyAdded
+      walletCount
     );
 
     const outputPriceInUsd = usdPrice(
@@ -853,7 +857,7 @@ export namespace dex {
       outputAmounts[outputTokenIndex],
       outputPriceInUsd,
       aggregateEntity.daySinceEpoch,
-      !isToAccountAlreadyAdded
+      walletCount
     );
 
     aggregateEntity.volumeInUSD = aggregateEntity.volumeInUSD.plus(
@@ -913,7 +917,7 @@ export namespace dex {
     tokenAmount: BigInt,
     usdVolume: BigDecimal,
     daySinceEpoch: BigInt,
-    shouldAddWalletCount: bool
+    walletCount: BigInt
   ): void {
     const entityId = getAirTokenStatsId(
       dexPoolId,
@@ -928,9 +932,8 @@ export namespace dex {
     const inputToken = getOrCreateAirToken(inputTokenAddress);
     tokenStats.token = inputToken.id;
     tokenStats.tokenCount = tokenStats.tokenCount.plus(tokenAmount);
-    if (shouldAddWalletCount) {
-      tokenStats.walletCount = tokenStats.walletCount.plus(BIGINT.ONE);
-    }
+    tokenStats.walletCount = tokenStats.walletCount.plus(walletCount);
+
     tokenStats.transactionCount = tokenStats.transactionCount.plus(BIGINT.ONE);
     tokenStats.volumeInUSD = tokenStats.volumeInUSD.plus(usdVolume);
 
@@ -961,7 +964,7 @@ export namespace dex {
     tokenAmount: BigInt,
     usdVolume: BigDecimal,
     daySinceEpoch: BigInt,
-    shouldAddWalletCount: bool
+    walletCount: BigInt
   ): void {
     const entityId = getAirTokenStatsId(
       dexPoolId,
@@ -976,9 +979,8 @@ export namespace dex {
     const outputToken = getOrCreateAirToken(outputTokenAddress);
     tokenStats.token = outputToken.id;
     tokenStats.tokenCount = tokenStats.tokenCount.plus(tokenAmount);
-    if (shouldAddWalletCount) {
-      tokenStats.walletCount = tokenStats.walletCount.plus(BIGINT.ONE);
-    }
+    tokenStats.walletCount = tokenStats.walletCount.plus(walletCount);
+
     tokenStats.transactionCount = tokenStats.transactionCount.plus(BIGINT.ONE);
     tokenStats.volumeInUSD = tokenStats.volumeInUSD.plus(usdVolume);
     tokenStats.save();
