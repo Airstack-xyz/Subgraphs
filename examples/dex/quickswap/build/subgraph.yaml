@@ -1,5 +1,4 @@
 specVersion: 0.0.4
-repository: https://github.com/messari/subgraphs
 schema:
   file: schema.graphql
 description: ...
@@ -10,7 +9,7 @@ dataSources:
     source:
       address: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
       abi: Factory
-      startBlock: 14651000
+      startBlock: 14738500
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

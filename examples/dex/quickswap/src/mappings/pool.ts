@@ -9,6 +9,7 @@ import {
 } from "../../generated/templates/Pair/Pair";
 import { dex } from "../../modules/airstack";
 import { updateAirMeta } from "../../modules/airstack/common";
+import { BIGINT_ZERO } from "../../modules/prices/common/constants";
 
 // Handle a mint event emitted from a pool contract. Considered a deposit into the given liquidity pool.
 export function handleMint(event: Mint): void {
@@ -17,7 +18,8 @@ export function handleMint(event: Mint): void {
     [event.params.amount0, event.params.amount1],
     event.params.sender.toHexString(),
     event.address.toHexString(),
-    event.block.hash.toHexString(),
+    event.transaction.hash.toHexString(),
+    event.logIndex,
     event.block.timestamp
   );
   updateAirMeta(event);
@@ -46,13 +48,20 @@ export function handleSwap(event: Swap): void {
   // updatePoolMetrics(event);
   // updateUsageMetrics(event, event.transaction.from, UsageType.SWAP);
 
+  const inputTokenIndex = event.params.amount0Out == BIGINT_ZERO ? 0 : 1;
+  const outputTokenIndex = event.params.amount0Out == BIGINT_ZERO ? 1 : 0;
+  //, outputTokenIndex, inputTokenAmount, outputTokenAmount;
+
   dex.swap(
     event.address.toHexString(),
     [event.params.amount0In, event.params.amount1In],
     [event.params.amount0Out, event.params.amount1Out],
+    inputTokenIndex,
+    outputTokenIndex,
     event.params.sender.toHexString(),
     event.params.to.toHexString(),
-    event.block.hash.toHexString(),
+    event.transaction.hash.toHexString(),
+    event.logIndex,
     event.block.timestamp
   );
   updateAirMeta(event);
