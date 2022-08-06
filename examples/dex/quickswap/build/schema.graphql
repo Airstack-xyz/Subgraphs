@@ -216,6 +216,7 @@ type AirDEXPool @entity {
   id: ID!
   poolAddress: String!
   inputToken: [AirToken!]!
+  tokenBalances:[BigInt!]!
   weightage: [BigDecimal!]!
   outputToken: AirToken!
   fee: BigInt!

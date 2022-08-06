@@ -33,6 +33,13 @@ export function handleBurn(event: Burn): void {
   // updatePoolMetrics(event);
 }
 
+export function handleSync(event: Sync): void {
+  dex.syncPoolReserve(event.address.toHexString(), [
+    event.params.reserve0,
+    event.params.reserve1,
+  ]);
+}
+
 // Handle a swap event emitted from a pool contract.
 export function handleSwap(event: Swap): void {
   // createSwapHandleVolumeAndFees(

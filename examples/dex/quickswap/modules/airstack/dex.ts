@@ -75,6 +75,7 @@ export namespace dex {
 
     const lpTokenNameArray: Array<string> = [];
     const inputTokenIds: Array<string> = [];
+    const inputBalances: Array<BigInt> = [];
     for (let index = 0; index < inputTokens.length; index++) {
       const inputTokenAddress = inputTokens[index];
       const token = getOrCreateAirToken(inputTokenAddress);
@@ -83,6 +84,7 @@ export namespace dex {
       if (token.name) {
         lpTokenNameArray.push(token.name!);
       }
+      inputBalances.push(BIGINT.ZERO);
     }
 
     let lpTokenAddress = poolAddress;
@@ -98,6 +100,7 @@ export namespace dex {
 
     dexPool.inputToken = inputTokenIds;
     dexPool.outputToken = lpToken.id;
+    dexPool.tokenBalances = inputBalances;
     dexPool.fee = fee;
 
     let weightage: Array<BigDecimal> = [];
@@ -1172,4 +1175,13 @@ export namespace dex {
 
   //   dailyChangeStats.save();
   // }
+
+  export function syncPoolReserve(
+    poolAddress: string,
+    inputBalances: Array<BigInt>
+  ): void {
+    const pool = getOrCreateAirDexPool(poolAddress);
+    pool.tokenBalances = inputBalances;
+    pool.save();
+  }
 }

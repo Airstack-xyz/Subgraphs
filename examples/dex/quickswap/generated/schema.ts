@@ -838,6 +838,7 @@ export class AirDEXPool extends Entity {
 
     this.set("poolAddress", Value.fromString(""));
     this.set("inputToken", Value.fromStringArray(new Array(0)));
+    this.set("tokenBalances", Value.fromBigIntArray(new Array(0)));
     this.set("weightage", Value.fromBigDecimalArray(new Array(0)));
     this.set("outputToken", Value.fromString(""));
     this.set("fee", Value.fromBigInt(BigInt.zero()));
@@ -884,6 +885,15 @@ export class AirDEXPool extends Entity {
 
   set inputToken(value: Array<string>) {
     this.set("inputToken", Value.fromStringArray(value));
+  }
+
+  get tokenBalances(): Array<BigInt> {
+    let value = this.get("tokenBalances");
+    return value!.toBigIntArray();
+  }
+
+  set tokenBalances(value: Array<BigInt>) {
+    this.set("tokenBalances", Value.fromBigIntArray(value));
   }
 
   get weightage(): Array<BigDecimal> {
