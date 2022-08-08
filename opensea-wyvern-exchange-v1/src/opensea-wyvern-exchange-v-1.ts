@@ -86,6 +86,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
   let contractAddress = call.inputs.addrs[11];
 
   if (isBundleSale) {
+    log.info('bundle sale',[]);
     let decoded = abi.decodeBatchNftData(
       buyOrder.callData!, sellOrder.callData!, buyOrder.replacementPattern!
     );
@@ -99,13 +100,17 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     }
 
   } else {
+    log.info('not bundle sale',[]);
     let decoded = abi.decodeSingleNftData(
+      call.transaction.hash.toHexString(),
       buyOrder.callData!, sellOrder.callData!, buyOrder.replacementPattern!
     );
 
     if (decoded == null) {
       return;
     }
+
+    contractAddress = decoded.contract != Address.zero() ? decoded.contract : contractAddress; 
 
     fromArray.push(decoded.from);
     toArray.push(decoded.to);

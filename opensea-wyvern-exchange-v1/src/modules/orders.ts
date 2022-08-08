@@ -107,7 +107,7 @@ export namespace orders {
 
 	export namespace constants {
 
-		export const WYVERN_ATOMICIZER_ADDRESS = "0xc99f70bfd82fb7c8f8191fdfbfb735606b15e5c5"
+		export const WYVERN_ATOMICIZER_ADDRESS = "0xc99f70bfd82fb7c8f8191fdfbfb735606b15e5c5" 
 
 		export function getFeeTypes(): TypedMap<string, string> {
 			let PROTOCOL = "0"

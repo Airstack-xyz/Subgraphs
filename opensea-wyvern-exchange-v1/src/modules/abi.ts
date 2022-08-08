@@ -24,16 +24,19 @@ export namespace abi {
 		from: Address
 		to: Address
 		token: BigInt
+		contract: Address
 		constructor(
 			_method: string,
 			_from: Address,
 			_to: Address,
 			_token: BigInt,
+			_contract: Address
 		) {
 			this.method = _method
 			this.from = _from
 			this.to = _to
 			this.token = _token
+			this.contract = _contract
 		}
 
 		public toStringArray(): string[] {
@@ -56,6 +59,23 @@ export namespace abi {
 		log.info("@@checkFunctionSelector\n selector ( {} ) \n", [functionSelector])
 
 		return functionSelector == "0x23b872dd" || functionSelector == "0x23b872dd" || functionSelector == "0x42842e0e" || functionSelector == "0xf242432a"
+	}
+   /*
+
+// `matchERC1155UsingCriteria(
+//    address from,
+//    address to,
+//    address token,
+//    uint256 tokenId,
+//    uint256 amount,
+//    bytes32 root,
+//    bytes32[] calldata proof
+//  )`
+
+   */
+	export function checkMatchERC1155UsingCriteria(functionSelector: string): boolean {
+		log.info("@@functionCheckMatchERC1155UsingCriteria\n selector ( {} ) \n", [functionSelector])
+		return functionSelector == "0x96809f90" || functionSelector == "0x0096809f";
 	}
 
 	export function checkCallDataFunctionSelector(callData: Bytes): boolean {
@@ -207,6 +227,7 @@ export namespace abi {
 	}
 
 	export function decodeSingleNftData(
+		txHash: string,
 		buyCallData: Bytes, sellCallData: Bytes, replacementPattern: Bytes
 	): Decoded_TransferFrom_Result | null {
 		/**
@@ -224,20 +245,21 @@ export namespace abi {
 		 */
 
 		// todo Debug this call
-		log.info("Before guarded Array replacement, {} {} {}", [buyCallData.toHexString(), sellCallData.toHexString(), replacementPattern.toHexString()])
+		log.info("Before guarded Array replacement, txhash {} {} {} {}", [txHash, buyCallData.toHexString(), sellCallData.toHexString(), replacementPattern.toHexString()])
 		let mergedCallData = guardedArrayReplace(buyCallData, sellCallData, replacementPattern)
-		log.info("merged calldata {} ", [mergedCallData.toHexString()]);
-		return decodeAbi_transferFrom_Method(mergedCallData)
+		return decodeAbi_transferFrom_Method(mergedCallData, txHash)
 
 	}
 
-	export function decodeAbi_transferFrom_Method(callData: Bytes): Decoded_TransferFrom_Result | null {
+	export function decodeAbi_transferFrom_Method(callData: Bytes, txHash: string = "dummy"): Decoded_TransferFrom_Result | null {
 		/**
 		 * callData as bytes doesn't have a trailing 0x but represents a hex string
 		 * first 4 Bytes cointains 8 hex chars for the function selector
 		 * 0.5 Bytes == 4 bits == 1 hex char
 		 */
 
+		
+		 let functionSelector = changetype<Bytes>(callData.subarray(0, 4)).toHexString()
 
 		let dataWithoutFunctionSelector = Bytes.fromUint8Array(callData.subarray(4))
 
@@ -246,21 +268,65 @@ export namespace abi {
 			return null;
 		}
 
-		let decoded = ethereum.decode(
-			"(address,address,uint256)", dataWithoutFunctionSelector
-		)!.toTuple()
+		if(checkFunctionSelector(functionSelector)) {
+			let decoded = ethereum.decode(
+				"(address,address,uint256)", dataWithoutFunctionSelector
+			)!.toTuple()
+	
+			let functionSelector = Bytes.fromUint8Array(callData.subarray(0, 4)).toHex().slice(2)
+			let senderAddress = decoded[0].toAddress()
+			let recieverAddress = decoded[1].toAddress()
+			let tokenId = decoded[2].toBigInt()
+			log.info("decoded data txHash {} {} {} {}", [txHash ,senderAddress.toHexString(), recieverAddress.toHexString(), tokenId.toString()]);
+			return new Decoded_TransferFrom_Result(
+				functionSelector,
+				senderAddress,
+				recieverAddress,
+				tokenId,
+				Address.zero()
+			)
+		} else if(checkMatchERC1155UsingCriteria(functionSelector)) {
 
-		let functionSelector = Bytes.fromUint8Array(callData.subarray(0, 4)).toHex().slice(2)
-		let senderAddress = decoded[0].toAddress()
-		let recieverAddress = decoded[1].toAddress()
-		let tokenId = decoded[2].toBigInt()
+			/*
+//    address from,
+//    address to,
+//    address token,
+//    uint256 tokenId,
+//    uint256 amount,
+//    bytes32 root,
+//    bytes32[] calldata proof
 
-		return new Decoded_TransferFrom_Result(
-			functionSelector,
-			senderAddress,
-			recieverAddress,
-			tokenId
-		)
+			*/
+
+			let dataWithoutFunctionSelector = Bytes.fromUint8Array(callData.subarray(5))
+
+			log.info("in special case data {} {}", [txHash, dataWithoutFunctionSelector.toHexString()]);
+			log.info("decodng...",[])
+			let decoded = ethereum.decode(
+				"(address,address,address,uint256)", dataWithoutFunctionSelector
+			)!.toTuple()
+
+			
+			let functionSelector = Bytes.fromUint8Array(callData.subarray(0, 4)).toHex().slice(2)
+			let senderAddress = decoded[0].toAddress()
+			let recieverAddress = decoded[1].toAddress()
+			let contract = decoded[2].toAddress();
+			let tokenId = decoded[3].toBigInt();
+        
+			log.info("new decoded data txHash {} {} {} {} {}", [txHash ,senderAddress.toHexString(), recieverAddress.toHexString(), tokenId.toString(), contract.toHexString()]);
+			return new Decoded_TransferFrom_Result(
+				functionSelector,
+				senderAddress,
+				recieverAddress,
+				tokenId,
+				contract
+			)
+
+		} else {
+			log.warning(`We dont understanding decoding {} `,[txHash]);
+			return null;
+		}
+	
 	}
 
 	export function guardedArrayReplace(_array: Bytes, _replacement: Bytes, _mask: Bytes): Bytes {

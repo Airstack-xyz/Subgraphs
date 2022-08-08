@@ -66,7 +66,7 @@ dataSources:
     source:
       address: "0x7f268357A8c2552623316e2562D90e642bB538E5"  #v1 0x7be8076f4ea4a4ad08075c2508e481d6c946d12b             # v2 0x7f268357A8c2552623316e2562D90e642bB538E5
       abi: OpenseaWyvernExchangeV1
-      startBlock: 14120913   # V1 5774644   V2  14120913
+      startBlock: 14120913     # V1 5774644   V2  14120913
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
