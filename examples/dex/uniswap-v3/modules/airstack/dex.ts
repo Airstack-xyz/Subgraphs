@@ -126,6 +126,14 @@ export namespace dex {
     logIndex: BigInt,
     timestamp: BigInt
   ): void {
+    // log.info("addLiquidity: {}, {}, {}, {}, {}, {}", [
+    //   poolAddress,
+    //   from,
+    //   to,
+    //   hash,
+    //   logIndex.toString(),
+    //   timestamp.toString(),
+    // ]);
     const dexPool = getOrCreateAirDexPool(poolAddress);
     const inputTokenTransfers: Array<AirTokenTransfer> = [];
     if (dexPool.inputToken.length > 0) {
@@ -280,7 +288,7 @@ export namespace dex {
         iTokenTransfer.amount,
         priceInUsd,
         aggregateEntity.daySinceEpoch,
-        isAccountAlreadyAdded
+        !isAccountAlreadyAdded
       );
     }
 
