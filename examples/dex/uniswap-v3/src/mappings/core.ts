@@ -47,7 +47,7 @@ export function handleMint(event: MintEvent): void {
   dex.addLiquidity(
     event.address.toHexString(),
     [event.params.amount0, event.params.amount1],
-    event.params.sender.toHexString(),
+    event.transaction.from.toHexString(),
     event.address.toHexString(),
     event.transaction.hash.toHexString(),
     event.logIndex,
@@ -87,26 +87,9 @@ export function handleSwap(event: SwapEvent): void {
   // updatePoolMetrics(event);
   // updateUsageMetrics(event, event.transaction.from, UsageType.SWAP);
 
-  log.info(
-    "----> SwapEvent amount0: {}, amount1:{}, recipient:{}, sender:{}, sqrtPriceX96: {}",
-    [
-      event.params.amount0.toString(),
-      event.params.amount1.toString(),
-      event.params.recipient.toHexString(),
-      event.params.sender.toHexString(),
-      event.params.sqrtPriceX96.toString(),
-    ]
-  );
-
   const inputTokenIndex = event.params.amount0 > BIGINT_ZERO ? 0 : 1;
   const outputTokenIndex = event.params.amount0 > BIGINT_ZERO ? 1 : 0;
   //, outputTokenIndex, inputTokenAmount, outputTokenAmount;
-
-  log.info("----> inputTokenIndex: {}, outputTokenIndex:{} hash: {}", [
-    inputTokenIndex.toString(),
-    outputTokenIndex.toString(),
-    event.transaction.hash.toHexString(),
-  ]);
 
   const inAmount0 =
     event.params.amount0 < BIGINT_ZERO
