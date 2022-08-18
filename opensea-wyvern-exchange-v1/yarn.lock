@@ -237,7 +237,7 @@
     "which" "2.0.2"
     "yaml" "1.9.2"
 
-"@graphprotocol/graph-ts@>=0.12.0", "@graphprotocol/graph-ts@>=0.20.0", "@graphprotocol/graph-ts@0.27.0":
+"@graphprotocol/graph-ts@^0.27.0", "@graphprotocol/graph-ts@>=0.12.0", "@graphprotocol/graph-ts@>=0.20.0", "@graphprotocol/graph-ts@0.27.0":
   "integrity" "sha512-r1SPDIZVQiGMxcY8rhFSM0y7d/xAbQf5vHMWUf59js1KgoyWpM6P3tczZqmQd7JTmeyNsDGIPzd9FeaxllsU4w=="
   "resolved" "https://registry.npmjs.org/@graphprotocol/graph-ts/-/graph-ts-0.27.0.tgz"
   "version" "0.27.0"
@@ -448,6 +448,15 @@
   dependencies:
     "safer-buffer" "~2.1.0"
 
+"assemblyscript@^0.19.20":
+  "integrity" "sha512-fwOQNZVTMga5KRsfY80g7cpOl4PsFQczMwHzdtgoqLXaYhkhavufKb0sB0l3T1DUxpAufA0KNhlbpuuhZUwxMA=="
+  "resolved" "https://registry.npmjs.org/assemblyscript/-/assemblyscript-0.19.23.tgz"
+  "version" "0.19.23"
+  dependencies:
+    "binaryen" "102.0.0-nightly.20211028"
+    "long" "^5.2.0"
+    "source-map-support" "^0.5.20"
+
 "assemblyscript@0.19.10":
   "integrity" "sha512-HavcUBXB3mBTRGJcpvaQjmnmaqKHBGREjSPNsIvnAk2f9dj78y4BkMaSSdvBQYWcDDzsHQjyUC8stICFkD1Odg=="
   "resolved" "https://registry.npmjs.org/assemblyscript/-/assemblyscript-0.19.10.tgz"
@@ -542,6 +551,11 @@
   "integrity" "sha512-eioJNqhHlkguVSbblHOtLqlhtC882SOEPKmNFZaDuz1hzQjolxZ+eu3/kaS10n3sGPONsIZsO7R9fR00UyhEUA=="
   "resolved" "https://registry.npmjs.org/binaryen/-/binaryen-101.0.0-nightly.20210723.tgz"
   "version" "101.0.0-nightly.20210723"
+
+"binaryen@102.0.0-nightly.20211028":
+  "integrity" "sha512-GCJBVB5exbxzzvyt8MGDv/MeUjs6gkXDvf4xOIItRBptYl0Tz5sm1o/uG95YK0L0VeG5ajDu3hRtkBP2kzqC5w=="
+  "resolved" "https://registry.npmjs.org/binaryen/-/binaryen-102.0.0-nightly.20211028.tgz"
+  "version" "102.0.0-nightly.20211028"
 
 "bindings@^1.5.0":
   "integrity" "sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ=="
@@ -2136,6 +2150,11 @@
   "resolved" "https://registry.npmjs.org/long/-/long-4.0.0.tgz"
   "version" "4.0.0"
 
+"long@^5.2.0":
+  "integrity" "sha512-9RTUNjK60eJbx3uz+TEGF7fUr29ZDxR5QzXcyDpeSfeH28S9ycINflOgOlppit5U+4kNTe83KQnMEerw7GmE8w=="
+  "resolved" "https://registry.npmjs.org/long/-/long-5.2.0.tgz"
+  "version" "5.2.0"
+
 "looper@^3.0.0":
   "integrity" "sha512-LJ9wplN/uSn72oJRsXTx+snxPet5c8XiZmOKCm906NVYu+ag6SB6vUcnJcWxgnl2NfbIyeobAn7Bwv6xRj2XJg=="
   "resolved" "https://registry.npmjs.org/looper/-/looper-3.0.0.tgz"
@@ -2168,6 +2187,15 @@
   "version" "7.1.0"
   dependencies:
     "multiaddr" "^7.3.0"
+
+"matchstick-as@^0.5.0":
+  "integrity" "sha512-4K619YDH+so129qt4RB4JCNxaFwJJYLXPc7drpG+/mIj86Cfzg6FKs/bA91cnajmS1CLHdhHl9vt6Kd6Oqvfkg=="
+  "resolved" "https://registry.npmjs.org/matchstick-as/-/matchstick-as-0.5.0.tgz"
+  "version" "0.5.0"
+  dependencies:
+    "@graphprotocol/graph-ts" "^0.27.0"
+    "assemblyscript" "^0.19.20"
+    "wabt" "1.0.24"
 
 "md5.js@^1.3.4":
   "integrity" "sha512-xitP+WxNPcTTOgnTJcrhM0xvdPepipPSf3I8EIpGKeFLjt3PlJLIDG3u8EX53ZIubkb+5U2+3rELYpEhHhzdkg=="
@@ -2995,6 +3023,19 @@
   dependencies:
     "varint" "~5.0.0"
 
+"source-map-support@^0.5.20":
+  "integrity" "sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w=="
+  "resolved" "https://registry.npmjs.org/source-map-support/-/source-map-support-0.5.21.tgz"
+  "version" "0.5.21"
+  dependencies:
+    "buffer-from" "^1.0.0"
+    "source-map" "^0.6.0"
+
+"source-map@^0.6.0":
+  "integrity" "sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g=="
+  "resolved" "https://registry.npmjs.org/source-map/-/source-map-0.6.1.tgz"
+  "version" "0.6.1"
+
 "split-ca@^1.0.0":
   "integrity" "sha512-Q5thBSxp5t8WPTTJQS59LrGqOZqOsrhDGDVm8azCqIBjSBd7nd9o2PM+mDulQQkh8h//4U6hFZnc/mul8t5pWQ=="
   "resolved" "https://registry.npmjs.org/split-ca/-/split-ca-1.0.1.tgz"
@@ -3318,6 +3359,11 @@
     "assert-plus" "^1.0.0"
     "core-util-is" "1.0.2"
     "extsprintf" "^1.2.0"
+
+"wabt@1.0.24":
+  "integrity" "sha512-8l7sIOd3i5GWfTWciPL0+ff/FK/deVK2Q6FN+MPz4vfUcD78i2M/49XJTwF6aml91uIiuXJEsLKWMB2cw/mtKg=="
+  "resolved" "https://registry.npmjs.org/wabt/-/wabt-1.0.24.tgz"
+  "version" "1.0.24"
 
 "wcwidth@^1.0.1":
   "integrity" "sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg=="

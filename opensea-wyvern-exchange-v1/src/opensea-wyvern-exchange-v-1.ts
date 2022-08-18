@@ -1,4 +1,4 @@
-import { Address, Bytes, BigInt } from "@graphprotocol/graph-ts";
+import { Address, Bytes, BigInt, log } from "@graphprotocol/graph-ts";
 import {
   AtomicMatch_Call,
 } from "../generated/OpenseaWyvernExchangeV1/OpenseaWyvernExchangeV1"
@@ -7,6 +7,8 @@ import { orders } from "./modules/orders";
 import * as airstack from "./modules/airstack"
 
 export function handleAtomicMatch_(call: AtomicMatch_Call): void {
+
+   log.info("transaction hash {}", [call.transaction.hash.toHexString()]);  
   let timestamp = call.block.timestamp
   let sellTakerAddress = call.inputs.addrs[9];
   let paymentToken = call.inputs.addrs[6];
@@ -67,6 +69,8 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
   );
 
   let saleTarget = call.inputs.addrs[11]
+
+  // todo check for V2
   let isBundleSale = saleTarget.toHexString() === orders.constants.WYVERN_ATOMICIZER_ADDRESS;
 
 
@@ -82,9 +86,11 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
   let contractAddress = call.inputs.addrs[11];
 
   if (isBundleSale) {
+    log.info('bundle sale',[]);
     let decoded = abi.decodeBatchNftData(
       buyOrder.callData!, sellOrder.callData!, buyOrder.replacementPattern!
     );
+
 
     for (let i = 0; i < decoded.transfers.length; i++) {
       fromArray.push(decoded.transfers[i].from);
@@ -94,13 +100,23 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     }
 
   } else {
+    log.info('not bundle sale',[]);
     let decoded = abi.decodeSingleNftData(
+      call.transaction.hash.toHexString(),
       buyOrder.callData!, sellOrder.callData!, buyOrder.replacementPattern!
     );
+
+    if (decoded == null) {
+      return;
+    }
+
+    contractAddress = decoded.contract != Address.zero() ? decoded.contract : contractAddress; 
+
     fromArray.push(decoded.from);
     toArray.push(decoded.to);
     contractAddressArray.push(contractAddress);
     nftIdArray.push(decoded.token);
+
   }
 
 
