@@ -1,3 +1,10 @@
+generated/
+build/
+Reference/
+.vscode/
+
+**/.DS_Store
+
 # Logs
 logs
 *.log
