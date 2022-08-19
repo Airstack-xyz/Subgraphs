@@ -25,7 +25,7 @@ export function handleTakerAsk(event: TakerAskEvent): void {
     [event.params.taker],
     [event.params.collection],
     [event.params.tokenId],
-    event.params.collection,
+    event.params.currency,
     event.params.price,
     event.block.timestamp
   );
@@ -58,13 +58,14 @@ export function handleTakerBid(event: TakerBidEvent): void {
   //       uint256 amount, // amount of tokens transferred
   //       uint256 price // final transacted price
   //   );
+
   airstack.nft.trackNFTSaleTransactions(
     event.transaction.hash.toHexString(),
     [event.params.maker],
     [event.params.taker],
     [event.params.collection],
     [event.params.tokenId],
-    event.params.collection,
+    event.params.currency,
     event.params.price,
     event.block.timestamp
   );
