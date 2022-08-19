@@ -117,6 +117,7 @@ interface AirEntityStats {
   extraData: [AirExtraData!]
 }
 type AirDailyAggregateEntity implements AirEntityStats @entity {
+  " {AirNetwork}-{AirContract}-{protocolActionType}-{daySinceEpoch} "
   id: ID!
   network: AirNetwork!
   contract: AirContract!
