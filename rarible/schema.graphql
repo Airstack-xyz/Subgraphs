@@ -1,3 +1,19 @@
+type Transaction @entity {
+  id: ID!
+  type: String
+  sellTokenId: BigInt
+  sellValue: BigInt
+  owner: Bytes
+  buyToken: Bytes
+  buyTokenId: BigInt
+  buyValue: BigInt
+  buyer: Bytes
+  amount: BigInt
+  salt: BigInt
+  sellAmount: BigInt
+  buyAmount: BigInt
+}
+
 enum AirNetwork {
   ARBITRUM_ONE
   ARWEAVE_MAINNET
