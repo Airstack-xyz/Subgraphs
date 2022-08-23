@@ -1425,7 +1425,7 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
             order.key.buyAsset.tokenId,
             order.buying,
             buyer,
-            amount,
+            amount, //amount
             order.key.salt
         );
     }

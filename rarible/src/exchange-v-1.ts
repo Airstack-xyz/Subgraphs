@@ -7,32 +7,26 @@ export function handleBuy(event: Buy): void {
     event.params.buyTokenId != BigInt.fromI32(0) &&
     event.params.sellTokenId == BigInt.fromI32(0)
   ) {
-    // BID
-    let sellAmount: BigInt;
-    if (event.params.amount == BigInt.fromI32(0)) {
-      sellAmount = event.params.amount;
-    } else {
-      sellAmount = event.params.buyValue
-        .times(event.params.amount)
-        .div(event.params.sellValue);
-      let transaction = Transaction.load(event.transaction.hash.toHexString());
-      if (!transaction) {
-        transaction = new Transaction(event.transaction.hash.toHexString());
-      }
-      transaction.type = "BID";
-      transaction.sellTokenId = event.params.sellTokenId;
-      transaction.sellValue = event.params.sellValue;
-      transaction.owner = event.params.owner;
-      transaction.buyToken = event.params.buyToken;
-      transaction.buyTokenId = event.params.buyTokenId;
-      transaction.buyValue = event.params.buyValue;
-      transaction.buyer = event.params.buyer;
-      transaction.amount = event.params.amount;
-      transaction.salt = event.params.salt;
-      transaction.sellAmount = sellAmount;
-      transaction.buyAmount = event.params.amount;
-      transaction.save();
+    // BID ,gives ERC20 or Eth to get NFT
+    // buyToken = NFT
+    // sellToken = ERC20 or Eth
+
+    let transaction = Transaction.load(event.transaction.hash.toHexString());
+    if (!transaction) {
+      transaction = new Transaction(event.transaction.hash.toHexString());
     }
+    transaction.type = "BID";
+    transaction.sellToken = event.params.sellToken;
+    transaction.sellTokenId = event.params.sellTokenId;
+    transaction.sellValue = event.params.sellValue;
+    transaction.owner = event.params.owner;
+    transaction.buyToken = event.params.buyToken;
+    transaction.buyTokenId = event.params.buyTokenId;
+    transaction.buyValue = event.params.buyValue;
+    transaction.buyer = event.params.buyer;
+    transaction.amount = event.params.amount;
+    transaction.salt = event.params.salt;
+    transaction.save();
 
     airstack.nft.trackNFTSaleTransactions(
       event.transaction.hash.toHexString(),
@@ -41,36 +35,30 @@ export function handleBuy(event: Buy): void {
       [event.params.buyToken], //nft address
       [event.params.buyTokenId], // nft id
       event.params.sellToken, // token address
-      sellAmount, // token amount                      TODO: CHECK IT
+      event.params.sellValue, // token amount                      TODO: CHECK IT
       event.block.timestamp
     );
   } else {
-    // ORDER
-    let buyAmount: BigInt;
-    if (event.params.amount == BigInt.fromI32(0)) {
-      buyAmount = event.params.amount;
-    } else {
-      buyAmount = event.params.buyValue
-        .times(event.params.amount)
-        .div(event.params.sellValue);
-      let transaction = Transaction.load(event.transaction.hash.toHexString());
-      if (!transaction) {
-        transaction = new Transaction(event.transaction.hash.toHexString());
-      }
-      transaction.type = "ORDER";
-      transaction.sellTokenId = event.params.sellTokenId;
-      transaction.sellValue = event.params.sellValue;
-      transaction.owner = event.params.owner;
-      transaction.buyToken = event.params.buyToken;
-      transaction.buyTokenId = event.params.buyTokenId;
-      transaction.buyValue = event.params.buyValue;
-      transaction.buyer = event.params.buyer;
-      transaction.amount = event.params.amount; // amount of token bought
-      transaction.salt = event.params.salt;
-      transaction.sellAmount = event.params.amount;
-      transaction.buyAmount = event.params.amount;
-      transaction.save();
+    // ORDER, takes in ERC20 or Eth to give NFT
+    // buyToken = ERC20 or Eth
+    // sellToken = NFT
+
+    let transaction = Transaction.load(event.transaction.hash.toHexString());
+    if (!transaction) {
+      transaction = new Transaction(event.transaction.hash.toHexString());
     }
+    transaction.type = "ORDER";
+    transaction.sellTokenId = event.params.sellTokenId;
+    transaction.sellToken = event.params.sellToken;
+    transaction.sellValue = event.params.sellValue;
+    transaction.owner = event.params.owner;
+    transaction.buyToken = event.params.buyToken;
+    transaction.buyTokenId = event.params.buyTokenId;
+    transaction.buyValue = event.params.buyValue;
+    transaction.buyer = event.params.buyer;
+    transaction.amount = event.params.amount; // amount of token bought
+    transaction.salt = event.params.salt;
+    transaction.save();
     airstack.nft.trackNFTSaleTransactions(
       event.transaction.hash.toHexString(),
       [event.params.owner], //from
