@@ -1,12 +1,12 @@
-import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
+import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts";
 import { ConstructorCall } from "../generated/Seaport/CalculationsSushiSwap";
+import { OrderFulfilled } from "../generated/Seaport/Seaport";
+
+import * as airstack from "./modules/airstack";
 import {
-  OrderFulfilled,
-} from "../generated/Seaport/Seaport"
-
-import * as airstack from "./modules/airstack"
-import { BIGDECIMAL_ZERO, BIGINT_ZERO } from "./modules/prices/common/constants";
-
+  BIGDECIMAL_ZERO,
+  BIGINT_ZERO,
+} from "./modules/prices/common/constants";
 
 /**
  * 
@@ -73,8 +73,7 @@ export enum ItemType {
   ERC1155_WITH_CRITERIA = 5,
 }
 
-
-function isNFTEntity(itemType: number):bool {
+function isNFTEntity(itemType: number): bool {
   return itemType >= 2;
 }
 
@@ -85,23 +84,38 @@ function decodeSales(event: OrderFulfilled): void {
   let offerer = event.params.offerer;
   let reciepient = event.params.recipient;
 
-  log.info("Decode sales txhash {} logindex {} offerere {} reciepient {} offer {} consideration {}", [txHash.toHexString(), event.logIndex.toString() ,offerer.toHexString(), reciepient.toHexString(), event.params.offer.length.toString(), event.params.consideration.length.toString()])
+  log.info(
+    "Decode sales txhash {} logindex {} offerere {} reciepient {} offer {} consideration {}",
+    [
+      txHash.toHexString(),
+      event.logIndex.toString(),
+      offerer.toHexString(),
+      reciepient.toHexString(),
+      event.params.offer.length.toString(),
+      event.params.consideration.length.toString(),
+    ]
+  );
   let paymentAmount = BIGINT_ZERO;
-  let paymentToken:Address = Address.zero();
-  let seller: Address = Address.zero(), buyer: Address = Address.zero();
+  let paymentToken: Address = Address.zero();
+  let seller: Address = Address.zero(),
+    buyer: Address = Address.zero();
   let nftContracts: Address[] = [];
   let nftIds: BigInt[] = [];
   let buyers: Address[] = [];
   let sellers: Address[] = [];
 
-
   for (let i = 0; i < event.params.offer.length; i++) {
-
     let offer = event.params.offer[i];
 
     let isNFT = isNFTEntity(offer.itemType);
 
-    log.info("offer type txHash {} logindex {} itemType {} isNFT {} index {}", [txHash.toHexString(),  event.logIndex.toString(), offer.itemType.toString(), isNFT.toString(), i.toString()])
+    log.info("offer type txHash {} logindex {} itemType {} isNFT {} index {}", [
+      txHash.toHexString(),
+      event.logIndex.toString(),
+      offer.itemType.toString(),
+      isNFT.toString(),
+      i.toString(),
+    ]);
 
     if (!isNFT) {
       paymentToken = offer.token;
@@ -109,17 +123,19 @@ function decodeSales(event: OrderFulfilled): void {
       buyer = offerer;
       seller = reciepient;
 
-      log.info("txHash offer log tx {} logindex {} paymentToken {} paymentAmount {} buyer {} seller {} index {}", [
-        txHash.toHexString(),
-        event.logIndex.toString(),
-        paymentToken.toHexString(),
-        paymentAmount.toString(),
-        buyer.toHexString(),
-        seller.toHexString(),
-        i.toString()]
+      log.info(
+        "txHash offer log tx {} logindex {} paymentToken {} paymentAmount {} buyer {} seller {} index {}",
+        [
+          txHash.toHexString(),
+          event.logIndex.toString(),
+          paymentToken.toHexString(),
+          paymentAmount.toString(),
+          buyer.toHexString(),
+          seller.toHexString(),
+          i.toString(),
+        ]
       );
-    }
-    else {
+    } else {
       nftContracts.push(offer.token);
       nftIds.push(offer.identifier);
 
@@ -128,35 +144,48 @@ function decodeSales(event: OrderFulfilled): void {
       buyers.push(buyer);
       sellers.push(seller);
 
-      log.info("txHash offer log tx {} logindex {} nftContract {} NFTId {} index {}", [
-        txHash.toHexString(),
-        event.logIndex.toString(),
-        offer.token.toHexString(),
-        offer.identifier.toString(),
-        i.toString()]
+      log.info(
+        "txHash offer log tx {} logindex {} nftContract {} NFTId {} index {}",
+        [
+          txHash.toHexString(),
+          event.logIndex.toString(),
+          offer.token.toHexString(),
+          offer.identifier.toString(),
+          i.toString(),
+        ]
       );
     }
-
   }
 
   for (let i = 0; i < event.params.consideration.length; i++) {
-
     let consideration = event.params.consideration[i];
 
     let isNFT = isNFTEntity(consideration.itemType);
 
-    log.info("consideration type txHash {} logindex {} itemType {} isNFT {} index {}", [txHash.toHexString(),  event.logIndex.toString(), consideration.itemType.toString(), isNFT.toString(), i.toString()])
+    log.info(
+      "consideration type txHash {} logindex {} itemType {} isNFT {} index {}",
+      [
+        txHash.toHexString(),
+        event.logIndex.toString(),
+        consideration.itemType.toString(),
+        isNFT.toString(),
+        i.toString(),
+      ]
+    );
     if (!isNFT) {
       paymentToken = consideration.token;
       paymentAmount = paymentAmount.plus(consideration.amount);
-      log.info("txHash consideration log tx {} logindex {} paymentToken {} paymentAmount {} buyer {} seller {} index {}", [
-        txHash.toHexString(),
-        event.logIndex.toString(),
-        paymentToken.toHexString(),
-        paymentAmount.toString(),
-        buyer.toHexString(),
-        seller.toHexString(),
-        i.toString()]
+      log.info(
+        "txHash consideration log tx {} logindex {} paymentToken {} paymentAmount {} buyer {} seller {} index {}",
+        [
+          txHash.toHexString(),
+          event.logIndex.toString(),
+          paymentToken.toHexString(),
+          paymentAmount.toString(),
+          buyer.toHexString(),
+          seller.toHexString(),
+          i.toString(),
+        ]
       );
     } else {
       nftContracts.push(consideration.token);
@@ -164,31 +193,38 @@ function decodeSales(event: OrderFulfilled): void {
       buyers.push(buyer);
       sellers.push(seller);
 
-      log.info("txHash consideration log tx {} logindex {} nftContract {} NFTId {} index {}", [
-        txHash.toHexString(),
-        event.logIndex.toString(),
-        consideration.token.toHexString(),
-        consideration.identifier.toString(),
-        i.toString()]
+      log.info(
+        "txHash consideration log tx {} logindex {} nftContract {} NFTId {} index {}",
+        [
+          txHash.toHexString(),
+          event.logIndex.toString(),
+          consideration.token.toHexString(),
+          consideration.identifier.toString(),
+          i.toString(),
+        ]
       );
-
     }
   }
 
-  log.info("data for contract call tx {} logindex {}  seller  {} buyer {} contracts {} ids {} payment Token {} payment Amoint {}", [
-    txHash.toHexString(),
-    event.logIndex.toString(),
-    seller.toHexString(),
-    buyer.toHexString(),
-    nftContracts.length.toString(),
-    nftIds.length.toString(),
-    paymentToken.toHexString(),
-    paymentAmount.toString()
-  ])
+  log.info(
+    "data for contract call tx {} logindex {}  seller  {} buyer {} contracts {} ids {} payment Token {} payment Amoint {}",
+    [
+      txHash.toHexString(),
+      event.logIndex.toString(),
+      seller.toHexString(),
+      buyer.toHexString(),
+      nftContracts.length.toString(),
+      nftIds.length.toString(),
+      paymentToken.toHexString(),
+      paymentAmount.toString(),
+    ]
+  );
 
-  if(nftContracts.length > 0 && nftIds.length > 0 && nftContracts.length == nftIds.length) {
-
-
+  if (
+    nftContracts.length > 0 &&
+    nftIds.length > 0 &&
+    nftContracts.length == nftIds.length
+  ) {
     airstack.nft.trackNFTSaleTransactions(
       txHash.toHexString(),
       sellers,
@@ -197,24 +233,22 @@ function decodeSales(event: OrderFulfilled): void {
       nftIds,
       paymentToken,
       paymentAmount,
-      event.block.timestamp
-    ); 
+      event.block.timestamp,
+      event.block.number
+    );
   } else {
-      event.logIndex.toString(),
-    log.warning("Issue with decoding for tx {} log index {}", [txHash.toHexString(), event.logIndex.toString()])
+    event.logIndex.toString(),
+      log.warning("Issue with decoding for tx {} log index {}", [
+        txHash.toHexString(),
+        event.logIndex.toString(),
+      ]);
   }
-
 }
 
 export function handleOrderFulfilled(event: OrderFulfilled): void {
-
   let txHash = event.transaction.hash;
   log.warning("new tx {}", [txHash.toHexString()]);
 
-
-  
-
-  
   // if (event.params.consideration.length == 0) {
   //   log.warning("error consideration length tx {}", [txHash.toHexString()]);
   //   return;
@@ -225,42 +259,41 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
   //   return;
   // }
 
-
-
-  log.info("Order tx {}, orderhash {} offerer {} zone {} recipient {}",
-    [
-      txHash.toHexString(),
-      event.params.orderHash.toHexString(),
-      event.params.offerer.toHexString(),
-      event.params.zone.toHexString(),
-      event.params.recipient.toHexString(),
-    ]
-  );
-
+  log.info("Order tx {}, orderhash {} offerer {} zone {} recipient {}", [
+    txHash.toHexString(),
+    event.params.orderHash.toHexString(),
+    event.params.offerer.toHexString(),
+    event.params.zone.toHexString(),
+    event.params.recipient.toHexString(),
+  ]);
 
   for (let i = 0; i < event.params.offer.length; i++) {
-
-    log.info("Offer details tx {} index {} offer.itemtype {} offer.token {} offer.identifier {} offer.amount {} ", [
-      txHash.toHexString(),
-      i.toString(),
-      event.params.offer[i].itemType.toString(),
-      event.params.offer[i].token.toHexString(),
-      event.params.offer[i].identifier.toString(),
-      event.params.offer[i].amount.toString(),
-    ]);
+    log.info(
+      "Offer details tx {} index {} offer.itemtype {} offer.token {} offer.identifier {} offer.amount {} ",
+      [
+        txHash.toHexString(),
+        i.toString(),
+        event.params.offer[i].itemType.toString(),
+        event.params.offer[i].token.toHexString(),
+        event.params.offer[i].identifier.toString(),
+        event.params.offer[i].amount.toString(),
+      ]
+    );
   }
 
   for (let i = 0; i < event.params.consideration.length; i++) {
-
-    log.info("consideration details tx {} index {} consideration.itemtype {} consideration.token {} consideration.identifier {} consideration.amount {} consideration.recipient {}", [
-      txHash.toHexString(),
-      i.toString(),
-      event.params.consideration[i].itemType.toString(),
-      event.params.consideration[i].token.toHexString(),
-      event.params.consideration[i].identifier.toHexString(),
-      event.params.consideration[i].amount.toString(),
-      event.params.consideration[i].recipient.toHexString(),
-    ]);
+    log.info(
+      "consideration details tx {} index {} consideration.itemtype {} consideration.token {} consideration.identifier {} consideration.amount {} consideration.recipient {}",
+      [
+        txHash.toHexString(),
+        i.toString(),
+        event.params.consideration[i].itemType.toString(),
+        event.params.consideration[i].token.toHexString(),
+        event.params.consideration[i].identifier.toHexString(),
+        event.params.consideration[i].amount.toString(),
+        event.params.consideration[i].recipient.toHexString(),
+      ]
+    );
   }
 
   decodeSales(event);
@@ -275,7 +308,6 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
   // ]
   // );
 
-
   // airstack.nft.trackNFTSaleTransactions(
   //   txHash.toHexString(),
   //   [seller],
@@ -288,4 +320,3 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
   // );
   log.warning("Done new tx {}", [txHash.toHexString()]);
 }
-

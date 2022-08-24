@@ -26,7 +26,9 @@ export const ZERO_ADDRESS = Address.fromString(
 );
 
 export const ETH_ADDRESS_STRING = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
-export const ETH_ADDRESS = Address.fromString("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
+export const ETH_ADDRESS = Address.fromString(
+  "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+);
 
 export const CHAIN_LINK_USD_ADDRESS = Address.fromString(
   "0x0000000000000000000000000000000000000348"
@@ -98,8 +100,11 @@ CURVE_POOL_REGISTRY_ADDRESS_MAP.set(
 ///////////////////////////// SUSHISWAP CONTRACT //////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-export const SUSHISWAP_DEFAULT_RESERVE_CALL =
-  new SushiSwapPair__getReservesResult(BIGINT_ZERO, BIGINT_ZERO, BIGINT_ZERO);
+export const SUSHISWAP_DEFAULT_RESERVE_CALL = new SushiSwapPair__getReservesResult(
+  BIGINT_ZERO,
+  BIGINT_ZERO,
+  BIGINT_ZERO
+);
 
 export const SUSHISWAP_CALCULATIONS_ADDRESS_MAP = new TypedMap<
   string,
