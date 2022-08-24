@@ -43,6 +43,8 @@ export function handleBuy(event: Buy): void {
     // buyToken = ERC20 or Eth
     // sellToken = NFT
 
+    // TODO: FIX THIS PART
+
     let transaction = Transaction.load(event.transaction.hash.toHexString());
     if (!transaction) {
       transaction = new Transaction(event.transaction.hash.toHexString());
