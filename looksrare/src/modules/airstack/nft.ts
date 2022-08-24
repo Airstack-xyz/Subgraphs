@@ -30,7 +30,8 @@ export namespace nft {
     nftIdArray: BigInt[],
     paymentTokenAddress: Address,
     paymentAmount: BigInt,
-    timestamp: BigInt
+    timestamp: BigInt,
+    blockHeight: BigInt
   ): void {
     if (fromArray.length == 0) {
       return;
@@ -59,7 +60,8 @@ export namespace nft {
       let sellActionDailyAggregatedEntity = getOrCreateAirDailyAggregateEntity(
         sellActionDailyAggregatedEntityId,
         timestamp,
-        "SELL"
+        "SELL",
+        blockHeight
       );
       sellActionDailyAggregatedEntity.transactionCount = sellActionDailyAggregatedEntity.transactionCount.plus(
         BIG_INT_ONE
@@ -78,7 +80,8 @@ export namespace nft {
       let buyActionDailyAggregatedEntity = getOrCreateAirDailyAggregateEntity(
         buyActionDailyAggregatedEntityId,
         timestamp,
-        "BUY"
+        "BUY",
+        blockHeight
       );
       buyActionDailyAggregatedEntity.transactionCount = buyActionDailyAggregatedEntity.transactionCount.plus(
         BIG_INT_ONE
@@ -307,7 +310,8 @@ export namespace nft {
   export function getOrCreateAirDailyAggregateEntity(
     id: string,
     timestamp: BigInt,
-    protocolActionType: string
+    protocolActionType: string,
+    blockHeight: BigInt
   ): AirDailyAggregateEntity {
     let entity = AirDailyAggregateEntity.load(id);
 
@@ -325,6 +329,7 @@ export namespace nft {
       entity.updatedTimestamp = timestamp;
       entity.protocolType = "NFT_MARKET_PLACE";
       entity.protocolActionType = protocolActionType;
+      entity.blockHeight = blockHeight;
     }
     return entity as AirDailyAggregateEntity;
   }

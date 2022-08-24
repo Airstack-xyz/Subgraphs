@@ -16,7 +16,8 @@ export function handleTakerAsk(event: TakerAskEvent): void {
     [event.params.tokenId],
     event.params.currency,
     event.params.price,
-    event.block.timestamp
+    event.block.timestamp,
+    event.block.number
   );
 }
 
@@ -32,6 +33,7 @@ export function handleTakerBid(event: TakerBidEvent): void {
     [event.params.tokenId],
     event.params.currency,
     event.params.price,
-    event.block.timestamp
+    event.block.timestamp,
+    event.block.number
   );
 }
