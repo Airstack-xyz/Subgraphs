@@ -11,7 +11,7 @@ dataSources:
       startBlock: 5774644   # V1 5774644   V2  14120913
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - AirDailyAggregateEntity
@@ -69,7 +69,7 @@ dataSources:
       startBlock: 14120913     # V1 5774644   V2  14120913
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - AirDailyAggregateEntity
