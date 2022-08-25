@@ -113,7 +113,7 @@ dataSources:
         - name: CalculationsSushiSwap
           file: ./abis/Prices/Calculations/SushiSwap.json
       eventHandlers:
-        - event: Transfer(((bytes4,bytes),uint256),address,address,bytes4,bytes4)
-          handler: handleTransfer
+        - event: Match(bytes32,bytes32,address,address,uint256,uint256,(bytes4,bytes),(bytes4,bytes))
+          handler: handleMatch
 
       file: ./src/exchange-v-2.ts
