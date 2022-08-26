@@ -1,16 +1,16 @@
 type Transaction @entity {
+  " hash-nftAddress-id "
   id: ID!
-  type: String
-  sellToken: Bytes
-  sellTokenId: BigInt
-  sellValue: BigInt
-  owner: Bytes
-  buyToken: Bytes
-  buyTokenId: BigInt
-  buyValue: BigInt
-  buyer: Bytes
-  amount: BigInt
-  salt: BigInt
+  hash: String
+  from: String
+  to: String
+  nftAddress: String
+  nftId: BigInt
+  nftAmount: BigInt
+  paymentToken: String
+  paymentAmount: BigInt
+  blockHeight: BigInt
+  paymentTokenId: BigInt
 }
 
 enum AirNetwork {
