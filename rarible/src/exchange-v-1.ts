@@ -2,6 +2,7 @@ import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
 import { Buy } from "../generated/ExchangeV1/ExchangeV1";
 import * as airstack from "./modules/airstack";
 import { Transaction } from "../generated/schema";
+import { isNFT } from "./rarible-helper";
 
 export function getOrCreateTransaction(
   hash: Bytes,
@@ -27,13 +28,26 @@ export function getOrCreateTransaction(
   return entity;
 }
 export function handleBuy(event: Buy): void {
-  if (
-    event.params.buyTokenId != BigInt.fromI32(0) &&
-    event.params.sellTokenId == BigInt.fromI32(0)
-  ) {
+  if (isNFT(event.params.buyToken)) {
     // BID ,gives ERC20 or Eth to get NFT
     // buyToken = NFT
     // sellToken = ERC20 or Eth
+    let transaction = getOrCreateTransaction(
+      event.transaction.hash,
+      event.params.sellToken,
+      event.params.sellTokenId
+    );
+    transaction.hash = event.transaction.hash.toHexString();
+    transaction.from = event.params.buyer.toHexString();
+    transaction.to = event.params.owner.toHexString();
+    transaction.nftAddress = event.params.buyToken.toHexString();
+    transaction.nftId = event.params.buyTokenId; //0
+    transaction.nftAmount = event.params.buyValue;
+    transaction.paymentToken = event.params.sellToken.toHexString();
+    transaction.paymentTokenId = event.params.sellTokenId;
+    transaction.paymentAmount = event.params.sellValue;
+    transaction.blockHeight = event.block.number;
+    transaction.save();
 
     airstack.nft.trackNFTSaleTransactions(
       event.transaction.hash.toHexString(),
@@ -45,42 +59,6 @@ export function handleBuy(event: Buy): void {
       event.params.sellValue, // token amount                      TODO: CHECK IT
       event.block.timestamp
     );
-  } else if (
-    event.params.buyTokenId == BigInt.fromI32(0) &&
-    event.params.sellTokenId == BigInt.fromI32(0)
-  ) {
-    if (event.params.sellValue > event.params.buyValue) {
-      // FIX for block 12141413
-      // sell = token
-      // buy = nft
-      let transaction = getOrCreateTransaction(
-        event.transaction.hash,
-        event.params.buyToken,
-        event.params.buyTokenId
-      );
-      transaction.hash = event.transaction.hash.toHexString();
-      transaction.from = event.params.buyer.toHexString();
-      transaction.to = event.params.owner.toHexString();
-      transaction.nftAddress = event.params.buyToken.toHexString();
-      transaction.nftId = event.params.buyTokenId;
-      transaction.nftAmount = event.params.buyValue;
-      transaction.paymentToken = event.params.sellToken.toHexString();
-      transaction.paymentTokenId = event.params.sellTokenId;
-      transaction.paymentAmount = event.params.sellValue;
-      transaction.blockHeight = event.block.number;
-      transaction.save();
-
-      airstack.nft.trackNFTSaleTransactions(
-        event.transaction.hash.toHexString(),
-        [event.params.buyer], //from
-        [event.params.owner], //to
-        [event.params.buyToken], //nft address
-        [event.params.buyTokenId], // nft id
-        event.params.sellToken, // token address
-        event.params.sellValue, // token amount                      TODO: CHECK IT
-        event.block.timestamp
-      );
-    }
   } else {
     // ORDER, takes in ERC20 or Eth to give NFT
     // buyToken = ERC20 or Eth

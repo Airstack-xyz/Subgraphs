@@ -8,8 +8,8 @@ dataSources:
     source:
       address: "0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06"
       abi: ExchangeV1
-      # startBlock: 11274515
-      startBlock: 12141412
+      startBlock: 11274515
+      # startBlock: 12141412 #nftId == paymentTokenId case
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -26,6 +26,8 @@ dataSources:
           file: ./abis/ExchangeV1.json
         - name: ERC721MetaData
           file: ./abis/ERC721.json
+        - name: ERC1155MetaData
+          file: ./abis/ERC1155.json
         - name: ERC20
           file: ./abis/ERC20.json
           # Curve Contracts
