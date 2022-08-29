@@ -11,6 +11,7 @@ type Transaction @entity {
   paymentAmount: BigInt
   blockHeight: BigInt
   paymentTokenId: BigInt
+  nftStatus: String
 }
 
 enum AirNetwork {
@@ -149,6 +150,8 @@ type AirDailyAggregateEntity implements AirEntityStats @entity {
   transactionCount: BigInt! # number of transactions (not unique)
   volumeInUSD: BigDecimal! # call price oracle and get the data and +
   #dailyChange: AirEntityDailyChangeStats!
+  blockHeight: BigInt!
+
   extraData: [AirExtraData!]
 }
 

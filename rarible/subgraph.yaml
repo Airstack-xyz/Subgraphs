@@ -8,8 +8,9 @@ dataSources:
     source:
       address: "0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06"
       abi: ExchangeV1
-      startBlock: 11274515
+      startBlock: 12506593 #nft <-> token case
       # startBlock: 12141412 #nftId == paymentTokenId case
+      # startBlock: 11274515
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -20,7 +21,6 @@ dataSources:
         - AirDailyAggregateEntityAccount
         - AirNFTSaleStats
         - AirNFTSaleTransaction
-
       abis:
         - name: ExchangeV1
           file: ./abis/ExchangeV1.json

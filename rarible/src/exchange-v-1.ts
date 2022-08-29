@@ -2,7 +2,7 @@ import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
 import { Buy } from "../generated/ExchangeV1/ExchangeV1";
 import * as airstack from "./modules/airstack";
 import { Transaction } from "../generated/schema";
-import { isNFT } from "./rarible-helper";
+import { isNFT, NFTStatus } from "./rarible-helper";
 
 export function getOrCreateTransaction(
   hash: Bytes,
@@ -47,6 +47,7 @@ export function handleBuy(event: Buy): void {
     transaction.paymentTokenId = event.params.sellTokenId;
     transaction.paymentAmount = event.params.sellValue;
     transaction.blockHeight = event.block.number;
+    transaction.nftStatus = NFTStatus(event.params.buyToken);
     transaction.save();
 
     airstack.nft.trackNFTSaleTransactions(
@@ -57,7 +58,8 @@ export function handleBuy(event: Buy): void {
       [event.params.buyTokenId], // nft id
       event.params.sellToken, // token address
       event.params.sellValue, // token amount                      TODO: CHECK IT
-      event.block.timestamp
+      event.block.timestamp,
+      event.block.number
     );
   } else {
     // ORDER, takes in ERC20 or Eth to give NFT
@@ -79,6 +81,7 @@ export function handleBuy(event: Buy): void {
     transaction.paymentToken = event.params.buyToken.toHexString();
     transaction.paymentTokenId = event.params.buyTokenId;
     transaction.paymentAmount = event.params.buyValue;
+    transaction.nftStatus = NFTStatus(event.params.sellToken);
     transaction.blockHeight = event.block.number;
     transaction.save();
 
@@ -90,7 +93,8 @@ export function handleBuy(event: Buy): void {
       [event.params.sellTokenId], // nft id
       event.params.buyToken, // token address
       event.params.buyValue, // token amount                         TODO: CHECK IT
-      event.block.timestamp
+      event.block.timestamp,
+      event.block.number
     );
   }
 }
