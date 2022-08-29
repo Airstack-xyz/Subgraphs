@@ -2,7 +2,7 @@ import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
 import { Buy } from "../generated/ExchangeV1/ExchangeV1";
 import * as airstack from "./modules/airstack";
 import { Transaction } from "../generated/schema";
-import { isNFT, NFTStatus } from "./rarible-helper";
+import { isNFT } from "./rarible-helper";
 
 export function getOrCreateTransaction(
   hash: Bytes,
@@ -47,7 +47,7 @@ export function handleBuy(event: Buy): void {
     transaction.paymentTokenId = event.params.sellTokenId;
     transaction.paymentAmount = event.params.sellValue;
     transaction.blockHeight = event.block.number;
-    transaction.nftStatus = NFTStatus(event.params.buyToken);
+    transaction.nftStatus = isNFT(event.params.buyToken);
     transaction.save();
 
     airstack.nft.trackNFTSaleTransactions(
@@ -81,7 +81,7 @@ export function handleBuy(event: Buy): void {
     transaction.paymentToken = event.params.buyToken.toHexString();
     transaction.paymentTokenId = event.params.buyTokenId;
     transaction.paymentAmount = event.params.buyValue;
-    transaction.nftStatus = NFTStatus(event.params.sellToken);
+    transaction.nftStatus = isNFT(event.params.sellToken);
     transaction.blockHeight = event.block.number;
     transaction.save();
 

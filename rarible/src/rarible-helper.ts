@@ -15,44 +15,17 @@ export function isNFT(nftAddress: Address): boolean {
   if (supportsEIP721Identifier.reverted) {
     return false;
   }
-  if (!supportsEIP721Identifier.value) {
-    let erc1155contract = ERC1155MetaData.bind(nftAddress);
-    let supportsEIP1155Identifier = erc1155contract.try_supportsInterface(
-      Bytes.fromByteArray(Bytes.fromHexString("0xd9b67a26"))
-    );
-    if (!supportsEIP1155Identifier.reverted) {
-      return supportsEIP1155Identifier.value;
-    } else {
-      return false;
-    }
-  } else {
+  if (supportsEIP721Identifier.value) {
     return true;
-  }
-}
-
-export function NFTStatus(nftAddress: Address): string {
-  let erc721contract = ERC721MetaData.bind(nftAddress);
-  let supportsEIP721Identifier = erc721contract.try_supportsInterface(
-    Bytes.fromByteArray(Bytes.fromHexString("0x80ac58cd"))
-  );
-  if (supportsEIP721Identifier.reverted) {
-    return "ERC721Reverted";
-  }
-  if (!supportsEIP721Identifier.value) {
+  } else {
     let erc1155contract = ERC1155MetaData.bind(nftAddress);
     let supportsEIP1155Identifier = erc1155contract.try_supportsInterface(
       Bytes.fromByteArray(Bytes.fromHexString("0xd9b67a26"))
     );
     if (supportsEIP1155Identifier.reverted) {
-      return "ERC1155Reverted";
-    }
-    if (supportsEIP1155Identifier.value) {
-      return "ERC1155";
+      return false;
     } else {
-      return "ERC1155Reverted";
+      return supportsEIP1155Identifier.value;
     }
-  } else {
-    return "ERC721";
   }
-  return "";
 }
