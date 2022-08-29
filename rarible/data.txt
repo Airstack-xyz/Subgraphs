@@ -1,0 +1,11 @@
+transaction value = 0.10234597876321875 Ether
+Etherscan detected transaction value = 0.00399398941515 Eth
+buyValue =  0.5990984122725
+amount = 5
+sellValue = 
+
+
+
+0x1ba9e9d441053cab9310008b5164866a688e5e3ccc1a6c2d924b04f1e9d1a278
+
+0x4c4c918f19c08b8d0a5b806ee2f08ed3bb876d526ccd1e50272f75d814c5fab9

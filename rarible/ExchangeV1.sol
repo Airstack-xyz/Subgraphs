@@ -1163,6 +1163,7 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
         uint amount,
         address buyer
     ) external payable {
+        // buyer calls the function
         validateOrderSig(order, sig);
         validateBuyerFeeSig(order, buyerFee, buyerFeeSig);
         uint paying = order.buying.mul(amount).div(order.selling);
@@ -1203,6 +1204,26 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
             order.key.sellAsset
         );
         emitBuy(order, amount, buyer);
+    }
+
+    function emitBuy(
+        Order memory order,
+        uint amount,
+        address buyer
+    ) internal {
+        // uint paying = order.buying.mul(amount).div(order.selling);
+        emit Buy(
+            order.key.sellAsset.token, //sellToken
+            order.key.sellAsset.tokenId, //sellTokenId
+            order.selling, //sellValue
+            order.key.owner, //owner
+            order.key.buyAsset.token, //buyToken
+            order.key.buyAsset.tokenId, //buyToneId
+            order.buying, //buyValue
+            buyer, //buyer
+            amount, //amount
+            order.key.salt
+        );
     }
 
     function validateEthTransfer(uint value, uint buyerFee) internal view {
@@ -1409,25 +1430,6 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
             transfer(asset, beneficiaryFee, from, beneficiary);
         }
         return restValue;
-    }
-
-    function emitBuy(
-        Order memory order,
-        uint amount,
-        address buyer
-    ) internal {
-        emit Buy(
-            order.key.sellAsset.token,
-            order.key.sellAsset.tokenId,
-            order.selling,
-            order.key.owner,
-            order.key.buyAsset.token,
-            order.key.buyAsset.tokenId,
-            order.buying,
-            buyer,
-            amount, //amount
-            order.key.salt
-        );
     }
 
     function subFeeInBp(

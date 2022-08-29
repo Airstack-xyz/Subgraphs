@@ -32,6 +32,7 @@ export function handleBuy(event: Buy): void {
     // BID ,gives ERC20 or Eth to get NFT
     // buyToken = NFT
     // sellToken = ERC20 or Eth
+    // caller is buyer(from)
     let transaction = getOrCreateTransaction(
       event.transaction.hash,
       event.params.sellToken,
@@ -48,6 +49,11 @@ export function handleBuy(event: Buy): void {
     transaction.paymentAmount = event.params.sellValue;
     transaction.blockHeight = event.block.number;
     transaction.nftStatus = isNFT(event.params.buyToken);
+    // uint paying = order.buying.mul(amount).div(order.selling);
+    transaction.type = "BID";
+    transaction.paying = event.params.buyValue
+      .times(event.params.amount)
+      .div(event.params.sellValue);
     transaction.save();
 
     airstack.nft.trackNFTSaleTransactions(
@@ -65,6 +71,7 @@ export function handleBuy(event: Buy): void {
     // ORDER, takes in ERC20 or Eth to give NFT
     // buyToken = ERC20 or Eth
     // sellToken = NFT
+    // caller is buyer(to)
 
     let transaction = getOrCreateTransaction(
       event.transaction.hash,
@@ -83,6 +90,10 @@ export function handleBuy(event: Buy): void {
     transaction.paymentAmount = event.params.buyValue;
     transaction.nftStatus = isNFT(event.params.sellToken);
     transaction.blockHeight = event.block.number;
+    transaction.type = "ORDER";
+    transaction.paying = event.params.buyValue
+      .times(event.params.amount)
+      .div(event.params.sellValue);
     transaction.save();
 
     airstack.nft.trackNFTSaleTransactions(
@@ -92,7 +103,9 @@ export function handleBuy(event: Buy): void {
       [event.params.sellToken], //nft address
       [event.params.sellTokenId], // nft id
       event.params.buyToken, // token address
-      event.params.buyValue, // token amount                         TODO: CHECK IT
+      event.params.buyValue
+        .times(event.params.amount)
+        .div(event.params.sellValue), // token amount                         TODO: CHECK IT
       event.block.timestamp,
       event.block.number
     );
