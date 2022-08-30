@@ -1,8 +1,8 @@
-import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
-import { Buy } from "../generated/ExchangeV1/ExchangeV1";
+import { Address, BigInt, Bytes, TypedMap } from "@graphprotocol/graph-ts";
+import { ExchangeCall } from "../generated/ExchangeV1/ExchangeV1";
 import * as airstack from "./modules/airstack";
 import { Transaction } from "../generated/schema";
-import { isNFT } from "./rarible-helper";
+// import { isNFT } from "./rarible-helper";
 
 export function getOrCreateTransaction(
   hash: Bytes,
@@ -27,87 +27,85 @@ export function getOrCreateTransaction(
   }
   return entity;
 }
-export function handleBuy(event: Buy): void {
-  if (isNFT(event.params.buyToken)) {
-    // BID ,gives ERC20 or Eth to get NFT
-    // buyToken = NFT
-    // sellToken = ERC20 or Eth
-    // caller is buyer(from)
-    let transaction = getOrCreateTransaction(
-      event.transaction.hash,
-      event.params.sellToken,
-      event.params.sellTokenId
+const assetTypeMap = new TypedMap<number, string>();
+assetTypeMap.set(0, "ETH");
+assetTypeMap.set(1, "ERC20");
+assetTypeMap.set(2, "ERC1155");
+assetTypeMap.set(3, "ERC721");
+assetTypeMap.set(4, "ERC721Deprecated");
+
+export function handleExchange(call: ExchangeCall): void {
+  let paying = call.inputs.order.buying
+    .times(call.inputs.amount)
+    .div(call.inputs.order.selling);
+  let fee = paying.times(call.inputs.buyerFee).div(BigInt.fromI32(10000));
+  let paymentAmount = paying.plus(fee);
+  let sellAsset = call.inputs.order.key.sellAsset;
+  let buyAsset = call.inputs.order.key.buyAsset;
+  if (sellAsset.assetType > 1) {
+    // sellAsset is NFT,the owner has it & wants buy Asset
+    let tx = getOrCreateTransaction(
+      call.transaction.hash,
+      sellAsset.token,
+      sellAsset.tokenId
     );
-    transaction.hash = event.transaction.hash.toHexString();
-    transaction.from = event.params.buyer.toHexString();
-    transaction.to = event.params.owner.toHexString();
-    transaction.nftAddress = event.params.buyToken.toHexString();
-    transaction.nftId = event.params.buyTokenId; //0
-    transaction.nftAmount = event.params.buyValue;
-    transaction.paymentToken = event.params.sellToken.toHexString();
-    transaction.paymentTokenId = event.params.sellTokenId;
-    transaction.paymentAmount = event.params.sellValue;
-    transaction.blockHeight = event.block.number;
-    transaction.nftStatus = isNFT(event.params.buyToken);
-    // uint paying = order.buying.mul(amount).div(order.selling);
-    transaction.type = "BID";
-    transaction.paying = event.params.buyValue
-      .times(event.params.amount)
-      .div(event.params.sellValue);
-    transaction.save();
+    tx.nftAddress = sellAsset.token.toHexString();
+    tx.nftId = sellAsset.tokenId;
+    tx.paymentToken = buyAsset.token.toHexString();
+    tx.paymentAmount = paymentAmount;
+    tx.paymentTokenId = buyAsset.tokenId;
+    tx.from = call.inputs.order.key.owner.toHexString();
+    tx.to = call.from.toHexString();
+    tx.blockHeight = call.block.number;
+    tx.hash = call.transaction.hash.toHexString();
+    tx.nft = "sellAsset";
+    tx.nftTypeId = BigInt.fromI32(sellAsset.assetType);
+    tx.nftType = assetTypeMap.get(sellAsset.assetType);
+    tx.save();
 
     airstack.nft.trackNFTSaleTransactions(
-      event.transaction.hash.toHexString(),
-      [event.params.buyer], //from
-      [event.params.owner], //to
-      [event.params.buyToken], //nft address
-      [event.params.buyTokenId], // nft id
-      event.params.sellToken, // token address
-      event.params.sellValue, // token amount                      TODO: CHECK IT
-      event.block.timestamp,
-      event.block.number
+      call.transaction.hash.toHexString(),
+      [call.inputs.order.key.owner], //from
+      [call.from], //to
+      [sellAsset.token], //nft address
+      [sellAsset.tokenId], // nft id
+      buyAsset.token, // token address
+      paymentAmount, // token amount                      TODO: CHECK IT
+      call.block.timestamp,
+      call.block.number
     );
   } else {
-    // ORDER, takes in ERC20 or Eth to give NFT
-    // buyToken = ERC20 or Eth
-    // sellToken = NFT
-    // caller is buyer(to)
+    // buyAsset is NFT,the owner wants NFT & give token/ETH
 
-    let transaction = getOrCreateTransaction(
-      event.transaction.hash,
-      event.params.sellToken,
-      event.params.sellTokenId
+    let tx = getOrCreateTransaction(
+      call.transaction.hash,
+      buyAsset.token,
+      buyAsset.tokenId
     );
-    // cases are correct NFTamount/sellValue = 1
-    transaction.hash = event.transaction.hash.toHexString();
-    transaction.from = event.params.owner.toHexString();
-    transaction.to = event.params.buyer.toHexString();
-    transaction.nftAddress = event.params.sellToken.toHexString();
-    transaction.nftId = event.params.sellTokenId; //0
-    transaction.nftAmount = event.params.sellValue;
-    transaction.paymentToken = event.params.buyToken.toHexString();
-    transaction.paymentTokenId = event.params.buyTokenId;
-    transaction.paymentAmount = event.params.buyValue;
-    transaction.nftStatus = isNFT(event.params.sellToken);
-    transaction.blockHeight = event.block.number;
-    transaction.type = "ORDER";
-    transaction.paying = event.params.buyValue
-      .times(event.params.amount)
-      .div(event.params.sellValue);
-    transaction.save();
+    tx.nftAddress = buyAsset.token.toHexString();
+    tx.nftId = buyAsset.tokenId;
+    tx.paymentToken = sellAsset.token.toHexString();
+    tx.paymentAmount = paymentAmount;
+    tx.paymentTokenId = sellAsset.tokenId;
+    tx.to = call.inputs.order.key.owner.toHexString();
+    tx.from = call.from.toHexString();
+    tx.blockHeight = call.block.number;
+    tx.hash = call.transaction.hash.toHexString();
+    tx.nft = "buyAsset";
+    tx.nftTypeId = BigInt.fromI32(buyAsset.assetType);
+    tx.nftType = assetTypeMap.get(buyAsset.assetType);
+    tx.save();
 
     airstack.nft.trackNFTSaleTransactions(
-      event.transaction.hash.toHexString(),
-      [event.params.owner], //from
-      [event.params.buyer], //to
-      [event.params.sellToken], //nft address
-      [event.params.sellTokenId], // nft id
-      event.params.buyToken, // token address
-      event.params.buyValue
-        .times(event.params.amount)
-        .div(event.params.sellValue), // token amount                         TODO: CHECK IT
-      event.block.timestamp,
-      event.block.number
+      call.transaction.hash.toHexString(),
+      [call.from], //from
+      [call.inputs.order.key.owner], //to
+      [buyAsset.token], //nft address
+      [buyAsset.tokenId], // nft id
+      sellAsset.token, // token address
+      paymentAmount, // token amount                      TODO: CHECK IT
+      call.block.timestamp,
+      call.block.number
     );
   }
 }

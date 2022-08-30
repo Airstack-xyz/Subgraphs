@@ -21,6 +21,8 @@ dataSources:
         - AirDailyAggregateEntityAccount
         - AirNFTSaleStats
         - AirNFTSaleTransaction
+        - Transaction
+
       abis:
         - name: ExchangeV1
           file: ./abis/ExchangeV1.json
@@ -59,7 +61,7 @@ dataSources:
           file: ./abis/Prices/SushiSwap/Pair.json
         - name: CalculationsSushiSwap
           file: ./abis/Prices/Calculations/SushiSwap.json
-      eventHandlers:
-        - event: Buy(indexed address,indexed uint256,uint256,address,address,uint256,uint256,address,uint256,uint256)
-          handler: handleBuy
+      callHandlers:
+        - function: exchange(((address,uint256,(address,uint256,uint8),(address,uint256,uint8)),uint256,uint256,uint256),(uint8,bytes32,bytes32),uint256,(uint8,bytes32,bytes32),uint256,address)
+          handler: handleExchange
       file: ./src/exchange-v-1.ts
