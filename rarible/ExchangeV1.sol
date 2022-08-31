@@ -1164,8 +1164,10 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
         address buyer
     ) external payable {
         // buyer calls the function
+        // buyer gives 1 nft(buyAsset) & gets sellAsset in selling amount
         validateOrderSig(order, sig);
         validateBuyerFeeSig(order, buyerFee, buyerFeeSig);
+        // the amount buyer pays = 1
         uint paying = order.buying.mul(amount).div(order.selling);
         verifyOpenAndModifyOrderState(order.key, order.selling, amount);
         require(
@@ -1173,8 +1175,11 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
             "ETH is not supported on sell side"
         );
         if (order.key.buyAsset.assetType == AssetType.ETH) {
+            // checks whether user paid amount + fees needed
             validateEthTransfer(paying, buyerFee);
         }
+        // here,buyAsset is NFT
+        // sellside pays the fee  ??
         FeeSide feeSide = getFeeSide(
             order.key.sellAsset.assetType,
             order.key.buyAsset.assetType
@@ -1183,14 +1188,14 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
             buyer = msg.sender;
         }
         transferWithFeesPossibility(
-            order.key.sellAsset, //firstType
-            amount, //value
+            order.key.sellAsset, //firstType -token
+            amount, //value - amount
             order.key.owner, // from
             buyer, //to
             feeSide == FeeSide.SELL, //  hasFee,
             buyerFee, //sellerFee
             order.sellerFee, //buyerFee
-            order.key.buyAsset //secondType
+            order.key.buyAsset //secondType - nft
         );
 
         transferWithFeesPossibility(
@@ -1301,7 +1306,7 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
         Asset memory secondType
     ) internal {
         if (!hasFee) {
-            // Transfer firstType Asset from to to
+            // Transfer firstType Asset from -> to
             transfer(firstType, value, from, to);
         } else {
             transferWithFees(

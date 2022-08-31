@@ -35,14 +35,14 @@ assetTypeMap.set(3, "ERC721");
 assetTypeMap.set(4, "ERC721Deprecated");
 
 export function handleExchange(call: ExchangeCall): void {
-  let paying = call.inputs.order.buying
-    .times(call.inputs.amount)
-    .div(call.inputs.order.selling);
-  let fee = paying.times(call.inputs.buyerFee).div(BigInt.fromI32(10000));
-  let paymentAmount = paying.plus(fee);
   let sellAsset = call.inputs.order.key.sellAsset;
   let buyAsset = call.inputs.order.key.buyAsset;
   if (sellAsset.assetType > 1) {
+    let paying = call.inputs.order.buying
+      .times(call.inputs.amount)
+      .div(call.inputs.order.selling);
+    let fee = paying.times(call.inputs.buyerFee).div(BigInt.fromI32(10000));
+    let paymentAmount = paying.plus(fee);
     // sellAsset is NFT,the owner has it & wants buy Asset
     let tx = getOrCreateTransaction(
       call.transaction.hash,
@@ -51,6 +51,7 @@ export function handleExchange(call: ExchangeCall): void {
     );
     tx.nftAddress = sellAsset.token.toHexString();
     tx.nftId = sellAsset.tokenId;
+    tx.nftAmount = call.inputs.amount;
     tx.paymentToken = buyAsset.token.toHexString();
     tx.paymentAmount = paymentAmount;
     tx.paymentTokenId = buyAsset.tokenId;
@@ -70,13 +71,16 @@ export function handleExchange(call: ExchangeCall): void {
       [sellAsset.token], //nft address
       [sellAsset.tokenId], // nft id
       buyAsset.token, // token address
-      paymentAmount, // token amount                      TODO: CHECK IT
+      paymentAmount, // token amount
       call.block.timestamp,
       call.block.number
     );
   } else {
     // buyAsset is NFT,the owner wants NFT & give token/ETH
-
+    let fee = call.inputs.amount
+      .times(call.inputs.order.sellerFee)
+      .div(BigInt.fromI32(10000));
+    let paymentAmount = call.inputs.amount.plus(fee);
     let tx = getOrCreateTransaction(
       call.transaction.hash,
       buyAsset.token,
@@ -84,6 +88,7 @@ export function handleExchange(call: ExchangeCall): void {
     );
     tx.nftAddress = buyAsset.token.toHexString();
     tx.nftId = buyAsset.tokenId;
+    tx.nftAmount = call.inputs.order.buying;
     tx.paymentToken = sellAsset.token.toHexString();
     tx.paymentAmount = paymentAmount;
     tx.paymentTokenId = sellAsset.tokenId;
@@ -103,7 +108,7 @@ export function handleExchange(call: ExchangeCall): void {
       [buyAsset.token], //nft address
       [buyAsset.tokenId], // nft id
       sellAsset.token, // token address
-      paymentAmount, // token amount                      TODO: CHECK IT
+      paymentAmount, // token amount
       call.block.timestamp,
       call.block.number
     );
