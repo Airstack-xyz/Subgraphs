@@ -1163,8 +1163,11 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
         uint amount,
         address buyer
     ) external payable {
+        // buyer calls the function
+        // buyer gives 1 nft(buyAsset) & gets sellAsset in selling amount
         validateOrderSig(order, sig);
         validateBuyerFeeSig(order, buyerFee, buyerFeeSig);
+        // the amount buyer pays = 1
         uint paying = order.buying.mul(amount).div(order.selling);
         verifyOpenAndModifyOrderState(order.key, order.selling, amount);
         require(
@@ -1172,8 +1175,11 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
             "ETH is not supported on sell side"
         );
         if (order.key.buyAsset.assetType == AssetType.ETH) {
+            // checks whether user paid amount + fees needed
             validateEthTransfer(paying, buyerFee);
         }
+        // here,buyAsset is NFT
+        // sellside pays the fee  ??
         FeeSide feeSide = getFeeSide(
             order.key.sellAsset.assetType,
             order.key.buyAsset.assetType
@@ -1182,14 +1188,14 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
             buyer = msg.sender;
         }
         transferWithFeesPossibility(
-            order.key.sellAsset, //firstType
-            amount, //value
+            order.key.sellAsset, //firstType -token
+            amount, //value - amount
             order.key.owner, // from
             buyer, //to
             feeSide == FeeSide.SELL, //  hasFee,
             buyerFee, //sellerFee
             order.sellerFee, //buyerFee
-            order.key.buyAsset //secondType
+            order.key.buyAsset //secondType - nft
         );
 
         transferWithFeesPossibility(
@@ -1203,6 +1209,26 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
             order.key.sellAsset
         );
         emitBuy(order, amount, buyer);
+    }
+
+    function emitBuy(
+        Order memory order,
+        uint amount,
+        address buyer
+    ) internal {
+        // uint paying = order.buying.mul(amount).div(order.selling);
+        emit Buy(
+            order.key.sellAsset.token, //sellToken
+            order.key.sellAsset.tokenId, //sellTokenId
+            order.selling, //sellValue
+            order.key.owner, //owner
+            order.key.buyAsset.token, //buyToken
+            order.key.buyAsset.tokenId, //buyToneId
+            order.buying, //buyValue
+            buyer, //buyer
+            amount, //amount
+            order.key.salt
+        );
     }
 
     function validateEthTransfer(uint value, uint buyerFee) internal view {
@@ -1280,7 +1306,7 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
         Asset memory secondType
     ) internal {
         if (!hasFee) {
-            // Transfer firstType Asset from to to
+            // Transfer firstType Asset from -> to
             transfer(firstType, value, from, to);
         } else {
             transferWithFees(
@@ -1409,25 +1435,6 @@ contract ExchangeV1 is Ownable, ExchangeDomainV1 {
             transfer(asset, beneficiaryFee, from, beneficiary);
         }
         return restValue;
-    }
-
-    function emitBuy(
-        Order memory order,
-        uint amount,
-        address buyer
-    ) internal {
-        emit Buy(
-            order.key.sellAsset.token,
-            order.key.sellAsset.tokenId,
-            order.selling,
-            order.key.owner,
-            order.key.buyAsset.token,
-            order.key.buyAsset.tokenId,
-            order.buying,
-            buyer,
-            amount, //amount
-            order.key.salt
-        );
     }
 
     function subFeeInBp(

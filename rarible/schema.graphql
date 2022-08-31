@@ -1,16 +1,19 @@
 type Transaction @entity {
+  " hash-nftAddress-id "
   id: ID!
-  type: String
-  sellToken: Bytes
-  sellTokenId: BigInt
-  sellValue: BigInt
-  owner: Bytes
-  buyToken: Bytes
-  buyTokenId: BigInt
-  buyValue: BigInt
-  buyer: Bytes
-  amount: BigInt
-  salt: BigInt
+  hash: String
+  from: String
+  to: String
+  nftAddress: String
+  nftId: BigInt
+  nftAmount: BigInt
+  paymentToken: String
+  paymentAmount: BigInt
+  blockHeight: BigInt
+  paymentTokenId: BigInt
+  nft: String
+  nftType: String
+  nftTypeId: BigInt
 }
 
 enum AirNetwork {
@@ -149,6 +152,8 @@ type AirDailyAggregateEntity implements AirEntityStats @entity {
   transactionCount: BigInt! # number of transactions (not unique)
   volumeInUSD: BigDecimal! # call price oracle and get the data and +
   #dailyChange: AirEntityDailyChangeStats!
+  blockHeight: BigInt!
+
   extraData: [AirExtraData!]
 }
 
