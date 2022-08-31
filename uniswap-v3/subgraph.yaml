@@ -5,11 +5,11 @@ description: ...
 dataSources:
   - kind: ethereum/contract
     name: Factory
-    network: matic
+    network: mainnet
     source:
-      address: "0x5757371414417b8c6caad45baef941abc7d3ab32"
+      address: "0x1F98431c8aD98523631AE4a59f267346ea31F984"
       abi: Factory
-      startBlock: 4931780
+      startBlock: 12369620
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -37,30 +37,28 @@ dataSources:
         - AirNFTSaleStats
         - AirMeta
       abis:
-        - name: Pair
-          file: ./abis/quickswap/Pair.json
+        - name: Pool
+          file: ./abis/pool.json
         - name: Factory
-          file: ./abis/quickswap/Factory.json
-        - name: TokenABI
-          file: ./abis/quickswap/ERC20.json
+          file: ./abis/factory.json
         - name: ERC721MetaData
           file: ./abis/common/ERC721.json
         - name: ERC20
           file: ./abis/common/ERC20.json
       eventHandlers:
-        - event: PairCreated(indexed address,indexed address,address,uint256)
-          handler: handlePairCreated
+        - event: PoolCreated(indexed address,indexed address,indexed uint24,int24,address)
+          handler: handlePoolCreated
 templates:
   - kind: ethereum/contract
-    name: Pair
-    network: matic
+    name: Pool
+    network: mainnet
     source:
-      abi: Pair
+      abi: Pool
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
       language: wasm/assemblyscript
-      file: ./src/mappings/pool.ts
+      file: ./src/mappings/core.ts
       entities:
         - AirDailyAggregateEntity
         - AirDailyAggregateEntityStats
@@ -79,16 +77,14 @@ templates:
         - AirPoolFarmTransaction
         - AirDEXSwapStats
         - AirDEXSwapTransaction
-        - AirNFTSaleStats
         - AirNFTSaleTransaction
+        - AirNFTSaleStats
         - AirMeta
       abis:
-        - name: Pair
-          file: ./abis/quickswap/Pair.json
+        - name: Pool
+          file: ./abis/pool.json
         - name: Factory
-          file: ./abis/quickswap/Factory.json
-        - name: TokenABI
-          file: ./abis/quickswap/ERC20.json
+          file: ./abis/factory.json
         - name: ERC721MetaData
           file: ./abis/common/ERC721.json
         ###########################################
@@ -105,8 +101,10 @@ templates:
           file: ./abis/Prices/Calculations/Curve.json
         - name: YearnLensContract
           file: ./abis/Prices/YearnLens.json
+        - name: ChainlinkOracle
+          file: ./abis/Prices//Chainlink.json
         - name: ChainLinkContract
-          file: ./abis/Prices/ChainLink.json
+          file: ./abis/Prices/Chainlink.json
         - name: UniswapRouter
           file: ./abis/Prices/Uniswap/Router.json
         - name: UniswapFeeRouter
@@ -123,13 +121,14 @@ templates:
           file: ./abis/Prices/SushiSwap/Pair.json
         - name: CalculationsSushiSwap
           file: ./abis/Prices/Calculations/SushiSwap.json
-
       eventHandlers:
-        - event: Mint(indexed address,uint256,uint256)
-          handler: handleMint
-        - event: Burn(indexed address,uint256,uint256,indexed address)
-          handler: handleBurn
-        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+        - event: Initialize(uint160,int24)
+          handler: handleInitialize
+        - event: SetFeeProtocol(uint8,uint8,uint8,uint8)
+          handler: handleSetFeeProtocol
+        - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
           handler: handleSwap
-        - event: Sync(uint112,uint112)
-          handler: handleSync
+        - event: Mint(address,indexed address,indexed int24,indexed int24,uint128,uint256,uint256)
+          handler: handleMint
+        - event: Burn(indexed address,indexed int24,indexed int24,uint128,uint256,uint256)
+          handler: handleBurn

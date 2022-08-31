@@ -4,10 +4,10 @@ import { CustomPriceType } from "../common/types";
 import {
   UniswapPair as UniswapPairContract,
   UniswapPair__getReservesResult,
-} from "../../../generated/templates/Pair/UniswapPair";
-import { UniswapFeeRouter as UniswapFeeRouterContract } from "../../../generated/templates/Pair/UniswapFeeRouter";
-import { Address, BigInt, ethereum, log } from "@graphprotocol/graph-ts";
-import { UniswapRouter as UniswapRouterContract } from "../../../generated/templates/Pair/UniswapRouter";
+} from "../../../generated/templates/Pool/UniswapPair";
+import { UniswapFeeRouter as UniswapFeeRouterContract } from "../../../generated/templates/Pool/UniswapFeeRouter";
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { UniswapRouter as UniswapRouterContract } from "../../../generated/templates/Pool/UniswapRouter";
 
 export function isLpToken(tokenAddress: Address, network: string): bool {
   if (
@@ -64,11 +64,6 @@ export function getPriceFromRouter(
   token1Address: Address,
   network: string
 ): CustomPriceType {
-  log.info("getPriceFromRouter called: {} {} {}", [
-    token0Address.toHexString(),
-    token1Address.toHexString(),
-    network,
-  ]);
   let ethAddress = constants.WHITELIST_TOKENS_MAP.get(network)!.get("ETH")!;
   let wethAddress = constants.WHITELIST_TOKENS_MAP.get(network)!.get("WETH")!;
 
@@ -139,17 +134,8 @@ export function getPriceFromRouter(
       }
     }
 
-    log.info("amountOutArray length: {}", [
-      amountOutArray.value.length.toString(),
-    ]);
-
     let amountOut = amountOutArray.value[amountOutArray.value.length - 1];
     let feeBips = BigInt.fromI32(30); // .3% per swap fees
-
-    log.info("amountOut: {}, feeBips: {}", [
-      amountOut.toString(),
-      feeBips.toString(),
-    ]);
 
     let amountOutBigDecimal = amountOut
       .times(constants.BIGINT_TEN_THOUSAND)

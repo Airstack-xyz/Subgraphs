@@ -42,7 +42,8 @@ import {
   DEFAULT_DECIMALS,
 } from "./constants";
 import { usdPrice } from "./utils";
-import { Pair } from "../../generated/templates/Pair/Pair";
+
+import { Pool } from "../../generated/templates/Pool/Pool";
 
 const OUT = "OUT";
 const IN = "IN";
@@ -144,9 +145,6 @@ export namespace dex {
     // ]);
     const dexPool = getOrCreateAirDexPool(poolAddress);
     if (dexPool.inputToken.length == 0) {
-      // if (!createDexPoolFromPoolAddress(poolAddress)) {
-      //   return;
-      // }
       createDexPoolFromPoolAddress(poolAddress);
     }
 
@@ -760,9 +758,6 @@ export namespace dex {
   ): void {
     const dexPool = getOrCreateAirDexPool(poolAddress);
     if (dexPool.inputToken.length == 0) {
-      // if (!createDexPoolFromPoolAddress(poolAddress)) {
-      //   return;
-      // }
       createDexPoolFromPoolAddress(poolAddress);
     }
 
@@ -1231,7 +1226,7 @@ export namespace dex {
 
   export function createDexPoolFromPoolAddress(poolAddress: string): boolean {
     log.info("createDexPoolFromPoolAddress called", []);
-    const poolContract = Pair.bind(Address.fromString(poolAddress));
+    const poolContract = Pool.bind(Address.fromString(poolAddress));
 
     let token0 = "";
     let token0Call = poolContract.try_token0();
