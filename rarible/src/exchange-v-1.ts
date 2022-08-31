@@ -25,6 +25,7 @@ export function getOrCreateTransaction(
         nftId.toHexString()
     );
   }
+  entity.exchange = "v1";
   return entity;
 }
 const assetTypeMap = new TypedMap<number, string>();

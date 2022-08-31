@@ -1,6 +1,7 @@
 type Transaction @entity {
   " hash-nftAddress-id "
   id: ID!
+  exchange: String
   hash: String
   from: String
   to: String
