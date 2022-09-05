@@ -67,6 +67,7 @@ export namespace dex {
     if (entity == null) {
       entity = new AirDEXPool(entityId);
       entity.poolAddress = poolAddress;
+      entity.inputToken = [];
     }
 
     return entity;
@@ -135,13 +136,14 @@ export namespace dex {
     timestamp: BigInt,
     blockNumber: BigInt
   ): void {
-    // log.info("addLiquidity: {}, {}, {}, {}, {}, {}", [
+    // log.info("addLiquidity: {}, {}, {}, {}, {}, {}, {}", [
     //   poolAddress,
     //   from,
     //   to,
     //   hash,
     //   logIndex.toString(),
     //   timestamp.toString(),
+    //   blockNumber.toString(),
     // ]);
     const dexPool = getOrCreateAirDexPool(poolAddress);
     if (dexPool.inputToken.length == 0) {
@@ -1207,6 +1209,9 @@ export namespace dex {
     inputBalances: Array<BigInt>
   ): void {
     const pool = getOrCreateAirDexPool(poolAddress);
+    if (pool.inputToken.length == 0) {
+      createDexPoolFromPoolAddress(poolAddress);
+    }
     pool.tokenBalances = inputBalances;
     pool.save();
   }
@@ -1216,6 +1221,9 @@ export namespace dex {
     inputBalances: Array<BigInt>
   ): void {
     const pool = getOrCreateAirDexPool(poolAddress);
+    if (pool.inputToken.length == 0) {
+      createDexPoolFromPoolAddress(poolAddress);
+    }
     const poolBalance = pool.tokenBalances;
     for (let index = 0; index < poolBalance.length; index++) {
       poolBalance[index] = poolBalance[index].plus(inputBalances[index]);

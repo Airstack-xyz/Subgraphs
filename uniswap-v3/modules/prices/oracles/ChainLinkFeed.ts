@@ -1,4 +1,4 @@
-import { Address } from "@graphprotocol/graph-ts";
+import { Address, log } from "@graphprotocol/graph-ts";
 import { CustomPriceType } from "../common/types";
 import { ChainlinkOracle } from "../../../generated/templates/Pool/ChainlinkOracle";
 import { polygonOracles as oracles } from "./oracles";
@@ -19,8 +19,12 @@ export function getTokenPriceFromChainLink(
   tokenAddr: Address
 ): CustomPriceType {
   const tokenContract = ERC20.bind(tokenAddr);
-  const symbol = tokenContract.symbol();
-  const chainLinkContract = getChainLinkContract(symbol);
+  const symbol = tokenContract.try_symbol();
+  if (symbol.reverted) {
+    return new CustomPriceType();
+  }
+
+  const chainLinkContract = getChainLinkContract(symbol.value);
 
   if (chainLinkContract._address === ZERO_ADDRESS) {
     return new CustomPriceType();
