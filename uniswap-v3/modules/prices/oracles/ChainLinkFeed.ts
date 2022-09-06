@@ -33,11 +33,13 @@ export function getTokenPriceFromChainLink(
   let result = chainLinkContract.try_latestRoundData();
 
   if (!result.reverted) {
-    const decimals = tokenContract.decimals();
-
+    const decimals = tokenContract.try_decimals();
+    if (decimals.reverted) {
+      return new CustomPriceType();
+    }
     return CustomPriceType.initialize(
       result.value.value1.toBigDecimal(),
-      decimals.toI32()
+      decimals.value.toI32()
     );
   }
 
