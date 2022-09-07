@@ -70,7 +70,7 @@ export namespace nft {
         volumeInUSD
       );
       sellActionDailyAggregatedEntity.updatedTimestamp = timestamp;
-
+      sellActionDailyAggregatedEntity.blockHeight = blockHeight;
       // Buy Daily Aggregated Entity
       let buyActionDailyAggregatedEntityId = getDailyAggregatedEntityId(
         contractAddressArray[i].toHexString(),
@@ -90,7 +90,7 @@ export namespace nft {
         volumeInUSD
       );
       buyActionDailyAggregatedEntity.updatedTimestamp = timestamp;
-
+      buyActionDailyAggregatedEntity.blockHeight = blockHeight;
       // Account
       let buyerAccount = getOrCreateAirAccount(toArray[i].toHexString());
       let sellerAccount = getOrCreateAirAccount(fromArray[i].toHexString());
