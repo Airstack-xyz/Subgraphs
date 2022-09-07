@@ -8,8 +8,7 @@ dataSources:
     source:
       address: "0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06"
       abi: ExchangeV1
-      startBlock: 12617827 #v2
-      # startBlock: 11274514 #v1
+      startBlock: 11274514 #v1
       # startBlock: 12506593 #nft <-> token case
       # startBlock: 12141412 #nftId == paymentTokenId case
     mapping:
@@ -121,7 +120,7 @@ dataSources:
           file: ./abis/Prices/SushiSwap/Pair.json
         - name: CalculationsSushiSwap
           file: ./abis/Prices/Calculations/SushiSwap.json
-      eventHandlers:
-        - event: Match(bytes32,bytes32,address,address,uint256,uint256,(bytes4,bytes),(bytes4,bytes))
-          handler: handleMatch
+      callHandlers:
+        - function: matchOrders((address,((bytes4,bytes),uint256),address,((bytes4,bytes),uint256),uint256,uint256,uint256,bytes4,bytes),bytes,(address,((bytes4,bytes),uint256),address,((bytes4,bytes),uint256),uint256,uint256,uint256,bytes4,bytes),bytes)
+          handler: handleMatchOrders
       file: ./src/exchange-v-2.ts
