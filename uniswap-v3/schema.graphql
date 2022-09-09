@@ -404,3 +404,8 @@ type AirMeta @entity {
   daySinceEpoch: BigInt!
   blockNumber: BigInt!
 }
+
+# type Temp @entity{
+#   id: ID!
+#   isWhitelisted: BigInt!
+# }
