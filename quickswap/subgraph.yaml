@@ -1,0 +1,135 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+description: ...
+dataSources:
+  - kind: ethereum/contract
+    name: Factory
+    network: matic
+    source:
+      address: "0x5757371414417b8c6caad45baef941abc7d3ab32"
+      abi: Factory
+      startBlock: 4931780
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/mappings/factory.ts
+      entities:
+        - AirDailyAggregateEntity
+        - AirDailyAggregateEntityStats
+        - AirToken
+        - AirDailyAggregateEntityAccount
+        - AirAccount
+        - AirDEXPool
+        - AirLiquidityPoolStats
+        - AirTokenStats
+        - AirEntityDailyChangeStats
+        - AirLiquidityPoolInputTokenStats
+        - AirLiquidityPoolOutputTokenStats
+        - AirLiquidityPoolTransaction
+        - AirTokenTransfer
+        - AirPoolFarmRewardStats
+        - AirPoolFarmTransaction
+        - AirDEXSwapStats
+        - AirDEXSwapTransaction
+        - AirNFTSaleTransaction
+        - AirNFTSaleStats
+        - AirMeta
+      abis:
+        - name: Pair
+          file: ./abis/quickswap/Pair.json
+        - name: Factory
+          file: ./abis/quickswap/Factory.json
+        - name: TokenABI
+          file: ./abis/quickswap/ERC20.json
+        - name: ERC721MetaData
+          file: ./abis/common/ERC721.json
+        - name: ERC20
+          file: ./abis/common/ERC20.json
+      eventHandlers:
+        - event: PairCreated(indexed address,indexed address,address,uint256)
+          handler: handlePairCreated
+templates:
+  - kind: ethereum/contract
+    name: Pair
+    network: matic
+    source:
+      abi: Pair
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/mappings/pool.ts
+      entities:
+        - AirDailyAggregateEntity
+        - AirDailyAggregateEntityStats
+        - AirToken
+        - AirDailyAggregateEntityAccount
+        - AirAccount
+        - AirDEXPool
+        - AirLiquidityPoolStats
+        - AirTokenStats
+        - AirEntityDailyChangeStats
+        - AirLiquidityPoolInputTokenStats
+        - AirLiquidityPoolOutputTokenStats
+        - AirLiquidityPoolTransaction
+        - AirTokenTransfer
+        - AirPoolFarmRewardStats
+        - AirPoolFarmTransaction
+        - AirDEXSwapStats
+        - AirDEXSwapTransaction
+        - AirNFTSaleStats
+        - AirNFTSaleTransaction
+        - AirMeta
+      abis:
+        - name: Pair
+          file: ./abis/quickswap/Pair.json
+        - name: Factory
+          file: ./abis/quickswap/Factory.json
+        - name: TokenABI
+          file: ./abis/quickswap/ERC20.json
+        - name: ERC721MetaData
+          file: ./abis/common/ERC721.json
+        ###########################################
+        ############## Price Oracle ###############
+        ###########################################
+        # ERC20
+        - name: ERC20
+          file: ./abis/Prices/ERC20.json
+        - name: CurveRegistry
+          file: ./abis/Prices/Curve/Registry.json
+        - name: CurvePoolRegistry
+          file: ./abis/Prices/Curve/PoolRegistry.json
+        - name: CalculationsCurve
+          file: ./abis/Prices/Calculations/Curve.json
+        - name: YearnLensContract
+          file: ./abis/Prices/YearnLens.json
+        - name: ChainLinkContract
+          file: ./abis/Prices/ChainLink.json
+        - name: UniswapRouter
+          file: ./abis/Prices/Uniswap/Router.json
+        - name: UniswapFeeRouter
+          file: ./abis/Prices/Uniswap/FeeRouter.json
+        - name: UniswapFactory
+          file: ./abis/Prices/Uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/Prices/Uniswap/Pair.json
+        - name: SushiSwapRouter
+          file: ./abis/Prices/SushiSwap/Router.json
+        - name: SushiSwapFactory
+          file: ./abis/Prices/SushiSwap/Factory.json
+        - name: SushiSwapPair
+          file: ./abis/Prices/SushiSwap/Pair.json
+        - name: CalculationsSushiSwap
+          file: ./abis/Prices/Calculations/SushiSwap.json
+
+      eventHandlers:
+        - event: Mint(indexed address,uint256,uint256)
+          handler: handleMint
+        - event: Burn(indexed address,uint256,uint256,indexed address)
+          handler: handleBurn
+        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+          handler: handleSwap
+        - event: Sync(uint112,uint112)
+          handler: handleSync

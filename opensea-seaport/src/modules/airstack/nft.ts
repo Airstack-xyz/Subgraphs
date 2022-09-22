@@ -4,6 +4,7 @@ import {
   BigInt,
   dataSource,
   Bytes,
+  log,
 } from "@graphprotocol/graph-ts";
 import {
   AirAccount,

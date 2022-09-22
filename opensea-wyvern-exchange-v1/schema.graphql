@@ -64,7 +64,7 @@ type AirToken @entity {
 
 type AirTokenMetadata @entity {
   id: ID!
-	displayContentType: AirTokenDisplayType!
+  displayContentType: AirTokenDisplayType!
   displayContent: String
 }
 
@@ -134,6 +134,7 @@ type AirDailyAggregateEntity implements AirEntityStats @entity {
   transactionCount: BigInt! # number of transactions (not unique)
   volumeInUSD: BigDecimal! # call price oracle and get the data and +
   #dailyChange: AirEntityDailyChangeStats!
+  blockHeight: BigInt!
   extraData: [AirExtraData!]
 }
 
@@ -148,7 +149,8 @@ type AirDailyAggregateEntityAccount @entity {
 type AirAccount @entity {
   id: ID!
   address: String!
-  dailyAggregatedEntities: [AirDailyAggregateEntityAccount!] @derivedFrom(field: "account")
+  dailyAggregatedEntities: [AirDailyAggregateEntityAccount!]
+    @derivedFrom(field: "account")
 }
 
 type AirDailyAggregateEntityStats @entity {
@@ -183,7 +185,7 @@ type AirNFTSaleStats implements AirEntityStats @entity {
 type AirNFTSaleTransaction @entity {
   id: ID!
   hash: String!
-  saleStat: AirNFTSaleStats! 
+  saleStat: AirNFTSaleStats!
   type: AirNFTTransactionType!
   to: AirAccount! #Buyer
   from: AirAccount! #Seller
