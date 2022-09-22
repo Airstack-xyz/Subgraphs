@@ -1,0 +1,8 @@
+[
+  {
+    "name": "_DummyAirstackEvent",
+    "inputs": [],
+    "anonymous": false,
+    "type": "event"
+  }
+]
