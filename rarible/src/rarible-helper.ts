@@ -32,15 +32,6 @@ classMap.set("0x3e6b89d4", CRYPTOPUNKS);
 export const V1 = "0x4c234266";
 export const V2 = "0x23d235ef";
 
-export function getExchange(dataType: Bytes): string {
-  if (dataType.toHexString() == V1) {
-    return "V2V1";
-  } else if (dataType.toHexString() == V2) {
-    return "V2V2";
-  }
-  return "";
-}
-
 export function getClass(assetClass: Bytes): string {
   let res = classMap.get(assetClass.toHexString());
   if (res) {
@@ -91,32 +82,6 @@ export function decodeAsset(data: Bytes, type: string): Asset {
   }
   let asset = new Asset(ZERO_ADDRESS, BIGINT_ZERO, type);
   return asset;
-}
-
-export function getNFTType(nftAddress: Address): string {
-  let erc721contract = ERC721MetaData.bind(nftAddress);
-  let erc1155contract = ERC1155Metadata.bind(nftAddress);
-  let supportsEIP721Identifier = erc721contract.try_supportsInterface(
-    Bytes.fromByteArray(Bytes.fromHexString("0x80ac58cd"))
-  );
-  if (supportsEIP721Identifier.reverted) {
-    return "";
-  } else {
-    if (supportsEIP721Identifier.value) {
-      return "ERC721";
-    }
-  }
-  let supportsERC1155Identifier = erc1155contract.try_supportsInterface(
-    Bytes.fromByteArray(Bytes.fromHexString("0xd9b67a26"))
-  );
-  if (supportsERC1155Identifier.reverted) {
-    return "";
-  } else {
-    if (supportsERC1155Identifier.value) {
-      return "ERC1155";
-    }
-  }
-  return "";
 }
 
 export function getOriginFees(exchangeType: Bytes, data: Bytes): BigInt {

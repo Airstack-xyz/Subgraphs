@@ -1,22 +1,3 @@
-type Transaction @entity {
-  " hash-nftAddress-id "
-  id: ID!
-  exchange: String
-  hash: String
-  from: String
-  to: String
-  nftAddress: String
-  nftId: BigInt
-  nftAmount: BigInt
-  paymentToken: String
-  paymentAmount: BigInt
-  blockHeight: BigInt
-  paymentTokenId: BigInt
-  nft: String
-  nftType: String
-  nftTypeId: BigInt
-}
-
 enum AirNetwork {
   ARBITRUM_ONE
   ARWEAVE_MAINNET
