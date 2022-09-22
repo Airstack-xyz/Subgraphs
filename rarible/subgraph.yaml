@@ -19,7 +19,6 @@ dataSources:
         - AirDailyAggregateEntityAccount
         - AirNFTSaleStats
         - AirNFTSaleTransaction
-        - Transaction
       abis:
         - name: ExchangeV1
           file: ./abis/ExchangeV1.json
@@ -79,7 +78,6 @@ dataSources:
         - AirDailyAggregateEntityAccount
         - AirNFTSaleStats
         - AirNFTSaleTransaction
-        - Transaction
       abis:
         - name: ExchangeV2
           file: ./abis/ExchangeV2.json
