@@ -433,6 +433,15 @@ export class AirDailyAggregateEntity extends Entity {
     this.set("volumeInUSD", Value.fromBigDecimal(value));
   }
 
+  get blockHeight(): BigInt {
+    let value = this.get("blockHeight");
+    return value!.toBigInt();
+  }
+
+  set blockHeight(value: BigInt) {
+    this.set("blockHeight", Value.fromBigInt(value));
+  }
+
   get extraData(): Array<string> | null {
     let value = this.get("extraData");
     if (!value || value.kind == ValueKind.NULL) {
