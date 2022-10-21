@@ -134,6 +134,10 @@ export function getPriceFromRouter(
       }
     }
 
+    if (amountOutArray.value.length == 0) {
+      return new CustomPriceType();
+    }
+
     let amountOut = amountOutArray.value[amountOutArray.value.length - 1];
     let feeBips = BigInt.fromI32(30); // .3% per swap fees
 

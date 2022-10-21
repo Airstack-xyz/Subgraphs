@@ -67,6 +67,7 @@ export namespace dex {
     if (entity == null) {
       entity = new AirDEXPool(entityId);
       entity.poolAddress = poolAddress;
+      entity.inputToken = [];
     }
 
     return entity;
@@ -135,17 +136,19 @@ export namespace dex {
     timestamp: BigInt,
     blockNumber: BigInt
   ): void {
-    // log.info("addLiquidity: {}, {}, {}, {}, {}, {}", [
+    // log.info("addLiquidity: {}, {}, {}, {}, {}, {}, {}", [
     //   poolAddress,
     //   from,
     //   to,
     //   hash,
     //   logIndex.toString(),
     //   timestamp.toString(),
+    //   blockNumber.toString(),
     // ]);
-    const dexPool = getOrCreateAirDexPool(poolAddress);
+    let dexPool = getOrCreateAirDexPool(poolAddress);
     if (dexPool.inputToken.length == 0) {
       createDexPoolFromPoolAddress(poolAddress);
+      dexPool = getOrCreateAirDexPool(poolAddress);
     }
 
     const inputTokenTransfers: Array<AirTokenTransfer> = [];
@@ -200,8 +203,8 @@ export namespace dex {
       entity.transactionCount = BIGINT.ZERO;
       entity.volumeInUSD = BIG_DECIMAL.ZERO;
 
-      const dailyChange = getOrCreateAirEntityDailyChangeStats(id);
-      entity.dailyChange = dailyChange.id;
+      // const dailyChange = getOrCreateAirEntityDailyChangeStats(id);
+      // entity.dailyChange = dailyChange.id;
     }
     return entity;
   }
@@ -424,8 +427,8 @@ export namespace dex {
       tokenStats.tokenCount = BIGINT.ZERO;
       tokenStats.transactionCount = BIGINT.ZERO;
       tokenStats.volumeInUSD = BIG_DECIMAL.ZERO;
-      const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(id);
-      tokenStats.dailyChange = dailyChangeStats.id;
+      // const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(id);
+      // tokenStats.dailyChange = dailyChangeStats.id;
     }
     return tokenStats;
   }
@@ -495,8 +498,8 @@ export namespace dex {
       tokenStats.transactionCount = BIGINT.ZERO;
       tokenStats.volumeInUSD = BIG_DECIMAL.ZERO;
 
-      const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(id);
-      tokenStats.dailyChange = dailyChangeStats.id;
+      // const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(id);
+      // tokenStats.dailyChange = dailyChangeStats.id;
     }
     return tokenStats;
   }
@@ -756,11 +759,11 @@ export namespace dex {
     timestamp: BigInt,
     blockNumber: BigInt
   ): void {
-    const dexPool = getOrCreateAirDexPool(poolAddress);
+    let dexPool = getOrCreateAirDexPool(poolAddress);
     if (dexPool.inputToken.length == 0) {
       createDexPoolFromPoolAddress(poolAddress);
+      dexPool = getOrCreateAirDexPool(poolAddress);
     }
-
     const inputTokenAddress = dexPool.inputToken[inputTokenIndex];
     const inputToken = getOrCreateAirToken(inputTokenAddress);
     inputToken.save();
@@ -933,8 +936,8 @@ export namespace dex {
       entity.transactionCount = BIGINT.ZERO;
       entity.volumeInUSD = BIG_DECIMAL.ZERO;
 
-      const dailyChange = getOrCreateAirEntityDailyChangeStats(id);
-      entity.dailyChange = dailyChange.id;
+      // const dailyChange = getOrCreateAirEntityDailyChangeStats(id);
+      // entity.dailyChange = dailyChange.id;
     }
     return entity;
   }
@@ -980,8 +983,8 @@ export namespace dex {
       tokenStats.tokenCount = BIGINT.ZERO;
       tokenStats.transactionCount = BIGINT.ZERO;
       tokenStats.volumeInUSD = BIG_DECIMAL.ZERO;
-      const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(id);
-      tokenStats.dailyChange = dailyChangeStats.id;
+      // const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(id);
+      // tokenStats.dailyChange = dailyChangeStats.id;
     }
     return tokenStats;
   }
@@ -1026,8 +1029,8 @@ export namespace dex {
       tokenStats.tokenCount = BIGINT.ZERO;
       tokenStats.transactionCount = BIGINT.ZERO;
       tokenStats.volumeInUSD = BIG_DECIMAL.ZERO;
-      const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(id);
-      tokenStats.dailyChange = dailyChangeStats.id;
+      // const dailyChangeStats = getOrCreateAirEntityDailyChangeStats(id);
+      // tokenStats.dailyChange = dailyChangeStats.id;
     }
     return tokenStats;
   }
@@ -1206,7 +1209,11 @@ export namespace dex {
     poolAddress: string,
     inputBalances: Array<BigInt>
   ): void {
-    const pool = getOrCreateAirDexPool(poolAddress);
+    let pool = getOrCreateAirDexPool(poolAddress);
+    if (pool.inputToken.length == 0) {
+      createDexPoolFromPoolAddress(poolAddress);
+      pool = getOrCreateAirDexPool(poolAddress);
+    }
     pool.tokenBalances = inputBalances;
     pool.save();
   }
@@ -1215,7 +1222,11 @@ export namespace dex {
     poolAddress: string,
     inputBalances: Array<BigInt>
   ): void {
-    const pool = getOrCreateAirDexPool(poolAddress);
+    let pool = getOrCreateAirDexPool(poolAddress);
+    if (pool.inputToken.length == 0) {
+      createDexPoolFromPoolAddress(poolAddress);
+      pool = getOrCreateAirDexPool(poolAddress);
+    }
     const poolBalance = pool.tokenBalances;
     for (let index = 0; index < poolBalance.length; index++) {
       poolBalance[index] = poolBalance[index].plus(inputBalances[index]);
@@ -1225,7 +1236,6 @@ export namespace dex {
   }
 
   export function createDexPoolFromPoolAddress(poolAddress: string): boolean {
-    log.info("createDexPoolFromPoolAddress called", []);
     const poolContract = Pool.bind(Address.fromString(poolAddress));
 
     let token0 = "";
@@ -1242,11 +1252,6 @@ export namespace dex {
     }
     token1 = token1Call.value.toHexString();
 
-    log.info("----> token0: {} token1:{} poolAddress:{}", [
-      token0,
-      token1,
-      poolAddress,
-    ]);
     addDexPool(poolAddress, BigInt.zero(), [token0, token1]);
     return true;
   }

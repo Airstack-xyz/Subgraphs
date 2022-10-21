@@ -16,5 +16,8 @@ export function getTokenDecimals(tokenAddr: Address): BigInt {
   if (decimals.reverted) {
     return constants.DEFAULT_DECIMALS;
   }
+  if (decimals.value.gt(BigInt.fromI32(256))) {
+    return constants.DEFAULT_DECIMALS;
+  }
   return decimals.value;
 }
