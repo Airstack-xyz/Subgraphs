@@ -1,0 +1,21 @@
+{
+  "name": "x2y2-airstack",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ x2y2-airstack",
+    "create-local": "graph create --node http://localhost:8020/ x2y2-airstack",
+    "remove-local": "graph remove --node http://localhost:8020/ x2y2-airstack",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 x2y2-airstack",
+    "test": "graph test"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.33.0",
+    "@graphprotocol/graph-ts": "^0.28.1",
+    "@protofire/subgraph-toolkit": "^0.1.2"
+  },
+  "devDependencies": {
+    "matchstick-as": "0.5.0"
+  }
+}

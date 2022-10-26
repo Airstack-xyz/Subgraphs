@@ -1,0 +1,62 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: X2Y2Exchange
+    network: mainnet
+    source:
+      address: "0x74312363e45dcaba76c59ec49a7aa8a65a67eed3"
+      abi: X2Y2Exchange
+      startBlock: 14139341
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - AirDailyAggregateEntity
+        - AirDailyAggregateEntityStats
+        - AirDailyAggregateEntityAccount
+        - AirNFTSaleStats
+        - AirNFTSaleTransaction
+      abis:
+        - name: X2Y2Exchange
+          file: ./abis/X2Y2Exchange.json
+        - name: ERC721MetaData
+          file: ./abis/ERC721.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        # Curve Contracts
+        - name: CurveRegistry
+          file: ./abis/Prices/Curve/Registry.json
+        - name: CurvePoolRegistry
+          file: ./abis/Prices/Curve/PoolRegistry.json
+        - name: CalculationsCurve
+          file: ./abis/Prices/Calculations/Curve.json
+        # YearnLens Contracts
+        - name: YearnLensContract
+          file: ./abis/Prices/YearnLens.json
+        # ChainLink Contracts
+        - name: ChainLinkContract
+          file: ./abis/Prices/ChainLink.json
+        # Uniswap Contracts
+        - name: UniswapRouter
+          file: ./abis/Prices/Uniswap/Router.json
+        - name: UniswapFactory
+          file: ./abis/Prices/Uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/Prices/Uniswap/Pair.json
+        # SushiSwap Contracts
+        - name: SushiSwapRouter
+          file: ./abis/Prices/SushiSwap/Router.json
+        - name: SushiSwapFactory
+          file: ./abis/Prices/SushiSwap/Factory.json
+        - name: SushiSwapPair
+          file: ./abis/Prices/SushiSwap/Pair.json
+        - name: CalculationsSushiSwap
+          file: ./abis/Prices/Calculations/SushiSwap.json
+      eventHandlers:
+        - event: EvInventory(indexed bytes32,address,address,uint256,uint256,uint256,uint256,uint256,address,bytes,(uint256,bytes),(uint8,uint256,uint256,uint256,bytes32,address,bytes,uint256,uint256,uint256,(uint256,address)[]))
+          handler: handleEvInventory
+
+      file: ./src/x2y2-exchange.ts
