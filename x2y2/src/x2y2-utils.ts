@@ -1,35 +1,30 @@
-import { ethereum, log, Bytes, BigInt, Address } from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
 
-export class Token {
+export class ItemData{
     constructor(
-        public readonly address: Address,
-        public readonly tokenId: BigInt
-    ) { }
+        public readonly contractAddress: Address,
+        public readonly tokenIds: Array<BigInt>
+    ) {
+
+    }
 }
 
-export function decodeTokens(data: Bytes): Array<Token> {
+export function getData(data: Bytes): ItemData {
     let decoded = ethereum.decode("(address,uint256)[]", data);
-    let result: Array<Token> = [];
+    let contractAddress: Address;
+    let tokens: Array<BigInt> = [];
     if (!decoded) {
         log.warning("failed to decode {}", [data.toHexString()]);
     } else {
         let pairs = decoded.toArray();
+        contractAddress = pairs[0].toTuple()[0].toAddress();
         for (let i = 0; i < pairs.length; i++) {
             let pair = pairs[i].toTuple();
-            result.push(new Token(pair[0].toAddress(), pair[1].toBigInt()));
+            tokens.push(pair[1].toBigInt());
         }
     }
-    return result;
-}
 
-export function getTokenIds(tokens: Array<Token>): Array<BigInt> {
-    let result: Array<BigInt> = [];
-
-    for (let i = 0; i < tokens.length; i++) {
-        result.push(tokens[i].tokenId);
-    }
-
-    return result;
+    return new ItemData(contractAddress,tokens);
 }
 
 export namespace X2Y2_OPTIONS {
