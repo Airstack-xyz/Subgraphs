@@ -1,7 +1,8 @@
 import { BigInt } from "@graphprotocol/graph-ts";
 import { ExchangeCall } from "../generated/ExchangeV1/ExchangeV1";
-import * as airstack from "./modules/nft";
+import * as airstack from "./modules/airstack";
 import * as utils from "./utils";
+import { AirProtocolType, AirProtocolActionType } from "./utils";
 
 export function handleExchange(call: ExchangeCall): void {
   let sellAsset = call.inputs.order.key.sellAsset;
@@ -30,12 +31,15 @@ export function handleExchange(call: ExchangeCall): void {
       [sellAsset.tokenId], // nft id
       buyAsset.token, // token address
       paymentAmount, // token amount
+      AirProtocolType.NFT_MARKET_PLACE,
+      AirProtocolActionType.BUY,
       royaltyAmount, //royalty amount
       royaltyRecipients, //royalty beneficiary
       [beneficiaryFee],  //exchange fee
       [beneficiary],  //exchange beneficiary
       call.block.timestamp,
       call.block.number,
+      call.block.hash.toHexString(),
     );
 
   } else {
@@ -61,12 +65,15 @@ export function handleExchange(call: ExchangeCall): void {
       [buyAsset.tokenId], // nft id
       sellAsset.token, // token address
       paymentAmount, // token amount
+      AirProtocolType.NFT_MARKET_PLACE,
+      AirProtocolActionType.SELL,
       royaltyAmount, //royalty amount
       royaltyRecipients, //royalty beneficiary
       [beneficiaryFee],  //exchange fee
       [beneficiary],  //exchange beneficiary
       call.block.timestamp,
-      call.block.number
+      call.block.number,
+      call.block.hash.toHexString(),
     );
   }
 }
