@@ -174,6 +174,7 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
   for(let i = 0; i <allSales.length; i++){
     airstack.nft.trackNFTSaleTransactions(
       txHash.toHexString(),
+      event.transaction.index,
       [allSales[i].seller],
       [allSales[i].buyer],
       [allSales[i].nft.collection],
