@@ -69,15 +69,15 @@ enum AirProtocolActionType {
   UNSTAKE
   DELEGATE
   CLAIM_REWARDS
-}w
-2
+}
+# 2
 type AirBlock @entity {
  id: ID! #chain-number
  hash: String!
  number: BigInt!
  timestamp: BigInt!
 }
-1
+# 1
 type AirMeta @entity {
   id: ID! # air_meta 
   network: String!
@@ -85,7 +85,7 @@ type AirMeta @entity {
   slug: String! #Opensea_V1
   name: String! # Opeasea V1
 }
-
+# 3
 type AirEntityCounter @entity {
 	id: ID! #Air_DAILY_STATS_ACCOUNT
 	count: BigInt!
