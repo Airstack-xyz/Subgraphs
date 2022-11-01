@@ -111,7 +111,6 @@ type AirToken @entity {
 interface AirTransaction {
 	id: ID ! #chain-hash-logIndex-< add as per context > NFT marketplace will have tokenId
   from: AirAccount!
-  transactionIndex: BigInt!
   to: AirAccount!
   hash: String! #todo: Check if this should be bytes
   block: AirBlock!
@@ -125,7 +124,6 @@ interface AirTransaction {
 type AirNftTransaction implements AirTransaction @entity {
   id: ID!
   from: AirAccount!
-  transactionIndex: BigInt!
   to: AirAccount!
   hash: String! #todo: Check if this should be bytes
   block: AirBlock!
