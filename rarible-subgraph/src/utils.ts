@@ -46,10 +46,10 @@ export enum AirProtocolActionType {
 
 export function getRoyaltyDetails(
   tokenId: BigInt,
-  tokenAddress: Address
+  tokenAddress: Address,
 ): {
   royaltyAmount: BigInt[],
-  royaltyRecipients: Address[]
+  royaltyRecipients: Address[],
 } {
   // extract data from contract logic comes here
   let contractInstance = HasSecondarySaleFees.bind(tokenAddress);
@@ -74,16 +74,18 @@ export function getRoyaltyDetails(
 function subFeeInBp(
   value: BigInt,
   total: BigInt,
-  feeInB: BigInt
+  feeInB: BigInt,
 ): {
-  newValue: BigInt, realFee: BigInt
+  newValue: BigInt,
+  realFee: BigInt,
 } {
   return subFee(value, total.times(feeInB).div(new BigInt(10000)));
 }
 
 function subFee(value: BigInt, fee: BigInt)
   : {
-    newValue: BigInt, realFee: BigInt
+    newValue: BigInt,
+    realFee: BigInt,
   } {
   let newValue: BigInt;
   let realFee: BigInt;
@@ -103,7 +105,7 @@ export function getFeeBeneficiaryDetails(
   buyerFee: BigInt,
 ): {
   beneficiaryFee: BigInt,
-  beneficiary: Address
+  beneficiary: Address,
 } {
   let { newValue: restValue, realFee: sellerFeeValue } = subFeeInBp(
     total,
