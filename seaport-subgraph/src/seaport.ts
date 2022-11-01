@@ -1,0 +1,194 @@
+import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts";
+
+import {
+    OrderFulfilled,
+} from "../generated/Seaport/Seaport"
+import { isERC1155, isERC721, isOpenSeaFeeAccount, NFT, NftStandard, Sale } from "./utils";
+
+import * as airstack from "./modules/airstack";
+  
+export enum ItemType {
+    NATIVE = 0,
+    ERC20 = 1,
+    ERC721 = 2,
+    ERC1155 = 3,
+    ERC721_WITH_CRITERIA = 4,
+    ERC1155_WITH_CRITERIA = 5,
+}
+
+function isNFTEntity(itemType: number): bool {
+    return itemType >= 2;
+}
+  
+
+export function handleOrderFulfilled(event: OrderFulfilled): void {
+    let txHash = event.transaction.hash;
+    log.warning("new tx {}", [txHash.toHexString()]);
+
+    let offerer = event.params.offerer;
+    let recipient = event.params.recipient;
+
+    let paymentAmount = BigInt.fromI32(0);
+    let paymentToken: Address = Address.zero();
+    let seller: Address = Address.zero(),
+        buyer: Address = Address.zero();
+    let nftContracts: Address[] = [];
+    let nftIds: BigInt[] = [];
+    let royaltyFees = BigInt.fromI32(0);
+    let royaltyBeneficiary = Address.zero();
+    let protocolFees = BigInt.fromI32(0);
+    let protocolBeneficiary = Address.zero();
+    // let buyers: Address[] = [];
+    // let sellers: Address[] = [];
+
+    let allSales = new Array<Sale>();
+
+    for (let i = 0; i < event.params.offer.length; i++) {
+        let offer = event.params.offer[i];
+    
+        let isNFT = isNFTEntity(offer.itemType);
+    
+        log.info("offer type txHash {} logindex {} itemType {} isNFT {} index {}", [
+          txHash.toHexString(),
+          event.logIndex.toString(),
+          offer.itemType.toString(),
+          isNFT.toString(),
+          i.toString(),
+        ]);
+    
+        if (!isNFT) {
+          paymentToken = offer.token;
+          paymentAmount = offer.amount;
+          buyer = offerer;
+          seller = recipient;
+    
+          log.info(
+            "txHash offer log tx {} logindex {} paymentToken {} paymentAmount {} buyer {} seller {} index {}",
+            [
+              txHash.toHexString(),
+              event.logIndex.toString(),
+              paymentToken.toHexString(),
+              paymentAmount.toString(),
+              buyer.toHexString(),
+              seller.toHexString(),
+              i.toString(),
+            ]
+          );
+        } else {
+            let standard = isERC721(offer.itemType)
+              ? NftStandard.ERC721
+              : isERC1155(offer.itemType)
+              ? NftStandard.ERC1155
+              : NftStandard.UNKNOWN;
+            let nft = new NFT(offer.token, standard, offer.identifier, offer.amount);
+            // nftContracts.push(offer.token);
+            // nftIds.push(offer.identifier);
+    
+            buyer = recipient;
+            seller = offerer;
+            // buyers.push(buyer);
+            // sellers.push(seller);
+            let sale = new Sale(buyer, seller, nft, paymentAmount, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
+            allSales.push(sale);
+        
+            log.info(
+                "txHash offer log tx {} logindex {} nftContract {} NFTId {} index {}",
+                [
+                    txHash.toHexString(),
+                    event.logIndex.toString(),
+                    offer.token.toHexString(),
+                    offer.identifier.toString(),
+                    i.toString(),
+                ]
+            );
+        }
+    }
+    
+    for (let i = 0; i < event.params.consideration.length; i++) {
+        let consideration = event.params.consideration[i];
+    
+        let isNFT = isNFTEntity(consideration.itemType);
+    
+        log.info(
+          "consideration type txHash {} logindex {} itemType {} isNFT {} index {}",
+          [
+            txHash.toHexString(),
+            event.logIndex.toString(),
+            consideration.itemType.toString(),
+            isNFT.toString(),
+            i.toString(),
+          ]
+        );
+        if (!isNFT) {
+            paymentToken = consideration.token;
+            paymentAmount = paymentAmount.plus(consideration.amount);
+            if(isOpenSeaFeeAccount(consideration.recipient)){
+                protocolFees = protocolFees.plus(consideration.amount)
+                protocolBeneficiary = consideration.recipient
+            }
+            if(!isOpenSeaFeeAccount(consideration.recipient) && consideration.recipient != seller){
+                royaltyFees = royaltyFees.plus(consideration.amount)
+                royaltyBeneficiary = consideration.recipient
+            }
+            log.info(
+                "txHash consideration log tx {} logindex {} paymentToken {} paymentAmount {} buyer {} seller {} index {}",
+                [
+                    txHash.toHexString(),
+                    event.logIndex.toString(),
+                    paymentToken.toHexString(),
+                    paymentAmount.toString(),
+                    buyer.toHexString(),
+                    seller.toHexString(),
+                    i.toString(),
+                ]
+            );
+        } else {
+          nftContracts.push(consideration.token);
+          nftIds.push(consideration.identifier);
+
+          let standard = isERC721(consideration.itemType)
+            ? NftStandard.ERC721
+            : isERC1155(consideration.itemType)
+            ? NftStandard.ERC1155
+            : NftStandard.UNKNOWN;
+          let nft = new NFT(consideration.token, standard, consideration.identifier, consideration.amount);
+          // buyers.push(buyer);
+          // sellers.push(seller);
+
+          let sale = new Sale(buyer, seller, nft, paymentAmount, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
+          allSales.push(sale);
+    
+          log.info(
+            "txHash consideration log tx {} logindex {} nftContract {} NFTId {} index {}",
+            [
+              txHash.toHexString(),
+              event.logIndex.toString(),
+              consideration.token.toHexString(),
+              consideration.identifier.toString(),
+              i.toString(),
+            ]
+          );
+        }
+    }
+  
+  for(let i = 0; i <allSales.length; i++){
+    airstack.nft.trackNFTSaleTransactions(
+      txHash.toHexString(),
+      [allSales[i].seller],
+      [allSales[i].buyer],
+      [allSales[i].nft.collection],
+      [allSales[i].nft.tokenId],
+      paymentToken,
+      allSales[i].money,
+      "NFT_MARKET_PLACE",
+      "SELL",
+      [royaltyFees.div(BigInt.fromI64(allSales.length))],
+      [royaltyBeneficiary],
+      [protocolFees.div(BigInt.fromI64(allSales.length))],
+      [protocolBeneficiary],
+      event.block.timestamp,
+      event.block.number,
+      event.block.hash.toHexString()
+    )
+  }
+}
