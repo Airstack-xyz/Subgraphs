@@ -21,16 +21,4 @@ export namespace nft {
     timestamp: BigInt,
     blockHeight: BigInt
   ): void { }
-
-  export function trackNFTSaleTransactionsa(
-    txHash: string,
-    fromArray: Address[],
-    toArray: Address[],
-    contractAddressArray: Address[],
-    nftIdArray: BigInt[],
-    paymentTokenAddress: Address,
-    paymentAmount: BigInt,
-    timestamp: BigInt,
-    blockHeight: BigInt
-  ): void { }
 }
