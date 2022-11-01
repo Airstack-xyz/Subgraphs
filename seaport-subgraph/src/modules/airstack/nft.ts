@@ -17,6 +17,7 @@ import {
 export namespace nft {
     export function trackNFTSaleTransactions(
         txHash: string,
+        txIndex: BigInt,
         fromArray: Address[],
         toArray: Address[],
         contractAddressArray: Address[],
@@ -52,9 +53,13 @@ export namespace nft {
         for(let i=0; i<transactionCount; i++){
             // Account
             let buyerAccount = getOrCreateAirAccount(toArray[i].toHexString());
+            buyerAccount.createdAt = block.id
             let sellerAccount = getOrCreateAirAccount(fromArray[i].toHexString());
+            sellerAccount.createdAt = block.id
             let royaltyAccount = getOrCreateAirAccount(royaltyBeneficiary[i].toHexString());
+            royaltyAccount.createdAt = block.id
             let feeAccount = getOrCreateAirAccount(feeBeneficiary[i].toHexString());
+            feeAccount.createdAt = block.id
 
             // Sale Token
             let saleToken = getOrCreateAirToken(
@@ -87,6 +92,9 @@ export namespace nft {
             transaction.to = buyerAccount.id;
             transaction.from = sellerAccount.id;
             transaction.hash = txHash;
+            transaction.index = txIndex;
+            transaction.block = block.id;
+            transaction.tokenAmount = BigInt.fromI32(0);
 
             block.save();
             buyerAccount.save();
