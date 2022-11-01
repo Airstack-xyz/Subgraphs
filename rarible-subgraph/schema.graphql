@@ -105,21 +105,17 @@ type AirToken @entity {
   transactions: [AirNftTransaction!] @derivedFrom(field: "transactionToken")
 }
 
-interface AirTransaction {
+type AirNftTransaction @entity {
 	id: ID ! #chain-hash-logIndex-< add as per context > NFT marketplace will have tokenId
   from: AirAccount!
   transactionIndex: BigInt!
   to: AirAccount!
-  hash: string! #todo: Check if this should be bytes
+  hash: String! #todo: Check if this should be bytes
   block: AirBlock!
 	type: AirTransactionType!
   index: BigInt!
   protocolType: AirProtocolType!
   protocolActionType: AirProtocolActionType!
-}
-
-type AirNftTransaction implements AirTransaction @entity {
-  id: ID!
 	tokenId: BigInt! #nft
   tokenAmount:BigInt!   #nft 
 	transactionToken: AirToken!   #nft

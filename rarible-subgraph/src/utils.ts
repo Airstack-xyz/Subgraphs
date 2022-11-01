@@ -44,13 +44,15 @@ export enum AirProtocolActionType {
   CLAIM_REWARDS = "CLAIM_REWARDS",
 }
 
+interface RoyaltyDetails {
+  royaltyAmount: BigInt[],
+  royaltyRecipients: Address[],
+}
+
 export function getRoyaltyDetails(
   tokenId: BigInt,
   tokenAddress: Address,
-): {
-  royaltyAmount: BigInt[],
-  royaltyRecipients: Address[],
-} {
+): RoyaltyDetails {
   // extract data from contract logic comes here
   let contractInstance = HasSecondarySaleFees.bind(tokenAddress);
   let supportsInterface = contractInstance.try_supportsInterface(INTERFACE_ID_FEES);
@@ -71,22 +73,23 @@ export function getRoyaltyDetails(
   }
 }
 
+interface SubFeeResponse {
+  newValue: BigInt,
+  realFee: BigInt,
+}
+
 function subFeeInBp(
   value: BigInt,
   total: BigInt,
   feeInB: BigInt,
-): {
-  newValue: BigInt,
-  realFee: BigInt,
-} {
+): SubFeeResponse {
   return subFee(value, total.times(feeInB).div(new BigInt(10000)));
 }
 
-function subFee(value: BigInt, fee: BigInt)
-  : {
-    newValue: BigInt,
-    realFee: BigInt,
-  } {
+function subFee(
+  value: BigInt,
+  fee: BigInt
+): SubFeeResponse {
   let newValue: BigInt;
   let realFee: BigInt;
   if (value > fee) {
@@ -99,22 +102,24 @@ function subFee(value: BigInt, fee: BigInt)
   return { newValue, realFee };
 }
 
+interface BeneficiaryDetails {
+  beneficiaryFee: BigInt,
+  beneficiary: Address
+}
+
 export function getFeeBeneficiaryDetails(
   total: BigInt,
   sellerFee: BigInt,
   buyerFee: BigInt,
-): {
-  beneficiaryFee: BigInt,
-  beneficiary: Address,
-} {
-  let { newValue: restValue, realFee: sellerFeeValue } = subFeeInBp(
+): BeneficiaryDetails {
+  let SubFeeInBpResponse = subFeeInBp(
     total,
     total,
     sellerFee
   );
-
+  // SubFeeInBpResponse.newValue is not required to be used
   let buyerFeeValue = total.times(buyerFee).div(new BigInt(10000));
-  let beneficiaryFee = buyerFeeValue.plus(sellerFeeValue);
+  let beneficiaryFee = buyerFeeValue.plus(SubFeeInBpResponse.realFee);
   // TODO: think if this address should be fetched from the contract everytime?
   let beneficiary: Address = new Address(0xe627243104A101Ca59a2c629AdbCd63a782E837f);
   return {

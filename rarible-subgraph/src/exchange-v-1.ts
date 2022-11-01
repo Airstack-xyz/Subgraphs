@@ -15,9 +15,9 @@ export function handleExchange(call: ExchangeCall): void {
     let fee = paying.times(call.inputs.buyerFee).div(BigInt.fromI32(10000));
     let paymentAmount = paying.plus(fee);
 
-    let { royaltyAmount, royaltyRecipients } = utils.getRoyaltyDetails(call.inputs.order.key.sellAsset.tokenId, call.inputs.order.key.sellAsset.token);
+    let royaltyDetails = utils.getRoyaltyDetails(call.inputs.order.key.sellAsset.tokenId, call.inputs.order.key.sellAsset.token);
 
-    let { beneficiaryFee, beneficiary } = utils.getFeeBeneficiaryDetails(
+    let beneficiaryDetails = utils.getFeeBeneficiaryDetails(
       call.inputs.amount,
       call.inputs.order.sellerFee,
       call.inputs.buyerFee,
@@ -33,10 +33,10 @@ export function handleExchange(call: ExchangeCall): void {
       paymentAmount, // token amount
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
-      royaltyAmount, //royalty amount
-      royaltyRecipients, //royalty beneficiary
-      [beneficiaryFee],  //exchange fee
-      [beneficiary],  //exchange beneficiary
+      royaltyDetails.royaltyAmount, //royalty amount
+      royaltyDetails.royaltyRecipients, //royalty beneficiary
+      [beneficiaryDetails.beneficiaryFee],  //exchange fee
+      [beneficiaryDetails.beneficiary],  //exchange beneficiary
       call.block.timestamp,
       call.block.number,
       call.block.hash.toHexString(),
@@ -49,9 +49,9 @@ export function handleExchange(call: ExchangeCall): void {
       .div(BigInt.fromI32(10000));
     let paymentAmount = call.inputs.amount.plus(fee);
 
-    let { royaltyAmount, royaltyRecipients } = utils.getRoyaltyDetails(call.inputs.order.key.buyAsset.tokenId, call.inputs.order.key.buyAsset.token);
+    let royaltyDetails = utils.getRoyaltyDetails(call.inputs.order.key.buyAsset.tokenId, call.inputs.order.key.buyAsset.token);
 
-    let { beneficiaryFee, beneficiary } = utils.getFeeBeneficiaryDetails(
+    let beneficiaryDetails = utils.getFeeBeneficiaryDetails(
       call.inputs.amount,
       call.inputs.buyerFee,
       call.inputs.order.sellerFee,
@@ -67,10 +67,10 @@ export function handleExchange(call: ExchangeCall): void {
       paymentAmount, // token amount
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.SELL,
-      royaltyAmount, //royalty amount
-      royaltyRecipients, //royalty beneficiary
-      [beneficiaryFee],  //exchange fee
-      [beneficiary],  //exchange beneficiary
+      royaltyDetails.royaltyAmount, //royalty amount
+      royaltyDetails.royaltyRecipients, //royalty beneficiary
+      [beneficiaryDetails.beneficiaryFee],  //exchange fee
+      [beneficiaryDetails.beneficiary],  //exchange beneficiary
       call.block.timestamp,
       call.block.number,
       call.block.hash.toHexString(),
