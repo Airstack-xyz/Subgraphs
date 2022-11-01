@@ -1,11 +1,10 @@
 import {
   Address,
   BigInt,
-  Bytes,
 } from "@graphprotocol/graph-ts";
 import { HasSecondarySaleFees } from "../generated/ExchangeV1/HasSecondarySaleFees";
 
-export const INTERFACE_ID_FEES = Bytes.fromI64(0xb7799584);
+export const INTERFACE_ID_FEES = Address.fromString("0xb7799584");
 
 export namespace AirProtocolType {
   export const GENERIC = "GENERIC";
