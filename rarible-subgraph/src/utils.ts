@@ -7,41 +7,41 @@ import { HasSecondarySaleFees } from "../generated/ExchangeV1/HasSecondarySaleFe
 
 export const INTERFACE_ID_FEES = Bytes.fromI64(0xb7799584);
 
-export enum AirProtocolType {
-  GENERIC = "GENERIC",
-  EXCHANGE = "EXCHANGE",
-  LENDING = "LENDING",
-  YIELD = "YIELD",
-  BRIDGE = "BRIDGE",
-  DAO = "DAO",
-  NFT_MARKET_PLACE = "NFT_MARKET_PLACE",
-  STAKING = "STAKING",
-  P2E = "P2E",
-  LAUNCHPAD = "LAUNCHPAD",
+export namespace AirProtocolType {
+  export const GENERIC = "GENERIC";
+  export const EXCHANGE = "EXCHANGE";
+  export const LENDING = "LENDING";
+  export const YIELD = "YIELD";
+  export const BRIDGE = "BRIDGE";
+  export const DAO = "DAO";
+  export const NFT_MARKET_PLACE = "NFT_MARKET_PLACE";
+  export const STAKING = "STAKING";
+  export const P2E = "P2E";
+  export const LAUNCHPAD = "LAUNCHPAD";
 }
 
-export enum AirProtocolActionType {
-  ALL = "ALL",
-  BUY = "BUY",
-  SELL = "SELL",
-  MINT = "MINT",
-  BURN = "BURN",
-  ATTEND = "ATTEND",
-  EARN = "EARN",
-  SWAP = "SWAP",
-  ADD_LIQUIDITY = "ADD_LIQUIDITY",
-  REMOVE_LIQUIDITY = "REMOVE_LIQUIDITY",
-  ADD_TO_FARM = "ADD_TO_FARM",
-  REMOVE_FROM_FARM = "REMOVE_FROM_FARM",
-  CLAIM_FARM_REWARD = "CLAIM_FARM_REWARD",
-  LEND = "LEND",
-  BORROW = "BORROW",
-  FLASH_LOAN = "FLASH_LOAN",
-  STAKE = "STAKE",
-  RESTAKE = "RESTAKE",
-  UNSTAKE = "UNSTAKE",
-  DELEGATE = "DELEGATE",
-  CLAIM_REWARDS = "CLAIM_REWARDS",
+export namespace AirProtocolActionType {
+  export const ALL = "ALL";
+  export const BUY = "BUY";
+  export const SELL = "SELL";
+  export const MINT = "MINT";
+  export const BURN = "BURN";
+  export const ATTEND = "ATTEND";
+  export const EARN = "EARN";
+  export const SWAP = "SWAP";
+  export const ADD_LIQUIDITY = "ADD_LIQUIDITY";
+  export const REMOVE_LIQUIDITY = "REMOVE_LIQUIDITY";
+  export const ADD_TO_FARM = "ADD_TO_FARM";
+  export const REMOVE_FROM_FARM = "REMOVE_FROM_FARM";
+  export const CLAIM_FARM_REWARD = "CLAIM_FARM_REWARD";
+  export const LEND = "LEND";
+  export const BORROW = "BORROW";
+  export const FLASH_LOAN = "FLASH_LOAN";
+  export const STAKE = "STAKE";
+  export const RESTAKE = "RESTAKE";
+  export const UNSTAKE = "UNSTAKE";
+  export const DELEGATE = "DELEGATE";
+  export const CLAIM_REWARDS = "CLAIM_REWARDS";
 }
 
 interface RoyaltyDetails {
