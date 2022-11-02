@@ -1,6 +1,7 @@
 import {
   Address,
   BigInt,
+  Bytes,
 } from "@graphprotocol/graph-ts";
 import { HasSecondarySaleFees } from "../generated/ExchangeV1/HasSecondarySaleFees";
 
@@ -43,10 +44,10 @@ export namespace AirProtocolActionType {
   export const CLAIM_REWARDS = "CLAIM_REWARDS";
 }
 
-interface RoyaltyDetails {
-  royaltyAmount: BigInt[],
-  royaltyRecipients: Address[],
-}
+class RoyaltyDetails {
+  royaltyAmounts: BigInt[];
+  royaltyRecipients: Address[];
+};
 
 export function getRoyaltyDetails(
   tokenId: BigInt,
@@ -58,23 +59,23 @@ export function getRoyaltyDetails(
 
   if (!supportsInterface.reverted && supportsInterface.value) {
     let royaltyRecipients = contractInstance.getFeeRecipients(tokenId);
-    let royaltyAmount = contractInstance.getFeeBps(tokenId);
+    let royaltyAmounts = contractInstance.getFeeBps(tokenId);
 
     return {
-      royaltyAmount,
+      royaltyAmounts,
       royaltyRecipients,
     };
-  }
+  };
 
   return {
-    royaltyAmount: [],
+    royaltyAmounts: [],
     royaltyRecipients: [],
-  }
+  };
 }
 
-interface SubFeeResponse {
-  newValue: BigInt,
-  realFee: BigInt,
+class SubFeeResponse {
+  newValue: BigInt;
+  realFee: BigInt;
 }
 
 function subFeeInBp(
@@ -101,9 +102,9 @@ function subFee(
   return { newValue, realFee };
 }
 
-interface BeneficiaryDetails {
-  beneficiaryFee: BigInt,
-  beneficiary: Address
+class BeneficiaryDetails {
+  beneficiaryFee: BigInt;
+  beneficiary: Address;
 }
 
 export function getFeeBeneficiaryDetails(
@@ -120,7 +121,7 @@ export function getFeeBeneficiaryDetails(
   let buyerFeeValue = total.times(buyerFee).div(new BigInt(10000));
   let beneficiaryFee = buyerFeeValue.plus(SubFeeInBpResponse.realFee);
   // TODO: think if this address should be fetched from the contract everytime?
-  let beneficiary: Address = new Address(0xe627243104A101Ca59a2c629AdbCd63a782E837f);
+  let beneficiary = Address.fromString("0xe627243104A101Ca59a2c629AdbCd63a782E837f");
   return {
     beneficiaryFee,
     beneficiary,

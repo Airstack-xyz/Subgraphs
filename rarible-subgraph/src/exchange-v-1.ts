@@ -33,8 +33,8 @@ export function handleExchange(call: ExchangeCall): void {
       paymentAmount, // token amount
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
-      royaltyDetails.royaltyAmount, //royalty amount
-      royaltyDetails.royaltyRecipients, //royalty beneficiary
+      royaltyDetails.royaltyAmounts, //royalty amounts
+      royaltyDetails.royaltyRecipients, //royalty beneficiaries
       [beneficiaryDetails.beneficiaryFee],  //exchange fee
       [beneficiaryDetails.beneficiary],  //exchange beneficiary
       call.block.timestamp,
@@ -67,8 +67,8 @@ export function handleExchange(call: ExchangeCall): void {
       paymentAmount, // token amount
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.SELL,
-      royaltyDetails.royaltyAmount, //royalty amount
-      royaltyDetails.royaltyRecipients, //royalty beneficiary
+      royaltyDetails.royaltyAmounts, //royalty amounts
+      royaltyDetails.royaltyRecipients, //royalty beneficiaries
       [beneficiaryDetails.beneficiaryFee],  //exchange fee
       [beneficiaryDetails.beneficiary],  //exchange beneficiary
       call.block.timestamp,
