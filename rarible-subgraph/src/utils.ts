@@ -3,9 +3,12 @@ import {
   BigInt,
   Bytes,
 } from "@graphprotocol/graph-ts";
+import { ExchangeV1 } from "../generated/ExchangeV1/ExchangeV1";
 import { HasSecondarySaleFees } from "../generated/ExchangeV1/HasSecondarySaleFees";
 
-export const INTERFACE_ID_FEES = Address.fromString("0xb7799584");
+export const INTERFACE_ID_FEES = Bytes.fromHexString("0xb7799584");
+export const exchangeV1Address = Address.fromString("0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06");
+export const zeroAddress = Address.fromString("0x0000000000000000000000000000000000000000");
 
 export namespace AirProtocolType {
   export const GENERIC = "GENERIC";
@@ -83,7 +86,7 @@ function subFeeInBp(
   total: BigInt,
   feeInB: BigInt,
 ): SubFeeResponse {
-  return subFee(value, total.times(feeInB).div(new BigInt(10000)));
+  return subFee(value, bp(total, feeInB));
 }
 
 function subFee(
@@ -102,6 +105,10 @@ function subFee(
   return { newValue, realFee };
 }
 
+function bp(value1: BigInt, value2: BigInt): BigInt {
+  return value1.times(value2).div(BigInt.fromI32(10000));
+}
+
 class BeneficiaryDetails {
   beneficiaryFee: BigInt;
   beneficiary: Address;
@@ -118,10 +125,20 @@ export function getFeeBeneficiaryDetails(
     sellerFee
   );
   // SubFeeInBpResponse.newValue is not required to be used
-  let buyerFeeValue = total.times(buyerFee).div(new BigInt(10000));
+  let buyerFeeValue = bp(total, buyerFee);
   let beneficiaryFee = buyerFeeValue.plus(SubFeeInBpResponse.realFee);
-  // TODO: think if this address should be fetched from the contract everytime?
-  let beneficiary = Address.fromString("0xe627243104A101Ca59a2c629AdbCd63a782E837f");
+
+  let contractInstance = ExchangeV1.bind(exchangeV1Address);
+  let beneficiaryResult = contractInstance.try_beneficiary();
+
+  let beneficiary: Address;
+
+  if (!beneficiaryResult.reverted) {
+    beneficiary = beneficiaryResult.value;
+  } else {
+    beneficiary = zeroAddress;
+  }
+
   return {
     beneficiaryFee,
     beneficiary,

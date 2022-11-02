@@ -1,4 +1,4 @@
-import { BigInt } from "@graphprotocol/graph-ts";
+import { BigInt, Address } from "@graphprotocol/graph-ts";
 import { ExchangeCall } from "../generated/ExchangeV1/ExchangeV1";
 import * as airstack from "./modules/airstack";
 import * as utils from "./utils";
@@ -23,20 +23,31 @@ export function handleExchange(call: ExchangeCall): void {
       call.inputs.buyerFee,
     );
 
+    let nft = new airstack.nft.NFT(
+      sellAsset.token,
+      sellAsset.assetType == 2 ? "ERC1155" : sellAsset.assetType == 3 ? "ERC721" : "UNKNOWN",
+      sellAsset.tokenId,
+      call.inputs.amount,
+    )
+
+    let nftSales = new airstack.nft.Sale(
+      call.from,
+      call.inputs.order.key.owner,
+      nft,
+      paymentAmount,
+      buyAsset.token,
+      beneficiaryDetails.beneficiaryFee,
+      beneficiaryDetails.beneficiary,
+      royaltyDetails.royaltyAmounts.length > 0 ? royaltyDetails.royaltyAmounts[0] : BigInt.fromI32(0),
+      royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : utils.zeroAddress,
+    )
+
     airstack.nft.trackNFTSaleTransactions(
       call.transaction.hash.toHexString(),
-      [call.inputs.order.key.owner], //from
-      [call.from], //to
-      [sellAsset.token], //nft address
-      [sellAsset.tokenId], // nft id
-      buyAsset.token, // token address
-      paymentAmount, // token amount
+      call.transaction.index,
+      [nftSales],
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
-      royaltyDetails.royaltyAmounts, //royalty amounts
-      royaltyDetails.royaltyRecipients, //royalty beneficiaries
-      [beneficiaryDetails.beneficiaryFee],  //exchange fee
-      [beneficiaryDetails.beneficiary],  //exchange beneficiary
       call.block.timestamp,
       call.block.number,
       call.block.hash.toHexString(),
@@ -57,20 +68,31 @@ export function handleExchange(call: ExchangeCall): void {
       call.inputs.order.sellerFee,
     );
 
+    let nft = new airstack.nft.NFT(
+      buyAsset.token,
+      buyAsset.assetType == 2 ? "ERC1155" : sellAsset.assetType == 3 ? "ERC721" : "UNKNOWN",
+      buyAsset.tokenId,
+      call.inputs.amount,
+    )
+
+    let nftSales = new airstack.nft.Sale(
+      call.inputs.order.key.owner,
+      call.from,
+      nft,
+      paymentAmount,
+      sellAsset.token,
+      beneficiaryDetails.beneficiaryFee,
+      beneficiaryDetails.beneficiary,
+      royaltyDetails.royaltyAmounts.length > 0 ? royaltyDetails.royaltyAmounts[0] : BigInt.fromI32(0),
+      royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : utils.zeroAddress,
+    )
+
     airstack.nft.trackNFTSaleTransactions(
       call.transaction.hash.toHexString(),
-      [call.from], //from
-      [call.inputs.order.key.owner], //to
-      [buyAsset.token], //nft address
-      [buyAsset.tokenId], // nft id
-      sellAsset.token, // token address
-      paymentAmount, // token amount
+      call.transaction.index,
+      [nftSales],
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.SELL,
-      royaltyDetails.royaltyAmounts, //royalty amounts
-      royaltyDetails.royaltyRecipients, //royalty beneficiaries
-      [beneficiaryDetails.beneficiaryFee],  //exchange fee
-      [beneficiaryDetails.beneficiary],  //exchange beneficiary
       call.block.timestamp,
       call.block.number,
       call.block.hash.toHexString(),
