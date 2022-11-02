@@ -21,7 +21,6 @@ enum AirNetwork {
   MATIC # aka Polygon
   XDAI # aka Gnosis Chain
 }
-
 enum AirProtocolType {
   GENERIC
   EXCHANGE
@@ -70,14 +69,16 @@ enum AirProtocolActionType {
   DELEGATE
   CLAIM_REWARDS
 }
-# 2
+
+
 type AirBlock @entity {
- id: ID! #chain-number
+ id: ID! #chainID-number
  hash: String!
  number: BigInt!
  timestamp: BigInt!
 }
-# 1
+
+
 type AirMeta @entity {
   id: ID! # air_meta 
   network: String!
@@ -85,7 +86,7 @@ type AirMeta @entity {
   slug: String! #Opensea_V1
   name: String! # Opeasea V1
 }
-# 3
+
 type AirEntityCounter @entity {
 	id: ID! #Air_DAILY_STATS_ACCOUNT
 	count: BigInt!
@@ -99,16 +100,30 @@ type AirAccount @entity {
 	createdAt: AirBlock! 
 }
 
+
 type AirToken @entity {
 	id: ID! #chain-address
   address: String!
   transactions: [AirNftTransaction!] @derivedFrom(field: "transactionToken")
 }
 
-type AirNftTransaction @entity {
+
+interface AirTransaction {
 	id: ID ! #chain-hash-logIndex-< add as per context > NFT marketplace will have tokenId
   from: AirAccount!
-  transactionIndex: BigInt!
+  to: AirAccount!
+  hash: String! #todo: Check if this should be bytes
+  block: AirBlock!
+	type: AirTransactionType!
+  index: BigInt!
+  protocolType: AirProtocolType!
+  protocolActionType: AirProtocolActionType!
+}
+
+
+type AirNftTransaction implements AirTransaction @entity {
+  id: ID!
+  from: AirAccount!
   to: AirAccount!
   hash: String! #todo: Check if this should be bytes
   block: AirBlock!
@@ -128,6 +143,7 @@ type AirNftTransaction @entity {
   tokenMetadata: AirTokenMetadata
 }
 
+
 type AirTokenMetadata @entity {
   id: ID!
 	displayContentType: AirTokenDisplayType!
@@ -141,7 +157,6 @@ enum AirTokenDisplayType {
   TEXT_IMAGE
   TEXT
 }
-
 type AirExtraData @entity {
   id: ID!
   name: String!
