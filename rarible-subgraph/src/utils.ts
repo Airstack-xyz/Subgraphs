@@ -84,9 +84,9 @@ class SubFeeResponse {
 function subFeeInBp(
   value: BigInt,
   total: BigInt,
-  feeInB: BigInt,
+  feeInBp: BigInt,
 ): SubFeeResponse {
-  return subFee(value, bp(total, feeInB));
+  return subFee(value, bp(total, feeInBp));
 }
 
 function subFee(
@@ -99,7 +99,7 @@ function subFee(
     newValue = value.minus(fee);
     realFee = fee;
   } else {
-    newValue = new BigInt(0);
+    newValue = BigInt.fromI32(0);
     realFee = value;
   }
   return { newValue, realFee };
@@ -113,6 +113,8 @@ class BeneficiaryDetails {
   beneficiaryFee: BigInt;
   beneficiary: Address;
 }
+
+// TODO: fix beneficiary fee in buy txns and royalty amount in both
 
 export function getFeeBeneficiaryDetails(
   total: BigInt,

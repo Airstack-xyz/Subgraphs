@@ -18,7 +18,7 @@ export function handleExchange(call: ExchangeCall): void {
     let royaltyDetails = utils.getRoyaltyDetails(call.inputs.order.key.sellAsset.tokenId, call.inputs.order.key.sellAsset.token);
 
     let beneficiaryDetails = utils.getFeeBeneficiaryDetails(
-      call.inputs.amount,
+      paying,
       call.inputs.order.sellerFee,
       call.inputs.buyerFee,
     );
