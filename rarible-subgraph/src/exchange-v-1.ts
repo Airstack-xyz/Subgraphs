@@ -15,12 +15,17 @@ export function handleExchange(call: ExchangeCall): void {
     let fee = paying.times(call.inputs.buyerFee).div(BigInt.fromI32(10000));
     let paymentAmount = paying.plus(fee);
 
-    let royaltyDetails = utils.getRoyaltyDetails(call.inputs.order.key.sellAsset.tokenId, call.inputs.order.key.sellAsset.token);
-
     let beneficiaryDetails = utils.getFeeBeneficiaryDetails(
       paying,
       call.inputs.order.sellerFee,
       call.inputs.buyerFee,
+    );
+
+    let royaltyDetails = utils.getRoyaltyDetails(
+      call.inputs.order.key.sellAsset.tokenId,
+      call.inputs.order.key.sellAsset.token,
+      beneficiaryDetails.restValue,
+      paying,
     );
 
     let nft = new airstack.nft.NFT(
@@ -60,12 +65,17 @@ export function handleExchange(call: ExchangeCall): void {
       .div(BigInt.fromI32(10000));
     let paymentAmount = call.inputs.amount.plus(fee);
 
-    let royaltyDetails = utils.getRoyaltyDetails(call.inputs.order.key.buyAsset.tokenId, call.inputs.order.key.buyAsset.token);
-
     let beneficiaryDetails = utils.getFeeBeneficiaryDetails(
       call.inputs.amount,
       call.inputs.buyerFee,
       call.inputs.order.sellerFee,
+    );
+
+    let royaltyDetails = utils.getRoyaltyDetails(
+      call.inputs.order.key.buyAsset.tokenId,
+      call.inputs.order.key.buyAsset.token,
+      beneficiaryDetails.restValue,
+      call.inputs.amount,
     );
 
     let nft = new airstack.nft.NFT(

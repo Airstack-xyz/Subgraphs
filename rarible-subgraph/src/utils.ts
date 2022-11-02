@@ -55,6 +55,8 @@ class RoyaltyDetails {
 export function getRoyaltyDetails(
   tokenId: BigInt,
   tokenAddress: Address,
+  restValue: BigInt,
+  amount: BigInt,
 ): RoyaltyDetails {
   // extract data from contract logic comes here
   let contractInstance = HasSecondarySaleFees.bind(tokenAddress);
@@ -63,7 +65,11 @@ export function getRoyaltyDetails(
   if (!supportsInterface.reverted && supportsInterface.value) {
     let royaltyRecipients = contractInstance.getFeeRecipients(tokenId);
     let royaltyAmounts = contractInstance.getFeeBps(tokenId);
-
+    for (var i = 0; i < royaltyAmounts.length; i++) {
+      let subFeeResponse = subFeeInBp(restValue, amount, royaltyAmounts[i]);
+      royaltyAmounts[i] = subFeeResponse.realFee;
+      restValue = subFeeResponse.newValue;
+    }
     return {
       royaltyAmounts,
       royaltyRecipients,
@@ -112,9 +118,8 @@ function bp(value1: BigInt, value2: BigInt): BigInt {
 class BeneficiaryDetails {
   beneficiaryFee: BigInt;
   beneficiary: Address;
+  restValue: BigInt;
 }
-
-// TODO: fix beneficiary fee in buy txns and royalty amount in both
 
 export function getFeeBeneficiaryDetails(
   total: BigInt,
@@ -126,7 +131,7 @@ export function getFeeBeneficiaryDetails(
     total,
     sellerFee
   );
-  // SubFeeInBpResponse.newValue is not required to be used
+
   let buyerFeeValue = bp(total, buyerFee);
   let beneficiaryFee = buyerFeeValue.plus(SubFeeInBpResponse.realFee);
 
@@ -144,5 +149,6 @@ export function getFeeBeneficiaryDetails(
   return {
     beneficiaryFee,
     beneficiary,
+    restValue: SubFeeInBpResponse.newValue,
   };
 }
