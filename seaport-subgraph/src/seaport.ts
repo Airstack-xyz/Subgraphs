@@ -3,7 +3,7 @@ import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts";
 import {
     OrderFulfilled,
 } from "../generated/Seaport/Seaport"
-import { isERC1155, isERC721, isOpenSeaFeeAccount, NFT, NftStandard, Sale } from "./utils";
+import { isERC1155, isERC721, isOpenSeaFeeAccount, NftStandard } from "./utils";
 
 import * as airstack from "./modules/airstack";
   
@@ -41,7 +41,7 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
     // let buyers: Address[] = [];
     // let sellers: Address[] = [];
 
-    let allSales = new Array<Sale>();
+    let allSales = new Array<airstack.nft.Sale>();
 
     for (let i = 0; i < event.params.offer.length; i++) {
         let offer = event.params.offer[i];
@@ -80,7 +80,7 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
               : isERC1155(offer.itemType)
               ? NftStandard.ERC1155
               : NftStandard.UNKNOWN;
-            let nft = new NFT(offer.token, standard, offer.identifier, offer.amount);
+            let nft = new airstack.nft.NFT(offer.token, standard, offer.identifier, offer.amount);
             // nftContracts.push(offer.token);
             // nftIds.push(offer.identifier);
     
@@ -88,7 +88,7 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
             seller = offerer;
             // buyers.push(buyer);
             // sellers.push(seller);
-            let sale = new Sale(buyer, seller, nft, paymentAmount, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
+            let sale = new airstack.nft.Sale(buyer, seller, nft, paymentAmount, paymentToken, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
             allSales.push(sale);
         
             log.info(
@@ -151,11 +151,11 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
             : isERC1155(consideration.itemType)
             ? NftStandard.ERC1155
             : NftStandard.UNKNOWN;
-          let nft = new NFT(consideration.token, standard, consideration.identifier, consideration.amount);
+          let nft = new airstack.nft.NFT(consideration.token, standard, consideration.identifier, consideration.amount);
           // buyers.push(buyer);
           // sellers.push(seller);
 
-          let sale = new Sale(buyer, seller, nft, paymentAmount, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
+          let sale = new airstack.nft.Sale(buyer, seller, nft, paymentAmount, paymentToken, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
           allSales.push(sale);
     
           log.info(
@@ -172,21 +172,27 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
     }
   
   for(let i = 0; i <allSales.length; i++){
+    allSales[i].royaltyFees = royaltyFees.div(BigInt.fromI64(allSales.length));
+    allSales[i].protocolFees = protocolFees.div(BigInt.fromI64(allSales.length));
+    allSales[i].paymentAmount = paymentAmount.div(
+      BigInt.fromI32(allSales.length)
+    ); // For bundle sale, equally divide the payment amount in all sale transaction
     airstack.nft.trackNFTSaleTransactions(
       txHash.toHexString(),
       event.transaction.index,
-      [allSales[i].seller],
-      [allSales[i].buyer],
-      [allSales[i].nft.collection],
-      [allSales[i].nft.tokenId],
-      paymentToken,
-      allSales[i].money,
+      allSales,
+      // [allSales[i].seller],
+      // [allSales[i].buyer],
+      // [allSales[i].nft.collection],
+      // [allSales[i].nft.tokenId],
+      // paymentToken,
+      // allSales[i].money,
       "NFT_MARKET_PLACE",
       "SELL",
-      [royaltyFees.div(BigInt.fromI64(allSales.length))],
-      [royaltyBeneficiary],
-      [protocolFees.div(BigInt.fromI64(allSales.length))],
-      [protocolBeneficiary],
+      // [royaltyFees.div(BigInt.fromI64(allSales.length))],
+      // [royaltyBeneficiary],
+      // [protocolFees.div(BigInt.fromI64(allSales.length))],
+      // [protocolBeneficiary],
       event.block.timestamp,
       event.block.number,
       event.block.hash.toHexString()
