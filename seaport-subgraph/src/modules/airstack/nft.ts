@@ -88,6 +88,8 @@ export namespace nft {
             block.save();
             buyerAccount.save();
             sellerAccount.save();
+            royaltyAccount.save();
+            feeAccount.save();
             transaction.save();
         }
     }
@@ -164,7 +166,7 @@ export namespace nft {
     export class NFT {
         constructor(
           public readonly collection: Address,
-          public readonly standard: string,
+          public readonly standard: string, //ERC1155 or ERC721
           public readonly tokenId: BigInt,
           public readonly amount: BigInt
         ) {}
