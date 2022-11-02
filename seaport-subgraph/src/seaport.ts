@@ -38,8 +38,6 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
     let royaltyBeneficiary = Address.zero();
     let protocolFees = BigInt.fromI32(0);
     let protocolBeneficiary = Address.zero();
-    // let buyers: Address[] = [];
-    // let sellers: Address[] = [];
 
     let allSales = new Array<airstack.nft.Sale>();
 
@@ -81,13 +79,9 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
               ? NftStandard.ERC1155
               : NftStandard.UNKNOWN;
             let nft = new airstack.nft.NFT(offer.token, standard, offer.identifier, offer.amount);
-            // nftContracts.push(offer.token);
-            // nftIds.push(offer.identifier);
     
             buyer = recipient;
             seller = offerer;
-            // buyers.push(buyer);
-            // sellers.push(seller);
             let sale = new airstack.nft.Sale(buyer, seller, nft, paymentAmount, paymentToken, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
             allSales.push(sale);
         
@@ -173,10 +167,13 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
   
   for(let i = 0; i <allSales.length; i++){
     allSales[i].royaltyFees = royaltyFees.div(BigInt.fromI64(allSales.length));
+    allSales[i].royaltyFeesBeneficiary = royaltyBeneficiary;
     allSales[i].protocolFees = protocolFees.div(BigInt.fromI64(allSales.length));
+    allSales[i].protocolFeesBeneficiary = protocolBeneficiary;
     allSales[i].paymentAmount = paymentAmount.div(
       BigInt.fromI32(allSales.length)
     ); // For bundle sale, equally divide the payment amount in all sale transaction
+    allSales[i].paymentToken = paymentToken;
     airstack.nft.trackNFTSaleTransactions(
       txHash.toHexString(),
       event.transaction.index,
