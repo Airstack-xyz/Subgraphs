@@ -137,9 +137,9 @@ type AirNftTransaction implements AirTransaction @entity {
 	paymentToken: AirToken #payment
   paymentAmount: BigInt #payment
   royaltyAmount: BigInt
-  royaltyBeneficiary: String
+  royaltyBeneficiary: AirAccount
   feeAmount: BigInt
-  feeBeneficiary: String
+  feeBeneficiary: AirAccount
   tokenMetadata: AirTokenMetadata
 }
 

@@ -66,43 +66,43 @@ export function isOpenSeaFeeAccount(address: Address): boolean {
     );
 }
 
-export class Sale {
-    constructor(
-      public readonly buyer: Address,
-      public readonly seller: Address,
-      public readonly nft: NFT,
-      public readonly money: BigInt,
-      public readonly protocolFees: BigInt,
-      public readonly protocolFeesBeneficiary: Address,
-      public readonly royaltyFees: BigInt,
-      public readonly royaltyFeesBeneficiary: Address
-    ) {}
-}
+// export class Sale {
+//     constructor(
+//       public readonly buyer: Address,
+//       public readonly seller: Address,
+//       public readonly nft: NFT,
+//       public readonly money: BigInt,
+//       public readonly protocolFees: BigInt,
+//       public readonly protocolFeesBeneficiary: Address,
+//       public readonly royaltyFees: BigInt,
+//       public readonly royaltyFeesBeneficiary: Address
+//     ) {}
+// }
 
-export class NFT {
-    constructor(
-      public readonly collection: Address,
-      public readonly standard: string,
-      public readonly tokenId: BigInt,
-      public readonly amount: BigInt
-    ) {}
-  }
+// export class NFT {
+//     constructor(
+//       public readonly collection: Address,
+//       public readonly standard: string,
+//       public readonly tokenId: BigInt,
+//       public readonly amount: BigInt
+//     ) {}
+// }
   
-export class Money {
-    constructor(public readonly amount: BigInt) {}
-}
+// export class Money {
+//     constructor(public readonly amount: BigInt) {}
+// }
   
-export class Fees {
-    constructor(
-      public readonly protocolFee: BigInt,
-      public readonly protocolFeeBeneficiary: Address,
-      public readonly royaltyItems: Array<royaltyItem>,
-    ) {}
-}
+// export class Fees {
+//     constructor(
+//       public readonly protocolFee: BigInt,
+//       public readonly protocolFeeBeneficiary: Address,
+//       public readonly royaltyItems: Array<royaltyItem>,
+//     ) {}
+// }
 
-export class royaltyItem{
-    constructor(
-        public readonly royaltyAmount: BigInt,
-        public readonly royaltyBeneficiary: Address,
-    ) {}
-}
+// export class royaltyItem{
+//     constructor(
+//         public readonly royaltyAmount: BigInt,
+//         public readonly royaltyBeneficiary: Address,
+//     ) {}
+// }
