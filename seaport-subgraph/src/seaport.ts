@@ -32,14 +32,14 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
     let paymentToken: Address = Address.zero();
     let seller: Address = Address.zero(),
         buyer: Address = Address.zero();
-    let nftContracts: Address[] = [];
-    let nftIds: BigInt[] = [];
     let royaltyFees = BigInt.fromI32(0);
     let royaltyBeneficiary = Address.zero();
     let protocolFees = BigInt.fromI32(0);
     let protocolBeneficiary = Address.zero();
 
     let allSales = new Array<airstack.nft.Sale>();
+
+    log.info("Parameters txHash {} offerer {} recipient {} orderHash {}", [txHash.toHexString(), offerer.toHexString(), recipient.toHexString(), event.params.orderHash.toHexString()]);
 
     for (let i = 0; i < event.params.offer.length; i++) {
         let offer = event.params.offer[i];
@@ -79,20 +79,23 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
               ? NftStandard.ERC1155
               : NftStandard.UNKNOWN;
             let nft = new airstack.nft.NFT(offer.token, standard, offer.identifier, offer.amount);
-    
+            
             buyer = recipient;
             seller = offerer;
+
             let sale = new airstack.nft.Sale(buyer, seller, nft, paymentAmount, paymentToken, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
             allSales.push(sale);
         
             log.info(
-                "txHash offer log tx {} logindex {} nftContract {} NFTId {} index {}",
+                "txHash offer log tx {} logindex {} nftContract {} NFTId {} index {} buyer {} seller {}",
                 [
                     txHash.toHexString(),
                     event.logIndex.toString(),
                     offer.token.toHexString(),
                     offer.identifier.toString(),
                     i.toString(),
+                    buyer.toHexString(),
+                    seller.toHexString(),
                 ]
             );
         }
@@ -100,7 +103,6 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
     
     for (let i = 0; i < event.params.consideration.length; i++) {
         let consideration = event.params.consideration[i];
-    
         let isNFT = isNFTEntity(consideration.itemType);
     
         log.info(
@@ -125,74 +127,75 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
                 royaltyBeneficiary = consideration.recipient
             }
             log.info(
-                "txHash consideration log tx {} logindex {} paymentToken {} paymentAmount {} buyer {} seller {} index {}",
+                "txHash consideration log tx {} logindex {} paymentToken {} paymentAmount {} recipient {} buyer {} seller {} index {}",
                 [
                     txHash.toHexString(),
                     event.logIndex.toString(),
                     paymentToken.toHexString(),
                     paymentAmount.toString(),
+                    consideration.recipient.toHexString(),
                     buyer.toHexString(),
                     seller.toHexString(),
                     i.toString(),
                 ]
             );
         } else {
-          nftContracts.push(consideration.token);
-          nftIds.push(consideration.identifier);
-
+          if (buyer == Address.zero()){
+            buyer = consideration.recipient;
+          }
           let standard = isERC721(consideration.itemType)
             ? NftStandard.ERC721
             : isERC1155(consideration.itemType)
             ? NftStandard.ERC1155
             : NftStandard.UNKNOWN;
           let nft = new airstack.nft.NFT(consideration.token, standard, consideration.identifier, consideration.amount);
-          // buyers.push(buyer);
-          // sellers.push(seller);
 
           let sale = new airstack.nft.Sale(buyer, seller, nft, paymentAmount, paymentToken, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
           allSales.push(sale);
     
           log.info(
-            "txHash consideration log tx {} logindex {} nftContract {} NFTId {} index {}",
+            "txHash consideration log tx {} logindex {} nftContract {} NFTId {} index {} recipient {} buyer {} seller {}",
             [
               txHash.toHexString(),
               event.logIndex.toString(),
               consideration.token.toHexString(),
               consideration.identifier.toString(),
               i.toString(),
+              consideration.recipient.toHexString(),
+              buyer.toHexString(),
+              seller.toHexString(),
             ]
           );
         }
     }
   
-  for(let i = 0; i <allSales.length; i++){
-    allSales[i].royaltyFees = royaltyFees.div(BigInt.fromI64(allSales.length));
-    allSales[i].royaltyFeesBeneficiary = royaltyBeneficiary;
-    allSales[i].protocolFees = protocolFees.div(BigInt.fromI64(allSales.length));
-    allSales[i].protocolFeesBeneficiary = protocolBeneficiary;
-    allSales[i].paymentAmount = paymentAmount.div(
-      BigInt.fromI32(allSales.length)
-    ); // For bundle sale, equally divide the payment amount in all sale transaction
-    allSales[i].paymentToken = paymentToken;
-    airstack.nft.trackNFTSaleTransactions(
-      txHash.toHexString(),
-      event.transaction.index,
-      allSales,
-      // [allSales[i].seller],
-      // [allSales[i].buyer],
-      // [allSales[i].nft.collection],
-      // [allSales[i].nft.tokenId],
-      // paymentToken,
-      // allSales[i].money,
-      "NFT_MARKET_PLACE",
-      "SELL",
-      // [royaltyFees.div(BigInt.fromI64(allSales.length))],
-      // [royaltyBeneficiary],
-      // [protocolFees.div(BigInt.fromI64(allSales.length))],
-      // [protocolBeneficiary],
-      event.block.timestamp,
-      event.block.number,
-      event.block.hash.toHexString()
-    )
+    for(let i = 0; i <allSales.length; i++){
+        allSales[i].royaltyFees = royaltyFees.div(BigInt.fromI64(allSales.length));
+        allSales[i].royaltyFeesBeneficiary = royaltyBeneficiary;
+        allSales[i].protocolFees = protocolFees.div(BigInt.fromI64(allSales.length));
+        allSales[i].protocolFeesBeneficiary = protocolBeneficiary;
+        allSales[i].paymentAmount = paymentAmount.div(
+          BigInt.fromI32(allSales.length)
+        ); // For bundle sale, equally divide the payment amount in all sale transaction
+        allSales[i].paymentToken = paymentToken;
+        log.info("txHash {} royaltyBeneficiary {} feeBeneficiary {} royaltyAmount {} feeAmount {}",
+          [ 
+            txHash.toHexString(),
+            royaltyBeneficiary.toHexString(),
+            protocolBeneficiary.toHexString(),
+            allSales[i].royaltyFees.toString(),
+            allSales[i].protocolFees.toString(),
+          ]
+        )
+        airstack.nft.trackNFTSaleTransactions(
+          txHash.toHexString(),
+          event.transaction.index,
+          allSales,
+          "NFT_MARKET_PLACE",
+          "SELL",
+          event.block.timestamp,
+          event.block.number,
+          event.block.hash.toHexString()
+        )
   }
 }
