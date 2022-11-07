@@ -11,6 +11,7 @@ import {
   AirProtocolType,
   zeroAddress,
   getRoyaltyDetailsForExchangeV2,
+  subFeeInBp,
 } from "./utils";
 import * as airstack from "./modules/airstack";
 
@@ -45,26 +46,23 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       orderRight.makeAsset.value,
     )
 
-    let originFeeData = getOriginFees(orderLeft.dataType, orderLeft.data);
-
     let royaltyDetails = getRoyaltyDetailsForExchangeV2(
       orderRight.makeAsset.assetType.assetClass,
       orderRight.makeAsset.assetType.data,
       dataSource.address(),
     );
 
+    let originFeeData = getOriginFees(orderLeft.dataType, orderLeft.data);
+
     let nftSales = new airstack.nft.Sale(
       orderLeft.maker,  //to
       orderRight.maker, //from
       nft,
       paymentAmount,
-      // BigInt.fromI32(0),
       leftAsset.address,
-      // BigInt.fromI32(0),
-      // zeroAddress,
-      originFeeData.originFee,
+      subFeeInBp(paymentAmount, paymentAmount, originFeeData.originFee).realFee,
       originFeeData.originFeeAddress,
-      royaltyDetails.royaltyAmounts.length > 0 ? royaltyDetails.royaltyAmounts[0] : BigInt.fromI32(0),
+      royaltyDetails.royaltyAmounts.length > 0 ? subFeeInBp(paymentAmount, paymentAmount, royaltyDetails.royaltyAmounts[0]).realFee : BigInt.fromI32(0),
       royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : zeroAddress,
     )
 
@@ -99,26 +97,23 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       orderRight.takeAsset.value,
     )
 
-    let originFeeData = getOriginFees(orderRight.dataType, orderRight.data);
-
     let royaltyDetails = getRoyaltyDetailsForExchangeV2(
-      orderRight.makeAsset.assetType.assetClass,
-      orderRight.makeAsset.assetType.data,
+      orderLeft.makeAsset.assetType.assetClass,
+      orderLeft.makeAsset.assetType.data,
       dataSource.address(),
     );
+
+    let originFeeData = getOriginFees(orderRight.dataType, orderRight.data);
 
     let nftSales = new airstack.nft.Sale(
       orderRight.maker, //to
       orderLeft.maker,  //from
       nft,
       paymentAmount,
-      // BigInt.fromI32(0),
       rightAsset.address,
-      // BigInt.fromI32(0),
-      // zeroAddress,
-      originFeeData.originFee,
+      subFeeInBp(paymentAmount, paymentAmount, originFeeData.originFee).realFee,
       originFeeData.originFeeAddress,
-      royaltyDetails.royaltyAmounts.length > 0 ? royaltyDetails.royaltyAmounts[0] : BigInt.fromI32(0),
+      royaltyDetails.royaltyAmounts.length > 0 ? subFeeInBp(paymentAmount, paymentAmount, royaltyDetails.royaltyAmounts[0]).realFee : BigInt.fromI32(0),
       royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : zeroAddress,
     )
 

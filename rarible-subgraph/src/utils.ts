@@ -95,7 +95,7 @@ class SubFeeResponse {
   realFee: BigInt;
 }
 
-function subFeeInBp(
+export function subFeeInBp(
   value: BigInt,
   total: BigInt,
   feeInBp: BigInt,
@@ -446,4 +446,3 @@ function getRoyaltiesRegistryAddress(exchangeV2: Address): Address {
   }
   return zeroAddress;
 }
-
