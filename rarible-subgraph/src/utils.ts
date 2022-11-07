@@ -270,13 +270,14 @@ export function getOriginFees(exchangeType: Bytes, data: Bytes): OriginFeeClass 
       } else {
         let dataV1 = decoded.toTuple();
         let originFeeArray = dataV1[1].toArray();
-        let originFeeAddress = dataV1[0].toAddress();
         let originFee = BIGINT_ZERO;
+        let originFeeReceiver: Address = zeroAddress;
         for (let i = 0; i < originFeeArray.length; i++) {
           let originFeeItem = originFeeArray[i].toTuple();
+          originFeeReceiver = originFeeItem[0].toAddress();
           originFee = originFee.plus(originFeeItem[1].toBigInt());
         }
-        return { originFee, originFeeAddress };
+        return { originFee, originFeeAddress: originFeeReceiver };
       }
     }
     let decoded = ethereum.decode(
@@ -288,13 +289,14 @@ export function getOriginFees(exchangeType: Bytes, data: Bytes): OriginFeeClass 
     } else {
       let dataV1 = decoded.toTuple();
       let originFeeArray = dataV1[1].toArray();
-      let originFeeAddress = dataV1[0].toAddress();
       let originFee = BIGINT_ZERO;
+      let originFeeReceiver: Address = zeroAddress;
       for (let i = 0; i < originFeeArray.length; i++) {
         let originFeeItem = originFeeArray[i].toTuple();
+        originFeeReceiver = originFeeItem[0].toAddress();
         originFee = originFee.plus(originFeeItem[1].toBigInt());
       }
-      return { originFee, originFeeAddress };
+      return { originFee, originFeeAddress: originFeeReceiver };
     }
   } else if (exchangeType.toHexString() == V2) {
     let decoded = ethereum.decode(
@@ -307,17 +309,27 @@ export function getOriginFees(exchangeType: Bytes, data: Bytes): OriginFeeClass 
     } else {
       let dataV2 = decoded.toTuple();
       let originFeeArray = dataV2[1].toArray();
-      let originFeeAddress = dataV2[0].toAddress();
       let originFee = BIGINT_ZERO;
+      let originFeeReceiver: Address = zeroAddress;
       for (let i = 0; i < originFeeArray.length; i++) {
         let originFeeItem = originFeeArray[i].toTuple();
+        originFeeReceiver = originFeeItem[0].toAddress();
         originFee = originFee.plus(originFeeItem[1].toBigInt());
       }
-      return { originFee, originFeeAddress };
+      return { originFee, originFeeAddress: originFeeReceiver };
     }
   }
   log.error("Not V1/V2 data={}", [data.toHexString()]);
   return { originFee: BIGINT_ZERO, originFeeAddress: zeroAddress };
+}
+export function calculatedTotal(
+  amt: BigInt,
+  exchangeType: Bytes,
+  data: Bytes
+): BigInt {
+  let originFeesData = getOriginFees(exchangeType, data);
+  let calculatedFees = amt.times(originFeesData.originFee).div(BigInt.fromI32(10000));
+  return amt.plus(calculatedFees);
 }
 
 // function getRoyaltiesByAssetType(LibAsset.AssetType memory nftAssetType) internal returns(LibPart.Part[] memory) {
@@ -424,16 +436,6 @@ export function getRoyaltyDetailsForExchangeV2(assetClass: Bytes, data: Bytes, e
     royaltyAmounts: [],
     royaltyRecipients: []
   }
-}
-
-export function calculatedTotal(
-  amt: BigInt,
-  exchangeType: Bytes,
-  data: Bytes
-): BigInt {
-  let originFeesData = getOriginFees(exchangeType, data);
-  let calculatedFees = amt.times(originFeesData.originFee).div(BigInt.fromI32(10000));
-  return amt.plus(calculatedFees);
 }
 
 function getRoyaltiesRegistryAddress(exchangeV2: Address): Address {

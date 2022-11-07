@@ -58,7 +58,10 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       orderRight.maker, //from
       nft,
       paymentAmount,
+      // BigInt.fromI32(0),
       leftAsset.address,
+      // BigInt.fromI32(0),
+      // zeroAddress,
       originFeeData.originFee,
       originFeeData.originFeeAddress,
       royaltyDetails.royaltyAmounts.length > 0 ? royaltyDetails.royaltyAmounts[0] : BigInt.fromI32(0),
@@ -93,7 +96,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       leftAsset.address,
       leftAssetType,
       leftAsset.id,
-      orderLeft.makeAsset.value,
+      orderRight.takeAsset.value,
     )
 
     let originFeeData = getOriginFees(orderRight.dataType, orderRight.data);
@@ -109,7 +112,10 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       orderLeft.maker,  //from
       nft,
       paymentAmount,
+      // BigInt.fromI32(0),
       rightAsset.address,
+      // BigInt.fromI32(0),
+      // zeroAddress,
       originFeeData.originFee,
       originFeeData.originFeeAddress,
       royaltyDetails.royaltyAmounts.length > 0 ? royaltyDetails.royaltyAmounts[0] : BigInt.fromI32(0),
