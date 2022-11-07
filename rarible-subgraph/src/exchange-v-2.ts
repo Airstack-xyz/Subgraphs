@@ -1,3 +1,4 @@
+import { BigInt, dataSource } from "@graphprotocol/graph-ts";
 import { MatchOrdersCall } from "../generated/ExchangeV2/ExchangeV2";
 import {
   ETH,
@@ -5,9 +6,13 @@ import {
   getClass,
   decodeAsset,
   calculatedTotal,
+  getOriginFees,
+  AirProtocolActionType,
+  AirProtocolType,
+  zeroAddress,
+  getRoyaltyDetailsForExchangeV2,
 } from "./utils";
 import * as airstack from "./modules/airstack";
-import { AirProtocolActionType, AirProtocolType } from "./utils";
 
 export function handleMatchOrders(call: MatchOrdersCall): void {
   let orderLeft = call.inputs.orderLeft;
@@ -35,21 +40,29 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 
     let nft = new airstack.nft.NFT(
       rightAsset.address,
-      rightAsset.assetClass,
+      rightAssetType,
       rightAsset.id,
       orderRight.makeAsset.value,
     )
 
+    let originFeeData = getOriginFees(orderLeft.dataType, orderLeft.data);
+
+    let royaltyDetails = getRoyaltyDetailsForExchangeV2(
+      orderRight.makeAsset.assetType.assetClass,
+      orderRight.makeAsset.assetType.data,
+      dataSource.address(),
+    );
+
     let nftSales = new airstack.nft.Sale(
-      orderLeft.maker,
-      orderRight.maker,
+      orderLeft.maker,  //to
+      orderRight.maker, //from
       nft,
       paymentAmount,
       leftAsset.address,
-      beneficiaryDetails.beneficiaryFee,
-      beneficiaryDetails.beneficiary,
+      originFeeData.originFee,
+      originFeeData.originFeeAddress,
       royaltyDetails.royaltyAmounts.length > 0 ? royaltyDetails.royaltyAmounts[0] : BigInt.fromI32(0),
-      royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : utils.zeroAddress,
+      royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : zeroAddress,
     )
 
     airstack.nft.trackNFTSaleTransactions(
@@ -78,21 +91,29 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 
     let nft = new airstack.nft.NFT(
       leftAsset.address,
-      leftAsset.assetClass,
+      leftAssetType,
       leftAsset.id,
       orderLeft.makeAsset.value,
     )
 
+    let originFeeData = getOriginFees(orderRight.dataType, orderRight.data);
+
+    let royaltyDetails = getRoyaltyDetailsForExchangeV2(
+      orderRight.makeAsset.assetType.assetClass,
+      orderRight.makeAsset.assetType.data,
+      dataSource.address(),
+    );
+
     let nftSales = new airstack.nft.Sale(
-      orderRight.maker,
-      orderLeft.maker,
+      orderRight.maker, //to
+      orderLeft.maker,  //from
       nft,
       paymentAmount,
       rightAsset.address,
-      beneficiaryDetails.beneficiaryFee,
-      beneficiaryDetails.beneficiary,
+      originFeeData.originFee,
+      originFeeData.originFeeAddress,
       royaltyDetails.royaltyAmounts.length > 0 ? royaltyDetails.royaltyAmounts[0] : BigInt.fromI32(0),
-      royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : utils.zeroAddress,
+      royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : zeroAddress,
     )
 
     airstack.nft.trackNFTSaleTransactions(

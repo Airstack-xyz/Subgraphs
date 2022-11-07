@@ -55,6 +55,8 @@ dataSources:
       abis:
         - name: ExchangeV2
           file: ./abis/ExchangeV2.json
+        - name: RoyaltiesRegistry
+          file: ./abis/RoyaltiesRegistry.json
       callHandlers:
         - function: matchOrders((address,((bytes4,bytes),uint256),address,((bytes4,bytes),uint256),uint256,uint256,uint256,bytes4,bytes),bytes,(address,((bytes4,bytes),uint256),address,((bytes4,bytes),uint256),uint256,uint256,uint256,bytes4,bytes),bytes)
           handler: handleMatchOrders

@@ -1,4 +1,4 @@
-import { BigInt, Address } from "@graphprotocol/graph-ts";
+import { BigInt } from "@graphprotocol/graph-ts";
 import { ExchangeCall } from "../generated/ExchangeV1/ExchangeV1";
 import * as airstack from "./modules/airstack";
 import * as utils from "./utils";
