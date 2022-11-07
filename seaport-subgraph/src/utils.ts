@@ -59,6 +59,7 @@ export function isOpenSeaFeeAccount(address: Address): boolean {
     const OPENSEA_ETHEREUM_FEE_COLLECTOR = Address.fromString(
       "0x0000a26b00c1F0DF003000390027140000fAa719"
     );
+    
     return (
       address == OPENSEA_WALLET_ADDRESS ||
       address == OPENSEA_FEES_ACCOUNT ||
