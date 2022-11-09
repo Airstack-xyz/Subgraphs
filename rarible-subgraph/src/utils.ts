@@ -60,6 +60,12 @@ class RoyaltyDetails {
   royaltyRecipients: Address[];
 };
 
+class RoyaltyDetailsWithRestValue {
+  royaltyAmount: BigInt;
+  royaltyRecipient: Address;
+  restValue: BigInt;
+}
+
 export function getRoyaltyDetails(
   tokenId: BigInt,
   tokenAddress: Address,
@@ -207,6 +213,7 @@ export class Asset {
     this.assetClass = assetClass;
   }
 }
+
 export function decodeAsset(data: Bytes, type: string): Asset {
   if (type == ERC20) {
     let decoded = ethereum.decode("(address)", data);
@@ -245,6 +252,18 @@ export function decodeAsset(data: Bytes, type: string): Asset {
 export class OriginFeeClass {
   originFee: BigInt;
   originFeeAddress: Address;
+  constructor(originFee: BigInt, originFeeAddress: Address) {
+    this.originFee = originFee;
+    this.originFeeAddress = originFeeAddress;
+  }
+}
+
+export class OriginFeeClassWithRestValue extends OriginFeeClass {
+  restValue: BigInt;
+  constructor(originFee: BigInt, originFeeAddress: Address, restValue: BigInt) {
+    super(originFee, originFeeAddress);
+    this.restValue = restValue;
+  }
 }
 
 export function getOriginFees(exchangeType: Bytes, data: Bytes): OriginFeeClass {
@@ -277,7 +296,7 @@ export function getOriginFees(exchangeType: Bytes, data: Bytes): OriginFeeClass 
           originFeeReceiver = originFeeItem[0].toAddress();
           originFee = originFee.plus(originFeeItem[1].toBigInt());
         }
-        return { originFee, originFeeAddress: originFeeReceiver };
+        return new OriginFeeClass(originFee, originFeeReceiver);
       }
     }
     let decoded = ethereum.decode(
@@ -296,7 +315,7 @@ export function getOriginFees(exchangeType: Bytes, data: Bytes): OriginFeeClass 
         originFeeReceiver = originFeeItem[0].toAddress();
         originFee = originFee.plus(originFeeItem[1].toBigInt());
       }
-      return { originFee, originFeeAddress: originFeeReceiver };
+      return new OriginFeeClass(originFee, originFeeReceiver);
     }
   } else if (exchangeType.toHexString() == V2) {
     let decoded = ethereum.decode(
@@ -316,12 +335,113 @@ export function getOriginFees(exchangeType: Bytes, data: Bytes): OriginFeeClass 
         originFeeReceiver = originFeeItem[0].toAddress();
         originFee = originFee.plus(originFeeItem[1].toBigInt());
       }
-      return { originFee, originFeeAddress: originFeeReceiver };
+      return new OriginFeeClass(originFee, originFeeReceiver);
     }
   }
   log.error("Not V1/V2 data={}", [data.toHexString()]);
-  return { originFee: BIGINT_ZERO, originFeeAddress: zeroAddress };
+  return new OriginFeeClass(BIGINT_ZERO, zeroAddress);
 }
+
+export function getOriginFeesWithRestValue(
+  exchangeType: Bytes,
+  data: Bytes,
+  restValue: BigInt,
+  totalAmount: BigInt
+): OriginFeeClassWithRestValue {
+  if (exchangeType.toHexString() == V1) {
+    if (
+      data
+        .toHexString()
+        .startsWith(
+          "0x000000000000000000000000000000000000000000000000000000000000004"
+        )
+    ) {
+      data = Bytes.fromHexString(
+        "0x0000000000000000000000000000000000000000000000000000000000000020" +
+        data.toHexString().slice(2)
+      );
+      log.error("weird case {}", [data.toHexString()]);
+      let decoded = ethereum.decode(
+        "((address,uint96)[],(address,uint96)[])",
+        data
+      );
+      if (!decoded) {
+        log.error("{} not decoded", [data.toHexString()]);
+      } else {
+        let dataV1 = decoded.toTuple();
+        let originFeeArray = dataV1[1].toArray();
+        let originFeeReceiver: Address = zeroAddress;
+        let originFeeTotalBps: BigInt = BIGINT_ZERO;
+        for (let i = 0; i < originFeeArray.length; i++) {
+          let originFeeItem = originFeeArray[i].toTuple();
+          originFeeReceiver = originFeeItem[0].toAddress();
+          originFeeTotalBps = originFeeTotalBps.plus(originFeeItem[1].toBigInt());
+        }
+        let originFee = subFeeInBp(restValue, totalAmount, originFeeTotalBps);
+        return new OriginFeeClassWithRestValue(
+          originFee.realFee,
+          originFeeReceiver,
+          originFee.newValue,
+        );
+      }
+    }
+    let decoded = ethereum.decode(
+      "((address,uint96)[],(address,uint96)[])",
+      data
+    );
+    if (!decoded) {
+      log.error("{} not decoded", [data.toHexString()]);
+    } else {
+      let dataV1 = decoded.toTuple();
+      let originFeeArray = dataV1[1].toArray();
+      let originFeeReceiver: Address = zeroAddress;
+      let originFeeTotalBps: BigInt = BIGINT_ZERO;
+      for (let i = 0; i < originFeeArray.length; i++) {
+        let originFeeItem = originFeeArray[i].toTuple();
+        originFeeReceiver = originFeeItem[0].toAddress();
+        originFeeTotalBps = originFeeTotalBps.plus(originFeeItem[1].toBigInt());
+      }
+      let originFee = subFeeInBp(restValue, totalAmount, originFeeTotalBps);
+      return new OriginFeeClassWithRestValue(
+        originFee.realFee,
+        originFeeReceiver,
+        originFee.newValue,
+      );
+    }
+  } else if (exchangeType.toHexString() == V2) {
+    let decoded = ethereum.decode(
+      "((address,uint96)[],(address,uint96)[],bool)",
+      data
+    );
+
+    if (!decoded) {
+      log.error("{} not decoded", [data.toHexString()]);
+    } else {
+      let dataV2 = decoded.toTuple();
+      let originFeeArray = dataV2[1].toArray();
+      let originFeeReceiver: Address = zeroAddress;
+      let originFeeTotalBps: BigInt = BIGINT_ZERO;
+      for (let i = 0; i < originFeeArray.length; i++) {
+        let originFeeItem = originFeeArray[i].toTuple();
+        originFeeReceiver = originFeeItem[0].toAddress();
+        originFeeTotalBps = originFeeTotalBps.plus(originFeeItem[1].toBigInt());
+      }
+      let originFee = subFeeInBp(restValue, totalAmount, originFeeTotalBps);
+      return new OriginFeeClassWithRestValue(
+        originFee.realFee,
+        originFeeReceiver,
+        originFee.newValue,
+      );
+    }
+  }
+  log.error("Not V1/V2 data={}", [data.toHexString()]);
+  return new OriginFeeClassWithRestValue(
+    BIGINT_ZERO,
+    zeroAddress,
+    BIGINT_ZERO,
+  );
+}
+
 export function calculatedTotal(
   amt: BigInt,
   exchangeType: Bytes,
@@ -332,22 +452,13 @@ export function calculatedTotal(
   return amt.plus(calculatedFees);
 }
 
-// function getRoyaltiesByAssetType(LibAsset.AssetType memory nftAssetType) internal returns(LibPart.Part[] memory) {
-//   if (nftAssetType.assetClass == LibAsset.ERC1155_ASSET_CLASS || nftAssetType.assetClass == LibAsset.ERC721_ASSET_CLASS) {
-//     (address token, uint tokenId) = abi.decode(nftAssetType.data, (address, uint));
-//     return royaltiesRegistry.getRoyalties(token, tokenId);
-//   } else if (nftAssetType.assetClass == LibERC1155LazyMint.ERC1155_LAZY_ASSET_CLASS) {
-//     (, LibERC1155LazyMint.Mint1155Data memory data) = abi.decode(nftAssetType.data, (address, LibERC1155LazyMint.Mint1155Data));
-//     return data.royalties;
-//   } else if (nftAssetType.assetClass == LibERC721LazyMint.ERC721_LAZY_ASSET_CLASS) {
-//     (, LibERC721LazyMint.Mint721Data memory data) = abi.decode(nftAssetType.data, (address, LibERC721LazyMint.Mint721Data));
-//     return data.royalties;
-//   }
-//   LibPart.Part[] memory empty;
-//   return empty;
-// }
-
-export function getRoyaltyDetailsForExchangeV2(assetClass: Bytes, data: Bytes, exchangeV2: Address): RoyaltyDetails {
+export function getRoyaltyDetailsForExchangeV2(
+  assetClass: Bytes,
+  data: Bytes,
+  exchangeV2: Address,
+  restValue: BigInt,
+  totalAmount: BigInt
+): RoyaltyDetailsWithRestValue {
   if (getClass(assetClass) == ERC721_LAZY) {
     let decoded = ethereum.decode(
       MINT_721_DATA,
@@ -360,17 +471,26 @@ export function getRoyaltyDetailsForExchangeV2(assetClass: Bytes, data: Bytes, e
       let royaltyAmounts: BigInt[] = [];
       let royaltyRecipients: Address[] = [];
       let royaltyDataArray = decodedData[3].toArray();
+      let royaltyValue: SubFeeResponse = {
+        newValue: BIGINT_ZERO,
+        realFee: BIGINT_ZERO,
+      };
       for (let i = 0; i < royaltyDataArray.length; i++) {
         let royaltyItem = royaltyDataArray[i].toTuple();
         let royaltyBeneficiary = royaltyItem[0].toAddress();
-        let royaltyValue = royaltyItem[1].toBigInt();
-        royaltyAmounts.push(royaltyValue);
+        royaltyValue = subFeeInBp(restValue, totalAmount, royaltyItem[1].toBigInt());
+        log.info("{} royaltyAmount for royaltyBps {} and totalAmount {} newValue {}", [royaltyValue.realFee.toString(), royaltyItem[1].toBigInt().toString(), totalAmount.toString(), royaltyValue.newValue.toString()]);
+        royaltyAmounts.push(royaltyValue.realFee);
+        restValue = royaltyValue.newValue;
         royaltyRecipients.push(royaltyBeneficiary);
-        log.info("{} {} ERC721_LAZY decoded data", [royaltyBeneficiary.toHexString(), royaltyValue.toString()]);
+        log.info("{} {} ERC721_LAZY decoded data", [royaltyBeneficiary.toHexString(), royaltyValue.realFee.toString()]);
       }
+      let royaltyAmount = royaltyAmounts.length > 0 ? royaltyAmounts[0] : BigInt.fromI32(0);
+      let royaltyRecipient = royaltyRecipients.length > 0 ? royaltyRecipients[0] : zeroAddress;
       return {
-        royaltyAmounts,
-        royaltyRecipients,
+        royaltyAmount,
+        royaltyRecipient,
+        restValue: royaltyValue.newValue
       }
     }
   } else if (getClass(assetClass) == ERC1155_LAZY) {
@@ -385,17 +505,26 @@ export function getRoyaltyDetailsForExchangeV2(assetClass: Bytes, data: Bytes, e
       let royaltyAmounts: BigInt[] = [];
       let royaltyRecipients: Address[] = [];
       let royaltyDataArray = decodedData[4].toArray();
+      let royaltyValue: SubFeeResponse = {
+        newValue: BIGINT_ZERO,
+        realFee: BIGINT_ZERO,
+      };
       for (let i = 0; i < royaltyDataArray.length; i++) {
         let royaltyItem = royaltyDataArray[i].toTuple();
         let royaltyBeneficiary = royaltyItem[0].toAddress();
-        let royaltyValue = royaltyItem[1].toBigInt();
-        royaltyAmounts.push(royaltyValue);
+        royaltyValue = subFeeInBp(restValue, totalAmount, royaltyItem[1].toBigInt());
+        log.info("{} royaltyAmount for royaltyBps {} and totalAmount {} newValue {}", [royaltyValue.realFee.toString(), royaltyItem[1].toBigInt().toString(), totalAmount.toString(), royaltyValue.newValue.toString()]);
+        royaltyAmounts.push(royaltyValue.realFee);
+        restValue = royaltyValue.newValue;
         royaltyRecipients.push(royaltyBeneficiary);
-        log.info("{} {} ERC1155_LAZY decoded data", [royaltyBeneficiary.toHexString(), royaltyValue.toString()]);
+        log.info("{} {} ERC1155_LAZY decoded data", [royaltyBeneficiary.toHexString(), royaltyValue.realFee.toString()]);
       }
+      let royaltyAmount = royaltyAmounts.length > 0 ? royaltyAmounts[0] : BigInt.fromI32(0);
+      let royaltyRecipient = royaltyRecipients.length > 0 ? royaltyRecipients[0] : zeroAddress;
       return {
-        royaltyAmounts,
-        royaltyRecipients,
+        royaltyAmount,
+        royaltyRecipient,
+        restValue: royaltyValue.newValue
       }
     }
   } else if (getClass(assetClass) == ERC1155 || getClass(assetClass) == ERC721) {
@@ -412,6 +541,10 @@ export function getRoyaltyDetailsForExchangeV2(assetClass: Bytes, data: Bytes, e
       let token = decodedData[0].toAddress();
       let tokenId = decodedData[1].toBigInt();
       let royaltiesRegistry = getRoyaltiesRegistryAddress(exchangeV2);
+      let royaltyValue: SubFeeResponse = {
+        newValue: BIGINT_ZERO,
+        realFee: BIGINT_ZERO,
+      };
       if (royaltiesRegistry !== zeroAddress) {
         let royaltiesRegistryInstance = RoyaltiesRegistry.bind(royaltiesRegistry);
         let royaltiesDataResponse = royaltiesRegistryInstance.try_getRoyalties(token, tokenId);
@@ -419,22 +552,28 @@ export function getRoyaltyDetailsForExchangeV2(assetClass: Bytes, data: Bytes, e
           for (let i = 0; i < royaltiesDataResponse.value.length; i++) {
             let royaltyItem = royaltiesDataResponse.value[i];
             let royaltyBeneficiary = royaltyItem[0].toAddress();
-            let royaltyValue = royaltyItem[1].toBigInt();
-            royaltyAmounts.push(royaltyValue);
+            royaltyValue = subFeeInBp(restValue, totalAmount, royaltyItem[1].toBigInt());
+            log.info("{} royaltyAmount for royaltyBps {} and totalAmount {} newValue {}", [royaltyValue.realFee.toString(), royaltyItem[1].toBigInt().toString(), totalAmount.toString(), royaltyValue.newValue.toString()]);
+            royaltyAmounts.push(royaltyValue.realFee);
+            restValue = royaltyValue.newValue;
             royaltyRecipients.push(royaltyBeneficiary);
-            log.info("{} {} ERC1155 and ERC721 decoded data", [royaltyBeneficiary.toHexString(), royaltyValue.toString()]);
+            log.info("{} {} ERC1155 and ERC721 decoded data", [royaltyBeneficiary.toHexString(), royaltyValue.realFee.toString()]);
           }
         }
       }
+      let royaltyAmount = royaltyAmounts.length > 0 ? royaltyAmounts[0] : BigInt.fromI32(0);
+      let royaltyRecipient = royaltyRecipients.length > 0 ? royaltyRecipients[0] : zeroAddress;
       return {
-        royaltyAmounts,
-        royaltyRecipients,
+        royaltyAmount,
+        royaltyRecipient,
+        restValue: royaltyValue.newValue
       }
     }
   }
   return {
-    royaltyAmounts: [],
-    royaltyRecipients: []
+    royaltyAmount: BigInt.fromI32(0),
+    royaltyRecipient: zeroAddress,
+    restValue: BigInt.fromI32(0)
   }
 }
 

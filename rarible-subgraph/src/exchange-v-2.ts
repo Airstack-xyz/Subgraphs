@@ -1,4 +1,4 @@
-import { BigInt, dataSource } from "@graphprotocol/graph-ts";
+import { BigInt, dataSource, log } from "@graphprotocol/graph-ts";
 import { MatchOrdersCall } from "../generated/ExchangeV2/ExchangeV2";
 import {
   ETH,
@@ -7,11 +7,13 @@ import {
   decodeAsset,
   calculatedTotal,
   getOriginFees,
+  getOriginFeesWithRestValue,
   AirProtocolActionType,
   AirProtocolType,
   zeroAddress,
   getRoyaltyDetailsForExchangeV2,
   subFeeInBp,
+  BIGINT_ZERO,
 } from "./utils";
 import * as airstack from "./modules/airstack";
 
@@ -33,26 +35,33 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 
   if (leftAssetType == ETH || leftAssetType == ERC20) {
     // rightAsset is NFT
+    log.info("{} {} {} {} address id and data and hash", [rightAsset.address.toHexString(), rightAsset.id.toString(), orderRight.makeAsset.assetType.data.toHexString(), call.transaction.hash.toHexString()]);
+
     let paymentAmount = calculatedTotal(
       orderLeft.makeAsset.value,
       orderLeft.dataType,
       orderLeft.data
     );
-
+    log.info("{} payment amount for transaction hash {}", [paymentAmount.toString(), call.transaction.hash.toHexString()]);
     let nft = new airstack.nft.NFT(
-      rightAsset.address,
+      orderLeft.maker,
       rightAssetType,
       rightAsset.id,
       orderRight.makeAsset.value,
     )
 
+    log.info("{} nftassetvalue for transaction hash {}", [orderRight.makeAsset.value.toString(), call.transaction.hash.toHexString()]);
     let royaltyDetails = getRoyaltyDetailsForExchangeV2(
       orderRight.makeAsset.assetType.assetClass,
       orderRight.makeAsset.assetType.data,
       dataSource.address(),
+      paymentAmount,
+      paymentAmount,
     );
+    log.info("{} royalty fee for transaction hash {}", [royaltyDetails.royaltyAmount.toString(), call.transaction.hash.toHexString()]);
 
-    let originFeeData = getOriginFees(orderLeft.dataType, orderLeft.data);
+    let originFeeData = getOriginFeesWithRestValue(orderLeft.dataType, orderLeft.data, royaltyDetails.restValue, paymentAmount);
+    log.info("{} origin fee for transaction hash {}", [originFeeData.originFee.toString(), call.transaction.hash.toHexString()]);
 
     let nftSales = new airstack.nft.Sale(
       orderLeft.maker,  //to
@@ -60,10 +69,10 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       nft,
       paymentAmount,
       leftAsset.address,
-      subFeeInBp(paymentAmount, paymentAmount, originFeeData.originFee).realFee,
+      originFeeData.originFee,
       originFeeData.originFeeAddress,
-      royaltyDetails.royaltyAmounts.length > 0 ? subFeeInBp(paymentAmount, paymentAmount, royaltyDetails.royaltyAmounts[0]).realFee : BigInt.fromI32(0),
-      royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : zeroAddress,
+      royaltyDetails.royaltyAmount,
+      royaltyDetails.royaltyRecipient,
     )
 
     airstack.nft.trackNFTSaleTransactions(
@@ -72,24 +81,21 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       [nftSales],
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.SELL,
-      // [orderRight.maker], //from
-      // [orderLeft.maker], //to
-      // [rightAsset.address], //nft address
-      // [rightAsset.id], // nft id
-      // leftAsset.address, // token address
-      // paymentAmount, // token amount
       call.block.timestamp,
       call.block.number,
       call.block.hash.toHexString()
     );
   } else {
     // leftAsset is NFT
+    log.info("{} {} {} {} address id and data and hash", [leftAsset.address.toHexString(), leftAsset.id.toString(), orderLeft.makeAsset.assetType.data.toHexString(), call.transaction.hash.toHexString()]);
+
     let paymentAmount = calculatedTotal(
       orderRight.makeAsset.value,
       orderRight.dataType,
       orderRight.data
     );
 
+    log.info("{} payment amount for transaction hash {}", [paymentAmount.toString(), call.transaction.hash.toHexString()]);
     let nft = new airstack.nft.NFT(
       leftAsset.address,
       leftAssetType,
@@ -97,13 +103,18 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       orderRight.takeAsset.value,
     )
 
+    log.info("{} nftassetvalue for transaction hash {}", [orderRight.takeAsset.value.toString(), call.transaction.hash.toHexString()]);
     let royaltyDetails = getRoyaltyDetailsForExchangeV2(
       orderLeft.makeAsset.assetType.assetClass,
       orderLeft.makeAsset.assetType.data,
       dataSource.address(),
+      paymentAmount,
+      paymentAmount,
     );
+    log.info("{} royalty fee for transaction hash {}", [royaltyDetails.royaltyAmount.toString(), call.transaction.hash.toHexString()]);
 
-    let originFeeData = getOriginFees(orderRight.dataType, orderRight.data);
+    let originFeeData = getOriginFeesWithRestValue(orderRight.dataType, orderRight.data, royaltyDetails.restValue, paymentAmount);
+    log.info("{} origin fee for transaction hash {}", [originFeeData.originFee.toString(), call.transaction.hash.toHexString()]);
 
     let nftSales = new airstack.nft.Sale(
       orderRight.maker, //to
@@ -111,10 +122,10 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       nft,
       paymentAmount,
       rightAsset.address,
-      subFeeInBp(paymentAmount, paymentAmount, originFeeData.originFee).realFee,
+      originFeeData.originFee,
       originFeeData.originFeeAddress,
-      royaltyDetails.royaltyAmounts.length > 0 ? subFeeInBp(paymentAmount, paymentAmount, royaltyDetails.royaltyAmounts[0]).realFee : BigInt.fromI32(0),
-      royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : zeroAddress,
+      royaltyDetails.royaltyAmount,
+      royaltyDetails.royaltyRecipient,
     )
 
     airstack.nft.trackNFTSaleTransactions(
@@ -123,12 +134,6 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       [nftSales],
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
-      // [orderLeft.maker], //from
-      // [orderRight.maker], //to
-      // [leftAsset.address], //nft address
-      // [leftAsset.id], // nft id
-      // rightAsset.address, // token address
-      // paymentAmount, // token amount
       call.block.timestamp,
       call.block.number,
       call.block.hash.toHexString()
