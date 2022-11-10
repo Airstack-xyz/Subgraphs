@@ -14,6 +14,7 @@ import {
   getRoyaltyDetailsForExchangeV2,
   subFeeInBp,
   BIGINT_ZERO,
+  getOriginFeeArray,
 } from "./utils";
 import * as airstack from "./modules/airstack";
 
@@ -49,6 +50,30 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       rightAsset.id,
       orderRight.makeAsset.value,
     )
+
+    let LibOrderData = getOriginFeeArray(orderLeft.dataType,
+      orderLeft.data);
+
+    for (let i = 0; i < LibOrderData.originFeeArray.length; i++) {
+      log.info("{} {} address and value originfeearray index {} transactionhash {} data {} exchangetype {} makeassetvalue {} makeassetclass {}",
+        [
+          LibOrderData.originFeeArray[i].address.toHexString(),
+          LibOrderData.originFeeArray[i].value.toString(),
+          i.toString(),
+          call.transaction.hash.toHexString(),
+          orderLeft.data.toHexString(),
+          orderLeft.dataType.toHexString(),
+          orderLeft.makeAsset.value.toString(),
+          orderLeft.makeAsset.assetType.assetClass.toHexString()
+        ]
+      );
+    }
+
+    for (let i = 0; i < LibOrderData.payoutFeeArray.length; i++) {
+      log.info("{} {} address and value payoutFeeArray index {} transactionhash {}", [LibOrderData.payoutFeeArray[i].address.toHexString(), LibOrderData.payoutFeeArray[i].value.toString(), i.toString(), call.transaction.hash.toHexString()]);
+    }
+
+    log.info("{} ismakefill transactionhash {}", [LibOrderData.isMakeFill.toString(), call.transaction.hash.toHexString()]);
 
     log.info("{} nftassetvalue for transaction hash {}", [orderRight.makeAsset.value.toString(), call.transaction.hash.toHexString()]);
     let royaltyDetails = getRoyaltyDetailsForExchangeV2(
@@ -102,6 +127,29 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       leftAsset.id,
       orderRight.takeAsset.value,
     )
+
+    let LibOrderData = getOriginFeeArray(orderRight.dataType,
+      orderRight.data);
+
+    for (let i = 0; i < LibOrderData.originFeeArray.length; i++) {
+      log.info("{} {} address and value originfeearray index {} transactionhash {} data {} exchangetype {} makeassetvalue {}",
+        [
+          LibOrderData.originFeeArray[i].address.toHexString(),
+          LibOrderData.originFeeArray[i].value.toString(),
+          i.toString(),
+          call.transaction.hash.toHexString(),
+          orderRight.data.toHexString(),
+          orderRight.dataType.toHexString(),
+          orderRight.makeAsset.value.toString(),
+          orderRight.makeAsset.assetType.assetClass.toHexString()
+        ]);
+    }
+
+    for (let i = 0; i < LibOrderData.payoutFeeArray.length; i++) {
+      log.info("{} {} address and value payoutFeeArray index {} transactionhash {}", [LibOrderData.payoutFeeArray[i].address.toHexString(), LibOrderData.payoutFeeArray[i].value.toString(), i.toString(), call.transaction.hash.toHexString()]);
+    }
+
+    log.info("{} ismakefill transactionhash {}", [LibOrderData.isMakeFill.toString(), call.transaction.hash.toHexString()]);
 
     log.info("{} nftassetvalue for transaction hash {}", [orderRight.takeAsset.value.toString(), call.transaction.hash.toHexString()]);
     let royaltyDetails = getRoyaltyDetailsForExchangeV2(

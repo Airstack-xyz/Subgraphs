@@ -341,6 +341,120 @@ export function getOriginFees(exchangeType: Bytes, data: Bytes): OriginFeeClass 
   log.error("Not V1/V2 data={}", [data.toHexString()]);
   return new OriginFeeClass(BIGINT_ZERO, zeroAddress);
 }
+class OriginFeeArrayClass {
+  originFeeArray: Array<LibPart>;
+  payoutFeeArray: Array<LibPart>;
+  isMakeFill: bool;
+}
+
+export function getOriginFeeArray(exchangeType: Bytes, data: Bytes): OriginFeeArrayClass {
+  let originFeeArray: Array<LibPart> = [];
+  let payoutFeeArray: Array<LibPart> = [];
+  let isMakeFill: bool = false;
+  if (exchangeType.toHexString() == V1) {
+    if (
+      data
+        .toHexString()
+        .startsWith(
+          "0x000000000000000000000000000000000000000000000000000000000000004"
+        )
+    ) {
+      data = Bytes.fromHexString(
+        "0x0000000000000000000000000000000000000000000000000000000000000020" +
+        data.toHexString().slice(2)
+      );
+      log.error("weird case {}", [data.toHexString()]);
+      let decoded = ethereum.decode(
+        "((address,uint96)[],(address,uint96)[])",
+        data
+      );
+      if (!decoded) {
+        log.error("{} not decoded", [data.toHexString()]);
+      } else {
+        let dataV1 = decoded.toTuple();
+        let payoutFeeArrayData = dataV1[0].toArray();
+        let originFeeArrayData = dataV1[1].toArray();
+        for (let i = 0; i < originFeeArrayData.length; i++) {
+          let originFeeItem = originFeeArrayData[i].toTuple();
+          let libPart = new LibPart(
+            originFeeItem[0].toAddress(),
+            originFeeItem[1].toBigInt()
+          );
+          originFeeArray.push(libPart);
+        }
+        for (let i = 0; i < payoutFeeArrayData.length; i++) {
+          let payoutFeeItem = payoutFeeArrayData[i].toTuple();
+          let libPart = new LibPart(
+            payoutFeeItem[0].toAddress(),
+            payoutFeeItem[1].toBigInt()
+          );
+          payoutFeeArray.push(libPart);
+        }
+        return { originFeeArray, payoutFeeArray, isMakeFill };
+      }
+    }
+    let decoded = ethereum.decode(
+      "((address,uint96)[],(address,uint96)[])",
+      data
+    );
+    if (!decoded) {
+      log.error("{} not decoded", [data.toHexString()]);
+    } else {
+      let dataV1 = decoded.toTuple();
+      let payoutFeeArrayData = dataV1[0].toArray();
+      let originFeeArrayData = dataV1[1].toArray();
+      for (let i = 0; i < originFeeArrayData.length; i++) {
+        let originFeeItem = originFeeArrayData[i].toTuple();
+        let libPart = new LibPart(
+          originFeeItem[0].toAddress(),
+          originFeeItem[1].toBigInt()
+        );
+        originFeeArray.push(libPart);
+      }
+      for (let i = 0; i < payoutFeeArrayData.length; i++) {
+        let payoutFeeItem = payoutFeeArrayData[i].toTuple();
+        let libPart = new LibPart(
+          payoutFeeItem[0].toAddress(),
+          payoutFeeItem[1].toBigInt()
+        );
+        payoutFeeArray.push(libPart);
+      }
+      return { originFeeArray, payoutFeeArray, isMakeFill };
+    }
+  } else if (exchangeType.toHexString() == V2) {
+    let decoded = ethereum.decode(
+      "((address,uint96)[],(address,uint96)[],bool)",
+      data
+    );
+
+    if (!decoded) {
+      log.error("{} not decoded", [data.toHexString()]);
+    } else {
+      let dataV2 = decoded.toTuple();
+      let payoutFeeArrayData = dataV2[0].toArray();
+      let originFeeArrayData = dataV2[1].toArray();
+      isMakeFill = dataV2[2].toBoolean();
+      for (let i = 0; i < originFeeArrayData.length; i++) {
+        let originFeeItem = originFeeArrayData[i].toTuple();
+        let libPart = new LibPart(
+          originFeeItem[0].toAddress(),
+          originFeeItem[1].toBigInt()
+        );
+        originFeeArray.push(libPart);
+      }
+      for (let i = 0; i < payoutFeeArrayData.length; i++) {
+        let payoutFeeItem = payoutFeeArrayData[i].toTuple();
+        let libPart = new LibPart(
+          payoutFeeItem[0].toAddress(),
+          payoutFeeItem[1].toBigInt()
+        );
+        payoutFeeArray.push(libPart);
+      }
+      return { originFeeArray, payoutFeeArray, isMakeFill };
+    }
+  }
+  return { originFeeArray, payoutFeeArray, isMakeFill };
+}
 
 export function getOriginFeesWithRestValue(
   exchangeType: Bytes,
@@ -573,7 +687,7 @@ export function getRoyaltyDetailsForExchangeV2(
   return {
     royaltyAmount: BigInt.fromI32(0),
     royaltyRecipient: zeroAddress,
-    restValue: BigInt.fromI32(0)
+    restValue,
   }
 }
 
@@ -585,3 +699,68 @@ function getRoyaltiesRegistryAddress(exchangeV2: Address): Address {
   }
   return zeroAddress;
 }
+
+class LibPart {
+  address: Address;
+  value: BigInt;
+
+  constructor(address: Address, value: BigInt) {
+    this.address = address;
+    this.value = value;
+  }
+}
+
+class LibDealSide {
+  asset: LibAsset;
+  payouts: LibPart[];
+  originFees: LibPart;
+  proxy: Address;
+  from: Address;
+}
+
+class LibAssetType {
+  assetClass: Bytes;
+  assetData: Bytes;
+}
+
+class LibAsset {
+  assetType: LibAssetType;
+  value: BigInt;
+}
+
+enum FeeSide {
+  NONE,
+  LEFT,
+  RIGHT,
+}
+
+class LibDealData {
+  maxFeesBasePoint: BigInt;
+  feeSide: FeeSide;
+}
+
+function calculateTotalAmount(
+  amount: BigInt,
+  orderOriginFees: LibPart[],
+  maxFeesBasePoint: BigInt,
+): BigInt {
+  if (maxFeesBasePoint > BIGINT_ZERO) {
+    return amount;
+  }
+  let total = amount;
+  for (let i = 0; i < orderOriginFees.length; i++) {
+    total = total.plus(bp(amount, orderOriginFees[i].value));
+  }
+  return total;
+}
+
+
+
+// function getDealData(bytes4 makeMatchAssetClass,
+//   bytes4 takeMatchAssetClass,
+//   bytes4 leftDataType,
+//   bytes4 rightDataType,
+//   LibOrderData.GenericOrderData memory leftOrderData,
+//   LibOrderData.GenericOrderData memory rightOrderData): {
+
+//   }
