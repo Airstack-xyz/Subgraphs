@@ -59,13 +59,35 @@ export namespace nft {
             saleToken.save();
 
             // Transaction
-            let transaction = getOrCreateAirNftTransaction(
-                getNFTSaleTransactionId(
-                    txHash,
-                    NftSales[i].nft.collection.toHexString(),
-                    NftSales[i].nft.tokenId
-                )
-            );
+            let transactionId = getNFTSaleTransactionId(
+                txHash,
+                NftSales[i].nft.collection.toHexString(),
+                NftSales[i].nft.tokenId
+            )
+            let transaction = AirNftTransaction.load(transactionId);
+            if (transaction != null){
+                if (transaction.from == Address.zero().toHexString()){
+                    if (buyerAccount.address != Address.zero().toHexString()){
+                      transaction.from = buyerAccount.id;
+                    } else if (sellerAccount.address != Address.zero().toHexString()){
+                      transaction.from = sellerAccount.id;
+                    }
+                  }
+                  else if (transaction.to == Address.zero().toHexString()){
+                    if (buyerAccount.address != Address.zero().toHexString()){
+                        transaction.to = buyerAccount.id;
+                    } else if (sellerAccount.address != Address.zero().toHexString()){
+                        transaction.to = sellerAccount.id;
+                    }
+                  }
+            }else{
+                transaction = getOrCreateAirNftTransaction(
+                    transactionId
+                );
+                transaction.to = buyerAccount.id;
+                transaction.from = sellerAccount.id;
+            }
+            
             transaction.type = "SALE";
             transaction.protocolType = protocolType;
             transaction.protocolActionType = protocolActionType;
@@ -79,8 +101,6 @@ export namespace nft {
             transaction.feeBeneficiary = feeAccount.id;
 
             transaction.transactionToken = saleToken.id;
-            transaction.to = buyerAccount.id;
-            transaction.from = sellerAccount.id;
             transaction.hash = txHash;
             transaction.index = txIndex;
             transaction.block = block.id;
@@ -88,6 +108,8 @@ export namespace nft {
             block.save();
             buyerAccount.save();
             sellerAccount.save();
+            royaltyAccount.save();
+            feeAccount.save();
             transaction.save();
         }
     }
@@ -164,7 +186,7 @@ export namespace nft {
     export class NFT {
         constructor(
           public readonly collection: Address,
-          public readonly standard: string,
+          public readonly standard: string, //ERC1155 or ERC721
           public readonly tokenId: BigInt,
           public readonly amount: BigInt
         ) {}

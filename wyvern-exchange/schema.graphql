@@ -161,4 +161,68 @@ type AirExtraData @entity {
   id: ID!
   name: String!
   value: String!
+}type ContractOrderApprovedPartOne @entity {
+  id: ID!
+  hash: Bytes! # bytes32
+  exchange: Bytes! # address
+  maker: Bytes! # address
+  taker: Bytes! # address
+  makerRelayerFee: BigInt! # uint256
+  takerRelayerFee: BigInt! # uint256
+  makerProtocolFee: BigInt! # uint256
+  takerProtocolFee: BigInt! # uint256
+  feeRecipient: Bytes! # address
+  feeMethod: Int! # uint8
+  side: Int! # uint8
+  saleKind: Int! # uint8
+  target: Bytes! # address
+}
+
+type ContractOrderApprovedPartTwo @entity {
+  id: ID!
+  hash: Bytes! # bytes32
+  howToCall: Int! # uint8
+  calldata: Bytes! # bytes
+  replacementPattern: Bytes! # bytes
+  staticTarget: Bytes! # address
+  staticExtradata: Bytes! # bytes
+  paymentToken: Bytes! # address
+  basePrice: BigInt! # uint256
+  extra: BigInt! # uint256
+  listingTime: BigInt! # uint256
+  expirationTime: BigInt! # uint256
+  salt: BigInt! # uint256
+  orderbookInclusionDesired: Boolean! # bool
+}
+
+type ContractOrderCancelled @entity {
+  id: ID!
+  hash: Bytes! # bytes32
+}
+
+type ContractOrdersMatched @entity {
+  id: ID!
+  buyHash: Bytes! # bytes32
+  sellHash: Bytes! # bytes32
+  maker: Bytes! # address
+  taker: Bytes! # address
+  price: BigInt! # uint256
+  metadata: Bytes! # bytes32
+}
+
+type NonceIncremented @entity {
+  id: ID!
+  maker: Bytes! # address
+  newNonce: BigInt! # uint256
+}
+
+type ContractOwnershipRenounced @entity {
+  id: ID!
+  previousOwner: Bytes! # address
+}
+
+type ContractOwnershipTransferred @entity {
+  id: ID!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
 }
