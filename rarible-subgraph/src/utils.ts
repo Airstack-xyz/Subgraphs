@@ -776,21 +776,46 @@ class LibOrder {
 
 function LibOrderHashKey(order: LibOrder): Bytes {
   if (getClass(order.dataType) == V1 || order.dataType == DEFAULT_ORDER_TYPE) {
-    return crypto.keccak256(ethereum.encode(
-      order.maker,
-      LibAsset.hash(order.makeAsset.assetType),
-      LibAsset.hash(order.takeAsset.assetType),
-      order.salt
-    ));
+    let tupleArray:Array<ethereum.Value>= [ethereum.Value.fromAddress(order.maker),
+      ethereum.Value.fromBytes(LibAsset.hash(order.makeAsset.assetType)),
+      ethereum.Value.fromBytes(LibAsset.hash(order.takeAsset.assetType)),
+      ethereum.Value.fromUnsignedBigInt(order.salt)
+    ]
+
+    let tuple = tupleArray as ethereum.Tuple
+
+    let encoded = ethereum.encode(ethereum.Value.fromTuple(tuple))!
+    // return crypto.keccak256(ethereum.encode(
+    //   order.maker,
+    //   LibAsset.hash(order.makeAsset.assetType),
+    //   LibAsset.hash(order.takeAsset.assetType),
+    //   order.salt
+    // ));
+    return crypto.keccak256(encoded);
   } else {
     //order.data is in hash for V2, V3 and all new order
-    return crypto.keccak256(ethereum.encode(
-      order.maker,
-      LibAsset.hash(order.makeAsset.assetType),
-      LibAsset.hash(order.takeAsset.assetType),
-      order.salt,
-      order.data
-    ));
+
+    // return crypto.keccak256(ethereum.encode(
+    //   order.maker,
+    //   LibAsset.hash(order.makeAsset.assetType),
+    //   LibAsset.hash(order.takeAsset.assetType),
+    //   order.salt,
+    //   order.data
+    // ));
+
+    let tupleArray:Array<ethereum.Value>= [
+      ethereum.Value.fromAddress(order.maker),
+      ethereum.Value.fromBytes(LibAsset.hash(order.makeAsset.assetType)),
+      ethereum.Value.fromBytes(LibAsset.hash(order.takeAsset.assetType)),
+      ethereum.Value.fromUnsignedBigInt(order.salt),
+      ethereum.Value.fromBytes(order.data),
+
+    ]
+
+    let tuple = tupleArray as ethereum.Tuple
+
+    let encoded = ethereum.encode(ethereum.Value.fromTuple(tuple))!
+    return crypto.keccak256(encoded);
   }
 }
 
