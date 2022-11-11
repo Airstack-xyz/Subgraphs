@@ -5,6 +5,8 @@ import {
   ethereum,
   log,
   TypedMap,
+  crypto,
+  Result,
 } from "@graphprotocol/graph-ts";
 import { ExchangeV1 } from "../generated/ExchangeV1/ExchangeV1";
 import { HasSecondarySaleFees } from "../generated/ExchangeV1/HasSecondarySaleFees";
@@ -17,6 +19,9 @@ export const zeroAddress = Address.fromString("0x0000000000000000000000000000000
 export const MINT_1155_DATA = "(uint256,string,uint256,(address,uint96)[],(address,uint96)[],bytes[])"
 export const MINT_721_DATA = "(uint256,string,(address,uint96)[],(address,uint96)[],bytes[])";
 export const DATA_1155_OR_721 = "(address,uint256)";
+export const EMPTY_BYTES = Bytes.fromHexString("");
+export const BYTES_ZERO = Bytes.fromI32(0);
+export const DEFAULT_ORDER_TYPE = Bytes.fromHexString("0xffffffff");
 
 export namespace AirProtocolType {
   export const GENERIC = "GENERIC";
@@ -179,6 +184,7 @@ export const ERC1155_LAZY = "ERC1155_LAZY";
 export const COLLECTION = "COLLECTION";
 export const CRYPTOPUNKS = "CRYPTOPUNKS";
 export const SPECIAL = "SPECIAL";
+export const ETH_ASSET_CLASS = "ETH_ASSET_CLASS";
 
 export const BIGINT_ZERO = BigInt.fromI32(0);
 
@@ -341,6 +347,15 @@ export function getOriginFees(exchangeType: Bytes, data: Bytes): OriginFeeClass 
   log.error("Not V1/V2 data={}", [data.toHexString()]);
   return new OriginFeeClass(BIGINT_ZERO, zeroAddress);
 }
+
+export function abiDecode(data: Bytes, format: string): ethereum.Value | null {
+  let decoded = ethereum.decode(
+    format,
+    data
+  );
+  return decoded;
+}
+
 class OriginFeeArrayClass {
   originFeeArray: Array<LibPart>;
   payoutFeeArray: Array<LibPart>;
@@ -721,6 +736,10 @@ class LibDealSide {
 class LibAssetType {
   assetClass: Bytes;
   data: Bytes;
+  constructor(assetClass: Bytes, data: Bytes) {
+    this.assetClass = assetClass;
+    this.data = data;
+  }
 }
 
 class LibAsset {
@@ -742,6 +761,62 @@ class LibDealData {
   maxFeesBasePoint: BigInt;
   feeSide: FeeSide;
 }
+
+class LibOrder {
+  maker: Address;
+  makeAsset: LibAsset;
+  taker: Address;
+  takeAsset: LibAsset;
+  salt: BigInt;
+  start: BigInt;
+  end: BigInt;
+  dataType: Bytes;
+  data: Bytes;
+}
+
+function LibOrderHashKey(order: LibOrder): Bytes {
+  if (getClass(order.dataType) == V1 || order.dataType == DEFAULT_ORDER_TYPE) {
+    return crypto.keccak256(ethereum.encode(
+      order.maker,
+      LibAsset.hash(order.makeAsset.assetType),
+      LibAsset.hash(order.takeAsset.assetType),
+      order.salt
+    ));
+  } else {
+    //order.data is in hash for V2, V3 and all new order
+    return crypto.keccak256(ethereum.encode(
+      order.maker,
+      LibAsset.hash(order.makeAsset.assetType),
+      LibAsset.hash(order.takeAsset.assetType),
+      order.salt,
+      order.data
+    ));
+  }
+}
+
+class LibOrderGenericData {
+  payouts: LibPart[];
+  originFees: LibPart[];
+  isMakeFill: bool;
+  maxFeesBasePoint: BigInt;
+  constructor(payouts: LibPart[], originFees: LibPart[], isMakeFill: bool, maxFeesBasePoint: BigInt) {
+    this.payouts = payouts;
+    this.originFees = originFees;
+    this.isMakeFill = isMakeFill;
+    this.maxFeesBasePoint = maxFeesBasePoint;
+  }
+}
+
+class LibFillResult {
+  leftValue: BigInt;
+  rightValue: BigInt;
+  constructor(leftValue: BigInt, rightValue: BigInt) {
+    this.leftValue = leftValue;
+    this.rightValue = rightValue;
+  }
+}
+
+// funcs from rarible transfer manager
 
 function calculateTotalAmount(
   amount: BigInt,
@@ -1011,6 +1086,330 @@ function transfer(
   proxy: Address,
 ): BigInt {
   return asset.value;
+}
+
+// funcs from exchangev2core
+
+class MatchAndTransferClass {
+  royaltyAmount: BigInt;
+  originFeeAmount: BigInt;
+}
+
+function matchAndTransfer(
+  orderLeft: LibOrder,
+  orderRight: LibOrder,
+): MatchAndTransferClass {
+  let royaltyAmount = BIGINT_ZERO;
+  let originFeeAmount = BIGINT_ZERO;
+
+  let matchAssetsResult = matchAssets(orderLeft, orderRight);
+  let makeMatch = matchAssetsResult.makeMatch;
+  let takeMatch = matchAssetsResult.takeMatch;
+
+  let doTransfersResult = doTransfers();
+
+  return {
+    royaltyAmount: doTransfersResult.royaltyAmount,
+    originFeeAmount: doTransfersResult.originFeeAmount,
+  };
+}
+
+class MatchAssetsClass {
+  makeMatch: LibAssetType;
+  takeMatch: LibAssetType;
+}
+
+function matchAssets(
+  orderLeft: LibOrder,
+  orderRight: LibOrder,
+): MatchAssetsClass {
+  let makeMatch = assetMatcherMatchAssets(orderLeft.makeAsset.assetType, orderRight.takeAsset.assetType);
+  let takeMatch = assetMatcherMatchAssets(orderLeft.takeAsset.assetType, orderRight.makeAsset.assetType);
+  return {
+    makeMatch,
+    takeMatch,
+  };
+}
+
+function assetMatcherMatchAssets(leftAssetType: LibAssetType, rightAssetType: LibAssetType): LibAssetType {
+  let result = matchAssetOneSide(leftAssetType, rightAssetType);
+  if (result.assetClass == BYTES_ZERO) {
+    return matchAssetOneSide(rightAssetType, leftAssetType);
+  } else {
+    return result;
+  }
+}
+
+function matchAssetOneSide(
+  leftAssetType: LibAssetType,
+  rightAssetType: LibAssetType
+): LibAssetType {
+  let classLeft = leftAssetType.assetClass;
+  let classRight = rightAssetType.assetClass;
+  if (getClass(classLeft) == ETH) {
+    if (getClass(classRight) == ETH) {
+      return leftAssetType;
+    }
+    return new LibAssetType(BYTES_ZERO, EMPTY_BYTES);
+  }
+  if (getClass(classLeft) == ERC20) {
+    if (getClass(classRight) == ERC20) {
+      return simpleMatch(leftAssetType, rightAssetType);
+    }
+    return new LibAssetType(BYTES_ZERO, EMPTY_BYTES);
+  }
+  if (getClass(classLeft) == ERC721) {
+    if (getClass(classRight) == ERC721) {
+      return simpleMatch(leftAssetType, rightAssetType);
+    }
+    return new LibAssetType(BYTES_ZERO, EMPTY_BYTES);
+  }
+  if (getClass(classLeft) == ERC1155) {
+    if (getClass(classRight) == ERC1155) {
+      return simpleMatch(leftAssetType, rightAssetType);
+    }
+    return new LibAssetType(BYTES_ZERO, EMPTY_BYTES);
+  }
+  if (getClass(classLeft) == getClass(classRight)) {
+    return simpleMatch(leftAssetType, rightAssetType);
+  }
+  return assetMatcherMatchAssets(leftAssetType, rightAssetType);
+}
+
+function simpleMatch(leftAssetType: LibAssetType, rightAssetType: LibAssetType): LibAssetType {
+  let leftHash = crypto.keccak256(leftAssetType.data);
+  let rightHash = crypto.keccak256(rightAssetType.data);
+  if (leftHash == rightHash) {
+    return leftAssetType;
+  }
+  return new LibAssetType(BYTES_ZERO, EMPTY_BYTES);
+}
+
+class ParseOrdersSetFillEmitMatchClass {
+  leftOrderData: LibOrderGenericData;
+  rightOrderData: LibOrderGenericData;
+  newFill: LibFillResult;
+}
+
+function parseOrdersSetFillEmitMatch(
+  orderLeft: LibOrder,
+  orderRight: LibOrder,
+  msgSender: Address,
+): ParseOrdersSetFillEmitMatchClass {
+  let leftOrderHashKey = LibOrderHashKey(orderLeft);
+  let rightOrderHashKey = LibOrderHashKey(orderRight);
+
+  if (orderLeft.maker == zeroAddress) {
+    orderLeft.maker = msgSender;
+  }
+  if (orderRight.maker == zeroAddress) {
+    orderRight.maker = msgSender;
+  }
+
+  let leftOrderData = LibOrderDataParse(orderLeft);
+  let rightOrderData = LibOrderDataParse(orderRight);
+
+  let newFill = setFillEmitMatch(
+    orderLeft,
+    orderRight,
+    leftOrderHashKey,
+    rightOrderHashKey,
+    leftOrderData.isMakeFill,
+    rightOrderData.isMakeFill,
+  );
+
+  return {
+    leftOrderData,
+    rightOrderData,
+    newFill,
+  }
+}
+
+function setFillEmitMatch(
+  orderLeft: LibOrder,
+  orderRight: LibOrder,
+  leftOrderHashKey: Bytes,
+  rightOrderHashKey: Bytes,
+  leftMakeFill: bool,
+  rightMakeFill: bool,
+): LibFillResult {
+  let leftOrderFill = getOrderFill(orderLeft.salt, leftOrderHashKey);
+  let rightOrderFill = getOrderFill(orderRight.salt, rightOrderHashKey);
+
+  let newFill = fillOrder(orderLeft, orderRight, leftOrderFill, rightOrderFill, leftMakeFill, rightMakeFill);
+}
+
+function fillOrder(
+  leftOrder: LibOrder,
+  rightOrder: LibOrder,
+  leftOrderFill: BigInt,
+  rightOrderFill: BigInt,
+  leftIsMakeFill: bool,
+  rightIsMakeFill: bool,
+): LibFillResult {
+  let leftCalculateRemaining = calculateRemaining(leftOrder, leftOrderFill, leftIsMakeFill);
+  let leftMakeValue = leftCalculateRemaining.makeValue;
+  let leftTakeValue = leftCalculateRemaining.takeValue;
+
+  let rightCalculateRemaining = calculateRemaining(rightOrder, rightOrderFill, rightIsMakeFill);
+  let rightMakeValue = rightCalculateRemaining.makeValue;
+  let rightTakeValue = rightCalculateRemaining.takeValue;
+
+  //We have 3 cases here:
+  if (rightTakeValue > leftMakeValue) { //1nd: left order should be fully filled
+    return fillLeft(leftMakeValue, leftTakeValue, rightOrder.makeAsset.value, rightOrder.takeAsset.value);
+  }//2st: right order should be fully filled or 3d: both should be fully filled if required values are the same
+  return fillRight(leftOrder.makeAsset.value, leftOrder.takeAsset.value, rightMakeValue, rightTakeValue);
+}
+
+function fillRight(
+  leftMakeValue: BigInt,
+  leftTakeValue: BigInt,
+  rightMakeValue: BigInt,
+  rightTakeValue: BigInt
+): LibFillResult {
+  let makerValue = safeGetPartialAmountFloor(rightTakeValue, leftMakeValue, leftTakeValue);
+  return new LibFillResult(rightTakeValue, makerValue);
+}
+
+function fillLeft(
+  leftMakeValue: BigInt,
+  leftTakeValue: BigInt,
+  rightMakeValue: BigInt,
+  rightTakeValue: BigInt
+): LibFillResult {
+  let rightTake = safeGetPartialAmountFloor(leftTakeValue, rightMakeValue, rightTakeValue);
+  return new LibFillResult(leftMakeValue, leftTakeValue);
+}
+
+class CalculateRemainingClass {
+  makeValue: BigInt;
+  takeValue: BigInt;
+}
+
+function calculateRemaining(
+  order: LibOrder,
+  fill: BigInt,
+  isMakeFill: bool
+): CalculateRemainingClass {
+  let makeValue = BIGINT_ZERO;
+  let takeValue = BIGINT_ZERO;
+  if (isMakeFill) {
+    makeValue = order.makeAsset.value.minus(fill);
+    takeValue = safeGetPartialAmountFloor(order.takeAsset.value, order.makeAsset.value, makeValue);
+  } else {
+    takeValue = order.takeAsset.value.minus(fill);
+    makeValue = safeGetPartialAmountFloor(order.makeAsset.value, order.takeAsset.value, takeValue);
+  }
+  return {
+    makeValue,
+    takeValue,
+  }
+}
+
+function safeGetPartialAmountFloor(
+  numerator: BigInt,
+  denominator: BigInt,
+  target: BigInt,
+): BigInt {
+  return numerator.times(target).div(denominator);
+}
+
+function getOrderFill(salt: BigInt, hash: Bytes): BigInt {
+  let fill = BIGINT_ZERO;
+  if (salt == BIGINT_ZERO) {
+    fill = BIGINT_ZERO;
+  } else {
+    fill = fills[hash];
+  }
+  return fill;
+}
+
+function LibOrderDataParse(order: LibOrder): LibOrderGenericData {
+  let dataOrder = new LibOrderGenericData();
+  if (getClass(order.dataType) == V1) {
+    let data = getOriginFeeArray(Bytes.fromHexString(V1), order.data);
+    dataOrder.payouts = data.payoutFeeArray;
+    dataOrder.originFees = data.originFeeArray;
+  } else if (getClass(order.dataType) == V2) {
+    let data = getOriginFeeArray(Bytes.fromHexString(V2), order.data);
+    dataOrder.payouts = data.payoutFeeArray;
+    dataOrder.originFees = data.originFeeArray;
+    dataOrder.isMakeFill = data.isMakeFill;
+  } else if (order.dataType == LibOrderDataV3.V3_SELL) {
+    LibOrderDataV3.DataV3_SELL memory data = LibOrderDataV3.decodeOrderDataV3_SELL(order.data);
+    dataOrder.payouts = parsePayouts(data.payouts);
+    dataOrder.originFees = parseOriginFeeData(data.originFeeFirst, data.originFeeSecond);
+    dataOrder.isMakeFill = true;
+    dataOrder.maxFeesBasePoint = data.maxFeesBasePoint;
+  } else if (order.dataType == LibOrderDataV3.V3_BUY) {
+    LibOrderDataV3.DataV3_BUY memory data = LibOrderDataV3.decodeOrderDataV3_BUY(order.data);
+    dataOrder.payouts = parsePayouts(data.payouts);
+    dataOrder.originFees = parseOriginFeeData(data.originFeeFirst, data.originFeeSecond);
+    dataOrder.isMakeFill = false;
+  } else if (order.dataType == 0xffffffff) {
+  } else {
+    revert("Unknown Order data type");
+  }
+  if (dataOrder.payouts.length == 0) {
+    dataOrder.payouts = payoutSet(order.maker);
+  }
+}
+
+function payoutSet(orderAddress: Address): Array<LibPart> {
+  let payout = new Array<LibPart>();
+  payout.push(new LibPart(orderAddress, BigInt.fromI32(10000)));
+  return payout;
+}
+
+function parseOriginFeeData(
+  dataFirst: BigInt,
+  dataSecond: BigInt
+): LibPart[] {
+  if (dataFirst > 0 && dataSecond > 0) {
+    let originFee = new LibPart.Part[](2);
+
+    originFee[0] = uintToLibPart(dataFirst);
+    originFee[1] = uintToLibPart(dataSecond);
+  }
+
+  if (dataFirst > 0 && dataSecond == 0) {
+    originFee = new LibPart.Part[](1);
+
+    originFee[0] = uintToLibPart(dataFirst);
+  }
+
+  if (dataFirst == 0 && dataSecond > 0) {
+    originFee = new LibPart.Part[](1);
+
+    originFee[0] = uintToLibPart(dataSecond);
+  }
+
+  return originFee;
+}
+
+function parsePayouts(uint data) internal pure returns(LibPart.Part[] memory) {
+  LibPart.Part[] memory payouts;
+
+  if (data > 0) {
+    payouts = new LibPart.Part[](1);
+    payouts[0] = uintToLibPart(data);
+  }
+
+  return payouts;
+}
+
+/**
+    @notice converts uint to LibPart.Part
+    @param data address and value encoded in uint (first 12 bytes )
+    @return result LibPart.Part 
+ */
+function uintToLibPart(data: BigInt): LibPart {
+  if (data > BIGINT_ZERO) {
+    result.account = payable(address(data));
+    result.value = uint96(data >> 160);
+  }
+  return Result;
 }
 
 // function getDealData(bytes4 makeMatchAssetClass,
