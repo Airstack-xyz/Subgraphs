@@ -187,15 +187,15 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
             allSales[i].protocolFees.toString(),
           ]
         )
-        airstack.nft.trackNFTSaleTransactions(
-          txHash.toHexString(),
-          event.transaction.index,
-          allSales,
-          "NFT_MARKET_PLACE",
-          "SELL",
-          event.block.timestamp,
-          event.block.number,
-          event.block.hash.toHexString()
-        )
-  }
+    }
+    airstack.nft.trackNFTSaleTransactions(
+      txHash.toHexString(),
+      event.transaction.index,
+      allSales,
+      "NFT_MARKET_PLACE",
+      "SELL",
+      event.block.timestamp,
+      event.block.number,
+      event.block.hash.toHexString()
+    )
 }
