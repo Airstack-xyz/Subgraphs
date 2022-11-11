@@ -773,7 +773,7 @@ function doTransfers(
 ): doTransfersClass {
   let totalLeftValue = left.asset.value;
   let totalRightValue = right.asset.value;
-  let sellerPayoutsTime = 0;
+  let sellerPayoutsAmount = BIGINT_ZERO;
   let royaltyAmount = BIGINT_ZERO;
   let originFeeAmount = BIGINT_ZERO;
   let doTransferWithFeesResult: DoTransfersWithFeesClass;
@@ -782,25 +782,23 @@ function doTransfers(
     totalLeftValue = doTransferWithFeesResult.rest;
     royaltyAmount = doTransferWithFeesResult.royaltyAmount;
     originFeeAmount = doTransferWithFeesResult.originFeeAmount;
-    transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy);
-    sellerPayoutsTime = 1;
+    sellerPayoutsAmount = transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy);
   } else if (dealData.feeSide == FeeSide.RIGHT) {
     doTransferWithFeesResult = doTransferWithFees(right, left, dealData.maxFeesBasePoint, exchangeV2);
     totalRightValue = doTransferWithFeesResult.rest;
     royaltyAmount = doTransferWithFeesResult.royaltyAmount;
     originFeeAmount = doTransferWithFeesResult.originFeeAmount;
-    transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy);
-    sellerPayoutsTime = 1;
+    sellerPayoutsAmount = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy);
   } else {
-    transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy);
-    transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy);
-    sellerPayoutsTime = 2;
+    sellerPayoutsAmount = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy);
+    sellerPayoutsAmount = sellerPayoutsAmount.plus(transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy));
   }
   return {
     totalLeftValue,
     totalRightValue,
     royaltyAmount,
     originFeeAmount,
+    // sellerPayoutsAmount,
   }
 }
 
