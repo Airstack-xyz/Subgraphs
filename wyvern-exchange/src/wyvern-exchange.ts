@@ -121,7 +121,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
   let allSales = new Array<airstack.nft.Sale>();
 
   if (isBundleSale) {
-    log.info("txHash {} bundle sale", [txHash.toHexString()]);
+    // log.info("txHash {} bundle sale", [txHash.toHexString()]);
     let decoded = abi.decodeBatchNftData(
       buyOrder.callData!,
       sellOrder.callData!,
@@ -129,7 +129,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     );
 
     for (let i = 0; i < decoded.transfers.length; i++) {
-      let nft = new airstack.nft.NFT(decoded.addressList[i], "ERC721", decoded.transfers[i].token, BigInt.zero());
+      let nft = new airstack.nft.NFT(decoded.addressList[i], "UNKNOWN", decoded.transfers[i].token, BigInt.zero());
       let feeAmount = BigInt.zero();
       let feeRecipient = "";
       let creatorRoyaltyFeePercentage = BigInt.zero();
@@ -205,7 +205,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     contractAddress =
       decoded.contract != Address.zero() ? decoded.contract : contractAddress;
 
-    let nft = new airstack.nft.NFT(contractAddress, "ERC721", decoded.token, BigInt.zero());
+    let nft = new airstack.nft.NFT(contractAddress, "UNKNOWN", decoded.token, BigInt.zero());
     let feeAmount = BigInt.zero();
     let feeRecipient = "";
     let creatorRoyaltyFeePercentage = BigInt.zero();
@@ -256,8 +256,9 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
 
       feeRecipient =buyOrder.feeRecipient;
     }
+    creatorRevenueETH = matchPrice.minus(totalRevenueETH);
     log.info("txHash not bundleSale {} creatorRoyaltyFeePercentage {} totalRevenueETH {} marketplaceRevenueETH {} creatorRevenueETH {} feeAmount {} feeRecipient {}", [txHash.toHexString(), creatorRoyaltyFeePercentage.toString(), totalRevenueETH.toString(), marketplaceRevenueETH.toString(), creatorRevenueETH.toString(), feeAmount.toString(), feeRecipient]);
-    let sale = new airstack.nft.Sale(decoded.to, decoded.from, nft, matchPrice, paymentToken, totalRevenueETH, Address.fromString(feeRecipient), creatorRevenueETH, Address.zero());
+    let sale = new airstack.nft.Sale(decoded.to, decoded.from, nft, matchPrice, paymentToken, totalRevenueETH, Address.fromString(feeRecipient), BigInt.zero(), Address.empty());
     allSales.push(sale);
 
     // fromArray.push(decoded.from);
