@@ -124,7 +124,7 @@ function subFee(
     newValue = value.minus(fee);
     realFee = fee;
   } else {
-    newValue = BigInt.fromI32(0);
+    newValue = BIGINT_ZERO;
     realFee = value;
   }
   return { newValue, realFee };
@@ -230,7 +230,7 @@ export function decodeAsset(data: Bytes, type: string): Asset {
       let decodedTuple = decoded.toTuple();
       let asset = new Asset(
         decodedTuple[0].toAddress(),
-        BigInt.fromI32(0),
+        BIGINT_ZERO,
         type
       );
       return asset;
@@ -670,7 +670,7 @@ export function getRoyaltyDetailsForExchangeV2(
         royaltyRecipients.push(royaltyBeneficiary);
         log.info("{} {} ERC721_LAZY decoded data", [royaltyBeneficiary.toHexString(), royaltyValue.realFee.toString()]);
       }
-      let royaltyAmount = royaltyAmounts.length > 0 ? royaltyAmounts[0] : BigInt.fromI32(0);
+      let royaltyAmount = royaltyAmounts.length > 0 ? royaltyAmounts[0] : BIGINT_ZERO;
       let royaltyRecipient = royaltyRecipients.length > 0 ? royaltyRecipients[0] : zeroAddress;
       return {
         royaltyAmount,
@@ -704,7 +704,7 @@ export function getRoyaltyDetailsForExchangeV2(
         royaltyRecipients.push(royaltyBeneficiary);
         log.info("{} {} ERC1155_LAZY decoded data", [royaltyBeneficiary.toHexString(), royaltyValue.realFee.toString()]);
       }
-      let royaltyAmount = royaltyAmounts.length > 0 ? royaltyAmounts[0] : BigInt.fromI32(0);
+      let royaltyAmount = royaltyAmounts.length > 0 ? royaltyAmounts[0] : BIGINT_ZERO;
       let royaltyRecipient = royaltyRecipients.length > 0 ? royaltyRecipients[0] : zeroAddress;
       return {
         royaltyAmount,
@@ -746,7 +746,7 @@ export function getRoyaltyDetailsForExchangeV2(
           }
         }
       }
-      let royaltyAmount = royaltyAmounts.length > 0 ? royaltyAmounts[0] : BigInt.fromI32(0);
+      let royaltyAmount = royaltyAmounts.length > 0 ? royaltyAmounts[0] : BIGINT_ZERO;
       let royaltyRecipient = royaltyRecipients.length > 0 ? royaltyRecipients[0] : zeroAddress;
       return {
         royaltyAmount,
@@ -756,7 +756,7 @@ export function getRoyaltyDetailsForExchangeV2(
     }
   }
   return {
-    royaltyAmount: BigInt.fromI32(0),
+    royaltyAmount: BIGINT_ZERO,
     royaltyRecipient: zeroAddress,
     restValue,
   }
@@ -1132,16 +1132,16 @@ function transferFees(
   from: Address,
   proxy: Address,
 ): TransferFeesResult {
-  let totalFee = BigInt.fromI32(0);
+  let totalFee = BIGINT_ZERO;
   let newRest = rest;
   let transferResult = BIGINT_ZERO;
   for (let i = 0; i < fees.length; i++) {
     totalFee = totalFee.plus(fees[i].value);
-    let feeValue;
+    let feeValue: BigInt = BIGINT_ZERO;
     let subFeeInBpResponse = subFeeInBp(newRest, amount, fees[i].value);
     newRest = subFeeInBpResponse.newValue;
     feeValue = subFeeInBpResponse.realFee;
-    if (feeValue > BigInt.fromI32(0)) {
+    if (feeValue > BIGINT_ZERO) {
       transferResult = transfer(new LibAsset(assetType, feeValue), from, fees[i].address, proxy);
     }
   }
@@ -1159,13 +1159,13 @@ function transferPayouts(
   payouts: LibPart[],
   proxy: Address,
 ): BigInt {
-  let sumBps = BigInt.fromI32(0);
+  let sumBps = BIGINT_ZERO;
   let rest = amount;
   let transferPayoutAmount = BIGINT_ZERO;
   for (let i = 0; i < payouts.length - 1; i++) {
     let currentAmount = bp(amount, payouts[i].value);
     sumBps = sumBps.plus(payouts[i].value);
-    if (currentAmount > BigInt.fromI32(0)) {
+    if (currentAmount > BIGINT_ZERO) {
       rest = rest.minus(currentAmount);
       transferPayoutAmount = transfer(new LibAsset(assetType, currentAmount), from, payouts[i].address, proxy);
     }
