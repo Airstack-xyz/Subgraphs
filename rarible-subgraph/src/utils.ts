@@ -200,6 +200,8 @@ classMap.set("0x3e6b89d4", CRYPTOPUNKS);
 
 export const V1 = "0x4c234266";
 export const V2 = "0x23d235ef";
+export const V3_SELL = "0x2fa3cfd3";
+export const V3_BUY = "0x1b18cdf6";
 
 export function getClass(assetClass: Bytes): string {
   let res = classMap.get(assetClass.toHexString());
@@ -471,6 +473,59 @@ export function getOriginFeeArray(exchangeType: Bytes, data: Bytes): OriginFeeAr
   return { originFeeArray, payoutFeeArray, isMakeFill };
 }
 
+class FeeDataV3Class {
+  payouts: BigInt;
+  originFeeFirst: BigInt;
+  originFeeSecond: BigInt;
+  maxFeesBasePoint: BigInt;
+}
+
+export function getFeeDataV3(
+  data: Bytes,
+  exchangeType: Bytes
+): FeeDataV3Class {
+  let payouts: BigInt = BIGINT_ZERO;
+  let originFeeFirst: BigInt = BIGINT_ZERO;
+  let originFeeSecond: BigInt = BIGINT_ZERO;
+  let maxFeesBasePoint: BigInt = BIGINT_ZERO;
+
+  if (exchangeType.toHexString() == V3_SELL) {
+    let decoded = ethereum.decode(
+      "(uint256,uint256,uint256,uint256,bytes32)",
+      data
+    );
+
+    if (!decoded) {
+      log.error("{} not decoded", [data.toHexString()]);
+    } else {
+      let dataV3_SELL = decoded.toTuple();
+      payouts = dataV3_SELL[0].toBigInt();
+      originFeeFirst = dataV3_SELL[1].toBigInt();
+      originFeeSecond = dataV3_SELL[2].toBigInt();
+      maxFeesBasePoint = dataV3_SELL[3].toBigInt();
+    }
+    return { payouts, originFeeFirst, originFeeSecond, maxFeesBasePoint };
+  }
+  else if (exchangeType.toHexString() == V3_BUY) {
+    let decoded = ethereum.decode(
+      "(uint256,uint256,uint256,bytes32)",
+      data
+    );
+
+    if (!decoded) {
+      log.error("{} not decoded", [data.toHexString()]);
+    } else {
+      let dataV3_SELL = decoded.toTuple();
+      payouts = dataV3_SELL[0].toBigInt();
+      originFeeFirst = dataV3_SELL[1].toBigInt();
+      originFeeSecond = dataV3_SELL[2].toBigInt();
+      maxFeesBasePoint = BIGINT_ZERO;
+    }
+    return { payouts, originFeeFirst, originFeeSecond, maxFeesBasePoint };
+  }
+  return { payouts, originFeeFirst, originFeeSecond, maxFeesBasePoint };
+}
+
 export function getOriginFeesWithRestValue(
   exchangeType: Bytes,
   data: Bytes,
@@ -731,6 +786,13 @@ class LibDealSide {
   originFees: LibPart[];
   proxy: Address;
   from: Address;
+  constructor(asset: LibAsset, payouts: LibPart[], originFees: LibPart[], proxy: Address, from: Address) {
+    this.asset = asset;
+    this.payouts = payouts;
+    this.originFees = originFees;
+    this.proxy = proxy;
+    this.from = from;
+  }
 }
 
 class LibAssetType {
@@ -760,6 +822,11 @@ enum FeeSide {
 class LibDealData {
   maxFeesBasePoint: BigInt;
   feeSide: FeeSide;
+
+  constructor(maxFeesBasePoint: BigInt, feeSide: FeeSide) {
+    this.maxFeesBasePoint = maxFeesBasePoint;
+    this.feeSide = feeSide;
+  }
 }
 
 class LibOrder {
@@ -776,10 +843,10 @@ class LibOrder {
 
 function LibOrderHashKey(order: LibOrder): Bytes {
   if (getClass(order.dataType) == V1 || order.dataType == DEFAULT_ORDER_TYPE) {
-    let tupleArray:Array<ethereum.Value>= [ethereum.Value.fromAddress(order.maker),
-      ethereum.Value.fromBytes(LibAsset.hash(order.makeAsset.assetType)),
-      ethereum.Value.fromBytes(LibAsset.hash(order.takeAsset.assetType)),
-      ethereum.Value.fromUnsignedBigInt(order.salt)
+    let tupleArray: Array<ethereum.Value> = [ethereum.Value.fromAddress(order.maker),
+    ethereum.Value.fromBytes(LibAsset.hash(order.makeAsset.assetType)),
+    ethereum.Value.fromBytes(LibAsset.hash(order.takeAsset.assetType)),
+    ethereum.Value.fromUnsignedBigInt(order.salt)
     ]
 
     let tuple = tupleArray as ethereum.Tuple
@@ -803,7 +870,7 @@ function LibOrderHashKey(order: LibOrder): Bytes {
     //   order.data
     // ));
 
-    let tupleArray:Array<ethereum.Value>= [
+    let tupleArray: Array<ethereum.Value> = [
       ethereum.Value.fromAddress(order.maker),
       ethereum.Value.fromBytes(LibAsset.hash(order.makeAsset.assetType)),
       ethereum.Value.fromBytes(LibAsset.hash(order.takeAsset.assetType)),
@@ -863,6 +930,7 @@ class doTransfersClass {
   totalRightValue: BigInt;
   royaltyAmount: BigInt;
   originFeeAmount: BigInt;
+  paymentAmount: BigInt;
 }
 
 function doTransfers(
@@ -893,12 +961,13 @@ function doTransfers(
     sellerPayoutsAmount = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy);
     sellerPayoutsAmount = sellerPayoutsAmount.plus(transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy));
   }
+  let paymentAmount = sellerPayoutsAmount.plus(royaltyAmount).plus(originFeeAmount);
   return {
     totalLeftValue,
     totalRightValue,
     royaltyAmount,
     originFeeAmount,
-    // sellerPayoutsAmount,
+    paymentAmount,
   }
 }
 
@@ -1118,24 +1187,60 @@ function transfer(
 class MatchAndTransferClass {
   royaltyAmount: BigInt;
   originFeeAmount: BigInt;
+  paymentAmount: BigInt;
 }
 
 function matchAndTransfer(
   orderLeft: LibOrder,
   orderRight: LibOrder,
+  msgSender: Address,
+  exchangeV2: Address,
 ): MatchAndTransferClass {
-  let royaltyAmount = BIGINT_ZERO;
-  let originFeeAmount = BIGINT_ZERO;
-
   let matchAssetsResult = matchAssets(orderLeft, orderRight);
   let makeMatch = matchAssetsResult.makeMatch;
   let takeMatch = matchAssetsResult.takeMatch;
 
-  let doTransfersResult = doTransfers();
+  let parseOrdersSetFillEmitMatchResult = parseOrdersSetFillEmitMatch(orderLeft, orderRight, msgSender);
+  let leftOrderData = parseOrdersSetFillEmitMatchResult.leftOrderData;
+  let rightOrderData = parseOrdersSetFillEmitMatchResult.rightOrderData;
+  let newFill = parseOrdersSetFillEmitMatchResult.newFill;
+
+  let doTransfersResult = doTransfers(
+    new LibDealSide(
+      new LibAsset(
+        makeMatch,
+        newFill.leftValue,
+      ),
+      leftOrderData.payouts,
+      leftOrderData.originFees,
+      zeroAddress,
+      orderLeft.maker,
+    ),
+    new LibDealSide(
+      new LibAsset(
+        takeMatch,
+        newFill.rightValue,
+      ),
+      rightOrderData.payouts,
+      rightOrderData.originFees,
+      zeroAddress,
+      orderRight.maker,
+    ),
+    getDealData(
+      makeMatch.assetClass,
+      takeMatch.assetClass,
+      orderLeft.dataType,
+      orderRight.dataType,
+      leftOrderData,
+      rightOrderData,
+    ),
+    exchangeV2,
+  );
 
   return {
     royaltyAmount: doTransfersResult.royaltyAmount,
     originFeeAmount: doTransfersResult.originFeeAmount,
+    paymentAmount: doTransfersResult.paymentAmount,
   };
 }
 
@@ -1262,6 +1367,7 @@ function setFillEmitMatch(
   let rightOrderFill = getOrderFill(orderRight.salt, rightOrderHashKey);
 
   let newFill = fillOrder(orderLeft, orderRight, leftOrderFill, rightOrderFill, leftMakeFill, rightMakeFill);
+  return newFill;
 }
 
 function fillOrder(
@@ -1345,13 +1451,20 @@ function getOrderFill(salt: BigInt, hash: Bytes): BigInt {
   if (salt == BIGINT_ZERO) {
     fill = BIGINT_ZERO;
   } else {
-    fill = fills[hash];
+    fill = BigInt.fromI32(1);
   }
   return fill;
 }
 
-function LibOrderDataParse(order: LibOrder): LibOrderGenericData {
-  let dataOrder = new LibOrderGenericData();
+function LibOrderDataParse(
+  order: LibOrder
+): LibOrderGenericData {
+  let dataOrder = new LibOrderGenericData(
+    [new LibPart(zeroAddress, BIGINT_ZERO)],
+    [new LibPart(zeroAddress, BIGINT_ZERO)],
+    false,
+    BIGINT_ZERO
+  );
   if (getClass(order.dataType) == V1) {
     let data = getOriginFeeArray(Bytes.fromHexString(V1), order.data);
     dataOrder.payouts = data.payoutFeeArray;
@@ -1361,24 +1474,23 @@ function LibOrderDataParse(order: LibOrder): LibOrderGenericData {
     dataOrder.payouts = data.payoutFeeArray;
     dataOrder.originFees = data.originFeeArray;
     dataOrder.isMakeFill = data.isMakeFill;
-  } else if (order.dataType == LibOrderDataV3.V3_SELL) {
-    LibOrderDataV3.DataV3_SELL memory data = LibOrderDataV3.decodeOrderDataV3_SELL(order.data);
+  } else if (getClass(order.dataType) == V3_SELL) {
+    let data = getFeeDataV3(Bytes.fromHexString(V3_SELL), order.data);
     dataOrder.payouts = parsePayouts(data.payouts);
     dataOrder.originFees = parseOriginFeeData(data.originFeeFirst, data.originFeeSecond);
     dataOrder.isMakeFill = true;
     dataOrder.maxFeesBasePoint = data.maxFeesBasePoint;
-  } else if (order.dataType == LibOrderDataV3.V3_BUY) {
-    LibOrderDataV3.DataV3_BUY memory data = LibOrderDataV3.decodeOrderDataV3_BUY(order.data);
+  } else if (getClass(order.dataType) == V3_BUY) {
+    let data = getFeeDataV3(Bytes.fromHexString(V3_SELL), order.data);
     dataOrder.payouts = parsePayouts(data.payouts);
     dataOrder.originFees = parseOriginFeeData(data.originFeeFirst, data.originFeeSecond);
     dataOrder.isMakeFill = false;
-  } else if (order.dataType == 0xffffffff) {
-  } else {
-    revert("Unknown Order data type");
+  } else if (order.dataType == DEFAULT_ORDER_TYPE) {
   }
   if (dataOrder.payouts.length == 0) {
     dataOrder.payouts = payoutSet(order.maker);
   }
+  return dataOrder;
 }
 
 function payoutSet(orderAddress: Address): Array<LibPart> {
@@ -1391,57 +1503,125 @@ function parseOriginFeeData(
   dataFirst: BigInt,
   dataSecond: BigInt
 ): LibPart[] {
-  if (dataFirst > 0 && dataSecond > 0) {
-    let originFee = new LibPart.Part[](2);
-
+  let originFee = new Array<LibPart>();
+  if (dataFirst > BIGINT_ZERO && dataSecond > BIGINT_ZERO) {
+    originFee = new Array<LibPart>();
     originFee[0] = uintToLibPart(dataFirst);
     originFee[1] = uintToLibPart(dataSecond);
   }
 
-  if (dataFirst > 0 && dataSecond == 0) {
-    originFee = new LibPart.Part[](1);
-
+  if (dataFirst > BIGINT_ZERO && dataSecond == BIGINT_ZERO) {
+    originFee = new Array<LibPart>();
     originFee[0] = uintToLibPart(dataFirst);
   }
 
-  if (dataFirst == 0 && dataSecond > 0) {
-    originFee = new LibPart.Part[](1);
-
+  if (dataFirst == BIGINT_ZERO && dataSecond > BIGINT_ZERO) {
+    originFee = new Array<LibPart>();
     originFee[0] = uintToLibPart(dataSecond);
   }
 
   return originFee;
 }
 
-function parsePayouts(uint data) internal pure returns(LibPart.Part[] memory) {
-  LibPart.Part[] memory payouts;
-
-  if (data > 0) {
-    payouts = new LibPart.Part[](1);
+function parsePayouts(data: BigInt): Array<LibPart> {
+  let payouts = [new LibPart(zeroAddress, BIGINT_ZERO)];
+  if (data > BIGINT_ZERO) {
     payouts[0] = uintToLibPart(data);
   }
-
   return payouts;
 }
 
-/**
-    @notice converts uint to LibPart.Part
-    @param data address and value encoded in uint (first 12 bytes )
-    @return result LibPart.Part 
- */
 function uintToLibPart(data: BigInt): LibPart {
+  let result = new LibPart(zeroAddress, BIGINT_ZERO);
   if (data > BIGINT_ZERO) {
-    result.account = payable(address(data));
-    result.value = uint96(data >> 160);
+    result.address = Address.fromI32(data.toI32());
+    result.value = BigInt.fromI32(data.toI32() >> 160);
   }
-  return Result;
+  return result;
 }
 
-// function getDealData(bytes4 makeMatchAssetClass,
-//   bytes4 takeMatchAssetClass,
-//   bytes4 leftDataType,
-//   bytes4 rightDataType,
-//   LibOrderData.GenericOrderData memory leftOrderData,
-//   LibOrderData.GenericOrderData memory rightOrderData): {
+function getDealData(
+  makeMatchAssetClass: Bytes,
+  takeMatchAssetClass: Bytes,
+  leftDataType: Bytes,
+  rightDataType: Bytes,
+  leftOrderData: LibOrderGenericData,
+  rightOrderData: LibOrderGenericData,
+): LibDealData {
+  let dealData = new LibDealData(
+    BIGINT_ZERO,
+    FeeSide.NONE,
+  );
+  dealData.feeSide = getFeeSide(makeMatchAssetClass, takeMatchAssetClass);
+  dealData.maxFeesBasePoint = getMaxFee(
+    leftDataType,
+    rightDataType,
+    leftOrderData,
+    rightOrderData,
+    dealData.feeSide
+  );
+  return dealData;
+};
 
-//   }
+function getFeeSide(leftClass: Bytes, rightClass: Bytes): FeeSide {
+  if (getClass(leftClass) == ETH) {
+    return FeeSide.LEFT;
+  }
+  if (getClass(rightClass) == ETH) {
+    return FeeSide.RIGHT;
+  }
+  if (getClass(leftClass) == ERC20) {
+    return FeeSide.LEFT;
+  }
+  if (getClass(rightClass) == ERC20) {
+    return FeeSide.RIGHT;
+  }
+  if (getClass(leftClass) == ERC1155) {
+    return FeeSide.LEFT;
+  }
+  if (getClass(rightClass) == ERC1155) {
+    return FeeSide.RIGHT;
+  }
+  return FeeSide.NONE;
+}
+
+function getMaxFee(
+  dataTypeLeft: Bytes,
+  dataTypeRight: Bytes,
+  leftOrderData: LibOrderGenericData,
+  rightOrderData: LibOrderGenericData,
+  feeSide: FeeSide
+): BigInt {
+  if (
+    getClass(dataTypeLeft) != V3_SELL &&
+    getClass(dataTypeRight) != V3_SELL &&
+    getClass(dataTypeLeft) != V3_BUY &&
+    getClass(dataTypeRight) != V3_BUY
+  ) {
+    return BIGINT_ZERO;
+  }
+
+  let matchFees = getSumFees(leftOrderData.originFees, rightOrderData.originFees);
+  let maxFee = BIGINT_ZERO;
+  if (feeSide == FeeSide.LEFT) {
+    maxFee = rightOrderData.maxFeesBasePoint;
+  } else if (feeSide == FeeSide.RIGHT) {
+    maxFee = leftOrderData.maxFeesBasePoint;
+  } else {
+    return BIGINT_ZERO;
+  }
+  return maxFee;
+}
+
+function getSumFees(originLeft: Array<LibPart>, originRight: Array<LibPart>): BigInt {
+  let result = BIGINT_ZERO;
+  //adding left origin fees
+  for (let i = 0; i < originLeft.length; i++) {
+    result = result.plus(originLeft[i].value);
+  }
+  //adding right origin fees
+  for (let i = 0; i < originRight.length; i++) {
+    result = result.plus(originRight[i].value);
+  }
+  return result;
+}
