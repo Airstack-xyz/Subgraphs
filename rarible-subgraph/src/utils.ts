@@ -202,6 +202,7 @@ export const V1 = "0x4c234266";
 export const V2 = "0x23d235ef";
 export const V3_SELL = "0x2fa3cfd3";
 export const V3_BUY = "0x1b18cdf6";
+export const ASSET_TYPE_TYPEHASH = Bytes.fromHexString("0x452a0dc408cb0d27ffc3b3caff933a5208040a53a9dbecd8d89cad2c0d40e00c");
 
 export function getClass(assetClass: Bytes): string {
   let res = classMap.get(assetClass.toHexString());
@@ -843,37 +844,23 @@ class LibOrder {
 
 function LibOrderHashKey(order: LibOrder): Bytes {
   if (getClass(order.dataType) == V1 || order.dataType == DEFAULT_ORDER_TYPE) {
-    let tupleArray: Array<ethereum.Value> = [ethereum.Value.fromAddress(order.maker),
-    ethereum.Value.fromBytes(LibAsset.hash(order.makeAsset.assetType)),
-    ethereum.Value.fromBytes(LibAsset.hash(order.takeAsset.assetType)),
-    ethereum.Value.fromUnsignedBigInt(order.salt)
+    let tupleArray: Array<ethereum.Value> = [
+      ethereum.Value.fromAddress(order.maker),
+      ethereum.Value.fromBytes(LibAssetTypeHash(order.makeAsset.assetType)),
+      ethereum.Value.fromBytes(LibAssetTypeHash(order.takeAsset.assetType)),
+      ethereum.Value.fromUnsignedBigInt(order.salt)
     ]
 
     let tuple = tupleArray as ethereum.Tuple
 
     let encoded = ethereum.encode(ethereum.Value.fromTuple(tuple))!
-    // return crypto.keccak256(ethereum.encode(
-    //   order.maker,
-    //   LibAsset.hash(order.makeAsset.assetType),
-    //   LibAsset.hash(order.takeAsset.assetType),
-    //   order.salt
-    // ));
     return crypto.keccak256(encoded);
   } else {
-    //order.data is in hash for V2, V3 and all new order
-
-    // return crypto.keccak256(ethereum.encode(
-    //   order.maker,
-    //   LibAsset.hash(order.makeAsset.assetType),
-    //   LibAsset.hash(order.takeAsset.assetType),
-    //   order.salt,
-    //   order.data
-    // ));
 
     let tupleArray: Array<ethereum.Value> = [
       ethereum.Value.fromAddress(order.maker),
-      ethereum.Value.fromBytes(LibAsset.hash(order.makeAsset.assetType)),
-      ethereum.Value.fromBytes(LibAsset.hash(order.takeAsset.assetType)),
+      ethereum.Value.fromBytes(LibAssetTypeHash(order.makeAsset.assetType)),
+      ethereum.Value.fromBytes(LibAssetTypeHash(order.takeAsset.assetType)),
       ethereum.Value.fromUnsignedBigInt(order.salt),
       ethereum.Value.fromBytes(order.data),
 
@@ -884,6 +871,19 @@ function LibOrderHashKey(order: LibOrder): Bytes {
     let encoded = ethereum.encode(ethereum.Value.fromTuple(tuple))!
     return crypto.keccak256(encoded);
   }
+}
+
+function LibAssetTypeHash(assetType: LibAssetType): Bytes {
+  let tupleArray: Array<ethereum.Value> = [
+    ethereum.Value.fromBytes(ASSET_TYPE_TYPEHASH),
+    ethereum.Value.fromBytes(assetType.assetClass),
+    ethereum.Value.fromBytes(assetType.data)
+  ];
+  let tuple = tupleArray as ethereum.Tuple
+
+  let encoded = ethereum.encode(ethereum.Value.fromTuple(tuple))!
+
+  return crypto.keccak256(encoded);
 }
 
 class LibOrderGenericData {
