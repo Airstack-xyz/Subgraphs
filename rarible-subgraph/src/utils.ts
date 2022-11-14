@@ -814,6 +814,15 @@ class LibAsset {
   }
 }
 
+export function convertAssetToLibAsset(asset: ethereum.Tuple): LibAsset {
+  let tuple = asset;
+  let assetType = tuple[0].toTuple();
+  let value = tuple[1].toBigInt();
+  let assetClass = assetType[0].toBytes();
+  let data = assetType[1].toBytes();
+  return new LibAsset(new LibAssetType(assetClass, data), value);
+}
+
 enum FeeSide {
   NONE,
   LEFT,
@@ -830,7 +839,7 @@ class LibDealData {
   }
 }
 
-class LibOrder {
+export class LibOrder {
   maker: Address;
   makeAsset: LibAsset;
   taker: Address;
@@ -840,6 +849,18 @@ class LibOrder {
   end: BigInt;
   dataType: Bytes;
   data: Bytes;
+
+  constructor(maker: Address, makeAsset: LibAsset, taker: Address, takeAsset: LibAsset, salt: BigInt, start: BigInt, end: BigInt, dataType: Bytes, data: Bytes) {
+    this.maker = maker;
+    this.makeAsset = makeAsset;
+    this.taker = taker;
+    this.takeAsset = takeAsset;
+    this.salt = salt;
+    this.start = start;
+    this.end = end;
+    this.dataType = dataType;
+    this.data = data;
+  }
 }
 
 function LibOrderHashKey(order: LibOrder): Bytes {
@@ -854,7 +875,7 @@ function LibOrderHashKey(order: LibOrder): Bytes {
     let tuple = tupleArray as ethereum.Tuple
 
     let encoded = ethereum.encode(ethereum.Value.fromTuple(tuple))!
-    return crypto.keccak256(encoded);
+    return Bytes.fromByteArray(crypto.keccak256(encoded));
   } else {
 
     let tupleArray: Array<ethereum.Value> = [
@@ -869,7 +890,7 @@ function LibOrderHashKey(order: LibOrder): Bytes {
     let tuple = tupleArray as ethereum.Tuple
 
     let encoded = ethereum.encode(ethereum.Value.fromTuple(tuple))!
-    return crypto.keccak256(encoded);
+    return Bytes.fromByteArray(crypto.keccak256(encoded));
   }
 }
 
@@ -882,8 +903,7 @@ function LibAssetTypeHash(assetType: LibAssetType): Bytes {
   let tuple = tupleArray as ethereum.Tuple
 
   let encoded = ethereum.encode(ethereum.Value.fromTuple(tuple))!
-
-  return crypto.keccak256(encoded);
+  return Bytes.fromByteArray(crypto.keccak256(encoded));
 }
 
 class LibOrderGenericData {
@@ -1057,10 +1077,10 @@ export function getRoyaltiesByAssetType(
         let royaltyItem = royaltyDataArray[i].toTuple();
         let royaltyBeneficiary = royaltyItem[0].toAddress();
         let royaltyBps = royaltyItem[1].toBigInt();
-        royalties.push({
-          address: royaltyBeneficiary,
-          value: royaltyBps,
-        });
+        royalties.push(new LibPart(
+          royaltyBeneficiary,
+          royaltyBps,
+        ));
       };
       return royalties;
     }
@@ -1078,10 +1098,10 @@ export function getRoyaltiesByAssetType(
         let royaltyItem = royaltyDataArray[i].toTuple();
         let royaltyBeneficiary = royaltyItem[0].toAddress();
         let royaltyBps = royaltyItem[1].toBigInt();
-        royalties.push({
-          address: royaltyBeneficiary,
-          value: royaltyBps,
-        });
+        royalties.push(new LibPart(
+          royaltyBeneficiary,
+          royaltyBps,
+        ));
       };
       return royalties;
     }
@@ -1105,10 +1125,10 @@ export function getRoyaltiesByAssetType(
             let royaltyItem = royaltiesDataResponse.value[i];
             let royaltyBeneficiary = royaltyItem[0].toAddress();
             let royaltyBps = royaltyItem[1].toBigInt();
-            royalties.push({
-              address: royaltyBeneficiary,
-              value: royaltyBps,
-            });
+            royalties.push(new LibPart(
+              royaltyBeneficiary,
+              royaltyBps
+            ));
           }
         }
       }
@@ -1190,7 +1210,7 @@ class MatchAndTransferClass {
   paymentAmount: BigInt;
 }
 
-function matchAndTransfer(
+export function matchAndTransfer(
   orderLeft: LibOrder,
   orderRight: LibOrder,
   msgSender: Address,
@@ -1534,7 +1554,7 @@ function parsePayouts(data: BigInt): Array<LibPart> {
 function uintToLibPart(data: BigInt): LibPart {
   let result = new LibPart(zeroAddress, BIGINT_ZERO);
   if (data > BIGINT_ZERO) {
-    result.address = Address.fromI32(data.toI32());
+    result.address = Address.fromBytes(Address.fromI32(data.toI32()));
     result.value = BigInt.fromI32(data.toI32() >> 160);
   }
   return result;
