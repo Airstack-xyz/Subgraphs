@@ -1015,6 +1015,7 @@ function doTransferWithFees(
 ): DoTransfersWithFeesClass {
   let totalAmount = calculateTotalAmount(paymentSide.asset.value, paymentSide.originFees, maxFeesBasePoint);
   let rest = totalAmount;
+  let transferPayoutAmount = totalAmount;
   let transferRoyaltiesResult = transferRoyalties(paymentSide.asset.assetType, nftSide.asset.assetType, nftSide.payouts, rest, paymentSide.asset.value, paymentSide.from, paymentSide.proxy, exchangeV2, call);
   log.info("{} rest {} amount {} hash transferRoyaltiesResult rest and royalty amount and hash", [transferRoyaltiesResult.rest.toString(), transferRoyaltiesResult.royaltyAmount.toString(), call.transaction.hash.toHexString()]);
   rest = transferRoyaltiesResult.rest;
@@ -1059,7 +1060,16 @@ function doTransferWithFees(
     originFeeAmount = originFeeAmount.plus(transferFeesResult.transferResult);
     log.info("{} rest {} amount {} hash transferFeesResult rest and origin fee amount and hash else", [rest.toString(), originFeeAmount.toString(), call.transaction.hash.toHexString()]);
   }
-  let transferPayoutAmount = transferPayouts(paymentSide.asset.assetType, rest, paymentSide.from, nftSide.payouts, paymentSide.proxy, call);
+  // log.info("transferpayout input {} assetclass {} assetdata {} rest {} paymentsidefrom {} nftsidepayoutarray length {} hash", [
+  //   paymentSide.asset.assetType.assetClass.toHexString(),
+  //   paymentSide.asset.assetType.data.toHexString(),
+  //   rest.toString(),
+  //   paymentSide.from.toHexString(),
+  //   nftSide.payouts.length.toString(),
+  //   call.transaction.hash.toHexString()
+  // ]);
+  // transferPayoutAmount = transferPayouts(paymentSide.asset.assetType, rest, paymentSide.from, nftSide.payouts, paymentSide.proxy, call);
+  // log.info("transferpayout output amount {}", [transferPayoutAmount.toString(), call.transaction.hash.toHexString()]);
   return { rest, royaltyAmount, originFeeAmount, paymentAmount: transferPayoutAmount };
 }
 
@@ -1217,7 +1227,7 @@ function transferPayouts(
   let sumBps = BIGINT_ZERO;
   let rest = amount;
   let transferPayoutAmount = BIGINT_ZERO;
-  for (let i = 0; i < payouts.length - 1; i++) {
+  for (let i = 0; i < payouts.length; i++) {
     let currentAmount = bp(amount, payouts[i].value);
     sumBps = sumBps.plus(payouts[i].value);
     if (currentAmount > BIGINT_ZERO) {
