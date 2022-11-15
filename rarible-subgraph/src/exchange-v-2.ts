@@ -18,6 +18,9 @@ import {
   matchAndTransfer,
   LibOrder,
   convertAssetToLibAsset,
+  doTransfers,
+  LibDealSide,
+  LibAsset,
 } from "./utils";
 import * as airstack from "./modules/airstack";
 
@@ -89,9 +92,24 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       orderRight.data,
     );
 
-    let matchAndTransferResult = matchAndTransfer(orderLeftInput, orderRightInput, call.from, dataSource.address());
-    log.info("{} {} {} match and transfer result for transaction hash {}", [matchAndTransferResult.originFeeAmount.toString(), matchAndTransferResult.royaltyAmount.toString(), matchAndTransferResult.paymentAmount.toString(), call.transaction.hash.toHexString()]);
+    // let paymentSide = new LibDealSide(
+    //   convertAssetToLibAsset(orderLeft.makeAsset),
+    //   getOriginFeeArray(orderLeft.dataType, orderLeft.data).payoutFeeArray,
+    //   getOriginFeeArray(orderLeft.dataType, orderLeft.data).originFeeArray,
+    //   zeroAddress,
+    //   orderLeft.maker,
+    // );
 
+    // let nftSide = new LibDealSide(
+    //   convertAssetToLibAsset(orderRight.makeAsset),
+    //   getOriginFeeArray(orderRight.dataType, orderRight.data).payoutFeeArray,
+    //   getOriginFeeArray(orderRight.dataType, orderRight.data).originFeeArray,
+    //   zeroAddress,
+    //   orderRight.maker,
+    // );
+
+    let matchAndTransferResult = matchAndTransfer(orderLeftInput, orderRightInput, call.from, dataSource.address(), call);
+    log.info("{} {} {} match and transfer result for transaction hash {}", [matchAndTransferResult.originFeeAmount.toString(), matchAndTransferResult.royaltyAmount.toString(), matchAndTransferResult.paymentAmount.toString(), call.transaction.hash.toHexString()]);
 
     let nftSales = new airstack.nft.Sale(
       orderLeft.maker,  //to
@@ -172,7 +190,23 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       orderRight.data,
     );
 
-    let matchAndTransferResult = matchAndTransfer(orderLeftInput, orderRightInput, call.from, dataSource.address());
+    // let paymentSide = new LibDealSide(
+    //   convertAssetToLibAsset(orderRight.makeAsset),
+    //   getOriginFeeArray(orderRight.dataType, orderRight.data).payoutFeeArray,
+    //   getOriginFeeArray(orderRight.dataType, orderRight.data).originFeeArray,
+    //   zeroAddress,
+    //   orderRight.maker,
+    // );
+
+    // let nftSide = new LibDealSide(
+    //   convertAssetToLibAsset(orderLeft.makeAsset),
+    //   getOriginFeeArray(orderLeft.dataType, orderLeft.data).payoutFeeArray,
+    //   getOriginFeeArray(orderLeft.dataType, orderLeft.data).originFeeArray,
+    //   zeroAddress,
+    //   orderLeft.maker,
+    // );
+
+    let matchAndTransferResult = matchAndTransfer(orderLeftInput, orderRightInput, call.from, dataSource.address(), call);
     log.info("{} {} {} match and transfer result for transaction hash {}", [matchAndTransferResult.originFeeAmount.toString(), matchAndTransferResult.royaltyAmount.toString(), matchAndTransferResult.paymentAmount.toString(), call.transaction.hash.toHexString()]);
 
     let nftSales = new airstack.nft.Sale(

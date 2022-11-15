@@ -6,8 +6,8 @@ import {
   log,
   TypedMap,
   crypto,
-  Result,
 } from "@graphprotocol/graph-ts";
+import { MatchOrdersCall } from "../generated/ExchangeV2/ExchangeV2";
 import { ExchangeV1 } from "../generated/ExchangeV1/ExchangeV1";
 import { HasSecondarySaleFees } from "../generated/ExchangeV1/HasSecondarySaleFees";
 import { ExchangeV2 } from "../generated/ExchangeV2/ExchangeV2";
@@ -370,47 +370,47 @@ export function getOriginFeeArray(exchangeType: Bytes, data: Bytes): OriginFeeAr
   let payoutFeeArray: Array<LibPart> = [];
   let isMakeFill: bool = false;
   if (exchangeType.toHexString() == V1) {
-    if (
-      data
-        .toHexString()
-        .startsWith(
-          "0x000000000000000000000000000000000000000000000000000000000000004"
-        )
-    ) {
-      data = Bytes.fromHexString(
-        "0x0000000000000000000000000000000000000000000000000000000000000020" +
-        data.toHexString().slice(2)
-      );
-      log.error("weird case {}", [data.toHexString()]);
-      let decoded = ethereum.decode(
-        "((address,uint96)[],(address,uint96)[])",
-        data
-      );
-      if (!decoded) {
-        log.error("{} not decoded", [data.toHexString()]);
-      } else {
-        let dataV1 = decoded.toTuple();
-        let payoutFeeArrayData = dataV1[0].toArray();
-        let originFeeArrayData = dataV1[1].toArray();
-        for (let i = 0; i < originFeeArrayData.length; i++) {
-          let originFeeItem = originFeeArrayData[i].toTuple();
-          let libPart = new LibPart(
-            originFeeItem[0].toAddress(),
-            originFeeItem[1].toBigInt()
-          );
-          originFeeArray.push(libPart);
-        }
-        for (let i = 0; i < payoutFeeArrayData.length; i++) {
-          let payoutFeeItem = payoutFeeArrayData[i].toTuple();
-          let libPart = new LibPart(
-            payoutFeeItem[0].toAddress(),
-            payoutFeeItem[1].toBigInt()
-          );
-          payoutFeeArray.push(libPart);
-        }
-        return { originFeeArray, payoutFeeArray, isMakeFill };
-      }
-    }
+    // if (
+    //   data
+    //     .toHexString()
+    //     .startsWith(
+    //       "0x000000000000000000000000000000000000000000000000000000000000004"
+    //     )
+    // ) {
+    //   data = Bytes.fromHexString(
+    //     "0x0000000000000000000000000000000000000000000000000000000000000020" +
+    //     data.toHexString().slice(2)
+    //   );
+    //   log.error("weird case {}", [data.toHexString()]);
+    //   let decoded = ethereum.decode(
+    //     "((address,uint96)[],(address,uint96)[])",
+    //     data
+    //   );
+    //   if (!decoded) {
+    //     log.error("{} not decoded", [data.toHexString()]);
+    //   } else {
+    //     let dataV1 = decoded.toTuple();
+    //     let payoutFeeArrayData = dataV1[0].toArray();
+    //     let originFeeArrayData = dataV1[1].toArray();
+    //     for (let i = 0; i < originFeeArrayData.length; i++) {
+    //       let originFeeItem = originFeeArrayData[i].toTuple();
+    //       let libPart = new LibPart(
+    //         originFeeItem[0].toAddress(),
+    //         originFeeItem[1].toBigInt()
+    //       );
+    //       originFeeArray.push(libPart);
+    //     }
+    //     for (let i = 0; i < payoutFeeArrayData.length; i++) {
+    //       let payoutFeeItem = payoutFeeArrayData[i].toTuple();
+    //       let libPart = new LibPart(
+    //         payoutFeeItem[0].toAddress(),
+    //         payoutFeeItem[1].toBigInt()
+    //       );
+    //       payoutFeeArray.push(libPart);
+    //     }
+    //     return { originFeeArray, payoutFeeArray, isMakeFill };
+    //   }
+    // }
     let decoded = ethereum.decode(
       "((address,uint96)[],(address,uint96)[])",
       data
@@ -781,7 +781,7 @@ class LibPart {
   }
 }
 
-class LibDealSide {
+export class LibDealSide {
   asset: LibAsset;
   payouts: LibPart[];
   originFees: LibPart[];
@@ -796,7 +796,7 @@ class LibDealSide {
   }
 }
 
-class LibAssetType {
+export class LibAssetType {
   assetClass: Bytes;
   data: Bytes;
   constructor(assetClass: Bytes, data: Bytes) {
@@ -805,7 +805,7 @@ class LibAssetType {
   }
 }
 
-class LibAsset {
+export class LibAsset {
   assetType: LibAssetType;
   value: BigInt;
   constructor(assetType: LibAssetType, value: BigInt) {
@@ -953,35 +953,41 @@ class doTransfersClass {
   paymentAmount: BigInt;
 }
 
-function doTransfers(
+export function doTransfers(
   left: LibDealSide,
   right: LibDealSide,
   dealData: LibDealData,
   exchangeV2: Address,
+  call: MatchOrdersCall,
 ): doTransfersClass {
   let totalLeftValue = left.asset.value;
   let totalRightValue = right.asset.value;
   let sellerPayoutsAmount = BIGINT_ZERO;
   let royaltyAmount = BIGINT_ZERO;
   let originFeeAmount = BIGINT_ZERO;
+  let paymentAmount = BIGINT_ZERO;
   let doTransferWithFeesResult: DoTransfersWithFeesClass;
   if (dealData.feeSide == FeeSide.LEFT) {
-    doTransferWithFeesResult = doTransferWithFees(left, right, dealData.maxFeesBasePoint, exchangeV2);
+    log.info("doTransfers: feeSide == FeeSide.LEFT hash {}", [call.transaction.hash.toHexString()]);
+    doTransferWithFeesResult = doTransferWithFees(left, right, dealData.maxFeesBasePoint, exchangeV2, call);
     totalLeftValue = doTransferWithFeesResult.rest;
     royaltyAmount = doTransferWithFeesResult.royaltyAmount;
     originFeeAmount = doTransferWithFeesResult.originFeeAmount;
-    sellerPayoutsAmount = transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy);
+    paymentAmount = doTransferWithFeesResult.paymentAmount;
+    sellerPayoutsAmount = transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy, call);
   } else if (dealData.feeSide == FeeSide.RIGHT) {
-    doTransferWithFeesResult = doTransferWithFees(right, left, dealData.maxFeesBasePoint, exchangeV2);
+    log.info("doTransfers: feeSide == FeeSide.RIGHT hash {}", [call.transaction.hash.toHexString()]);
+    doTransferWithFeesResult = doTransferWithFees(right, left, dealData.maxFeesBasePoint, exchangeV2, call);
     totalRightValue = doTransferWithFeesResult.rest;
     royaltyAmount = doTransferWithFeesResult.royaltyAmount;
     originFeeAmount = doTransferWithFeesResult.originFeeAmount;
-    sellerPayoutsAmount = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy);
+    paymentAmount = doTransferWithFeesResult.paymentAmount;
+    sellerPayoutsAmount = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy, call);
   } else {
-    sellerPayoutsAmount = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy);
-    sellerPayoutsAmount = sellerPayoutsAmount.plus(transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy));
+    log.info("doTransfers: feeSide == FeeSide.NONE hash {}", [call.transaction.hash.toHexString()]);
+    sellerPayoutsAmount = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy, call);
+    sellerPayoutsAmount = sellerPayoutsAmount.plus(transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy, call));
   }
-  let paymentAmount = sellerPayoutsAmount.plus(royaltyAmount).plus(originFeeAmount);
   return {
     totalLeftValue,
     totalRightValue,
@@ -995,6 +1001,7 @@ class DoTransfersWithFeesClass {
   rest: BigInt;
   royaltyAmount: BigInt;
   originFeeAmount: BigInt;
+  paymentAmount: BigInt;
 }
 
 function doTransferWithFees(
@@ -1002,10 +1009,12 @@ function doTransferWithFees(
   nftSide: LibDealSide,
   maxFeesBasePoint: BigInt,
   exchangeV2: Address,
+  call: MatchOrdersCall,
 ): DoTransfersWithFeesClass {
   let totalAmount = calculateTotalAmount(paymentSide.asset.value, paymentSide.originFees, maxFeesBasePoint);
   let rest = totalAmount;
-  let transferRoyaltiesResult = transferRoyalties(paymentSide.asset.assetType, nftSide.asset.assetType, nftSide.payouts, rest, paymentSide.asset.value, paymentSide.from, paymentSide.proxy, exchangeV2);
+  let transferRoyaltiesResult = transferRoyalties(paymentSide.asset.assetType, nftSide.asset.assetType, nftSide.payouts, rest, paymentSide.asset.value, paymentSide.from, paymentSide.proxy, exchangeV2, call);
+  log.info("{} rest {} amount {} hash transferRoyaltiesResult rest and royalty amount and hash", [transferRoyaltiesResult.rest.toString(), transferRoyaltiesResult.royaltyAmount.toString(), call.transaction.hash.toHexString()]);
   rest = transferRoyaltiesResult.rest;
   let royaltyAmount = transferRoyaltiesResult.royaltyAmount;
   let originFeeAmount = BIGINT_ZERO;
@@ -1016,20 +1025,40 @@ function doTransferWithFees(
   ) {
     let origin: Array<LibPart> = [];
     origin.push(new LibPart(nftSide.originFees[0].address, nftSide.originFees[0].value.plus(paymentSide.originFees[0].value)));
-    let transferFeesResult = transferFees(paymentSide.asset.assetType, rest, paymentSide.asset.value, origin, paymentSide.from, paymentSide.proxy);
+    log.info("{} assetclass {} assetdata {} rest {} paymentsidevalue {} originfeebps {} originfeereceiver {} paymentsidefrom {} hash transferfeesinput if", [
+      paymentSide.asset.assetType.assetClass.toHexString(),
+      paymentSide.asset.assetType.data.toHexString(),
+      rest.toString(),
+      paymentSide.asset.value.toString(),
+      (nftSide.originFees[0].value.plus(paymentSide.originFees[0].value)).toString(),
+      nftSide.originFees[0].address.toHexString(),
+      paymentSide.from.toHexString(),
+      call.transaction.hash.toHexString()
+    ]);
+    let transferFeesResult = transferFees(paymentSide.asset.assetType, rest, paymentSide.asset.value, origin, paymentSide.from, paymentSide.proxy, call);
     rest = transferFeesResult.newRest;
     originFeeAmount = transferFeesResult.transferResult;
+    log.info("{} rest {} amount {} hash transferFeesResult rest and origin fee amount and hash if", [rest.toString(), originFeeAmount.toString(), call.transaction.hash.toHexString()]);
   } else {
-    let transferFeesResult = transferFees(paymentSide.asset.assetType, rest, paymentSide.asset.value, paymentSide.originFees, paymentSide.from, paymentSide.proxy);
+    log.info("{} assetclass {} assetdata {} rest {} paymentsidevalue {} paymetnsideoriginfeeslength {} paymentsidefrom {} hash  transferfeesinput else", [
+      paymentSide.asset.assetType.assetClass.toHexString(),
+      paymentSide.asset.assetType.data.toHexString(),
+      rest.toString(),
+      paymentSide.asset.value.toString(),
+      paymentSide.originFees.length.toString(),
+      paymentSide.from.toHexString(),
+      call.transaction.hash.toHexString()
+    ]);
+    let transferFeesResult = transferFees(paymentSide.asset.assetType, rest, paymentSide.asset.value, paymentSide.originFees, paymentSide.from, paymentSide.proxy, call);
     rest = transferFeesResult.newRest;
     originFeeAmount = transferFeesResult.transferResult;
-
-    transferFeesResult = transferFees(nftSide.asset.assetType, rest, paymentSide.asset.value, nftSide.originFees, paymentSide.from, paymentSide.proxy);
+    transferFeesResult = transferFees(nftSide.asset.assetType, rest, paymentSide.asset.value, nftSide.originFees, paymentSide.from, paymentSide.proxy, call);
     rest = transferFeesResult.newRest;
     originFeeAmount = originFeeAmount.plus(transferFeesResult.transferResult);
+    log.info("{} rest {} amount {} hash transferFeesResult rest and origin fee amount and hash else", [rest.toString(), originFeeAmount.toString(), call.transaction.hash.toHexString()]);
   }
-  let transferPayoutAmount = transferPayouts(paymentSide.asset.assetType, rest, paymentSide.from, nftSide.payouts, paymentSide.proxy);
-  return { rest, royaltyAmount, originFeeAmount };
+  let transferPayoutAmount = transferPayouts(paymentSide.asset.assetType, rest, paymentSide.from, nftSide.payouts, paymentSide.proxy, call);
+  return { rest, royaltyAmount, originFeeAmount, paymentAmount: transferPayoutAmount.plus(royaltyAmount).plus(originFeeAmount) };
 }
 
 class TransferRoyaltyResult {
@@ -1046,12 +1075,13 @@ function transferRoyalties(
   from: Address,
   proxy: Address,
   exchangeV2: Address,
+  call: MatchOrdersCall,
 ): TransferRoyaltyResult {
   let royalties = getRoyaltiesByAssetType(nftAssetType, exchangeV2);
   if (royalties.length === 1 && payouts.length === 1 && royalties[0].address == payouts[0].address) {
     return { rest, royaltyAmount: BIGINT_ZERO };
   }
-  let transferRoyaltiesResult = transferFees(paymentAssetType, rest, amount, royalties, from, proxy);
+  let transferRoyaltiesResult = transferFees(paymentAssetType, rest, amount, royalties, from, proxy, call);
   return {
     rest: transferRoyaltiesResult.newRest,
     royaltyAmount: transferRoyaltiesResult.transferResult
@@ -1151,16 +1181,18 @@ function transferFees(
   fees: LibPart[],
   from: Address,
   proxy: Address,
+  call: MatchOrdersCall,
 ): TransferFeesResult {
   let totalFee = BIGINT_ZERO;
   let newRest = rest;
   let transferResult = BIGINT_ZERO;
   for (let i = 0; i < fees.length; i++) {
     totalFee = totalFee.plus(fees[i].value);
-    let feeValue: BigInt = BIGINT_ZERO;
+    let feeValue = BIGINT_ZERO;
     let subFeeInBpResponse = subFeeInBp(newRest, amount, fees[i].value);
     newRest = subFeeInBpResponse.newValue;
     feeValue = subFeeInBpResponse.realFee;
+    log.info("{} bps {} fees {} address {} hash transferFees", [fees[i].value.toString(), feeValue.toString(), fees[i].address.toHexString(), call.transaction.hash.toHexString()]);
     if (feeValue > BIGINT_ZERO) {
       transferResult = transfer(new LibAsset(assetType, feeValue), from, fees[i].address, proxy);
     }
@@ -1178,6 +1210,7 @@ function transferPayouts(
   from: Address,
   payouts: LibPart[],
   proxy: Address,
+  call: MatchOrdersCall,
 ): BigInt {
   let sumBps = BIGINT_ZERO;
   let rest = amount;
@@ -1189,6 +1222,7 @@ function transferPayouts(
       rest = rest.minus(currentAmount);
       transferPayoutAmount = transfer(new LibAsset(assetType, currentAmount), from, payouts[i].address, proxy);
     }
+    log.info("{} bps {} amount {} address {} hash transferPayouts", [payouts[i].value.toString(), currentAmount.toString(), payouts[i].address.toHexString(), call.transaction.hash.toHexString()]);
   }
   return transferPayoutAmount;
 }
@@ -1211,10 +1245,13 @@ class MatchAndTransferClass {
 }
 
 export function matchAndTransfer(
+  // left: LibDealSide,
+  // right: LibDealSide,
   orderLeft: LibOrder,
   orderRight: LibOrder,
   msgSender: Address,
   exchangeV2: Address,
+  call: MatchOrdersCall,
 ): MatchAndTransferClass {
   let matchAssetsResult = matchAssets(orderLeft, orderRight);
   let makeMatch = matchAssetsResult.makeMatch;
@@ -1226,6 +1263,8 @@ export function matchAndTransfer(
   let newFill = parseOrdersSetFillEmitMatchResult.newFill;
 
   let doTransfersResult = doTransfers(
+    // left,
+    // right,
     new LibDealSide(
       new LibAsset(
         makeMatch,
@@ -1255,6 +1294,7 @@ export function matchAndTransfer(
       rightOrderData,
     ),
     exchangeV2,
+    call,
   );
 
   return {
@@ -1346,8 +1386,8 @@ function parseOrdersSetFillEmitMatch(
   orderRight: LibOrder,
   msgSender: Address,
 ): ParseOrdersSetFillEmitMatchClass {
-  let leftOrderHashKey = LibOrderHashKey(orderLeft);
-  let rightOrderHashKey = LibOrderHashKey(orderRight);
+  // let leftOrderHashKey = LibOrderHashKey(orderLeft);
+  // let rightOrderHashKey = LibOrderHashKey(orderRight);
 
   if (orderLeft.maker == zeroAddress) {
     orderLeft.maker = msgSender;
@@ -1362,8 +1402,8 @@ function parseOrdersSetFillEmitMatch(
   let newFill = setFillEmitMatch(
     orderLeft,
     orderRight,
-    leftOrderHashKey,
-    rightOrderHashKey,
+    // leftOrderHashKey,
+    // rightOrderHashKey,
     leftOrderData.isMakeFill,
     rightOrderData.isMakeFill,
   );
@@ -1378,13 +1418,13 @@ function parseOrdersSetFillEmitMatch(
 function setFillEmitMatch(
   orderLeft: LibOrder,
   orderRight: LibOrder,
-  leftOrderHashKey: Bytes,
-  rightOrderHashKey: Bytes,
+  // leftOrderHashKey: Bytes,
+  // rightOrderHashKey: Bytes,
   leftMakeFill: bool,
   rightMakeFill: bool,
 ): LibFillResult {
-  let leftOrderFill = getOrderFill(orderLeft.salt, leftOrderHashKey);
-  let rightOrderFill = getOrderFill(orderRight.salt, rightOrderHashKey);
+  let leftOrderFill = getOrderFill(orderLeft.salt);
+  let rightOrderFill = getOrderFill(orderRight.salt);
 
   let newFill = fillOrder(orderLeft, orderRight, leftOrderFill, rightOrderFill, leftMakeFill, rightMakeFill);
   return newFill;
@@ -1466,7 +1506,7 @@ function safeGetPartialAmountFloor(
   return numerator.times(target).div(denominator);
 }
 
-function getOrderFill(salt: BigInt, hash: Bytes): BigInt {
+function getOrderFill(salt: BigInt): BigInt {
   let fill = BIGINT_ZERO;
   if (salt == BIGINT_ZERO) {
     fill = BIGINT_ZERO;
@@ -1480,8 +1520,8 @@ function LibOrderDataParse(
   order: LibOrder
 ): LibOrderGenericData {
   let dataOrder = new LibOrderGenericData(
-    [new LibPart(zeroAddress, BIGINT_ZERO)],
-    [new LibPart(zeroAddress, BIGINT_ZERO)],
+    [],
+    [],
     false,
     BIGINT_ZERO
   );
