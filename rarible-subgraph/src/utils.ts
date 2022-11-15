@@ -365,7 +365,7 @@ class OriginFeeArrayClass {
   isMakeFill: bool;
 }
 
-export function getOriginFeeArray(exchangeType: Bytes, data: Bytes): OriginFeeArrayClass {
+export function getOriginFeeArray(exchangeType: Bytes, data: Bytes, call: MatchOrdersCall): OriginFeeArrayClass {
   let originFeeArray: Array<LibPart> = [];
   let payoutFeeArray: Array<LibPart> = [];
   let isMakeFill: bool = false;
@@ -427,6 +427,7 @@ export function getOriginFeeArray(exchangeType: Bytes, data: Bytes): OriginFeeAr
           originFeeItem[0].toAddress(),
           originFeeItem[1].toBigInt()
         );
+        log.info("originFeeItem index {} bps {} address {} and hash {}", [i.toString(), originFeeItem[1].toBigInt().toString(), originFeeItem[0].toAddress().toHexString(), call.transaction.hash.toHexString()]);
         originFeeArray.push(libPart);
       }
       for (let i = 0; i < payoutFeeArrayData.length; i++) {
@@ -435,6 +436,7 @@ export function getOriginFeeArray(exchangeType: Bytes, data: Bytes): OriginFeeAr
           payoutFeeItem[0].toAddress(),
           payoutFeeItem[1].toBigInt()
         );
+        log.info("payoutFeeItem index {} bps {} address {} and hash {}", [i.toString(), payoutFeeItem[1].toBigInt().toString(), payoutFeeItem[0].toAddress().toHexString(), call.transaction.hash.toHexString()]);
         payoutFeeArray.push(libPart);
       }
       return { originFeeArray, payoutFeeArray, isMakeFill };
@@ -1058,7 +1060,7 @@ function doTransferWithFees(
     log.info("{} rest {} amount {} hash transferFeesResult rest and origin fee amount and hash else", [rest.toString(), originFeeAmount.toString(), call.transaction.hash.toHexString()]);
   }
   let transferPayoutAmount = transferPayouts(paymentSide.asset.assetType, rest, paymentSide.from, nftSide.payouts, paymentSide.proxy, call);
-  return { rest, royaltyAmount, originFeeAmount, paymentAmount: transferPayoutAmount.plus(royaltyAmount).plus(originFeeAmount) };
+  return { rest, royaltyAmount, originFeeAmount, paymentAmount: transferPayoutAmount };
 }
 
 class TransferRoyaltyResult {
@@ -1245,8 +1247,8 @@ class MatchAndTransferClass {
 }
 
 export function matchAndTransfer(
-  // left: LibDealSide,
-  // right: LibDealSide,
+  left: LibDealSide,
+  right: LibDealSide,
   orderLeft: LibOrder,
   orderRight: LibOrder,
   msgSender: Address,
@@ -1257,34 +1259,34 @@ export function matchAndTransfer(
   let makeMatch = matchAssetsResult.makeMatch;
   let takeMatch = matchAssetsResult.takeMatch;
 
-  let parseOrdersSetFillEmitMatchResult = parseOrdersSetFillEmitMatch(orderLeft, orderRight, msgSender);
+  let parseOrdersSetFillEmitMatchResult = parseOrdersSetFillEmitMatch(orderLeft, orderRight, msgSender, call);
   let leftOrderData = parseOrdersSetFillEmitMatchResult.leftOrderData;
   let rightOrderData = parseOrdersSetFillEmitMatchResult.rightOrderData;
   let newFill = parseOrdersSetFillEmitMatchResult.newFill;
 
   let doTransfersResult = doTransfers(
-    // left,
-    // right,
-    new LibDealSide(
-      new LibAsset(
-        makeMatch,
-        newFill.leftValue,
-      ),
-      leftOrderData.payouts,
-      leftOrderData.originFees,
-      zeroAddress,
-      orderLeft.maker,
-    ),
-    new LibDealSide(
-      new LibAsset(
-        takeMatch,
-        newFill.rightValue,
-      ),
-      rightOrderData.payouts,
-      rightOrderData.originFees,
-      zeroAddress,
-      orderRight.maker,
-    ),
+    left,
+    right,
+    // new LibDealSide(
+    //   new LibAsset(
+    //     makeMatch,
+    //     newFill.leftValue,
+    //   ),
+    //   leftOrderData.payouts,
+    //   leftOrderData.originFees,
+    //   zeroAddress,
+    //   orderLeft.maker,
+    // ),
+    // new LibDealSide(
+    //   new LibAsset(
+    //     takeMatch,
+    //     newFill.rightValue,
+    //   ),
+    //   rightOrderData.payouts,
+    //   rightOrderData.originFees,
+    //   zeroAddress,
+    //   orderRight.maker,
+    // ),
     getDealData(
       makeMatch.assetClass,
       takeMatch.assetClass,
@@ -1385,6 +1387,7 @@ function parseOrdersSetFillEmitMatch(
   orderLeft: LibOrder,
   orderRight: LibOrder,
   msgSender: Address,
+  call: MatchOrdersCall,
 ): ParseOrdersSetFillEmitMatchClass {
   // let leftOrderHashKey = LibOrderHashKey(orderLeft);
   // let rightOrderHashKey = LibOrderHashKey(orderRight);
@@ -1396,8 +1399,8 @@ function parseOrdersSetFillEmitMatch(
     orderRight.maker = msgSender;
   }
 
-  let leftOrderData = LibOrderDataParse(orderLeft);
-  let rightOrderData = LibOrderDataParse(orderRight);
+  let leftOrderData = LibOrderDataParse(orderLeft, call);
+  let rightOrderData = LibOrderDataParse(orderRight, call);
 
   let newFill = setFillEmitMatch(
     orderLeft,
@@ -1517,7 +1520,8 @@ function getOrderFill(salt: BigInt): BigInt {
 }
 
 function LibOrderDataParse(
-  order: LibOrder
+  order: LibOrder,
+  call: MatchOrdersCall,
 ): LibOrderGenericData {
   let dataOrder = new LibOrderGenericData(
     [],
@@ -1526,11 +1530,11 @@ function LibOrderDataParse(
     BIGINT_ZERO
   );
   if (getClass(order.dataType) == V1) {
-    let data = getOriginFeeArray(Bytes.fromHexString(V1), order.data);
+    let data = getOriginFeeArray(Bytes.fromHexString(V1), order.data, call);
     dataOrder.payouts = data.payoutFeeArray;
     dataOrder.originFees = data.originFeeArray;
   } else if (getClass(order.dataType) == V2) {
-    let data = getOriginFeeArray(Bytes.fromHexString(V2), order.data);
+    let data = getOriginFeeArray(Bytes.fromHexString(V2), order.data, call);
     dataOrder.payouts = data.payoutFeeArray;
     dataOrder.originFees = data.originFeeArray;
     dataOrder.isMakeFill = data.isMakeFill;
@@ -1545,7 +1549,6 @@ function LibOrderDataParse(
     dataOrder.payouts = parsePayouts(data.payouts);
     dataOrder.originFees = parseOriginFeeData(data.originFeeFirst, data.originFeeSecond);
     dataOrder.isMakeFill = false;
-  } else if (order.dataType == DEFAULT_ORDER_TYPE) {
   }
   if (dataOrder.payouts.length == 0) {
     dataOrder.payouts = payoutSet(order.maker);
