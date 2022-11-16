@@ -51,7 +51,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     );
 
     let nft = new airstack.nft.NFT(
-      orderLeft.maker,
+      rightAsset.address,
       rightAssetType,
       rightAsset.id,
       orderRight.makeAsset.value,
@@ -149,10 +149,10 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 
     log.info("{} payment amount for transaction hash {}", [paymentAmount.toString(), call.transaction.hash.toHexString()]);
     let nft = new airstack.nft.NFT(
-      orderRight.maker,
+      leftAsset.address,
       leftAssetType,
       leftAsset.id,
-      orderLeft.makeAsset.value,
+      orderRight.takeAsset.value,
     )
 
     let royaltyDetails = getRoyaltyDetailsForExchangeV2(
