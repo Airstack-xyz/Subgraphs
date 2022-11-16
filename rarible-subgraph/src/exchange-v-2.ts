@@ -149,10 +149,10 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 
     log.info("{} payment amount for transaction hash {}", [paymentAmount.toString(), call.transaction.hash.toHexString()]);
     let nft = new airstack.nft.NFT(
-      leftAsset.address,
+      orderRight.maker,
       leftAssetType,
       leftAsset.id,
-      orderRight.takeAsset.value,
+      orderLeft.makeAsset.value,
     )
 
     let royaltyDetails = getRoyaltyDetailsForExchangeV2(
@@ -168,18 +168,6 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     log.info("{} origin fee for transaction hash {}", [originFeeData.originFee.toString(), call.transaction.hash.toHexString()]);
 
     let orderLeftInput = new LibOrder(
-      orderLeft.maker,
-      convertAssetToLibAsset(orderLeft.makeAsset),
-      orderLeft.taker,
-      convertAssetToLibAsset(orderLeft.takeAsset),
-      orderLeft.salt,
-      orderLeft.start,
-      orderLeft.end,
-      orderLeft.dataType,
-      orderLeft.data,
-    );
-
-    let orderRightInput = new LibOrder(
       orderRight.maker,
       convertAssetToLibAsset(orderRight.makeAsset),
       orderRight.taker,
@@ -189,6 +177,18 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       orderRight.end,
       orderRight.dataType,
       orderRight.data,
+    );
+
+    let orderRightInput = new LibOrder(
+      orderLeft.maker,
+      convertAssetToLibAsset(orderLeft.makeAsset),
+      orderLeft.taker,
+      convertAssetToLibAsset(orderLeft.takeAsset),
+      orderLeft.salt,
+      orderLeft.start,
+      orderLeft.end,
+      orderLeft.dataType,
+      orderLeft.data,
     );
 
     let paymentSide = new LibDealSide(
@@ -216,7 +216,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       nft,
       // paymentAmount,
       matchAndTransferResult.paymentAmount,
-      leftAsset.address,
+      rightAsset.address,
       // originFeeData.originFee,'
       matchAndTransferResult.originFeeAmount,
       originFeeData.originFeeAddress,
