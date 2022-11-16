@@ -11,7 +11,7 @@ import { abi } from "./abi";
 import { BIGINT_HUNDRED, EXCHANGE_MARKETPLACE_FEE, INVERSE_BASIS_POINT } from "./shared";
 
 export function handleAtomicMatch_(call: AtomicMatch_Call): void {
-  // log.info("txHash {}", [call.transaction.hash.toHexString()]);
+  log.info("txHash {}", [call.transaction.hash.toHexString()]);
   let txHash = call.transaction.hash;
   let timestamp = call.block.timestamp;
   let sellTakerAddress = call.inputs.addrs[9];
@@ -129,7 +129,8 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     );
 
     for (let i = 0; i < decoded.transfers.length; i++) {
-      let nft = new airstack.nft.NFT(decoded.addressList[i], "UNKNOWN", decoded.transfers[i].token, BigInt.zero());
+      log.info("txHash {} transfer method {}", [txHash.toHexString(), decoded.transfers[i].method]);
+      let nft = new airstack.nft.NFT(decoded.addressList[i], decoded.transfers[i].method, decoded.transfers[i].token, decoded.transfers[i].amount);
       let feeAmount = BigInt.zero();
       let feeRecipient = "";
       let creatorRoyaltyFeePercentage = BigInt.zero();
@@ -182,7 +183,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
         feeRecipient =buyOrder.feeRecipient;
       }
       log.info("txHash bundleSale {} feeAmount {} feeRecipient {}", [txHash.toHexString(), feeAmount.toString(), feeRecipient]);
-      let sale = new airstack.nft.Sale(decoded.transfers[i].to, decoded.transfers[i].from, nft, matchPrice, paymentToken, marketplaceRevenueETH, Address.fromString(feeRecipient), creatorRevenueETH, Address.zero());
+      let sale = new airstack.nft.Sale(decoded.transfers[i].to, decoded.transfers[i].from, nft, matchPrice, paymentToken, marketplaceRevenueETH, Address.fromString(feeRecipient), BigInt.zero(), Address.zero());
       allSales.push(sale);
       // fromArray.push(decoded.transfers[i].from);
       // toArray.push(decoded.transfers[i].to);
@@ -205,7 +206,8 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     contractAddress =
       decoded.contract != Address.zero() ? decoded.contract : contractAddress;
 
-    let nft = new airstack.nft.NFT(contractAddress, "UNKNOWN", decoded.token, BigInt.zero());
+    log.info("txHash {} transfer method {}", [txHash.toHexString(), decoded.method]);
+    let nft = new airstack.nft.NFT(contractAddress, decoded.method, decoded.token, decoded.amount);
     let feeAmount = BigInt.zero();
     let feeRecipient = "";
     let creatorRoyaltyFeePercentage = BigInt.zero();
@@ -258,7 +260,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     }
     creatorRevenueETH = matchPrice.minus(totalRevenueETH);
     log.info("txHash not bundleSale {} creatorRoyaltyFeePercentage {} totalRevenueETH {} marketplaceRevenueETH {} creatorRevenueETH {} feeAmount {} feeRecipient {}", [txHash.toHexString(), creatorRoyaltyFeePercentage.toString(), totalRevenueETH.toString(), marketplaceRevenueETH.toString(), creatorRevenueETH.toString(), feeAmount.toString(), feeRecipient]);
-    let sale = new airstack.nft.Sale(decoded.to, decoded.from, nft, matchPrice, paymentToken, totalRevenueETH, Address.fromString(feeRecipient), BigInt.zero(), Address.empty());
+    let sale = new airstack.nft.Sale(decoded.to, decoded.from, nft, matchPrice, paymentToken, totalRevenueETH, Address.fromString(feeRecipient), BigInt.zero(), Address.zero());
     allSales.push(sale);
 
     // fromArray.push(decoded.from);

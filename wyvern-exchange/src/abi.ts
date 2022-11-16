@@ -24,18 +24,21 @@ export namespace abi {
 		from: Address
 		to: Address
 		token: BigInt
+		amount: BigInt
 		contract: Address
 		constructor(
 			_method: string,
 			_from: Address,
 			_to: Address,
 			_token: BigInt,
+			_amount: BigInt,
 			_contract: Address
 		) {
 			this.method = _method
 			this.from = _from
 			this.to = _to
 			this.token = _token
+			this.amount = _amount
 			this.contract = _contract
 		}
 
@@ -283,18 +286,19 @@ export namespace abi {
 				senderAddress,
 				recieverAddress,
 				tokenId,
+				BigInt.fromI32(1),
 				Address.zero()
 			)
 		} else if(checkMatchERC1155UsingCriteria(functionSelector)) {
 
 			/*
-//    address from,
-//    address to,
-//    address token,
-//    uint256 tokenId,
-//    uint256 amount,
-//    bytes32 root,
-//    bytes32[] calldata proof
+			//    address from,
+			//    address to,
+			//    address token,
+			//    uint256 tokenId,
+			//    uint256 amount,
+			//    bytes32 root,
+			//    bytes32[] calldata proof
 
 			*/
 
@@ -312,6 +316,7 @@ export namespace abi {
 			let recieverAddress = decoded[1].toAddress()
 			let contract = decoded[2].toAddress();
 			let tokenId = decoded[3].toBigInt();
+			let amount = decoded[4].toBigInt();
         
 			log.info("new decoded data txHash {} {} {} {} {}", [txHash ,senderAddress.toHexString(), recieverAddress.toHexString(), tokenId.toString(), contract.toHexString()]);
 			return new Decoded_TransferFrom_Result(
@@ -319,6 +324,7 @@ export namespace abi {
 				senderAddress,
 				recieverAddress,
 				tokenId,
+				amount,
 				contract
 			)
 
