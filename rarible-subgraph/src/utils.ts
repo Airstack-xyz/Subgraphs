@@ -950,9 +950,9 @@ function calculateTotalAmount(
 class doTransfersClass {
   totalLeftValue: BigInt;
   totalRightValue: BigInt;
-  royaltyAmount: BigInt;
-  originFeeAmount: BigInt;
-  paymentAmount: BigInt;
+  royalty: LibPart;
+  originFee: LibPart;
+  payment: BigInt;
 }
 
 export function doTransfers(
@@ -964,46 +964,46 @@ export function doTransfers(
 ): doTransfersClass {
   let totalLeftValue = left.asset.value;
   let totalRightValue = right.asset.value;
-  let sellerPayoutsAmount = BIGINT_ZERO;
-  let royaltyAmount = BIGINT_ZERO;
-  let originFeeAmount = BIGINT_ZERO;
-  let paymentAmount = BIGINT_ZERO;
+  let sellerPayouts = new LibPart(zeroAddress, BIGINT_ZERO);
+  let royalty = new LibPart(zeroAddress, BIGINT_ZERO);
+  let originFee = new LibPart(zeroAddress, BIGINT_ZERO);
+  let payment = BIGINT_ZERO;
   let doTransferWithFeesResult: DoTransfersWithFeesClass;
   if (dealData.feeSide == FeeSide.LEFT) {
     log.info("doTransfers: feeSide == FeeSide.LEFT hash {}", [call.transaction.hash.toHexString()]);
     doTransferWithFeesResult = doTransferWithFees(left, right, dealData.maxFeesBasePoint, exchangeV2, call);
     totalLeftValue = doTransferWithFeesResult.rest;
-    royaltyAmount = doTransferWithFeesResult.royaltyAmount;
-    originFeeAmount = doTransferWithFeesResult.originFeeAmount;
-    paymentAmount = doTransferWithFeesResult.paymentAmount;
-    sellerPayoutsAmount = transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy, call);
+    royalty = doTransferWithFeesResult.royalty;
+    originFee = doTransferWithFeesResult.originFee;
+    payment = doTransferWithFeesResult.payment;
+    sellerPayouts = transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy, call);
   } else if (dealData.feeSide == FeeSide.RIGHT) {
     log.info("doTransfers: feeSide == FeeSide.RIGHT hash {}", [call.transaction.hash.toHexString()]);
     doTransferWithFeesResult = doTransferWithFees(right, left, dealData.maxFeesBasePoint, exchangeV2, call);
     totalRightValue = doTransferWithFeesResult.rest;
-    royaltyAmount = doTransferWithFeesResult.royaltyAmount;
-    originFeeAmount = doTransferWithFeesResult.originFeeAmount;
-    paymentAmount = doTransferWithFeesResult.paymentAmount;
-    sellerPayoutsAmount = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy, call);
+    royalty = doTransferWithFeesResult.royalty;
+    originFee = doTransferWithFeesResult.originFee;
+    payment = doTransferWithFeesResult.payment;
+    sellerPayouts = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy, call);
   } else {
     log.info("doTransfers: feeSide == FeeSide.NONE hash {}", [call.transaction.hash.toHexString()]);
-    sellerPayoutsAmount = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy, call);
-    sellerPayoutsAmount = sellerPayoutsAmount.plus(transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy, call));
+    sellerPayouts = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy, call);
+    sellerPayouts.value = sellerPayouts.value.plus(transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy, call).value);
   }
   return {
     totalLeftValue,
     totalRightValue,
-    royaltyAmount,
-    originFeeAmount,
-    paymentAmount,
+    royalty,
+    originFee,
+    payment,
   }
 }
 
 class DoTransfersWithFeesClass {
   rest: BigInt;
-  royaltyAmount: BigInt;
-  originFeeAmount: BigInt;
-  paymentAmount: BigInt;
+  royalty: LibPart;
+  originFee: LibPart;
+  payment: BigInt;
 }
 
 function doTransferWithFees(
@@ -1017,10 +1017,10 @@ function doTransferWithFees(
   let rest = totalAmount;
   let transferPayoutAmount = totalAmount;
   let transferRoyaltiesResult = transferRoyalties(paymentSide.asset.assetType, nftSide.asset.assetType, nftSide.payouts, rest, paymentSide.asset.value, paymentSide.from, paymentSide.proxy, exchangeV2, call);
-  log.info("{} rest {} amount {} hash transferRoyaltiesResult rest and royalty amount and hash", [transferRoyaltiesResult.rest.toString(), transferRoyaltiesResult.royaltyAmount.toString(), call.transaction.hash.toHexString()]);
+  log.info("{} rest {} amount {} hash transferRoyaltiesResult rest and royalty amount and hash", [transferRoyaltiesResult.rest.toString(), transferRoyaltiesResult.royalty.value.toString(), call.transaction.hash.toHexString()]);
   rest = transferRoyaltiesResult.rest;
-  let royaltyAmount = transferRoyaltiesResult.royaltyAmount;
-  let originFeeAmount = BIGINT_ZERO;
+  let royalty = transferRoyaltiesResult.royalty;
+  let originFee = new LibPart(zeroAddress, BIGINT_ZERO);
   if (
     paymentSide.originFees.length === 1 &&
     nftSide.originFees.length === 1 &&
@@ -1040,8 +1040,8 @@ function doTransferWithFees(
     ]);
     let transferFeesResult = transferFees(paymentSide.asset.assetType, rest, paymentSide.asset.value, origin, paymentSide.from, paymentSide.proxy, call);
     rest = transferFeesResult.newRest;
-    originFeeAmount = transferFeesResult.transferResult;
-    log.info("{} rest {} amount {} hash transferFeesResult rest and origin fee amount and hash if", [rest.toString(), originFeeAmount.toString(), call.transaction.hash.toHexString()]);
+    originFee = transferFeesResult.transferResult;
+    log.info("{} rest {} amount {} hash transferFeesResult rest and origin fee amount and hash if", [rest.toString(), originFee.value.toString(), call.transaction.hash.toHexString()]);
   } else {
     log.info("{} assetclass {} assetdata {} rest {} paymentsidevalue {} paymetnsideoriginfeeslength {} paymentsidefrom {} hash  transferfeesinput else", [
       paymentSide.asset.assetType.assetClass.toHexString(),
@@ -1054,11 +1054,11 @@ function doTransferWithFees(
     ]);
     let transferFeesResult = transferFees(paymentSide.asset.assetType, rest, paymentSide.asset.value, paymentSide.originFees, paymentSide.from, paymentSide.proxy, call);
     rest = transferFeesResult.newRest;
-    originFeeAmount = transferFeesResult.transferResult;
+    originFee = transferFeesResult.transferResult;
     transferFeesResult = transferFees(nftSide.asset.assetType, rest, paymentSide.asset.value, nftSide.originFees, paymentSide.from, paymentSide.proxy, call);
     rest = transferFeesResult.newRest;
-    originFeeAmount = originFeeAmount.plus(transferFeesResult.transferResult);
-    log.info("{} rest {} amount {} hash transferFeesResult rest and origin fee amount and hash else", [rest.toString(), originFeeAmount.toString(), call.transaction.hash.toHexString()]);
+    originFee.value = originFee.value.plus(transferFeesResult.transferResult.value);
+    log.info("{} rest {} amount {} hash transferFeesResult rest and origin fee amount and hash else", [rest.toString(), originFee.value.toString(), call.transaction.hash.toHexString()]);
   }
   // log.info("transferpayout input {} assetclass {} assetdata {} rest {} paymentsidefrom {} nftsidepayoutarray length {} hash", [
   //   paymentSide.asset.assetType.assetClass.toHexString(),
@@ -1070,12 +1070,12 @@ function doTransferWithFees(
   // ]);
   // transferPayoutAmount = transferPayouts(paymentSide.asset.assetType, rest, paymentSide.from, nftSide.payouts, paymentSide.proxy, call);
   // log.info("transferpayout output amount {}", [transferPayoutAmount.toString(), call.transaction.hash.toHexString()]);
-  return { rest, royaltyAmount, originFeeAmount, paymentAmount: transferPayoutAmount };
+  return { rest, royalty, originFee, payment: transferPayoutAmount };
 }
 
 class TransferRoyaltyResult {
   rest: BigInt;
-  royaltyAmount: BigInt;
+  royalty: LibPart;
 }
 
 function transferRoyalties(
@@ -1091,12 +1091,12 @@ function transferRoyalties(
 ): TransferRoyaltyResult {
   let royalties = getRoyaltiesByAssetType(nftAssetType, exchangeV2);
   if (royalties.length === 1 && payouts.length === 1 && royalties[0].address == payouts[0].address) {
-    return { rest, royaltyAmount: BIGINT_ZERO };
-  }
+    return { rest, royalty: new LibPart(zeroAddress, BIGINT_ZERO) };
+  };
   let transferRoyaltiesResult = transferFees(paymentAssetType, rest, amount, royalties, from, proxy, call);
   return {
     rest: transferRoyaltiesResult.newRest,
-    royaltyAmount: transferRoyaltiesResult.transferResult
+    royalty: transferRoyaltiesResult.transferResult,
   };
 }
 
@@ -1183,7 +1183,7 @@ export function getRoyaltiesByAssetType(
 class TransferFeesResult {
   newRest: BigInt;
   totalFee: BigInt;
-  transferResult: BigInt;
+  transferResult: LibPart;
 }
 
 function transferFees(
@@ -1197,7 +1197,7 @@ function transferFees(
 ): TransferFeesResult {
   let totalFee = BIGINT_ZERO;
   let newRest = rest;
-  let transferResult = BIGINT_ZERO;
+  let transferResult = new LibPart(zeroAddress, BIGINT_ZERO);
   for (let i = 0; i < fees.length; i++) {
     totalFee = totalFee.plus(fees[i].value);
     let feeValue = BIGINT_ZERO;
@@ -1223,20 +1223,20 @@ function transferPayouts(
   payouts: LibPart[],
   proxy: Address,
   call: MatchOrdersCall,
-): BigInt {
+): LibPart {
   let sumBps = BIGINT_ZERO;
   let rest = amount;
-  let transferPayoutAmount = BIGINT_ZERO;
+  let transferPayoutResult = new LibPart(zeroAddress, BIGINT_ZERO);
   for (let i = 0; i < payouts.length; i++) {
     let currentAmount = bp(amount, payouts[i].value);
     sumBps = sumBps.plus(payouts[i].value);
     if (currentAmount > BIGINT_ZERO) {
       rest = rest.minus(currentAmount);
-      transferPayoutAmount = transfer(new LibAsset(assetType, currentAmount), from, payouts[i].address, proxy);
+      transferPayoutResult = transfer(new LibAsset(assetType, currentAmount), from, payouts[i].address, proxy);
     }
     log.info("{} bps {} amount {} address {} hash transferPayouts", [payouts[i].value.toString(), currentAmount.toString(), payouts[i].address.toHexString(), call.transaction.hash.toHexString()]);
   }
-  return transferPayoutAmount;
+  return transferPayoutResult;
 }
 
 function transfer(
@@ -1244,16 +1244,16 @@ function transfer(
   from: Address,
   to: Address,
   proxy: Address,
-): BigInt {
-  return asset.value;
+): LibPart {
+  return new LibPart(to, asset.value);
 }
 
 // funcs from exchangev2core
 
 class MatchAndTransferClass {
-  royaltyAmount: BigInt;
-  originFeeAmount: BigInt;
-  paymentAmount: BigInt;
+  royalty: LibPart;
+  originFee: LibPart;
+  payment: BigInt;
 }
 
 export function matchAndTransfer(
@@ -1310,9 +1310,9 @@ export function matchAndTransfer(
   );
 
   return {
-    royaltyAmount: doTransfersResult.royaltyAmount,
-    originFeeAmount: doTransfersResult.originFeeAmount,
-    paymentAmount: doTransfersResult.paymentAmount,
+    royalty: doTransfersResult.royalty,
+    originFee: doTransfersResult.originFee,
+    payment: doTransfersResult.payment,
   };
 }
 
