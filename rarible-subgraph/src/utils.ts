@@ -1269,14 +1269,14 @@ export function matchAndTransfer(
   exchangeV2: Address,
   call: MatchOrdersCall,
 ): MatchAndTransferClass {
-  let matchAssetsResult = matchAssets(orderLeft, orderRight);
-  let makeMatch = matchAssetsResult.makeMatch;
-  let takeMatch = matchAssetsResult.takeMatch;
+  // let matchAssetsResult = matchAssets(orderLeft, orderRight);
+  // let makeMatch = matchAssetsResult.makeMatch;
+  // let takeMatch = matchAssetsResult.takeMatch;
 
   let parseOrdersSetFillEmitMatchResult = parseOrdersSetFillEmitMatch(orderLeft, orderRight, msgSender, call);
   let leftOrderData = parseOrdersSetFillEmitMatchResult.leftOrderData;
   let rightOrderData = parseOrdersSetFillEmitMatchResult.rightOrderData;
-  let newFill = parseOrdersSetFillEmitMatchResult.newFill;
+  // let newFill = parseOrdersSetFillEmitMatchResult.newFill;
 
   let doTransfersResult = doTransfers(
     left,
@@ -1302,8 +1302,8 @@ export function matchAndTransfer(
     //   orderRight.maker,
     // ),
     getDealData(
-      makeMatch.assetClass,
-      takeMatch.assetClass,
+      left.asset.assetType.assetClass,
+      right.asset.assetType.assetClass,
       orderLeft.dataType,
       orderRight.dataType,
       leftOrderData,
