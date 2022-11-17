@@ -1,5 +1,5 @@
 import { BigInt, dataSource, log } from "@graphprotocol/graph-ts";
-import { DirectAcceptBidCall, MatchOrdersCall } from "../generated/ExchangeV2/ExchangeV2";
+import { DirectAcceptBidCall, DirectPurchaseCall, MatchOrdersCall } from "../generated/ExchangeV2/ExchangeV2";
 import {
   ETH,
   ERC20,
@@ -310,6 +310,125 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
     BIGINT_ZERO,
     getOtherOrderType(direct.bidDataType),
     direct.sellOrderData,
+  );
+
+  let paymentSide = new LibDealSide(
+    convertAssetToLibAsset(orderRight.makeAsset),
+    getOriginFeeArray(orderRight.dataType, orderRight.data, transactionHash).payoutFeeArray,
+    getOriginFeeArray(orderRight.dataType, orderRight.data, transactionHash).originFeeArray,
+    zeroAddress,
+    orderRight.maker,
+  );
+
+  let nftSide = new LibDealSide(
+    convertAssetToLibAsset(direct.nftData),
+    getOriginFeeArray(orderLeft.dataType, orderLeft.data, transactionHash).payoutFeeArray,
+    getOriginFeeArray(orderLeft.dataType, orderLeft.data, transactionHash).originFeeArray,
+    zeroAddress,
+    orderLeft.maker,
+  );
+
+  let matchAndTransferResult = matchAndTransferDAB(paymentSide, nftSide, sellOrder, buyOrder, call.from, dataSource.address(), transactionHash);
+  log.info("{} {} {} match and transfer result for rightasset transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.royalty.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
+
+  let nft = new airstack.nft.NFT(
+    decodedNFT.address,
+    nftClass,
+    decodedNFT.id,
+    direct.sellOrderNftAmount,
+  )
+
+  let nftSales = new airstack.nft.Sale(
+    orderRight.maker, //to
+    orderLeft.maker,  //from
+    nft,
+    matchAndTransferResult.payment, //payment amount
+    direct.paymentToken, //payment token
+    matchAndTransferResult.originFee.value,  //protocol fees
+    matchAndTransferResult.originFee.address, //protocol beneficiary
+    matchAndTransferResult.royalty.value, //royalty fee
+    matchAndTransferResult.royalty.address, //royalty beneficiary
+  )
+
+  airstack.nft.trackNFTSaleTransactions(
+    transactionHash.toHexString(),
+    call.transaction.index,
+    [nftSales],
+    AirProtocolType.NFT_MARKET_PLACE,
+    AirProtocolActionType.BUY,
+    call.block.timestamp,
+    call.block.number,
+    call.block.hash.toHexString()
+  );
+}
+
+export function handleDirectPurchase(call: DirectPurchaseCall): void {
+  let transactionHash = call.transaction.hash;
+  let direct = call.inputs.direct;
+  let nftClass = getClass(direct.nftAssetClass);
+  let decodedNFT = decodeAssetDirectAcceptBid(direct.nftData, nftClass, transactionHash);
+
+  // entity.nftAddress = decodedNFT.address;
+  // entity.nftId = decodedNFT.id;
+  // entity.blockNumber = call.block.number;
+  // entity.sellOrderMaker = direct.sellOrderMaker;
+  // entity.sellOrderNftAmount = direct.sellOrderNftAmount;
+  // entity.nftAssetClass = direct.nftAssetClass;
+  // entity.nftData = direct.nftData;
+  // entity.sellOrderPaymentAmount = direct.sellOrderPaymentAmount;
+  // entity.paymentToken = direct.paymentToken;
+  // entity.sellOrderSalt = direct.sellOrderSalt;
+  // entity.sellOrderStart = direct.sellOrderStart;
+  // entity.sellOrderEnd = direct.sellOrderEnd;
+  // entity.sellOrderDataType = direct.sellOrderDataType;
+  // entity.sellOrderData = direct.sellOrderData;
+  // entity.sellOrderSignature = direct.sellOrderSignature;
+  // entity.buyOrderPaymentAmount = direct.buyOrderPaymentAmount;
+  // entity.buyOrderNftAmount = direct.buyOrderNftAmount;
+  // entity.buyOrderData = direct.buyOrderData;
+
+  let paymentAssetType = getPaymentAssetType(direct.paymentToken);
+
+  let sellOrder = new LibOrder(
+    direct.sellOrderMaker,
+    new LibAsset(
+      new LibAssetType(
+        direct.nftAssetClass,
+        direct.nftData,
+      ),
+      direct.sellOrderNftAmount,
+    ),
+    zeroAddress,
+    new LibAsset(
+      paymentAssetType,
+      direct.sellOrderPaymentAmount,
+    ),
+    direct.sellOrderSalt,
+    direct.sellOrderStart,
+    direct.sellOrderEnd,
+    direct.sellOrderDataType,
+    direct.sellOrderData
+  );
+
+  let buyOrder = new LibOrder(
+    zeroAddress,
+    new LibAsset(
+      paymentAssetType,
+      direct.buyOrderPaymentAmount,
+    ),
+    zeroAddress,
+    new LibAsset(
+      new LibAssetType(
+        direct.nftAssetClass,
+        direct.nftData,
+      ),
+      direct.buyOrderNftAmount,
+    ),
+    BIGINT_ZERO,
+    BIGINT_ZERO,
+    BIGINT_ZERO,
+    getOtherOrderType(direct.sellOrderDataType),
+    direct.buyOrderData
   );
 
   let paymentSide = new LibDealSide(
