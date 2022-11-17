@@ -48,11 +48,11 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     // rightAsset is NFT
     log.info("{} {} {} {} address id and data and hash leftasset is nft", [rightAsset.address.toHexString(), rightAsset.id.toString(), orderRight.makeAsset.assetType.data.toHexString(), call.transaction.hash.toHexString()]);
 
-    let payment = calculatedTotal(
-      orderLeft.makeAsset.value,
-      orderLeft.dataType,
-      orderLeft.data
-    );
+    // let payment = calculatedTotal(
+    //   orderLeft.makeAsset.value,
+    //   orderLeft.dataType,
+    //   orderLeft.data
+    // );
 
     let nft = new airstack.nft.NFT(
       rightAsset.address,
@@ -142,13 +142,13 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     // leftAsset is NFT
     log.info("{} {} {} {} address id and data and hash leftasset is nft", [leftAsset.address.toHexString(), leftAsset.id.toString(), orderLeft.makeAsset.assetType.data.toHexString(), call.transaction.hash.toHexString()]);
 
-    let payment = calculatedTotal(
-      orderRight.makeAsset.value,
-      orderRight.dataType,
-      orderRight.data
-    );
+    // let payment = calculatedTotal(
+    //   orderRight.makeAsset.value,
+    //   orderRight.dataType,
+    //   orderRight.data
+    // );
 
-    log.info("{} payment amount for transaction hash {}", [payment.toString(), call.transaction.hash.toHexString()]);
+    // log.info("{} payment amount for transaction hash {}", [payment.toString(), call.transaction.hash.toHexString()]);
     let nft = new airstack.nft.NFT(
       leftAsset.address,
       leftAssetType,
