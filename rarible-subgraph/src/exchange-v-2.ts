@@ -32,13 +32,17 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 
   let leftAsset = decodeAsset(
     orderLeft.makeAsset.assetType.data,
-    leftAssetType
+    leftAssetType,
+    call,
   );
+  log.info("leftasset data {} type {} hash {}", [orderLeft.makeAsset.assetType.data.toHexString(), orderLeft.makeAsset.assetType.assetClass.toHexString(), call.transaction.hash.toHexString()]);
 
   let rightAsset = decodeAsset(
     orderRight.makeAsset.assetType.data,
-    rightAssetType
+    rightAssetType,
+    call
   );
+  log.info("rightasset data {} type {} hash {}", [orderRight.makeAsset.assetType.data.toHexString(), orderRight.makeAsset.assetType.assetClass.toHexString(), call.transaction.hash.toHexString()]);
 
   if (leftAssetType == ETH || leftAssetType == ERC20) {
     // rightAsset is NFT

@@ -223,7 +223,7 @@ export class Asset {
   }
 }
 
-export function decodeAsset(data: Bytes, type: string): Asset {
+export function decodeAsset(data: Bytes, type: string, call: MatchOrdersCall): Asset {
   if (type == ERC20) {
     let decoded = ethereum.decode("(address)", data);
     if (decoded != null) {
@@ -233,6 +233,7 @@ export function decodeAsset(data: Bytes, type: string): Asset {
         BIGINT_ZERO,
         type
       );
+      log.info("decodedasset address {} id {} class {} hash {}", [asset.address.toHexString(), asset.id.toString(), asset.assetClass, call.transaction.hash.toHexString()]);
       return asset;
     }
   } else if (type == ERC721 || type == ERC1155) {
@@ -242,19 +243,22 @@ export function decodeAsset(data: Bytes, type: string): Asset {
       let address = decodedTuple[0].toAddress();
       let id = decodedTuple[1].toBigInt();
       let asset = new Asset(address, id, type);
+      log.info("decodedasset address {} id {} class {} hash {}", [asset.address.toHexString(), asset.id.toString(), asset.assetClass, call.transaction.hash.toHexString()]);
       return asset;
     }
-  } else if (type == SPECIAL) {
+  } else if (type == ERC721_LAZY || type == ERC1155_LAZY) {
     let decoded = ethereum.decode("(address,uint256,uint256)", data);
     if (decoded != null) {
       let decodedTuple = decoded.toTuple();
       let address = decodedTuple[0].toAddress();
       let id = decodedTuple[2].toBigInt();
       let asset = new Asset(address, id, type);
+      log.info("decodedasset address {} id {} class {} hash {}", [asset.address.toHexString(), asset.id.toString(), asset.assetClass, call.transaction.hash.toHexString()]);
       return asset;
     }
   }
   let asset = new Asset(zeroAddress, BIGINT_ZERO, type);
+  log.info("decodedasset address {} id {} class {} hash {}", [asset.address.toHexString(), asset.id.toString(), asset.assetClass, call.transaction.hash.toHexString()]);
   return asset;
 }
 
