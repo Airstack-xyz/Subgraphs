@@ -212,12 +212,12 @@ export function getClass(assetClass: Bytes): string {
   return SPECIAL;
 }
 
-'export function getClassBytes(assetClass: string): Bytes {
-let res = classMap.get(assetClass);
-if (res) {
-  return Bytes.fromHexString(res);
-}
-return EMPTY_BYTES;
+export function getClassBytes(assetClass: string): Bytes {
+  let res = classMap.get(assetClass);
+  if (res) {
+    return Bytes.fromHexString(res);
+  }
+  return EMPTY_BYTES;
 }
 
 export class Asset {
