@@ -18,7 +18,6 @@ import {
   LibAssetType,
   getPaymentAssetType,
   getOtherOrderType,
-  matchAndTransferDAB,
   matchAndTransferDirect,
 } from "./utils";
 import * as airstack from "./modules/airstack";
