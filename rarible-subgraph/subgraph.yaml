@@ -2,35 +2,35 @@ specVersion: 0.0.4
 schema:
   file: ./schema.graphql
 dataSources:
-  # - kind: ethereum
-  #   name: ExchangeV1
-  #   network: mainnet
-  #   source:
-  #     address: "0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06"
-  #     abi: ExchangeV1
-  #     startBlock: 11274514
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.6
-  #     language: wasm/assemblyscript
-  #     entities:
-  #       - AirBlock
-  #       - AirMeta
-  #       - AirEntityCounter
-  #       - AirAccount
-  #       - AirToken
-  #       - AirNftTransaction
-  #       - AirTokenMetadata
-  #       - AirExtraData
-  #     abis:
-  #       - name: ExchangeV1
-  #         file: ./abis/ExchangeV1.json
-  #       - name: HasSecondarySaleFees
-  #         file: ./abis/HasSecondarySaleFees.json
-  #     callHandlers:
-  #       - function: exchange(((address,uint256,(address,uint256,uint8),(address,uint256,uint8)),uint256,uint256,uint256),(uint8,bytes32,bytes32),uint256,(uint8,bytes32,bytes32),uint256,address)
-  #         handler: handleExchange
-  #     file: ./src/exchange-v-1.ts
+  - kind: ethereum
+    name: ExchangeV1
+    network: mainnet
+    source:
+      address: "0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06"
+      abi: ExchangeV1
+      startBlock: 11274514
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirToken
+        - AirNftTransaction
+        - AirTokenMetadata
+        - AirExtraData
+      abis:
+        - name: ExchangeV1
+          file: ./abis/ExchangeV1.json
+        - name: HasSecondarySaleFees
+          file: ./abis/HasSecondarySaleFees.json
+      callHandlers:
+        - function: exchange(((address,uint256,(address,uint256,uint8),(address,uint256,uint8)),uint256,uint256,uint256),(uint8,bytes32,bytes32),uint256,(uint8,bytes32,bytes32),uint256,address)
+          handler: handleExchange
+      file: ./src/exchange-v-1.ts
 
   - kind: ethereum
     name: ExchangeV2
