@@ -249,7 +249,32 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
     direct.sellOrderData,
   );
 
-  let matchAndTransferResult = matchAndTransferDAB(sellOrder, buyOrder, call.from, dataSource.address(), transactionHash);
+  let right = new LibDealSide(
+    new LibAsset(
+      new LibAssetType(
+        direct.nftAssetClass,
+        direct.nftData,
+      ),
+      direct.sellOrderNftAmount,
+    ),
+    getOriginFeeArray(direct.bidDataType, direct.sellOrderData, transactionHash).payoutFeeArray,
+    getOriginFeeArray(direct.bidDataType, direct.sellOrderData, transactionHash).originFeeArray,
+    zeroAddress,
+    zeroAddress,
+  );
+
+  let left = new LibDealSide(
+    new LibAsset(
+      paymentAssetType,
+      direct.bidPaymentAmount,
+    ),
+    getOriginFeeArray(getOtherOrderType(direct.bidDataType), direct.bidData, transactionHash).payoutFeeArray,
+    getOriginFeeArray(getOtherOrderType(direct.bidDataType), direct.bidData, transactionHash).originFeeArray,
+    zeroAddress,
+    zeroAddress,
+  );
+
+  let matchAndTransferResult = matchAndTransferDirect(left, right, sellOrder, buyOrder, call.from, dataSource.address(), transactionHash);
   log.info("{} {} {} match and transfer result for handleDirectAcceptBid transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.royalty.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
 
   let nft = new airstack.nft.NFT(
@@ -314,19 +339,6 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
     direct.sellOrderData
   );
 
-  let right = new LibDealSide(
-    new LibAsset(
-      new LibAssetType(
-        direct.nftAssetClass,
-        direct.nftData,
-      ),
-      direct.sellOrderNftAmount,
-    ),
-    getOriginFeeArray(direct.sellOrderDataType, direct.sellOrderData, transactionHash).payoutFeeArray,
-    getOriginFeeArray(direct.sellOrderDataType, direct.sellOrderData, transactionHash).originFeeArray,
-    zeroAddress,
-    zeroAddress,
-  );
 
   let buyOrder = new LibOrder(
     zeroAddress,
@@ -347,6 +359,20 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
     BIGINT_ZERO,
     getOtherOrderType(direct.sellOrderDataType),
     direct.buyOrderData
+  );
+
+  let right = new LibDealSide(
+    new LibAsset(
+      new LibAssetType(
+        direct.nftAssetClass,
+        direct.nftData,
+      ),
+      direct.sellOrderNftAmount,
+    ),
+    getOriginFeeArray(direct.sellOrderDataType, direct.sellOrderData, transactionHash).payoutFeeArray,
+    getOriginFeeArray(direct.sellOrderDataType, direct.sellOrderData, transactionHash).originFeeArray,
+    zeroAddress,
+    zeroAddress,
   );
 
   let left = new LibDealSide(
