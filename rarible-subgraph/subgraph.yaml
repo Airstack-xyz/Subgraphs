@@ -40,8 +40,8 @@ dataSources:
       abi: ExchangeV2
       # startBlock: 12617827 #exchangev2 deployment
       # startBlock: 15491047 #directPurchases-1
-      startBlock:  15696150
-      # startBlock: 15969007 #directAcceptBids-1
+      # startBlock:  15696156
+      startBlock: 15969007 #directAcceptBids-1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
