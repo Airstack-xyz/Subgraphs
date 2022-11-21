@@ -38,7 +38,7 @@ dataSources:
     source:
       address: "0x9757f2d2b135150bbeb65308d4a91804107cd8d6"
       abi: ExchangeV2
-      startBlock: 12617827
+      startBlock: 12617827 #exchangev2 deployment
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -60,4 +60,8 @@ dataSources:
       callHandlers:
         - function: matchOrders((address,((bytes4,bytes),uint256),address,((bytes4,bytes),uint256),uint256,uint256,uint256,bytes4,bytes),bytes,(address,((bytes4,bytes),uint256),address,((bytes4,bytes),uint256),uint256,uint256,uint256,bytes4,bytes),bytes)
           handler: handleMatchOrders
+        - function: directAcceptBid((address,uint256,bytes4,bytes,uint256,address,uint256,uint256,uint256,bytes4,bytes,bytes,uint256,uint256,bytes))
+          handler: handleDirectAcceptBid
+        - function: directPurchase((address,uint256,bytes4,bytes,uint256,address,uint256,uint256,uint256,bytes4,bytes,bytes,uint256,uint256,bytes))
+          handler: handleDirectPurchase
       file: ./src/exchange-v-2.ts
