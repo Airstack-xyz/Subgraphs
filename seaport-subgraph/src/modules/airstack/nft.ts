@@ -12,6 +12,7 @@ import {
     AirNftTransaction,
     AirToken,
     AirBlock,
+    AirNftSaleRoyalty
 } from "../../../generated/schema";
 
 export namespace nft {
@@ -42,13 +43,25 @@ export namespace nft {
             let paymentToken = getOrCreateAirToken(NftSales[i].paymentToken.toHexString());
             paymentToken.save();
 
+            // Transaction
+            let transactionId = getNFTSaleTransactionId(
+                txHash,
+                NftSales[i].nft.collection.toHexString(),
+                NftSales[i].nft.tokenId
+            )
+
             // Account
             let buyerAccount = getOrCreateAirAccount(NftSales[i].buyer.toHexString());
             buyerAccount.createdAt = block.id
             let sellerAccount = getOrCreateAirAccount(NftSales[i].seller.toHexString());
             sellerAccount.createdAt = block.id
-            let royaltyAccount = getOrCreateAirAccount(NftSales[i].royaltyFeesBeneficiary.toHexString());
-            royaltyAccount.createdAt = block.id
+
+            // Royalty
+            for(let j=0; j<NftSales[i].royalties.length; j++){
+                let royaltyAccount = getOrCreateAirAccount(NftSales[i].royalties[j].beneficiary.toHexString());
+                royaltyAccount.createdAt = block.id
+                let royalty = getOrCreateRoyalty(transactionId + NftSales[i].royalties[j].beneficiary.toHexString());
+            }
             let feeAccount = getOrCreateAirAccount(NftSales[i].protocolFeesBeneficiary.toHexString());
             feeAccount.createdAt = block.id
 
@@ -58,12 +71,7 @@ export namespace nft {
             );
             saleToken.save();
 
-            // Transaction
-            let transactionId = getNFTSaleTransactionId(
-                txHash,
-                NftSales[i].nft.collection.toHexString(),
-                NftSales[i].nft.tokenId
-            )
+            
             let transaction = AirNftTransaction.load(transactionId);
             if (transaction != null){
                 if (transaction.from == Address.zero().toHexString()){
@@ -169,6 +177,12 @@ export namespace nft {
         return block as AirBlock;
     }
 
+    export function getOrCreateRoyalty(
+        id: string
+    ): AirNftSaleRoyalty {
+        
+    }
+
     export class Sale {
         constructor(
           public readonly buyer: Address,
@@ -178,8 +192,14 @@ export namespace nft {
           public paymentToken: Address,
           public protocolFees: BigInt,
           public protocolFeesBeneficiary: Address,
-          public royaltyFees: BigInt,
-          public royaltyFeesBeneficiary: Address
+          public royalties: [CreatorRoyalty]
+        ) {}
+    }
+
+    export class CreatorRoyalty {
+        constructor(
+            public fee: BigInt,
+            public beneficiary: Address
         ) {}
     }
     
