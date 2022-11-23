@@ -83,7 +83,7 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
             buyer = recipient;
             seller = offerer;
 
-            let sale = new airstack.nft.Sale(buyer, seller, nft, paymentAmount, paymentToken, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
+            let sale = new airstack.nft.Sale(buyer, seller, nft, paymentAmount, paymentToken, protocolFees, protocolBeneficiary, new Array<airstack.nft.CreatorRoyalty>());
             allSales.push(sale);
         
             log.info(
@@ -150,9 +150,9 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
             : NftStandard.UNKNOWN;
           let nft = new airstack.nft.NFT(consideration.token, standard, consideration.identifier, consideration.amount);
 
-          let sale = new airstack.nft.Sale(buyer, seller, nft, paymentAmount, paymentToken, protocolFees, protocolBeneficiary, royaltyFees, royaltyBeneficiary);
+          let sale = new airstack.nft.Sale(buyer, seller, nft, paymentAmount, paymentToken, protocolFees, protocolBeneficiary, new Array<airstack.nft.CreatorRoyalty>());
           allSales.push(sale);
-    
+          
           log.info(
             "txHash consideration log tx {} logindex {} nftContract {} NFTId {} index {} recipient {} buyer {} seller {}",
             [
@@ -168,22 +168,22 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
           );
         }
     }
-  
+    
     for(let i = 0; i <allSales.length; i++){
-        allSales[i].royaltyFees = royaltyFees.div(BigInt.fromI64(allSales.length));
-        allSales[i].royaltyFeesBeneficiary = royaltyBeneficiary;
+        let royalty = new airstack.nft.CreatorRoyalty(royaltyFees.div(BigInt.fromI64(allSales.length)), royaltyBeneficiary);
+        allSales[i].royalties.push(royalty);
         allSales[i].protocolFees = protocolFees.div(BigInt.fromI64(allSales.length));
         allSales[i].protocolFeesBeneficiary = protocolBeneficiary;
         allSales[i].paymentAmount = paymentAmount.div(
           BigInt.fromI32(allSales.length)
         ); // For bundle sale, equally divide the payment amount in all sale transaction
         allSales[i].paymentToken = paymentToken;
-        log.info("txHash {} royaltyBeneficiary {} feeBeneficiary {} royaltyAmount {} feeAmount {}",
+        log.info("txHash {} royaltyBeneficiary {} feeBeneficiary {} feeAmount {}",
           [ 
             txHash.toHexString(),
             royaltyBeneficiary.toHexString(),
             protocolBeneficiary.toHexString(),
-            allSales[i].royaltyFees.toString(),
+            // allSales[i].royaltyFees.toString(),
             allSales[i].protocolFees.toString(),
           ]
         )
