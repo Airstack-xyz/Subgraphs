@@ -136,13 +136,18 @@ type AirNftTransaction implements AirTransaction @entity {
 	transactionToken: AirToken!   #nft
 	paymentToken: AirToken #payment
   paymentAmount: BigInt #payment
-  royaltyAmount: BigInt
-  royaltyBeneficiary: String
+    royalties: [AirNftSaleRoyalty!] @derivedFrom(field: "nftTransaction")
   feeAmount: BigInt
   feeBeneficiary: String
   tokenMetadata: AirTokenMetadata
 }
 
+type AirNftSaleRoyalty @entity{
+  id: ID! #AirNftTransaction(ID) + royalty beneficiary
+  amount: BigInt!
+  beneficiary: String!
+  nftTransaction: AirNftTransaction!
+}
 
 type AirTokenMetadata @entity {
   id: ID!

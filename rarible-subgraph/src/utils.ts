@@ -11,6 +11,7 @@ import { ExchangeV1 } from "../generated/ExchangeV1/ExchangeV1";
 import { HasSecondarySaleFees } from "../generated/ExchangeV1/HasSecondarySaleFees";
 import { ExchangeV2 } from "../generated/ExchangeV2/ExchangeV2";
 import { RoyaltiesRegistry } from "../generated/ExchangeV2/RoyaltiesRegistry";
+import { nft } from "../src/modules/airstack/index";
 
 export const INTERFACE_ID_FEES = Bytes.fromHexString("0xb7799584");
 export const exchangeV1Address = Address.fromString("0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06");
@@ -59,39 +60,33 @@ export namespace AirProtocolActionType {
   export const CLAIM_REWARDS = "CLAIM_REWARDS";
 }
 
-class RoyaltyDetails {
-  royaltyAmounts: BigInt[];
-  royaltyRecipients: Address[];
-};
-
 export function getRoyaltyDetails(
   tokenId: BigInt,
   tokenAddress: Address,
   restValue: BigInt,
   amount: BigInt,
-): RoyaltyDetails {
+): nft.CreatorRoyalty[] {
   // extract data from contract logic comes here
   let contractInstance = HasSecondarySaleFees.bind(tokenAddress);
   let supportsInterface = contractInstance.try_supportsInterface(INTERFACE_ID_FEES);
+  let creatorRoyalties: nft.CreatorRoyalty[] = [];
 
   if (!supportsInterface.reverted && supportsInterface.value) {
     let royaltyRecipients = contractInstance.getFeeRecipients(tokenId);
     let royaltyAmounts = contractInstance.getFeeBps(tokenId);
     for (var i = 0; i < royaltyAmounts.length; i++) {
       let subFeeResponse = subFeeInBp(restValue, amount, royaltyAmounts[i]);
+      creatorRoyalties.push(
+        new nft.CreatorRoyalty(
+          subFeeResponse.newValue,
+          royaltyRecipients[i],
+        )
+      );
       royaltyAmounts[i] = subFeeResponse.realFee;
       restValue = subFeeResponse.newValue;
     }
-    return {
-      royaltyAmounts,
-      royaltyRecipients,
-    };
   };
-
-  return {
-    royaltyAmounts: [],
-    royaltyRecipients: [],
-  };
+  return creatorRoyalties;
 }
 
 class SubFeeResponse {

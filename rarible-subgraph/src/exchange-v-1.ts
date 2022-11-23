@@ -43,8 +43,7 @@ export function handleExchange(call: ExchangeCall): void {
       buyAsset.token,
       beneficiaryDetails.beneficiaryFee,
       beneficiaryDetails.beneficiary,
-      royaltyDetails.royaltyAmounts.length > 0 ? royaltyDetails.royaltyAmounts[0] : BigInt.fromI32(0),
-      royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : utils.zeroAddress,
+      royaltyDetails,
     )
 
     airstack.nft.trackNFTSaleTransactions(
@@ -93,8 +92,7 @@ export function handleExchange(call: ExchangeCall): void {
       sellAsset.token,
       beneficiaryDetails.beneficiaryFee,
       beneficiaryDetails.beneficiary,
-      royaltyDetails.royaltyAmounts.length > 0 ? royaltyDetails.royaltyAmounts[0] : BigInt.fromI32(0),
-      royaltyDetails.royaltyRecipients.length > 0 ? royaltyDetails.royaltyRecipients[0] : utils.zeroAddress,
+      royaltyDetails,
     )
 
     airstack.nft.trackNFTSaleTransactions(
