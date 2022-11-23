@@ -64,9 +64,10 @@ export namespace nft {
         let royalty = getOrCreateRoyalty(transactionId + NftSales[i].royalties[j].beneficiary.toHexString());
         royalty.amount = NftSales[i].royalties[j].fee
         royalty.beneficiary = NftSales[i].royalties[j].beneficiary.toHexString()
+        royalty.nftTransaction = transactionId
         royaltyAccount.save()
         royalty.save()
-        royalties.push(royalty.id)
+        // royalties.push(royalty.id)
       }
       let feeAccount = getOrCreateAirAccount(NftSales[i].protocolFeesBeneficiary.toHexString());
       feeAccount.createdAt = block.id
@@ -109,7 +110,7 @@ export namespace nft {
       transaction.tokenAmount = NftSales[i].nft.amount;
       transaction.paymentToken = paymentToken.id;
       transaction.paymentAmount = NftSales[i].paymentAmount;
-      transaction.royalties = royalties;
+      // transaction.royalties = royalties;
       transaction.feeAmount = NftSales[i].protocolFees;
       transaction.feeBeneficiary = feeAccount.id;
 

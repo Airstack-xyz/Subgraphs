@@ -78,7 +78,7 @@ export function getRoyaltyDetails(
       let subFeeResponse = subFeeInBp(restValue, amount, royaltyAmounts[i]);
       creatorRoyalties.push(
         new nft.CreatorRoyalty(
-          subFeeResponse.newValue,
+          subFeeResponse.realFee,
           royaltyRecipients[i],
         )
       );
