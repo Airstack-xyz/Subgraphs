@@ -55,12 +55,18 @@ export namespace nft {
             buyerAccount.createdAt = block.id
             let sellerAccount = getOrCreateAirAccount(NftSales[i].seller.toHexString());
             sellerAccount.createdAt = block.id
-
+            
+            let royalties = new Array<string>();
             // Royalty
             for(let j=0; j<NftSales[i].royalties.length; j++){
                 let royaltyAccount = getOrCreateAirAccount(NftSales[i].royalties[j].beneficiary.toHexString());
                 royaltyAccount.createdAt = block.id
                 let royalty = getOrCreateRoyalty(transactionId + NftSales[i].royalties[j].beneficiary.toHexString());
+                royalty.amount = NftSales[i].royalties[j].fee
+                royalty.beneficiary = NftSales[i].royalties[j].beneficiary.toHexString()
+                royaltyAccount.save()
+                royalty.save()
+                royalties.push(royalty.id)
             }
             let feeAccount = getOrCreateAirAccount(NftSales[i].protocolFeesBeneficiary.toHexString());
             feeAccount.createdAt = block.id
@@ -103,8 +109,7 @@ export namespace nft {
             transaction.tokenAmount = NftSales[i].nft.amount;
             transaction.paymentToken = paymentToken.id;
             transaction.paymentAmount = NftSales[i].paymentAmount;
-            transaction.royaltyAmount = NftSales[i].royaltyFees;
-            transaction.royaltyBeneficiary = royaltyAccount.id;
+            transaction.royalties = royalties;
             transaction.feeAmount = NftSales[i].protocolFees;
             transaction.feeBeneficiary = feeAccount.id;
 
@@ -116,7 +121,6 @@ export namespace nft {
             block.save();
             buyerAccount.save();
             sellerAccount.save();
-            royaltyAccount.save();
             feeAccount.save();
             transaction.save();
         }
@@ -180,7 +184,11 @@ export namespace nft {
     export function getOrCreateRoyalty(
         id: string
     ): AirNftSaleRoyalty {
-        
+        let royalty = AirNftSaleRoyalty.load(id);
+        if (royalty == null){
+            royalty = new AirNftSaleRoyalty(id);
+        }
+        return royalty as AirNftSaleRoyalty;
     }
 
     export class Sale {
@@ -192,7 +200,7 @@ export namespace nft {
           public paymentToken: Address,
           public protocolFees: BigInt,
           public protocolFeesBeneficiary: Address,
-          public royalties: [CreatorRoyalty]
+          public royalties: CreatorRoyalty[]
         ) {}
     }
 
