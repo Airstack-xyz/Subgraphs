@@ -25,8 +25,8 @@ dataSources:
       abis:
         - name: ExchangeV1
           file: ./abis/ExchangeV1.json
-        - name: HasSecondarySaleFees
-          file: ./abis/HasSecondarySaleFees.json
+        - name: SecondarySaleFees
+          file: ./abis/SecondarySaleFees.json
       callHandlers:
         - function: exchange(((address,uint256,(address,uint256,uint8),(address,uint256,uint8)),uint256,uint256,uint256),(uint8,bytes32,bytes32),uint256,(uint8,bytes32,bytes32),uint256,address)
           handler: handleExchange

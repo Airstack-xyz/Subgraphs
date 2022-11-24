@@ -8,7 +8,7 @@ import {
   crypto,
 } from "@graphprotocol/graph-ts";
 import { ExchangeV1 } from "../generated/ExchangeV1/ExchangeV1";
-import { HasSecondarySaleFees } from "../generated/ExchangeV1/HasSecondarySaleFees";
+import { SecondarySaleFees } from "../generated/ExchangeV1/SecondarySaleFees";
 import { ExchangeV2, MatchOrdersCallOrderLeftStruct, MatchOrdersCallOrderRightStruct } from "../generated/ExchangeV2/ExchangeV2";
 import { RoyaltiesRegistry } from "../generated/ExchangeV2/RoyaltiesRegistry";
 import { nft } from "../src/modules/airstack/index";
@@ -67,7 +67,7 @@ export function getRoyaltyDetails(
   amount: BigInt,
 ): nft.CreatorRoyalty[] {
   // extract data from contract logic comes here
-  let contractInstance = HasSecondarySaleFees.bind(tokenAddress);
+  let contractInstance = SecondarySaleFees.bind(tokenAddress);
   let supportsInterface = contractInstance.try_supportsInterface(INTERFACE_ID_FEES);
   let creatorRoyalties: nft.CreatorRoyalty[] = [];
 
