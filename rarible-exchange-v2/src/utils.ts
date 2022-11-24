@@ -9,17 +9,45 @@ import {
 } from "@graphprotocol/graph-ts";
 import { ExchangeV2, MatchOrdersCallOrderLeftStruct, MatchOrdersCallOrderRightStruct } from "../generated/ExchangeV2/ExchangeV2";
 import { RoyaltiesRegistry } from "../generated/ExchangeV2/RoyaltiesRegistry";
-import { nft } from "../src/modules/airstack/index";
 
-export const INTERFACE_ID_FEES = Bytes.fromHexString("0xb7799584");
-export const exchangeV1Address = Address.fromString("0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06");
 export const zeroAddress = Address.fromString("0x0000000000000000000000000000000000000000");
 export const MINT_1155_DATA = "(uint256,string,uint256,(address,uint96)[],(address,uint96)[],bytes[])"
 export const MINT_721_DATA = "(uint256,string,(address,uint96)[],(address,uint96)[],bytes[])";
 export const DATA_1155_OR_721 = "(address,uint256)";
 export const EMPTY_BYTES = Bytes.fromHexString("");
 export const BYTES_ZERO = Bytes.fromI32(0);
-export const DEFAULT_ORDER_TYPE = Bytes.fromHexString("0xffffffff");
+
+export const ERC20 = "ERC20";
+export const ETH = "ETH";
+export const ERC721 = "ERC721";
+export const ERC1155 = "ERC1155";
+export const ERC721_LAZY = "ERC721_LAZY";
+export const ERC1155_LAZY = "ERC1155_LAZY";
+export const COLLECTION = "COLLECTION";
+export const CRYPTOPUNKS = "CRYPTOPUNKS";
+export const SPECIAL = "SPECIAL";
+export const ETH_ASSET_CLASS = "ETH_ASSET_CLASS";
+
+export const BIGINT_ZERO = BigInt.fromI32(0);
+
+export const classMap = new TypedMap<string, string>();
+classMap.set("0xaaaebeba", ETH);
+classMap.set("0x8ae85d84", ERC20);
+classMap.set("0x73ad2146", ERC721);
+classMap.set("0x973bb640", ERC1155);
+classMap.set("0xd8f960c1", ERC721_LAZY);
+classMap.set("0x1cdfaa40", ERC1155_LAZY);
+classMap.set("0xf63c2825", COLLECTION);
+classMap.set("0x3e6b89d4", CRYPTOPUNKS);
+
+classMap.set(ETH, "0xaaaebeba");
+classMap.set(ERC20, "0x8ae85d84");
+
+export const V1 = "0x4c234266";
+export const V2 = "0x23d235ef";
+export const V3_SELL = "0x2fa3cfd3";
+export const V3_BUY = "0x1b18cdf6";
+export const ASSET_TYPE_TYPEHASH = Bytes.fromHexString("0x452a0dc408cb0d27ffc3b3caff933a5208040a53a9dbecd8d89cad2c0d40e00c");
 
 export namespace AirProtocolType {
   export const GENERIC = "GENERIC";
@@ -93,37 +121,7 @@ function bp(value1: BigInt, value2: BigInt): BigInt {
 
 // exchangev2
 
-export const ERC20 = "ERC20";
-export const ETH = "ETH";
-export const ERC721 = "ERC721";
-export const ERC1155 = "ERC1155";
-export const ERC721_LAZY = "ERC721_LAZY";
-export const ERC1155_LAZY = "ERC1155_LAZY";
-export const COLLECTION = "COLLECTION";
-export const CRYPTOPUNKS = "CRYPTOPUNKS";
-export const SPECIAL = "SPECIAL";
-export const ETH_ASSET_CLASS = "ETH_ASSET_CLASS";
 
-export const BIGINT_ZERO = BigInt.fromI32(0);
-
-export const classMap = new TypedMap<string, string>();
-classMap.set("0xaaaebeba", ETH);
-classMap.set("0x8ae85d84", ERC20);
-classMap.set("0x73ad2146", ERC721);
-classMap.set("0x973bb640", ERC1155);
-classMap.set("0xd8f960c1", ERC721_LAZY);
-classMap.set("0x1cdfaa40", ERC1155_LAZY);
-classMap.set("0xf63c2825", COLLECTION);
-classMap.set("0x3e6b89d4", CRYPTOPUNKS);
-
-classMap.set(ETH, "0xaaaebeba");
-classMap.set(ERC20, "0x8ae85d84");
-
-export const V1 = "0x4c234266";
-export const V2 = "0x23d235ef";
-export const V3_SELL = "0x2fa3cfd3";
-export const V3_BUY = "0x1b18cdf6";
-export const ASSET_TYPE_TYPEHASH = Bytes.fromHexString("0x452a0dc408cb0d27ffc3b3caff933a5208040a53a9dbecd8d89cad2c0d40e00c");
 
 /**
  * @dev map bytes asset hash type to string
