@@ -12,7 +12,7 @@ import {
   AirNftTransaction,
   AirToken,
   AirBlock,
-  AirNftSaleRoyalty,
+  AirNftSaleRoyalty
 } from "../../../generated/schema";
 
 export namespace nft {
@@ -43,13 +43,6 @@ export namespace nft {
       let paymentToken = getOrCreateAirToken(NftSales[i].paymentToken.toHexString());
       paymentToken.save();
 
-      // Transaction
-      let transactionId = getNFTSaleTransactionId(
-        txHash,
-        NftSales[i].nft.collection.toHexString(),
-        NftSales[i].nft.tokenId
-      )
-
       // Account
       let buyerAccount = getOrCreateAirAccount(NftSales[i].buyer.toHexString());
       buyerAccount.createdAt = block.id
@@ -57,18 +50,7 @@ export namespace nft {
       sellerAccount.createdAt = block.id
 
       let royalties = new Array<string>();
-      // Royalty
-      for (let j = 0; j < NftSales[i].royalties.length; j++) {
-        let royaltyAccount = getOrCreateAirAccount(NftSales[i].royalties[j].beneficiary.toHexString());
-        royaltyAccount.createdAt = block.id
-        let royalty = getOrCreateRoyalty(transactionId + NftSales[i].royalties[j].beneficiary.toHexString());
-        royalty.amount = NftSales[i].royalties[j].fee
-        royalty.beneficiary = NftSales[i].royalties[j].beneficiary.toHexString()
-        royalty.nftTransaction = transactionId
-        royaltyAccount.save()
-        royalty.save()
-        // royalties.push(royalty.id)
-      }
+
       let feeAccount = getOrCreateAirAccount(NftSales[i].protocolFeesBeneficiary.toHexString());
       feeAccount.createdAt = block.id
 
@@ -78,6 +60,12 @@ export namespace nft {
       );
       saleToken.save();
 
+      // Transaction
+      let transactionId = getNFTSaleTransactionId(
+        txHash,
+        NftSales[i].nft.collection.toHexString(),
+        NftSales[i].nft.tokenId
+      )
 
       let transaction = AirNftTransaction.load(transactionId);
       if (transaction != null) {
@@ -110,7 +98,6 @@ export namespace nft {
       transaction.tokenAmount = NftSales[i].nft.amount;
       transaction.paymentToken = paymentToken.id;
       transaction.paymentAmount = NftSales[i].paymentAmount;
-      // transaction.royalties = royalties;
       transaction.feeAmount = NftSales[i].protocolFees;
       transaction.feeBeneficiary = feeAccount.id;
 
@@ -123,6 +110,25 @@ export namespace nft {
       buyerAccount.save();
       sellerAccount.save();
       feeAccount.save();
+
+      // Creator Royalty
+      for (let j = 0; j < NftSales[i].royalties.length; j++) {
+        let royaltyAccount = getOrCreateAirAccount(NftSales[i].royalties[j].beneficiary.toHexString());
+        royaltyAccount.createdAt = block.id
+        let royalty = getOrCreateRoyalty(transactionId + NftSales[i].royalties[j].beneficiary.toHexString());
+        royalty.amount = NftSales[i].royalties[j].fee
+        royalty.beneficiary = NftSales[i].royalties[j].beneficiary.toHexString()
+        royalty.nftTransaction = transactionId
+        royaltyAccount.save()
+        log.info("txId {} royaltyBeneficiary {} Amount {}",
+          [
+            transactionId,
+            royalty.beneficiary,
+            royalty.amount.toString(),
+          ]
+        )
+        royalty.save()
+      }
       transaction.save();
     }
   }
