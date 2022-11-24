@@ -128,19 +128,26 @@ class BeneficiaryDetails {
   restValue: BigInt;
 }
 
+/**
+ * @dev 
+ * @param total total payment amount of payment asset
+ * @param sellerFee seller fee in basis point
+ * @param buyerFee buyer fee in basis point
+ * @returns BeneficiaryDetails - beneficiaryFee, beneficiary, restValue
+*/
 export function getFeeBeneficiaryDetails(
   total: BigInt,
   sellerFee: BigInt,
   buyerFee: BigInt,
 ): BeneficiaryDetails {
-  let SubFeeInBpResponse = subFeeInBp(
+  let subFeeInBpResponse = subFeeInBp(
     total,
     total,
     sellerFee
   );
 
   let buyerFeeValue = bp(total, buyerFee);
-  let beneficiaryFee = buyerFeeValue.plus(SubFeeInBpResponse.realFee);
+  let beneficiaryFee = buyerFeeValue.plus(subFeeInBpResponse.realFee);
 
   let contractInstance = ExchangeV1.bind(exchangeV1Address);
   let beneficiaryResult = contractInstance.try_beneficiary();
@@ -156,7 +163,7 @@ export function getFeeBeneficiaryDetails(
   return {
     beneficiaryFee,
     beneficiary,
-    restValue: SubFeeInBpResponse.newValue,
+    restValue: subFeeInBpResponse.newValue,
   };
 }
 
@@ -195,6 +202,11 @@ export const V3_SELL = "0x2fa3cfd3";
 export const V3_BUY = "0x1b18cdf6";
 export const ASSET_TYPE_TYPEHASH = Bytes.fromHexString("0x452a0dc408cb0d27ffc3b3caff933a5208040a53a9dbecd8d89cad2c0d40e00c");
 
+/**
+ * @dev map bytes asset hash type to string
+ * @param assetClass asset class of payment/nft asset
+ * @returns string - mapped class
+ */
 export function getClass(assetClass: Bytes): string {
   let res = classMap.get(assetClass.toHexString());
   if (res) {
@@ -203,6 +215,12 @@ export function getClass(assetClass: Bytes): string {
   return SPECIAL;
 }
 
+/**
+ * @dev maps string asset type to hash bytes
+ * @param assetClass string asset class
+ * @param transactionHash transaction hash to be used for logs
+ * @returns asset class in bytes
+ */
 function getClassBytes(assetClass: string, transactionHash: Bytes): Bytes {
   log.info("received asset class: {} hash {}", [assetClass, transactionHash.toHexString()]);
   let res = classMap.get(assetClass);
@@ -225,6 +243,13 @@ export class Asset {
   }
 }
 
+/**
+ * @dev decodes asset data
+ * @param data encoded asset data
+ * @param type asset type
+ * @param transactionHash transaction hash to be used for logs
+ * @returns Asset - asset address, id, asset class
+ */
 export function decodeAsset(data: Bytes, type: string, transactionHash: Bytes): Asset {
   if (type == ERC20) {
     let decoded = ethereum.decode("(address)", data);
@@ -287,6 +312,13 @@ class OriginFeeArrayClass {
   isMakeFill: bool;
 }
 
+/**
+ * @dev decodes origin and payout fee array
+ * @param exchangeType exchange type - V1, V2
+ * @param data encoded payout and origin fee data
+ * @param transactionHash transaction hash to be used for logs
+ * @returns OriginFeeClass - LibPart array of origin and payout fee
+ */
 export function getOriginFeeArray(exchangeType: Bytes, data: Bytes, transactionHash: Bytes): OriginFeeArrayClass {
   let originFeeArray: Array<LibPart> = [];
   let payoutFeeArray: Array<LibPart> = [];
@@ -364,6 +396,12 @@ class FeeDataV3Class {
   maxFeesBasePoint: BigInt;
 }
 
+/**
+ * @dev decodes origin and payout fee array for V3
+ * @param data encoded fee data
+ * @param exchangeType exchange type - V3_SELL, V3_BUY
+ * @returns FeeDataV3Class - decoded fee data
+ */
 function getFeeDataV3(
   data: Bytes,
   exchangeType: Bytes
@@ -410,6 +448,11 @@ function getFeeDataV3(
   return { payouts, originFeeFirst, originFeeSecond, maxFeesBasePoint };
 }
 
+/**
+ * @dev makes an rpc call to get royalty registry address for the exchange
+ * @param exchangeV2 exchangeV2 contract address
+ * @returns exchangeV2 royalty registry address
+ */
 function getRoyaltiesRegistryAddress(exchangeV2: Address): Address {
   let exchangeInstance = ExchangeV2.bind(exchangeV2);
   let royaltiesRegistryResponse = exchangeInstance.try_royaltiesRegistry();
@@ -462,6 +505,11 @@ export class LibAsset {
   }
 }
 
+/**
+ * @dev converts Asset to LibAsset
+ * @param asset payment/nft asset to be converted to LibAsset
+ * @returns LibAsset - converted payment/nft asset
+ */
 function convertAssetToLibAsset(asset: ethereum.Tuple): LibAsset {
   let tuple = asset;
   let assetType = tuple[0].toTuple();
@@ -556,6 +604,16 @@ class doTransfersClass {
   payment: BigInt;
 }
 
+/**
+ * @dev holds logic to direct the transfer of funds between the maker and taker
+ * @param left left side of the deal
+ * @param right right side of the deal
+ * @param dealData deal data
+ * @param exchangeV2 exchangeV2 contract address
+ * @param transactionHash transaction hash
+ * @param isMatchOrders true if being called from handleMatchOrders
+ * @returns doTransfersClass - totalLeftValue, totalRightValue, royalty, originFee, payment
+ */
 function doTransfers(
   left: LibDealSide,
   right: LibDealSide,
@@ -619,50 +677,6 @@ function doTransfers(
   }
 }
 
-// function doTransfersDirect(
-//   left: LibDealSide,
-//   right: LibDealSide,
-//   dealData: LibDealData,
-//   exchangeV2: Address,
-//   transactionHash: Bytes,
-// ): doTransfersClass {
-//   let totalLeftValue = left.asset.value;
-//   let totalRightValue = right.asset.value;
-//   let sellerPayouts = new LibPart(zeroAddress, BIGINT_ZERO);
-//   let royalty = new Array<LibPart>();
-//   let originFee = new LibPart(zeroAddress, BIGINT_ZERO);
-//   let payment = BIGINT_ZERO;
-//   let doTransferWithFeesResult: DoTransfersWithFeesClass;
-//   if (dealData.feeSide == FeeSide.LEFT) {
-//     log.info("doTransfersDirect feeSide == FeeSide.LEFT hash {}", [transactionHash.toHexString()]);
-//     doTransferWithFeesResult = doTransferWithFees(right, left, dealData.maxFeesBasePoint, exchangeV2, transactionHash);
-//     totalRightValue = doTransferWithFeesResult.rest;
-//     royalty = doTransferWithFeesResult.royalty;
-//     originFee = doTransferWithFeesResult.originFee;
-//     payment = doTransferWithFeesResult.payment;
-//     sellerPayouts = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy, transactionHash);
-//   } else if (dealData.feeSide == FeeSide.RIGHT) {
-//     log.info("doTransfersDirect feeSide == FeeSide.RIGHT hash {}", [transactionHash.toHexString()]);
-//     doTransferWithFeesResult = doTransferWithFees(left, right, dealData.maxFeesBasePoint, exchangeV2, transactionHash);
-//     totalLeftValue = doTransferWithFeesResult.rest;
-//     royalty = doTransferWithFeesResult.royalty;
-//     originFee = doTransferWithFeesResult.originFee;
-//     payment = doTransferWithFeesResult.payment;
-//     sellerPayouts = transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy, transactionHash);
-//   } else {
-//     log.info("doTransfersDirect feeSide == FeeSide.NONE hash {}", [transactionHash.toHexString()]);
-//     sellerPayouts = transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy, transactionHash);
-//     sellerPayouts.value = sellerPayouts.value.plus(transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy, transactionHash).value);
-//   }
-//   return {
-//     totalLeftValue,
-//     totalRightValue,
-//     royalty,
-//     originFee,
-//     payment,
-//   }
-// }
-
 class DoTransfersWithFeesClass {
   rest: BigInt;
   royalty: LibPart[];
@@ -670,6 +684,15 @@ class DoTransfersWithFeesClass {
   payment: BigInt;
 }
 
+/**
+ * @dev holds logic to calculate paymentAmount, royalty, fee
+ * @param paymentSide payment side of the deal
+ * @param nftSide nft side of the deal
+ * @param maxFeesBasePoint max fees base point
+ * @param exchangeV2 exchangeV2 contract address
+ * @param transactionHash transaction hash
+ * @returns 
+ */
 function doTransferWithFees(
   paymentSide: LibDealSide,
   nftSide: LibDealSide,
@@ -739,6 +762,19 @@ class TransferRoyaltyResult {
   royalty: LibPart[];
 }
 
+/**
+ * @dev holds logic to calculate royalty
+ * @param paymentAssetType payment asset type
+ * @param nftAssetType nft asset type
+ * @param payouts payouts array
+ * @param rest rest amount
+ * @param amount total amount
+ * @param from from address
+ * @param proxy proxy address
+ * @param exchangeV2 exchangeV2 contract address
+ * @param transactionHash transaction hash
+ * @returns rest amount and royalty array
+ */
 function transferRoyalties(
   paymentAssetType: LibAssetType,
   nftAssetType: LibAssetType,
@@ -761,6 +797,12 @@ function transferRoyalties(
   };
 }
 
+/**
+ * @dev holds logic to calculate/retrieve royalty data by rpc call
+ * @param nftAssetType nft asset type
+ * @param exchangeV2 exchangeV2 contract address
+ * @returns get royalty array with address and bps value
+ */
 function getRoyaltiesByAssetType(
   nftAssetType: LibAssetType,
   exchangeV2: Address,
@@ -847,6 +889,17 @@ class TransferFeesResult {
   transferResult: LibPart;
 }
 
+/**
+ * @dev holds logic to calculate fee for the actual transfer
+ * @param assetType asset type
+ * @param rest rest amount
+ * @param amount total amount
+ * @param fees fees array
+ * @param from from address
+ * @param proxy proxy address
+ * @param transactionHash transaction hash
+ * @returns rest amount, total fee and transfer result
+ */
 function transferFees(
   assetType: LibAssetType,
   rest: BigInt,
@@ -883,6 +936,17 @@ class TransferRoyaltyFeesResult {
   transferResult: LibPart[];
 }
 
+/**
+ * @dev holds logic to calculate royalty fee array for the actual transfer
+ * @param assetType asset type
+ * @param rest rest amount
+ * @param amount total amount
+ * @param fees fees array
+ * @param from from address
+ * @param proxy proxy address
+ * @param transactionHash transaction hash
+ * @returns rest amount, total fee and transfer result
+ */
 function transferRoyaltyFees(
   assetType: LibAssetType,
   rest: BigInt,
@@ -915,6 +979,16 @@ function transferRoyaltyFees(
   };
 }
 
+/**
+ * @dev holds logic to calculate fee for the seller transfer
+ * @param assetType asset type
+ * @param amount rest amount
+ * @param from from address
+ * @param payouts payouts array
+ * @param proxy proxy address
+ * @param transactionHash transaction hash
+ * @returns seller address and amount
+ */
 function transferPayouts(
   assetType: LibAssetType,
   amount: BigInt,
@@ -938,6 +1012,14 @@ function transferPayouts(
   return transferPayoutResult;
 }
 
+/**
+ * @dev returns data of final transfer
+ * @param asset asset
+ * @param from from address
+ * @param to to address
+ * @param proxy proxy address
+ * @returns transfer beneficiary and amount
+ */
 function transfer(
   asset: LibAsset,
   from: Address,
@@ -953,6 +1035,18 @@ class MatchAndTransferClass {
   payment: BigInt;
 }
 
+/**
+ * @dev holds logic to match and transfer the assets
+ * @param left left deal side
+ * @param right right deal side
+ * @param orderLeft left order
+ * @param orderRight right order
+ * @param msgSender msg sender
+ * @param exchangeV2 exchange v2
+ * @param transactionHash transaction hash
+ * @param isMatchOrders is called from matchOrders
+ * @returns royalty, origin fee and payment amount 
+ */
 export function matchAndTransfer(
   left: LibDealSide,
   right: LibDealSide,
@@ -999,6 +1093,7 @@ export function matchAndTransfer(
   };
 }
 
+//helper functions for getDealData - start
 function assetMatcherMatchAssets(leftAssetType: LibAssetType, rightAssetType: LibAssetType): LibAssetType {
   let result = matchAssetOneSide(leftAssetType, rightAssetType);
   if (result.assetClass == BYTES_ZERO) {
@@ -1278,6 +1373,7 @@ function uintToLibPart(data: BigInt): LibPart {
   }
   return result;
 }
+// helper functions for getDealData - end
 
 class getDealDataClass {
   makeMatchAssetClass: Bytes;
@@ -1289,6 +1385,11 @@ class getDealDataClass {
   transactionHash: Bytes;
 }
 
+/**
+ * @dev calculate the deal data for the order
+ * @param input of type getDealDataClass
+ * @returns feeSide and maxFeesBasePoint
+ */
 function getDealData(
   input: getDealDataClass
 ): LibDealData {
@@ -1313,6 +1414,12 @@ function getDealData(
   return dealData;
 };
 
+/**
+ * @dev calculate the fee side for the order
+ * @param leftClass left asset class
+ * @param rightClass right asset class
+ * @returns feeSide of type FeeSide
+ */
 function getFeeSide(leftClass: Bytes, rightClass: Bytes): FeeSide {
   if (getClass(leftClass) == ETH) {
     return FeeSide.LEFT;
@@ -1335,6 +1442,15 @@ function getFeeSide(leftClass: Bytes, rightClass: Bytes): FeeSide {
   return FeeSide.NONE;
 }
 
+/**
+ * @dev calculate the max fee bps for the order
+ * @param dataTypeLeft left order data type
+ * @param dataTypeRight right order data type
+ * @param leftOrderData left order data
+ * @param rightOrderData right order data
+ * @param feeSide fee side
+ * @returns maxFeesBasePoint
+ */
 function getMaxFee(
   dataTypeLeft: Bytes,
   dataTypeRight: Bytes,
@@ -1351,7 +1467,6 @@ function getMaxFee(
     return BIGINT_ZERO;
   }
 
-  let matchFees = getSumFees(leftOrderData.originFees, rightOrderData.originFees);
   let maxFee = BIGINT_ZERO;
   if (feeSide == FeeSide.LEFT) {
     maxFee = rightOrderData.maxFeesBasePoint;
@@ -1363,19 +1478,12 @@ function getMaxFee(
   return maxFee;
 }
 
-function getSumFees(originLeft: Array<LibPart>, originRight: Array<LibPart>): BigInt {
-  let result = BIGINT_ZERO;
-  //adding left origin fees
-  for (let i = 0; i < originLeft.length; i++) {
-    result = result.plus(originLeft[i].value);
-  }
-  //adding right origin fees
-  for (let i = 0; i < originRight.length; i++) {
-    result = result.plus(originRight[i].value);
-  }
-  return result;
-}
-
+/**
+ * @dev holds logic to calulate payment asset type
+ * @param token token address
+ * @param transactionHash transaction hash
+ * @returns assetclass and data od type LibAssetType
+ */
 export function getPaymentAssetType(token: Address, transactionHash: Bytes): LibAssetType {
   let assetType = new LibAssetType(BYTES_ZERO, BYTES_ZERO);
   if (token == zeroAddress) {
@@ -1393,6 +1501,11 @@ export function getPaymentAssetType(token: Address, transactionHash: Bytes): Lib
   }
 }
 
+/**
+ * @dev holds logic to calulate other order type
+ * @param dataType order type - V3_SELL or V3_BUY or V1 or V2
+ * @returns order type for other side - left or right order
+ */
 export function getOtherOrderType(dataType: Bytes): Bytes {
   if (dataType == Bytes.fromHexString(V3_SELL)) {
     return Bytes.fromHexString(V3_BUY);
@@ -1410,6 +1523,14 @@ class generateOrderDataClass {
   orderRightInput: LibOrder;
 }
 
+/**
+ * @dev generate order data for matchAndTransfer input in matchOrders
+ * @param orderLeft left order
+ * @param orderRight right order
+ * @param isRightAssetNft is right asset nft
+ * @param transactionHash transaction hash
+ * @returns order data of type generateOrderDataClass
+ */
 export function generateOrderData(
   orderLeft: MatchOrdersCallOrderLeftStruct,
   orderRight: MatchOrdersCallOrderRightStruct,
