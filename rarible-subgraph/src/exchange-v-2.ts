@@ -95,7 +95,17 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     );
 
     let matchAndTransferResult = matchAndTransfer(paymentSide, nftSide, orderLeftInput, orderRightInput, call.from, dataSource.address(), transactionHash);
-    log.info("{} {} {} match and transfer result for rightasset transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.royalty.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
+    log.info("{} {} match and transfer result for rightasset transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
+
+    let royalties: airstack.nft.CreatorRoyalty[] = [];
+
+    for (let i = 0; i < matchAndTransferResult.royalty.length; i++) {
+      let royalty = new airstack.nft.CreatorRoyalty(
+        matchAndTransferResult.royalty[i].value,
+        matchAndTransferResult.royalty[i].address,
+      );
+      royalties.push(royalty);
+    }
 
     let nftSales = new airstack.nft.Sale(
       orderLeft.maker,  //to
@@ -105,8 +115,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       leftAsset.address, //payment token
       matchAndTransferResult.originFee.value,  //protocol fees
       matchAndTransferResult.originFee.address, //protocol beneficiary
-      matchAndTransferResult.royalty.value, //royalty fee
-      matchAndTransferResult.royalty.address, //royalty beneficiary
+      royalties, //royalties
     )
 
     airstack.nft.trackNFTSaleTransactions(
@@ -171,7 +180,17 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     );
 
     let matchAndTransferResult = matchAndTransfer(paymentSide, nftSide, orderLeftInput, orderRightInput, call.from, dataSource.address(), transactionHash);
-    log.info("{} {} {} match and transfer result for leftasset transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.royalty.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
+    log.info("{} {} match and transfer result for leftasset transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
+
+    let royalties: airstack.nft.CreatorRoyalty[] = [];
+
+    for (let i = 0; i < matchAndTransferResult.royalty.length; i++) {
+      let royalty = new airstack.nft.CreatorRoyalty(
+        matchAndTransferResult.royalty[i].value,
+        matchAndTransferResult.royalty[i].address,
+      );
+      royalties.push(royalty);
+    }
 
     let nftSales = new airstack.nft.Sale(
       orderRight.maker, //to
@@ -181,8 +200,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       rightAsset.address, //payment token
       matchAndTransferResult.originFee.value,  //protocol fees
       matchAndTransferResult.originFee.address, //protocol beneficiary
-      matchAndTransferResult.royalty.value, //royalty fee
-      matchAndTransferResult.royalty.address, //royalty beneficiary
+      royalties, //royalties
     )
 
     airstack.nft.trackNFTSaleTransactions(
@@ -274,7 +292,7 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
   );
 
   let matchAndTransferResult = matchAndTransferDirect(left, right, sellOrder, buyOrder, call.from, dataSource.address(), transactionHash);
-  log.info("{} {} {} match and transfer result for handleDirectAcceptBid transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.royalty.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
+  log.info("{} {} match and transfer result for handleDirectAcceptBid transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
 
   let nft = new airstack.nft.NFT(
     decodedNFT.address,
@@ -282,6 +300,16 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
     decodedNFT.id,
     direct.sellOrderNftAmount,
   )
+
+  let royalties: airstack.nft.CreatorRoyalty[] = [];
+
+  for (let i = 0; i < matchAndTransferResult.royalty.length; i++) {
+    let royalty = new airstack.nft.CreatorRoyalty(
+      matchAndTransferResult.royalty[i].value,
+      matchAndTransferResult.royalty[i].address,
+    );
+    royalties.push(royalty);
+  }
 
   let nftSales = new airstack.nft.Sale(
     direct.bidMaker, //to
@@ -291,8 +319,7 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
     direct.paymentToken, //payment token
     matchAndTransferResult.originFee.value,  //protocol fees
     matchAndTransferResult.originFee.address, //protocol beneficiary
-    matchAndTransferResult.royalty.value, //royalty fee
-    matchAndTransferResult.royalty.address, //royalty beneficiary
+    royalties, //royalties
   )
 
   airstack.nft.trackNFTSaleTransactions(
@@ -386,7 +413,7 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
   );
 
   let matchAndTransferResult = matchAndTransferDirect(left, right, sellOrder, buyOrder, call.from, dataSource.address(), transactionHash);
-  log.info("{} {} {} match and transfer result for handleDirectPurchase transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.royalty.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
+  log.info("{} {} match and transfer result for handleDirectPurchase transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
 
   let nft = new airstack.nft.NFT(
     decodedNFT.address,
@@ -394,6 +421,16 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
     decodedNFT.id,
     direct.sellOrderNftAmount,
   )
+
+  let royalties: airstack.nft.CreatorRoyalty[] = [];
+
+  for (let i = 0; i < matchAndTransferResult.royalty.length; i++) {
+    let royalty = new airstack.nft.CreatorRoyalty(
+      matchAndTransferResult.royalty[i].value,
+      matchAndTransferResult.royalty[i].address,
+    );
+    royalties.push(royalty);
+  }
 
   let nftSales = new airstack.nft.Sale(
     call.from, //to
@@ -403,8 +440,7 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
     direct.paymentToken, //payment token
     matchAndTransferResult.originFee.value,  //protocol fees
     matchAndTransferResult.originFee.address, //protocol beneficiary
-    matchAndTransferResult.royalty.value, //royalty fee
-    matchAndTransferResult.royalty.address, //royalty beneficiary
+    royalties, //royalties
   )
 
   airstack.nft.trackNFTSaleTransactions(
