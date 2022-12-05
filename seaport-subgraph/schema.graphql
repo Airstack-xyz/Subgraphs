@@ -167,3 +167,10 @@ type AirExtraData @entity {
   name: String!
   value: String!
 }
+
+type WrappedEtherTransaction @entity {
+  id: ID!
+  from: String!
+  to: String!
+  hash: String! #todo: Check if this should be bytes
+}
