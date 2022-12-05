@@ -5,7 +5,7 @@ import {
 } from "../generated/Seaport/Seaport"
 import { isERC1155, isERC721, isOpenSeaFeeAccount, NftStandard } from "./utils";
 
-import * as airstack from "./modules/airstack";
+import * as airstack from "../../modules/airstack";
   
 export enum ItemType {
     NATIVE = 0,
