@@ -6,7 +6,7 @@ import {
 
 import { orders } from "./orders";
 
-import * as airstack from "./modules/airstack";
+import * as airstack from "../../modules/airstack";
 import { abi } from "./abi";
 import { BIGINT_HUNDRED, EXCHANGE_MARKETPLACE_FEE, INVERSE_BASIS_POINT } from "./shared";
 
@@ -183,7 +183,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
         feeRecipient =buyOrder.feeRecipient;
       }
       log.info("txHash bundleSale {} feeAmount {} feeRecipient {}", [txHash.toHexString(), feeAmount.toString(), feeRecipient]);
-      let sale = new airstack.nft.Sale(decoded.transfers[i].to, decoded.transfers[i].from, nft, matchPrice, paymentToken, marketplaceRevenueETH, Address.fromString(feeRecipient), BigInt.zero(), Address.zero());
+      let sale = new airstack.nft.Sale(decoded.transfers[i].to, decoded.transfers[i].from, nft, matchPrice, paymentToken, marketplaceRevenueETH, Address.fromString(feeRecipient), new Array<airstack.nft.CreatorRoyalty>());
       allSales.push(sale);
       // fromArray.push(decoded.transfers[i].from);
       // toArray.push(decoded.transfers[i].to);
@@ -260,7 +260,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     }
     creatorRevenueETH = matchPrice.minus(totalRevenueETH);
     log.info("txHash not bundleSale {} creatorRoyaltyFeePercentage {} totalRevenueETH {} marketplaceRevenueETH {} creatorRevenueETH {} feeAmount {} feeRecipient {}", [txHash.toHexString(), creatorRoyaltyFeePercentage.toString(), totalRevenueETH.toString(), marketplaceRevenueETH.toString(), creatorRevenueETH.toString(), feeAmount.toString(), feeRecipient]);
-    let sale = new airstack.nft.Sale(decoded.to, decoded.from, nft, matchPrice, paymentToken, totalRevenueETH, Address.fromString(feeRecipient), BigInt.zero(), Address.zero());
+    let sale = new airstack.nft.Sale(decoded.to, decoded.from, nft, matchPrice, paymentToken, totalRevenueETH, Address.fromString(feeRecipient), new Array<airstack.nft.CreatorRoyalty>());
     allSales.push(sale);
 
     // fromArray.push(decoded.from);
@@ -270,6 +270,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
   }
 
   airstack.nft.trackNFTSaleTransactions(
+    "1",
     txHash.toHexString(),
     call.transaction.index,
     allSales,
