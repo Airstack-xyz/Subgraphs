@@ -6,6 +6,7 @@ import {
 import { isERC1155, isERC721, isOpenSeaFeeAccount, NftStandard } from "./utils";
 
 import * as airstack from "../../modules/airstack";
+import { WrappedEtherTransaction } from "../../modules/airstack/generated/schema";
   
 export enum ItemType {
     NATIVE = 0,
@@ -183,12 +184,30 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
             txHash.toHexString(),
             royaltyBeneficiary.toHexString(),
             protocolBeneficiary.toHexString(),
-            // allSales[i].royaltyFees.toString(),
+            // allSales[i].royalties[0].beneficiary.toHexString(),
             allSales[i].protocolFees.toString(),
           ]
         )
     }
+    log.info("txHash {} allSales length {}", [txHash.toHexString(), allSales.length.toString()]);
+    if (allSales.length > 0) {
+      if (allSales[0].seller == Address.zero() || allSales[0].buyer == Address.zero()){
+        let token_exist = WrappedEtherTransaction.load("mainnet-"+txHash.toHexString()+"-"+allSales[0].nft.collection.toHexString() + allSales[0].nft.tokenId.toString());
+        if (token_exist == null){
+          token_exist = new WrappedEtherTransaction("mainnet-"+txHash.toHexString()+"-"+allSales[0].nft.collection.toHexString() + allSales[0].nft.tokenId.toString());
+          token_exist.from = allSales[0].seller.toHexString();
+          token_exist.to = allSales[0].buyer.toHexString();
+          token_exist.hash = txHash.toHexString();
+          token_exist.save();
+        }else{
+          if (allSales[0].seller == Address.zero()){
+            allSales[0].seller = Address.fromString(token_exist.from);
+          }
+        }
+      }
+    }
     airstack.nft.trackNFTSaleTransactions(
+      "1",
       txHash.toHexString(),
       event.transaction.index,
       allSales,

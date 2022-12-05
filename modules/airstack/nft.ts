@@ -13,7 +13,7 @@ import {
     AirToken,
     AirBlock,
     AirNftSaleRoyalty
-} from "../../wyvern-exchange/generated/schema";
+} from "./generated/schema";
 
 export namespace nft {
     export function trackNFTSaleTransactions(
@@ -39,68 +39,44 @@ export namespace nft {
         let transactionCount = NftSales.length;
         for(let i=0; i<transactionCount; i++){
             // Payment Token
-            let paymentToken = getOrCreateAirToken(chainID+"-"+NftSales[i].paymentToken.toHexString());
+            let paymentToken = getOrCreateAirToken(chainID, NftSales[i].paymentToken.toHexString());
             paymentToken.save();
 
-            // Account
-            // let buyerOutput = getOrCreateAirAccount(chainID+"-"+NftSales[i].buyer.toHexString());
+            // Accounts
             let buyerAccount = AirAccount.load(chainID+"-"+NftSales[i].buyer.toHexString());
             if (buyerAccount == null){
-                buyerAccount = getOrCreateAirAccount(chainID+"-"+NftSales[i].buyer.toHexString());
+                buyerAccount = getOrCreateAirAccount(chainID, NftSales[i].buyer.toHexString());
                 buyerAccount.createdAt = block.id
             }
-            let sellerAccount = getOrCreateAirAccount(chainID+"-"+NftSales[i].seller.toHexString());
+            let sellerAccount = AirAccount.load(chainID+"-"+NftSales[i].seller.toHexString());
             if (sellerAccount == null){
-                sellerAccount = getOrCreateAirAccount(chainID+"-"+NftSales[i].seller.toHexString());
+                sellerAccount = getOrCreateAirAccount(chainID, NftSales[i].seller.toHexString());
                 sellerAccount.createdAt = block.id
             }
             
-            // let royalties = new Array<string>();
-            let feeAccount = getOrCreateAirAccount(chainID+"-"+NftSales[i].protocolFeesBeneficiary.toHexString());
+            let feeAccount = AirAccount.load(chainID+"-"+NftSales[i].protocolFeesBeneficiary.toHexString());
             if (feeAccount == null){
-                feeAccount = getOrCreateAirAccount(chainID+"-"+NftSales[i].protocolFeesBeneficiary.toHexString());
+                feeAccount = getOrCreateAirAccount(chainID, NftSales[i].protocolFeesBeneficiary.toHexString());
                 feeAccount.createdAt = block.id
             }
-            // let feeAccount = getOrCreateAirAccount(NftSales[i].protocolFeesBeneficiary.toHexString());
-            // feeAccount.createdAt = block.id
 
             // Sale Token
             let saleToken = getOrCreateAirToken(
-                chainID+"-"+NftSales[i].nft.collection.toHexString()
+                chainID,
+                NftSales[i].nft.collection.toHexString()
             );
             saleToken.save();
             
-            // Transaction
-            let transactionId = getNFTSaleTransactionId(
-                txHash,
-                NftSales[i].nft.collection.toHexString(),
-                NftSales[i].nft.tokenId
-            )
-            
-            let transaction = AirNftTransaction.load(transactionId);
-            if (transaction != null){
-                if (transaction.from == Address.zero().toHexString()){
-                    if (buyerAccount.address != Address.zero().toHexString()){
-                      transaction.from = buyerAccount.id;
-                    } else if (sellerAccount.address != Address.zero().toHexString()){
-                      transaction.from = sellerAccount.id;
-                    }
-                  }
-                  else if (transaction.to == Address.zero().toHexString()){
-                    if (buyerAccount.address != Address.zero().toHexString()){
-                        transaction.to = buyerAccount.id;
-                    } else if (sellerAccount.address != Address.zero().toHexString()){
-                        transaction.to = sellerAccount.id;
-                    }
-                  }
-            }else{
-                transaction = getOrCreateAirNftTransaction(
-                    transactionId
-                );
-                transaction.to = buyerAccount.id;
-                transaction.from = sellerAccount.id;
-            }
-            
+            // Transaction 
+            let transaction = getOrCreateAirNftTransaction(
+                getNFTSaleTransactionId(
+                    txHash,
+                    NftSales[i].nft.collection.toHexString(),
+                    NftSales[i].nft.tokenId
+                )
+            );
+            transaction.to = buyerAccount.id;
+            transaction.from = sellerAccount.id;
             transaction.type = "SALE";
             transaction.protocolType = protocolType;
             transaction.protocolActionType = protocolActionType;
@@ -125,22 +101,22 @@ export namespace nft {
             for(let j=0; j<NftSales[i].royalties.length; j++){
                 let royaltyAccount = AirAccount.load(chainID+"-"+NftSales[i].royalties[j].beneficiary.toHexString());
                 if (royaltyAccount == null){
-                    royaltyAccount = getOrCreateAirAccount(chainID+"-"+NftSales[i].royalties[j].beneficiary.toHexString());
+                    royaltyAccount = getOrCreateAirAccount(chainID, NftSales[i].royalties[j].beneficiary.toHexString());
                     royaltyAccount.createdAt = block.id;
                     royaltyAccount.save()
                 }
-                let royalty = AirNftSaleRoyalty.load(chainID+"-"+transactionId +"-"+ NftSales[i].royalties[j].beneficiary.toHexString());
+                let royalty = AirNftSaleRoyalty.load(chainID+"-"+transaction.hash +"-"+ NftSales[i].royalties[j].beneficiary.toHexString());
                 if (royalty == null) {
-                    royalty = getOrCreateRoyalty(chainID+"-"+transactionId +"-"+ NftSales[i].royalties[j].beneficiary.toHexString());
+                    royalty = getOrCreateRoyalty(chainID+"-"+transaction.hash +"-"+ NftSales[i].royalties[j].beneficiary.toHexString());
                     royalty.amount = NftSales[i].royalties[j].fee
                     royalty.beneficiary = NftSales[i].royalties[j].beneficiary.toHexString()
-                    royalty.nftTransaction = transactionId
+                    royalty.nftTransaction = transaction.id
                     royalty.save()
                 }
                 
                 log.info("txId {} royaltyBeneficiary {} Amount {}",
                     [ 
-                        transactionId,
+                        transaction.id,
                         royalty.beneficiary,
                         royalty.amount.toString(),
                     ]
@@ -164,20 +140,20 @@ export namespace nft {
           .concat(nftId.toString());
       }
 
-    export function getOrCreateAirToken(id: string): AirToken {
-        let entity = AirToken.load(id); //todo add network
+    export function getOrCreateAirToken(chainID: string, address: string): AirToken {
+        let entity = AirToken.load(chainID + "-" + address); //todo add network
         if (entity == null) {
-          entity = new AirToken(id);
-          entity.address = id;
+          entity = new AirToken(chainID + "-" + address);
+          entity.address = address;
         }
         return entity as AirToken;
     }
 
-    export function getOrCreateAirAccount(id: string): AirAccount {
-        let entity = AirAccount.load(id);
+    export function getOrCreateAirAccount(chainID: string, address: string): AirAccount {
+        let entity = AirAccount.load(chainID + "-" + address);
         if (entity == null) {
-          entity = new AirAccount(id);
-          entity.address = id;
+          entity = new AirAccount(chainID + "-" + address);
+          entity.address = address;
         }
         return entity as AirAccount;
     }
@@ -216,9 +192,9 @@ export namespace nft {
 
     export class Sale {
         constructor(
-          public readonly buyer: Address,
-          public readonly seller: Address,
-          public readonly nft: NFT,
+          public buyer: Address,
+          public seller: Address,
+          public nft: NFT,
           public paymentAmount: BigInt,
           public paymentToken: Address,
           public protocolFees: BigInt,
