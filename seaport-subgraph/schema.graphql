@@ -1,3 +1,6 @@
+#
+# --Airstack Schemas--
+
 enum AirNetwork {
   ARBITRUM_ONE
   ARWEAVE_MAINNET

@@ -3,10 +3,10 @@ import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts";
 import {
     OrderFulfilled,
 } from "../generated/Seaport/Seaport"
-import { isERC1155, isERC721, isOpenSeaFeeAccount, NftStandard } from "./utils";
+import { isERC1155, isERC721, isOpenSeaFeeAccount, NftStandard, ETHEREUM_MAINNET_ID, TRANSACTION_TYPE_SALE, MARKET_PLACE_TYPE, PROTOCOL_SELL_ACTION_TYPE } from "./utils";
 
-import * as airstack from "../../modules/airstack";
-import { WrappedEtherTransaction } from "../../modules/airstack/generated/schema";
+import * as airstack from "../modules/airstack";
+import { WrappedEtherTransaction } from "../generated/schema";
   
 export enum ItemType {
     NATIVE = 0,
@@ -184,37 +184,60 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
             txHash.toHexString(),
             royaltyBeneficiary.toHexString(),
             protocolBeneficiary.toHexString(),
-            // allSales[i].royalties[0].beneficiary.toHexString(),
             allSales[i].protocolFees.toString(),
           ]
         )
+        if (allSales[i].seller == Address.zero() || allSales[i].buyer == Address.zero()){
+          let token_exist = WrappedEtherTransaction.load(
+              generateWrappedEtherTransactionID(
+                ETHEREUM_MAINNET_ID, 
+                txHash.toHexString(), 
+                allSales[i].nft.collection.toHexString(), 
+                allSales[i].nft.tokenId.toString()
+              )
+            );
+          if (token_exist == null){
+            token_exist = new WrappedEtherTransaction(
+              generateWrappedEtherTransactionID(
+                ETHEREUM_MAINNET_ID, 
+                txHash.toHexString(), 
+                allSales[i].nft.collection.toHexString(), 
+                allSales[i].nft.tokenId.toString()
+              )
+            );
+            token_exist.from = allSales[i].seller.toHexString();
+            token_exist.to = allSales[i].buyer.toHexString();
+            token_exist.hash = txHash.toHexString();
+            token_exist.save();
+          }else{
+            if (allSales[i].seller == Address.zero()){
+              allSales[i].seller = Address.fromString(token_exist.from);
+            }
+          }
+        }
     }
     log.info("txHash {} allSales length {}", [txHash.toHexString(), allSales.length.toString()]);
     if (allSales.length > 0) {
-      if (allSales[0].seller == Address.zero() || allSales[0].buyer == Address.zero()){
-        let token_exist = WrappedEtherTransaction.load("mainnet-"+txHash.toHexString()+"-"+allSales[0].nft.collection.toHexString() + allSales[0].nft.tokenId.toString());
-        if (token_exist == null){
-          token_exist = new WrappedEtherTransaction("mainnet-"+txHash.toHexString()+"-"+allSales[0].nft.collection.toHexString() + allSales[0].nft.tokenId.toString());
-          token_exist.from = allSales[0].seller.toHexString();
-          token_exist.to = allSales[0].buyer.toHexString();
-          token_exist.hash = txHash.toHexString();
-          token_exist.save();
-        }else{
-          if (allSales[0].seller == Address.zero()){
-            allSales[0].seller = Address.fromString(token_exist.from);
-          }
-        }
-      }
+        airstack.nft.trackNFTSaleTransactions(
+            ETHEREUM_MAINNET_ID,
+            txHash.toHexString(),
+            event.transaction.index,
+            allSales,
+            TRANSACTION_TYPE_SALE,
+            MARKET_PLACE_TYPE,
+            PROTOCOL_SELL_ACTION_TYPE,
+            event.block.timestamp,
+            event.block.number,
+            event.block.hash.toHexString()
+        )
     }
-    airstack.nft.trackNFTSaleTransactions(
-      "1",
-      txHash.toHexString(),
-      event.transaction.index,
-      allSales,
-      "NFT_MARKET_PLACE",
-      "SELL",
-      event.block.timestamp,
-      event.block.number,
-      event.block.hash.toHexString()
-    )
+}
+
+export function generateWrappedEtherTransactionID(
+  chainID: string,
+  txHash: string,
+  contractAddress: string,
+  tokenID: string
+): string {
+  return chainID + "-" + txHash + "-" + contractAddress + tokenID;
 }

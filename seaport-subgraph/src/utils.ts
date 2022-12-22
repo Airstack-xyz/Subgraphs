@@ -3,6 +3,11 @@ import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts";
 export const BIGINT_ZERO = BigInt.zero();
 export const BIGDECIMAL_HUNDRED = BigInt.fromI32(100).toBigDecimal();
 
+export const ETHEREUM_MAINNET_ID = "1";
+export const TRANSACTION_TYPE_SALE = "SALE";
+export const MARKET_PLACE_TYPE = "NFT_MARKET_PLACE";
+export const PROTOCOL_SELL_ACTION_TYPE = "SELL";
+
 export const EXCHANGE_ADDRESS = Address.fromString(
     "0x00000000006c3852cbef3e08e8df289169ede581"
   );
