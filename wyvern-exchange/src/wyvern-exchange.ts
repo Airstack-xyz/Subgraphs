@@ -6,9 +6,10 @@ import {
 
 import { orders } from "./orders";
 
-import * as airstack from "../../modules/airstack";
+import * as airstack from "../modules/airstack";
 import { abi } from "./abi";
 import { BIGINT_HUNDRED, EXCHANGE_MARKETPLACE_FEE, INVERSE_BASIS_POINT } from "./shared";
+import { ETHEREUM_MAINNET_ID, TRANSACTION_TYPE_SALE, MARKET_PLACE_TYPE, PROTOCOL_SELL_ACTION_TYPE } from "./utils";
 
 export function handleAtomicMatch_(call: AtomicMatch_Call): void {
   log.info("txHash {}", [call.transaction.hash.toHexString()]);
@@ -131,64 +132,19 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     for (let i = 0; i < decoded.transfers.length; i++) {
       log.info("txHash {} transfer method {}", [txHash.toHexString(), decoded.transfers[i].method]);
       let nft = new airstack.nft.NFT(decoded.addressList[i], decoded.transfers[i].method, decoded.transfers[i].token, decoded.transfers[i].amount);
-      let feeAmount = BigInt.zero();
-      let feeRecipient = "";
-      let creatorRoyaltyFeePercentage = BigInt.zero();
-      let totalRevenueETH = BigInt.zero();
-      let marketplaceRevenueETH = BigInt.zero();
-      let creatorRevenueETH = BigInt.zero();
+      // let feeAmount = BigInt.zero();
+
+      let royaltyDetails = new royaltyResult();
       if (sellOrder.feeRecipient!=Address.zero().toHexString()) {
-        creatorRoyaltyFeePercentage = EXCHANGE_MARKETPLACE_FEE.le(
-          sellOrder.makerRelayerFee
-        )
-          ? sellOrder.makerRelayerFee
-              .minus(EXCHANGE_MARKETPLACE_FEE)
-              .div(BIGINT_HUNDRED)
-          : BigInt.zero();
-  
-        totalRevenueETH = sellOrder.makerRelayerFee
-          .times(matchPrice)
-          .div(INVERSE_BASIS_POINT);
-  
-        marketplaceRevenueETH = EXCHANGE_MARKETPLACE_FEE.le(sellOrder.makerRelayerFee)
-          ? EXCHANGE_MARKETPLACE_FEE
-              .times(matchPrice)
-              .div(INVERSE_BASIS_POINT)
-          : BigInt.zero();
-  
-        creatorRevenueETH = totalRevenueETH.minus(marketplaceRevenueETH);
-  
-        feeRecipient =sellOrder.feeRecipient;
+        royaltyDetails = calculateRoyalityMaker(sellOrder, matchPrice);
       }else{
-      // if (buyOrder.feeRecipient != Address.zero().toHexString()){
-        creatorRoyaltyFeePercentage = EXCHANGE_MARKETPLACE_FEE.le(
-          buyOrder.takerRelayerFee
-        )
-          ? buyOrder.takerRelayerFee
-              .minus(EXCHANGE_MARKETPLACE_FEE)
-              .div(BIGINT_HUNDRED)
-          : BigInt.zero();
-  
-        totalRevenueETH = buyOrder.takerRelayerFee
-          .times(matchPrice)
-          .div(INVERSE_BASIS_POINT);
-  
-        marketplaceRevenueETH = EXCHANGE_MARKETPLACE_FEE.le(buyOrder.takerRelayerFee)
-          ? EXCHANGE_MARKETPLACE_FEE
-              .times(matchPrice)
-              .div(INVERSE_BASIS_POINT)
-          : BigInt.zero();
-        creatorRevenueETH = totalRevenueETH.minus(marketplaceRevenueETH);
-  
-        feeRecipient =buyOrder.feeRecipient;
+        royaltyDetails = calculateRoyalityTaker(sellOrder, matchPrice);
       }
-      log.info("txHash bundleSale {} feeAmount {} feeRecipient {}", [txHash.toHexString(), feeAmount.toString(), feeRecipient]);
+      let marketplaceRevenueETH = royaltyDetails.marketplaceRevenueETH;
+      let feeRecipient = royaltyDetails.feeRecipient;
+      log.info("txHash bundleSale {} feeRecipient {}", [txHash.toHexString(), feeRecipient]);
       let sale = new airstack.nft.Sale(decoded.transfers[i].to, decoded.transfers[i].from, nft, matchPrice, paymentToken, marketplaceRevenueETH, Address.fromString(feeRecipient), new Array<airstack.nft.CreatorRoyalty>());
       allSales.push(sale);
-      // fromArray.push(decoded.transfers[i].from);
-      // toArray.push(decoded.transfers[i].to);
-      // contractAddressArray.push(decoded.addressList[i]);
-      // nftIdArray.push(decoded.transfers[i].token);
     }
   } else {
     log.info("txHash {} not bundle sale", [txHash.toHexString()]);
@@ -208,76 +164,91 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
 
     log.info("txHash {} transfer method {}", [txHash.toHexString(), decoded.method]);
     let nft = new airstack.nft.NFT(contractAddress, decoded.method, decoded.token, decoded.amount);
-    let feeAmount = BigInt.zero();
-    let feeRecipient = "";
-    let creatorRoyaltyFeePercentage = BigInt.zero();
-    let totalRevenueETH = BigInt.zero();
-    let marketplaceRevenueETH = BigInt.zero();
-    let creatorRevenueETH = BigInt.zero();
+    let royaltyDetails = new royaltyResult();
     if (sellOrder.feeRecipient!=Address.zero().toHexString()) {
-      creatorRoyaltyFeePercentage = EXCHANGE_MARKETPLACE_FEE.le(
-        sellOrder.makerRelayerFee
-      )
-        ? sellOrder.makerRelayerFee
-            .minus(EXCHANGE_MARKETPLACE_FEE)
-            .div(BIGINT_HUNDRED)
-        : BigInt.zero();
-
-      totalRevenueETH = sellOrder.makerRelayerFee
-        .times(matchPrice)
-        .div(INVERSE_BASIS_POINT);
-
-      marketplaceRevenueETH = EXCHANGE_MARKETPLACE_FEE.le(sellOrder.makerRelayerFee)
-        ? EXCHANGE_MARKETPLACE_FEE
-            .times(matchPrice)
-            .div(INVERSE_BASIS_POINT)
-        : BigInt.zero();
-
-      creatorRevenueETH = totalRevenueETH.minus(marketplaceRevenueETH);
-
-      feeRecipient =sellOrder.feeRecipient;
+      royaltyDetails = calculateRoyalityMaker(sellOrder, matchPrice);
     }else{
-      creatorRoyaltyFeePercentage = EXCHANGE_MARKETPLACE_FEE.le(
-        buyOrder.takerRelayerFee
-      )
-        ? buyOrder.takerRelayerFee
-            .minus(EXCHANGE_MARKETPLACE_FEE)
-            .div(BIGINT_HUNDRED)
-        : BigInt.zero();
-
-      totalRevenueETH = buyOrder.takerRelayerFee
-        .times(matchPrice)
-        .div(INVERSE_BASIS_POINT);
-
-      marketplaceRevenueETH = EXCHANGE_MARKETPLACE_FEE.le(buyOrder.takerRelayerFee)
-        ? EXCHANGE_MARKETPLACE_FEE
-            .times(matchPrice)
-            .div(INVERSE_BASIS_POINT)
-        : BigInt.zero();
-      creatorRevenueETH = totalRevenueETH.minus(marketplaceRevenueETH);
-
-      feeRecipient =buyOrder.feeRecipient;
+      royaltyDetails = calculateRoyalityTaker(sellOrder, matchPrice);
     }
+    let feeRecipient = royaltyDetails.feeRecipient;
+    let totalRevenueETH = royaltyDetails.totalRevenueETH;
+    let creatorRevenueETH = royaltyDetails.creatorRevenueETH;
     creatorRevenueETH = matchPrice.minus(totalRevenueETH);
-    log.info("txHash not bundleSale {} creatorRoyaltyFeePercentage {} totalRevenueETH {} marketplaceRevenueETH {} creatorRevenueETH {} feeAmount {} feeRecipient {}", [txHash.toHexString(), creatorRoyaltyFeePercentage.toString(), totalRevenueETH.toString(), marketplaceRevenueETH.toString(), creatorRevenueETH.toString(), feeAmount.toString(), feeRecipient]);
+    log.info("txHash not bundleSale {} totalRevenueETH {} creatorRevenueETH {} feeRecipient {}", [txHash.toHexString(), totalRevenueETH.toString(), creatorRevenueETH.toString(), feeRecipient]);
     let sale = new airstack.nft.Sale(decoded.to, decoded.from, nft, matchPrice, paymentToken, totalRevenueETH, Address.fromString(feeRecipient), new Array<airstack.nft.CreatorRoyalty>());
     allSales.push(sale);
-
-    // fromArray.push(decoded.from);
-    // toArray.push(decoded.to);
-    // contractAddressArray.push(contractAddress);
-    // nftIdArray.push(decoded.token);
   }
 
   airstack.nft.trackNFTSaleTransactions(
-    "1",
+    ETHEREUM_MAINNET_ID,
     txHash.toHexString(),
     call.transaction.index,
     allSales,
-    "NFT_MARKET_PLACE",
-    "SELL",
+    TRANSACTION_TYPE_SALE,
+    MARKET_PLACE_TYPE,
+    PROTOCOL_SELL_ACTION_TYPE,
     timestamp,
     call.block.number,
     call.block.hash.toHexString()
   )
+}
+
+class royaltyResult {
+  constructor(
+    public creatorRoyaltyFeePercentage: BigInt = BigInt.zero(), 
+    public totalRevenueETH: BigInt= BigInt.zero(), 
+    public marketplaceRevenueETH: BigInt= BigInt.zero(), 
+    public creatorRevenueETH: BigInt= BigInt.zero(), 
+    public feeRecipient: string = '') {}
+}
+
+export function calculateRoyalityMaker(order: orders.Order, matchPrice: BigInt): royaltyResult  {
+  let royaltyDetails = new royaltyResult();
+  royaltyDetails.creatorRoyaltyFeePercentage = EXCHANGE_MARKETPLACE_FEE.le(
+      order.makerRelayerFee
+  )
+      ? order.makerRelayerFee
+          .minus(EXCHANGE_MARKETPLACE_FEE)
+          .div(BIGINT_HUNDRED)
+      : BigInt.zero();
+
+  royaltyDetails.totalRevenueETH = order.makerRelayerFee
+      .times(matchPrice)
+      .div(INVERSE_BASIS_POINT);
+
+  royaltyDetails.marketplaceRevenueETH = EXCHANGE_MARKETPLACE_FEE.le(order.makerRelayerFee)
+      ? EXCHANGE_MARKETPLACE_FEE
+          .times(matchPrice)
+          .div(INVERSE_BASIS_POINT)
+      : BigInt.zero();
+
+  royaltyDetails.creatorRevenueETH = royaltyDetails.totalRevenueETH.minus(royaltyDetails.marketplaceRevenueETH);
+
+  royaltyDetails.feeRecipient =order.feeRecipient;
+  return royaltyDetails;
+}
+
+export function calculateRoyalityTaker(order: orders.Order, matchPrice: BigInt): royaltyResult  {
+  let royaltyDetails = new royaltyResult();
+  royaltyDetails.creatorRoyaltyFeePercentage = EXCHANGE_MARKETPLACE_FEE.le(
+    order.takerRelayerFee
+  )
+    ? order.takerRelayerFee
+        .minus(EXCHANGE_MARKETPLACE_FEE)
+        .div(BIGINT_HUNDRED)
+    : BigInt.zero();
+
+  royaltyDetails.totalRevenueETH = order.takerRelayerFee
+    .times(matchPrice)
+    .div(INVERSE_BASIS_POINT);
+
+  royaltyDetails.marketplaceRevenueETH = EXCHANGE_MARKETPLACE_FEE.le(order.takerRelayerFee)
+    ? EXCHANGE_MARKETPLACE_FEE
+        .times(matchPrice)
+        .div(INVERSE_BASIS_POINT)
+    : BigInt.zero();
+  royaltyDetails.creatorRevenueETH = royaltyDetails.totalRevenueETH.minus(royaltyDetails.marketplaceRevenueETH);
+
+  royaltyDetails.feeRecipient =order.feeRecipient;
+  return royaltyDetails;
 }
