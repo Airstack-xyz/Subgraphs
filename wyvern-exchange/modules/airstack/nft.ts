@@ -1,19 +1,20 @@
 import {
     Address,
-    BigDecimal,
     BigInt,
-    dataSource,
-    Bytes,
     log,
 } from "@graphprotocol/graph-ts";
 
 import {
     AirAccount,
+    AirEntityCounter,
     AirNftTransaction,
     AirToken,
     AirBlock,
-    AirNftSaleRoyalty
+    AirNftSaleRoyalty,
+    AirMeta
 } from "../../generated/schema";
+
+import { AIR_ENTITY_ID, AIR_META_ID, BIGINT_ONE, SUBGRAPH_VERSION } from "./utils";
 
 export namespace nft {
     export function trackNFTSaleTransactions(
@@ -125,6 +126,7 @@ export namespace nft {
                 )
             }
             transaction.save();
+            updateAirEntityCounter(AIR_ENTITY_ID, block);
         }
     }
 
@@ -190,6 +192,39 @@ export namespace nft {
             royalty = new AirNftSaleRoyalty(id);
         }
         return royalty as AirNftSaleRoyalty;
+    }
+
+    export function updateAirEntityCounter(
+        id: string,
+        block: AirBlock
+    ): void {
+        let entity = AirEntityCounter.load(id);
+        if (entity == null) {
+          entity = new AirEntityCounter(id);
+          entity.count = BIGINT_ONE;
+          entity.createdAt = block.id;
+          entity.lastUpdatedAt = block.id;
+        } else {
+          entity.count = entity.count.plus(BIGINT_ONE);
+          entity.lastUpdatedAt = block.id;
+        }
+        entity.save();
+    }
+
+    export function createAirMeta(
+        network: string,
+        slug: string,
+        name: string
+    ): void {
+        let meta = AirMeta.load(AIR_META_ID);
+        if (meta == null) {
+          meta = new AirMeta(AIR_META_ID);
+          meta.network = network;
+          meta.schemaVersion = SUBGRAPH_VERSION;
+          meta.slug = slug;
+          meta.name = name;
+          meta.save();
+        }
     }
 
     export class Sale {
