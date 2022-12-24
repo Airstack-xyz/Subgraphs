@@ -203,6 +203,7 @@ export namespace nft {
           entity = new AirEntityCounter(id);
           entity.count = BIGINT_ONE;
           entity.createdAt = block.id;
+          entity.lastUpdatedAt = block.id;
         } else {
           entity.count = entity.count.plus(BIGINT_ONE);
           entity.lastUpdatedAt = block.id;
