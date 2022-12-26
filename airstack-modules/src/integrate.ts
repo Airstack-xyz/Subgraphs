@@ -2,11 +2,10 @@ import { Vertical } from "./constants";
 import { Utils } from "./utils";
 import * as fs from "fs";
 import * as yaml from "js-yaml";
-import * as readline from "readline";
 import fse from "fs-extra";
 import path from "path";
 import mustache from "mustache";
-import inquirer from "inquirer";
+var readlineSync = require('readline-sync');
 
 export async function integrate(
   vertical: string,
@@ -31,20 +30,15 @@ export async function integrate(
       reject();
     }
 
-    if (vertical === Vertical.NftMarketplace) {
-      // let rl = readline.createInterface({
-      //   input: process.stdin,
-      //   output: process.stdout,
-      // });
-      // rl.question("Enter the name of the NFT contract: ", async (nftContract) => {});
-      getAirMetaDetails();
-    }
-
     writeSubgraphYaml(vertical as Vertical, yamlPath, dataSources, templates)
       .then(() => {
         writeSubgraphGraphql(vertical as Vertical, graphql)
           .then(() => {
             const targetDirectory = copyAirstackModules();
+
+            if (vertical === Vertical.NftMarketplace) {
+              getAirMetaDetails();
+            }
 
             const arrayOfFiles: Array<string> = []
             getAllFiles(targetDirectory,arrayOfFiles)
@@ -238,20 +232,12 @@ export var SUBGRAPH_NAME = "";
 export var SUBGRAPH_SLUG = "";
 
 function getAirMetaDetails(){
-  const questions = [
-    {
-      type: 'input',
-      name: 'subgraphName',
-      message: 'Enter the name of the subgraph',
-    },
-    {
-      type: 'input',
-      name: 'subgraphSlug',
-      message: 'Enter the slug of the subgraph',
-    }
-  ];
-  inquirer.prompt(questions).then(answers => {
-    SUBGRAPH_NAME = answers.subgraphName;
-    SUBGRAPH_SLUG = answers.subgraphSlug;
-  });
+  let subgraphName: string = readlineSync.question("Enter the name of the subgraph: ");
+  SUBGRAPH_NAME = subgraphName;
+  let subgraphSlug: string = readlineSync.question("Enter the slug of the subgraph: ");
+  SUBGRAPH_SLUG = subgraphSlug;
+  const targetFile = path.resolve(__dirname, '../../../../../modules/airstack/utils.ts');
+  let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
+  fileContent += `export var SUBGRAPH_NAME = "${subgraphName}";\nexport var SUBGRAPH_SLUG = "${subgraphSlug}";\n`
+  fs.writeFileSync(targetFile, fileContent, {encoding: "utf8"});
 }

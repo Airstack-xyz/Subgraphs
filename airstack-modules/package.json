@@ -45,6 +45,7 @@
     "@types/js-yaml": "4.0.5",
     "fs-extra": "10.1.0",
     "js-yaml": "4.1.0",
-    "mustache": "4.2.0"
+    "mustache": "4.2.0",
+    "readline-sync": "^1.4.10"
   }
 }
