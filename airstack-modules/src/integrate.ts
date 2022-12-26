@@ -2,9 +2,11 @@ import { Vertical } from "./constants";
 import { Utils } from "./utils";
 import * as fs from "fs";
 import * as yaml from "js-yaml";
+import * as readline from "readline";
 import fse from "fs-extra";
 import path from "path";
 import mustache from "mustache";
+import inquirer from "inquirer";
 
 export async function integrate(
   vertical: string,
@@ -27,6 +29,15 @@ export async function integrate(
     if (!Utils.fileExits(graphql)) {
       console.error(`GraphQL file ${graphql} does not exist.`);
       reject();
+    }
+
+    if (vertical === Vertical.NftMarketplace) {
+      // let rl = readline.createInterface({
+      //   input: process.stdin,
+      //   output: process.stdout,
+      // });
+      // rl.question("Enter the name of the NFT contract: ", async (nftContract) => {});
+      getAirMetaDetails();
     }
 
     writeSubgraphYaml(vertical as Vertical, yamlPath, dataSources, templates)
@@ -221,4 +232,26 @@ function getAllFiles(dirPath: string, arrayOfFiles: Array<string>) {
   })
 
   return arrayOfFiles
+}
+
+export var SUBGRAPH_NAME = "";
+export var SUBGRAPH_SLUG = "";
+
+function getAirMetaDetails(){
+  const questions = [
+    {
+      type: 'input',
+      name: 'subgraphName',
+      message: 'Enter the name of the subgraph',
+    },
+    {
+      type: 'input',
+      name: 'subgraphSlug',
+      message: 'Enter the slug of the subgraph',
+    }
+  ];
+  inquirer.prompt(questions).then(answers => {
+    SUBGRAPH_NAME = answers.subgraphName;
+    SUBGRAPH_SLUG = answers.subgraphSlug;
+  });
 }

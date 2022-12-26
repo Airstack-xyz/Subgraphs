@@ -10,7 +10,7 @@
     "lint": "eslint . --ext .ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "publish": "npm publish --tag alpha --access public",
-    "build":"npm run codegen && npm run build:subgraph && npm run build:package && npm pack"
+    "build": "npm run codegen && npm run build:subgraph && npm run build:package && npm pack"
   },
   "bin": {
     "airstack": "dist/bin/index.js"
@@ -41,6 +41,7 @@
   "dependencies": {
     "@graphprotocol/graph-cli": "0.33.0",
     "@graphprotocol/graph-ts": "0.27.0",
+    "@types/inquirer": "^9.0.3",
     "@types/js-yaml": "4.0.5",
     "fs-extra": "10.1.0",
     "js-yaml": "4.1.0",
