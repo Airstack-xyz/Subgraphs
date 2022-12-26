@@ -11,7 +11,7 @@
     "test": "graph test"
   },
   "dependencies": {
-    "@airstack/subgraph-generator": "file:../modules/airstack-subgraph-generator-1.0.0-alpha.3.tgz",
+    "@airstack/subgraph-generator": "file:../airstack-modules/airstack-subgraph-generator-1.0.0-alpha.3.tgz",
     "@graphprotocol/graph-cli": "0.33.0",
     "@graphprotocol/graph-ts": "0.27.0"
   },
