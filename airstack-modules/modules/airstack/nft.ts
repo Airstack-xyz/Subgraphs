@@ -16,6 +16,8 @@ import {
 
 import { AIR_ENTITY_ID, AIR_META_ID, BIGINT_ONE, SUBGRAPH_VERSION } from "./utils";
 
+import { SUBGRAPH_NAME, SUBGRAPH_SLUG } from "../../src/integrate";
+
 export namespace nft {
     export function trackNFTSaleTransactions(
         chainID: string,
@@ -126,7 +128,7 @@ export namespace nft {
                 )
             }
             transaction.save();
-            updateAirEntityCounter(AIR_ENTITY_ID, block);
+            updateAirEntityCounter(chainID, AIR_ENTITY_ID, block);
         }
     }
 
@@ -195,8 +197,9 @@ export namespace nft {
     }
 
     export function updateAirEntityCounter(
+        chainId: string,
         id: string,
-        block: AirBlock
+        block: AirBlock,
     ): void {
         let entity = AirEntityCounter.load(id);
         if (entity == null) {
@@ -204,6 +207,7 @@ export namespace nft {
           entity.count = BIGINT_ONE;
           entity.createdAt = block.id;
           entity.lastUpdatedAt = block.id;
+          createAirMeta(chainId, SUBGRAPH_NAME, SUBGRAPH_SLUG);
         } else {
           entity.count = entity.count.plus(BIGINT_ONE);
           entity.lastUpdatedAt = block.id;

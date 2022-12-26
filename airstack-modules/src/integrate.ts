@@ -5,6 +5,7 @@ import * as yaml from "js-yaml";
 import fse from "fs-extra";
 import path from "path";
 import mustache from "mustache";
+var readlineSync = require('readline-sync');
 
 export async function integrate(
   vertical: string,
@@ -34,6 +35,10 @@ export async function integrate(
         writeSubgraphGraphql(vertical as Vertical, graphql)
           .then(() => {
             const targetDirectory = copyAirstackModules();
+
+            if (vertical === Vertical.NftMarketplace) {
+              getAirMetaDetails();
+            }
 
             const arrayOfFiles: Array<string> = []
             getAllFiles(targetDirectory,arrayOfFiles)
@@ -221,4 +226,18 @@ function getAllFiles(dirPath: string, arrayOfFiles: Array<string>) {
   })
 
   return arrayOfFiles
+}
+
+export var SUBGRAPH_NAME = "";
+export var SUBGRAPH_SLUG = "";
+
+function getAirMetaDetails(){
+  let subgraphName: string = readlineSync.question("Enter the name of the subgraph: ");
+  SUBGRAPH_NAME = subgraphName;
+  let subgraphSlug: string = readlineSync.question("Enter the slug of the subgraph: ");
+  SUBGRAPH_SLUG = subgraphSlug;
+  const targetFile = path.resolve(__dirname, '../../../../../modules/airstack/utils.ts');
+  let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
+  fileContent += `export var SUBGRAPH_NAME = "${subgraphName}";\nexport var SUBGRAPH_SLUG = "${subgraphSlug}";\n`
+  fs.writeFileSync(targetFile, fileContent, {encoding: "utf8"});
 }
