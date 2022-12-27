@@ -1,3 +1,6 @@
+#
+# --Airstack Schemas--
+
 enum AirNetwork {
   ARBITRUM_ONE
   ARWEAVE_MAINNET
@@ -112,7 +115,7 @@ interface AirTransaction {
 	id: ID ! #chain-hash-logIndex-< add as per context > NFT marketplace will have tokenId
   from: AirAccount!
   to: AirAccount!
-  hash: String! #todo: Check if this should be bytes
+  hash: String!
   block: AirBlock!
 	type: AirTransactionType!
   index: BigInt!
@@ -125,7 +128,7 @@ type AirNftTransaction implements AirTransaction @entity {
   id: ID!
   from: AirAccount!
   to: AirAccount!
-  hash: String! #todo: Check if this should be bytes
+  hash: String!
   block: AirBlock!
 	type: AirTransactionType!
   index: BigInt!
@@ -136,13 +139,18 @@ type AirNftTransaction implements AirTransaction @entity {
 	transactionToken: AirToken!   #nft
 	paymentToken: AirToken #payment
   paymentAmount: BigInt #payment
-  royaltyAmount: BigInt
-  royaltyBeneficiary: AirAccount
+  royalties: [AirNftSaleRoyalty!] @derivedFrom(field: "nftTransaction")
   feeAmount: BigInt
   feeBeneficiary: AirAccount
   tokenMetadata: AirTokenMetadata
 }
 
+type AirNftSaleRoyalty @entity{
+  id: ID! #AirNftTransaction(ID) + royalty beneficiary
+  amount: BigInt!
+  beneficiary: String!
+  nftTransaction: AirNftTransaction!
+}
 
 type AirTokenMetadata @entity {
   id: ID!
@@ -161,4 +169,11 @@ type AirExtraData @entity {
   id: ID!
   name: String!
   value: String!
+}
+
+type WrappedEtherTransaction @entity {
+  id: ID!
+  from: String!
+  to: String!
+  hash: String!
 }
