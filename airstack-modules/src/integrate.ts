@@ -232,12 +232,18 @@ export var SUBGRAPH_NAME = "";
 export var SUBGRAPH_SLUG = "";
 
 function getAirMetaDetails(){
-  let subgraphName: string = readlineSync.question("Enter the name of the subgraph: ");
-  SUBGRAPH_NAME = subgraphName;
-  let subgraphSlug: string = readlineSync.question("Enter the slug of the subgraph: ");
-  SUBGRAPH_SLUG = subgraphSlug;
+  while(SUBGRAPH_NAME.trim()===""){
+    let subgraphName: string = readlineSync.question("Enter the name of the subgraph: ");
+    SUBGRAPH_NAME = subgraphName;
+  }
+  while(SUBGRAPH_SLUG.trim()===""){
+    let subgraphSlug: string = readlineSync.question("Enter the slug of the subgraph: ");
+    SUBGRAPH_SLUG = subgraphSlug;
+  }
   const targetFile = path.resolve(__dirname, '../../../../../modules/airstack/utils.ts');
   let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
-  fileContent += `export var SUBGRAPH_NAME = "${subgraphName}";\nexport var SUBGRAPH_SLUG = "${subgraphSlug}";\n`
+  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, "");
+  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, "");
+  fileContent += `export const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
   fs.writeFileSync(targetFile, fileContent, {encoding: "utf8"});
 }
