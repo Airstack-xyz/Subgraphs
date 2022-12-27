@@ -188,7 +188,7 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
           ]
         )
         if (allSales[i].seller == Address.zero() || allSales[i].buyer == Address.zero()){
-          let token_exist = WrappedEtherTransaction.load(
+          let tokenExist = WrappedEtherTransaction.load(
               generateWrappedEtherTransactionID(
                 ETHEREUM_MAINNET_ID, 
                 txHash.toHexString(), 
@@ -196,8 +196,8 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
                 allSales[i].nft.tokenId.toString()
               )
             );
-          if (token_exist == null){
-            token_exist = new WrappedEtherTransaction(
+          if (tokenExist == null){
+            tokenExist = new WrappedEtherTransaction(
               generateWrappedEtherTransactionID(
                 ETHEREUM_MAINNET_ID, 
                 txHash.toHexString(), 
@@ -205,13 +205,13 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
                 allSales[i].nft.tokenId.toString()
               )
             );
-            token_exist.from = allSales[i].seller.toHexString();
-            token_exist.to = allSales[i].buyer.toHexString();
-            token_exist.hash = txHash.toHexString();
-            token_exist.save();
+            tokenExist.from = allSales[i].seller.toHexString();
+            tokenExist.to = allSales[i].buyer.toHexString();
+            tokenExist.hash = txHash.toHexString();
+            tokenExist.save();
           }else{
             if (allSales[i].seller == Address.zero()){
-              allSales[i].seller = Address.fromString(token_exist.from);
+              allSales[i].seller = Address.fromString(tokenExist.from);
             }
           }
         }
