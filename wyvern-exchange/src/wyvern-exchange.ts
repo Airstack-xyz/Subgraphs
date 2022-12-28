@@ -202,7 +202,9 @@ class royaltyResult {
     public feeRecipient: string = '') {}
 }
 
-
+// Calculate the royalty/revenue fees by using the known opensea marketplace fee of 2.5% on all trades
+// Here we calculate the royalty by taking fee payment and subtracting it from the marketplace fee.
+// https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/ExchangeCore.sol
 export function calculateRoyality(fee: BigInt, feeRecipient: string, matchPrice: BigInt): royaltyResult  {
   let royaltyDetails = new royaltyResult();
   royaltyDetails.creatorRoyaltyFeePercentage = EXCHANGE_MARKETPLACE_FEE.le(
