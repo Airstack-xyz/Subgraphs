@@ -173,6 +173,7 @@ export namespace nft {
         if (block == null) {
             block = new AirBlock(id);
             block.hash = blockHash;
+            block.number = blockHeight;
             block.timestamp = blockTimestamp
             block.save()
         }
