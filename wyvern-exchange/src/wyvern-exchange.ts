@@ -136,9 +136,9 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
 
       let royaltyDetails = new royaltyResult();
       if (sellOrder.feeRecipient!=Address.zero().toHexString()) {
-        royaltyDetails = calculateRoyalityMaker(sellOrder, matchPrice);
+        royaltyDetails = calculateRoyality(sellOrder.makerRelayerFee, sellOrder.feeRecipient , matchPrice);
       }else{
-        royaltyDetails = calculateRoyalityTaker(sellOrder, matchPrice);
+        royaltyDetails = calculateRoyality(sellOrder.takerRelayerFee, sellOrder.feeRecipient , matchPrice);
       }
       let marketplaceRevenueETH = royaltyDetails.marketplaceRevenueETH;
       let feeRecipient = royaltyDetails.feeRecipient;
@@ -166,9 +166,9 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     let nft = new airstack.nft.NFT(contractAddress, decoded.method, decoded.token, decoded.amount);
     let royaltyDetails = new royaltyResult();
     if (sellOrder.feeRecipient!=Address.zero().toHexString()) {
-      royaltyDetails = calculateRoyalityMaker(sellOrder, matchPrice);
+      royaltyDetails = calculateRoyality(sellOrder.makerRelayerFee, sellOrder.feeRecipient , matchPrice);
     }else{
-      royaltyDetails = calculateRoyalityTaker(sellOrder, matchPrice);
+      royaltyDetails = calculateRoyality(sellOrder.takerRelayerFee, sellOrder.feeRecipient , matchPrice);
     }
     let feeRecipient = royaltyDetails.feeRecipient;
     let totalRevenueETH = royaltyDetails.totalRevenueETH;
@@ -202,53 +202,28 @@ class royaltyResult {
     public feeRecipient: string = '') {}
 }
 
-export function calculateRoyalityMaker(order: orders.Order, matchPrice: BigInt): royaltyResult  {
+
+export function calculateRoyality(fee: BigInt, feeRecipient: string, matchPrice: BigInt): royaltyResult  {
   let royaltyDetails = new royaltyResult();
   royaltyDetails.creatorRoyaltyFeePercentage = EXCHANGE_MARKETPLACE_FEE.le(
-      order.makerRelayerFee
+    fee
   )
-      ? order.makerRelayerFee
-          .minus(EXCHANGE_MARKETPLACE_FEE)
-          .div(BIGINT_HUNDRED)
-      : BigInt.zero();
-
-  royaltyDetails.totalRevenueETH = order.makerRelayerFee
-      .times(matchPrice)
-      .div(INVERSE_BASIS_POINT);
-
-  royaltyDetails.marketplaceRevenueETH = EXCHANGE_MARKETPLACE_FEE.le(order.makerRelayerFee)
-      ? EXCHANGE_MARKETPLACE_FEE
-          .times(matchPrice)
-          .div(INVERSE_BASIS_POINT)
-      : BigInt.zero();
-
-  royaltyDetails.creatorRevenueETH = royaltyDetails.totalRevenueETH.minus(royaltyDetails.marketplaceRevenueETH);
-
-  royaltyDetails.feeRecipient =order.feeRecipient;
-  return royaltyDetails;
-}
-
-export function calculateRoyalityTaker(order: orders.Order, matchPrice: BigInt): royaltyResult  {
-  let royaltyDetails = new royaltyResult();
-  royaltyDetails.creatorRoyaltyFeePercentage = EXCHANGE_MARKETPLACE_FEE.le(
-    order.takerRelayerFee
-  )
-    ? order.takerRelayerFee
+    ? fee
         .minus(EXCHANGE_MARKETPLACE_FEE)
         .div(BIGINT_HUNDRED)
     : BigInt.zero();
 
-  royaltyDetails.totalRevenueETH = order.takerRelayerFee
+  royaltyDetails.totalRevenueETH = fee
     .times(matchPrice)
     .div(INVERSE_BASIS_POINT);
 
-  royaltyDetails.marketplaceRevenueETH = EXCHANGE_MARKETPLACE_FEE.le(order.takerRelayerFee)
+  royaltyDetails.marketplaceRevenueETH = EXCHANGE_MARKETPLACE_FEE.le(fee)
     ? EXCHANGE_MARKETPLACE_FEE
         .times(matchPrice)
         .div(INVERSE_BASIS_POINT)
     : BigInt.zero();
   royaltyDetails.creatorRevenueETH = royaltyDetails.totalRevenueETH.minus(royaltyDetails.marketplaceRevenueETH);
 
-  royaltyDetails.feeRecipient =order.feeRecipient;
+  royaltyDetails.feeRecipient =feeRecipient;
   return royaltyDetails;
 }
