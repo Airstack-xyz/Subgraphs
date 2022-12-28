@@ -18,8 +18,10 @@ import {
   getPaymentAssetType,
   getOtherOrderType,
   generateOrderData,
+  ETHEREUM_MAINNET_ID,
+  TRANSACTION_TYPE_SALE,
 } from "./utils";
-import * as airstack from "./modules/airstack";
+import * as airstack from "../modules/airstack";
 
 export function handleMatchOrders(call: MatchOrdersCall): void {
   let transactionHash = call.transaction.hash;
@@ -80,9 +82,11 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     )
 
     airstack.nft.trackNFTSaleTransactions(
+      ETHEREUM_MAINNET_ID,
       transactionHash.toHexString(),
       call.transaction.index,
       [nftSales],
+      TRANSACTION_TYPE_SALE,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.SELL,
       call.block.timestamp,
@@ -127,9 +131,11 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     )
 
     airstack.nft.trackNFTSaleTransactions(
+      ETHEREUM_MAINNET_ID,
       transactionHash.toHexString(),
       call.transaction.index,
       [nftSales],
+      TRANSACTION_TYPE_SALE,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
       call.block.timestamp,
@@ -246,9 +252,11 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
   )
 
   airstack.nft.trackNFTSaleTransactions(
+    ETHEREUM_MAINNET_ID,
     transactionHash.toHexString(),
     call.transaction.index,
     [nftSales],
+    TRANSACTION_TYPE_SALE,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
     call.block.timestamp,
@@ -367,9 +375,11 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
   )
 
   airstack.nft.trackNFTSaleTransactions(
+    ETHEREUM_MAINNET_ID,
     transactionHash.toHexString(),
     call.transaction.index,
     [nftSales],
+    TRANSACTION_TYPE_SALE,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
     call.block.timestamp,

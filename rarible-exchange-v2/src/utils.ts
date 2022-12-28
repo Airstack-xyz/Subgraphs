@@ -16,6 +16,8 @@ export const MINT_721_DATA = "(uint256,string,(address,uint96)[],(address,uint96
 export const DATA_1155_OR_721 = "(address,uint256)";
 export const EMPTY_BYTES = Bytes.fromHexString("");
 export const BYTES_ZERO = Bytes.fromI32(0);
+export const ETHEREUM_MAINNET_ID = "1";
+export const TRANSACTION_TYPE_SALE = "SALE";
 
 export const ERC20 = "ERC20";
 export const ETH = "ETH";
