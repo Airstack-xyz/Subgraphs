@@ -9,7 +9,7 @@ import {
 } from "@graphprotocol/graph-ts";
 import { ExchangeV1 } from "../generated/ExchangeV1/ExchangeV1";
 import { SecondarySaleFees } from "../generated/ExchangeV1/SecondarySaleFees";
-import { nft } from "../src/modules/airstack/index";
+import { nft } from "../modules/airstack";
 
 export const INTERFACE_ID_FEES = Bytes.fromHexString("0xb7799584");
 export const exchangeV1Address = Address.fromString("0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06");
@@ -21,6 +21,8 @@ export const EMPTY_BYTES = Bytes.fromHexString("");
 export const BYTES_ZERO = Bytes.fromI32(0);
 export const DEFAULT_ORDER_TYPE = Bytes.fromHexString("0xffffffff");
 export const BIGINT_ZERO = BigInt.fromI32(0);
+export const ETHEREUM_MAINNET_ID = "1";
+export const TRANSACTION_TYPE_SALE = "SALE";
 
 export namespace AirProtocolType {
   export const GENERIC = "GENERIC";

@@ -1,8 +1,8 @@
 import { BigInt } from "@graphprotocol/graph-ts";
 import { ExchangeCall } from "../generated/ExchangeV1/ExchangeV1";
-import * as airstack from "./modules/airstack";
+import * as airstack from "../modules/airstack";
 import * as utils from "./utils";
-import { AirProtocolType, AirProtocolActionType } from "./utils";
+import { AirProtocolType, AirProtocolActionType, ETHEREUM_MAINNET_ID, TRANSACTION_TYPE_SALE } from "./utils";
 
 export function handleExchange(call: ExchangeCall): void {
   let sellAsset = call.inputs.order.key.sellAsset;
@@ -47,9 +47,11 @@ export function handleExchange(call: ExchangeCall): void {
     )
 
     airstack.nft.trackNFTSaleTransactions(
+      ETHEREUM_MAINNET_ID,
       call.transaction.hash.toHexString(),
       call.transaction.index,
       [nftSales],
+      TRANSACTION_TYPE_SALE,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
       call.block.timestamp,
@@ -96,9 +98,11 @@ export function handleExchange(call: ExchangeCall): void {
     )
 
     airstack.nft.trackNFTSaleTransactions(
+      ETHEREUM_MAINNET_ID,
       call.transaction.hash.toHexString(),
       call.transaction.index,
       [nftSales],
+      TRANSACTION_TYPE_SALE,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.SELL,
       call.block.timestamp,
