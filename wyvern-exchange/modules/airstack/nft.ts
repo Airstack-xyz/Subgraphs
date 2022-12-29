@@ -202,7 +202,7 @@ export namespace nft {
             entity.count = BIGINT_ONE;
             entity.createdAt = block.id;
             entity.lastUpdatedAt = block.id;
-            createAirMeta(chainId, SUBGRAPH_NAME, SUBGRAPH_SLUG);
+            createAirMeta(chainId, SUBGRAPH_SLUG, SUBGRAPH_NAME);
         } else {
             entity.count = entity.count.plus(BIGINT_ONE);
             entity.lastUpdatedAt = block.id;
