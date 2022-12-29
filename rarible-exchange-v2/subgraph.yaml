@@ -6,9 +6,9 @@ dataSources:
     name: ExchangeV2
     network: mainnet
     source:
-      address: "0x9757f2d2b135150bbeb65308d4a91804107cd8d6"
+      address: '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
       abi: ExchangeV2
-      startBlock: 12617827 #exchangev2 deployment
+      startBlock: 12617827
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -22,6 +22,11 @@ dataSources:
         - AirNftTransaction
         - AirTokenMetadata
         - AirExtraData
+        - AirAccount,
+        - AirNftTransaction,
+        - AirToken,
+        - AirBlock,
+        - AirNftSaleRoyalty
       abis:
         - name: ExchangeV2
           file: ./abis/ExchangeV2.json

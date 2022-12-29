@@ -38,16 +38,16 @@ export namespace nft {
         let transactionCount = NftSales.length;
         for (let i = 0; i < transactionCount; i++) {
             // Payment Token
-            let paymentToken = getOrCreateAirToken(chainID + "-" + NftSales[i].paymentToken.toHexString());
+            let paymentToken = getOrCreateAirToken(chainID, NftSales[i].paymentToken.toHexString());
 
             // Account
-            let buyerAccount = handleAccountCreation(chainID + "-" + NftSales[i].buyer.toHexString(), block.id);
-            let sellerAccount = handleAccountCreation(chainID + "-" + NftSales[i].seller.toHexString(), block.id);
-            let feeAccount = handleAccountCreation(chainID + "-" + NftSales[i].protocolFeesBeneficiary.toHexString(), block.id);
+            let buyerAccount = handleAccountCreation(chainID, NftSales[i].buyer.toHexString(), block.id);
+            let sellerAccount = handleAccountCreation(chainID, NftSales[i].seller.toHexString(), block.id);
+            let feeAccount = handleAccountCreation(chainID, NftSales[i].protocolFeesBeneficiary.toHexString(), block.id);
 
             // Sale Token
             let saleToken = getOrCreateAirToken(
-                chainID + "-" + NftSales[i].nft.collection.toHexString()
+                chainID, NftSales[i].nft.collection.toHexString()
             );
 
             // Transaction
@@ -87,7 +87,8 @@ export namespace nft {
             // Creator Royalty
             for (let j = 0; j < NftSales[i].royalties.length; j++) {
                 let royaltyAccount = handleAccountCreation(
-                    chainID + "-" + NftSales[i].royalties[j].beneficiary.toHexString(),
+                    chainID,
+                    NftSales[i].royalties[j].beneficiary.toHexString(),
                     block.id
                 );
 
@@ -130,21 +131,21 @@ export namespace nft {
             .concat(nftId.toString());
     }
 
-    export function getOrCreateAirToken(id: string): AirToken {
-        let entity = AirToken.load(id); //todo add network
+    export function getOrCreateAirToken(chainID: string, address: string): AirToken {
+        let entity = AirToken.load(chainID + "-" + address);
         if (entity == null) {
-            entity = new AirToken(id);
-            entity.address = id;
+            entity = new AirToken(chainID + "-" + address);
+            entity.address = address;
             entity.save();
         }
         return entity as AirToken;
     }
 
-    export function getOrCreateAirAccount(id: string): AirAccount {
-        let entity = AirAccount.load(id);
+    export function getOrCreateAirAccount(chainID: string, address: string): AirAccount {
+        let entity = AirAccount.load(chainID + "-" + address);
         if (entity == null) {
-            entity = new AirAccount(id);
-            entity.address = id;
+            entity = new AirAccount(chainID + "-" + address);
+            entity.address = address;
         }
         return entity as AirAccount;
     }
@@ -256,10 +257,10 @@ export namespace nft {
         ) { }
     }
 
-    export function handleAccountCreation(id: string, createdAt: string): AirAccount {
-        let account = AirAccount.load(id);
+    export function handleAccountCreation(chainID: string, address: string, createdAt: string): AirAccount {
+        let account = AirAccount.load(chainID + "-" + address);
         if (account == null) {
-            account = getOrCreateAirAccount(id);
+            account = getOrCreateAirAccount(chainID, address);
             account.createdAt = createdAt;
             account.save();
         }
