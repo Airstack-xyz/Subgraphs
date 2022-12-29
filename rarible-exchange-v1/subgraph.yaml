@@ -6,7 +6,7 @@ dataSources:
     name: ExchangeV1
     network: mainnet
     source:
-      address: "0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06"
+      address: '0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06'
       abi: ExchangeV1
       startBlock: 11274514
     mapping:
@@ -22,6 +22,11 @@ dataSources:
         - AirNftTransaction
         - AirTokenMetadata
         - AirExtraData
+        - AirAccount,
+        - AirNftTransaction,
+        - AirToken,
+        - AirBlock,
+        - AirNftSaleRoyalty
       abis:
         - name: ExchangeV1
           file: ./abis/ExchangeV1.json

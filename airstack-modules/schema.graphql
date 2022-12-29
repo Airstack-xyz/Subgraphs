@@ -145,7 +145,7 @@ type AirNftTransaction implements AirTransaction @entity {
 type AirNftSaleRoyalty @entity{
   id: ID! #AirNftTransaction(ID) + royalty beneficiary
   amount: BigInt!
-  beneficiary: String!
+  beneficiary: AirAccount!
   nftTransaction: AirNftTransaction!
 }
 
