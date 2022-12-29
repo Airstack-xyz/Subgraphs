@@ -3,7 +3,7 @@
 
 
 "@airstack/subgraph-generator@file:../airstack-modules/airstack-subgraph-generator-1.0.0-alpha.3.tgz":
-  "integrity" "sha512-JUFQBNOf/RnrYnPVo0t+cL0TZFx3SSkhU8NOD9kQPYEOjkARdHDVcGTWYB/6U2mnGg5GfJM9nu14L7by5xSixA=="
+  "integrity" "sha512-3AVlTQaSVWUTs3Ir2yTAGNT1wcLdyNoC8i8TXmRoxyKDZ62omakkelmFGTYt3xaVyCKcIG39REqC+OUFhQLuYg=="
   "resolved" "file:../airstack-modules/airstack-subgraph-generator-1.0.0-alpha.3.tgz"
   "version" "1.0.0-alpha.3"
   dependencies:
