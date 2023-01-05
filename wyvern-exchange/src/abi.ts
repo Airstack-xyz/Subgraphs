@@ -307,13 +307,12 @@ export namespace abi {
 			log.info("in special case data {} {}", [txHash, dataWithoutFunctionSelector.toHexString()]);
 			log.info("decodng...",[])
 			let decoded = ethereum.decode(
-				"(address,address,address,uint256)", dataWithoutFunctionSelector
+				"(address,address,address,uint256,uint256)", dataWithoutFunctionSelector
 			)!.toTuple()
-
 			
-			let functionSelector = Bytes.fromUint8Array(callData.subarray(0, 4)).toHex().slice(2)
-			let senderAddress = decoded[0].toAddress()
-			let recieverAddress = decoded[1].toAddress()
+			let functionSelector = Bytes.fromUint8Array(callData.subarray(0, 4)).toHex().slice(2);
+			let senderAddress = decoded[0].toAddress();
+			let recieverAddress = decoded[1].toAddress();
 			let contract = decoded[2].toAddress();
 			let tokenId = decoded[3].toBigInt();
 			let amount = decoded[4].toBigInt();
