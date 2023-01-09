@@ -9,7 +9,7 @@ import { orders } from "./orders";
 import * as airstack from "../modules/airstack";
 import { abi } from "./abi";
 import { BIGINT_HUNDRED, EXCHANGE_MARKETPLACE_FEE, INVERSE_BASIS_POINT } from "./shared";
-import { ETHEREUM_MAINNET_ID, TRANSACTION_TYPE_SALE, MARKET_PLACE_TYPE, PROTOCOL_SELL_ACTION_TYPE } from "./utils";
+import { ETHEREUM_MAINNET_ID, MARKET_PLACE_TYPE, PROTOCOL_SELL_ACTION_TYPE } from "./utils";
 
 export function handleAtomicMatch_(call: AtomicMatch_Call): void {
   log.info("txHash {}", [call.transaction.hash.toHexString()]);
@@ -184,7 +184,6 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     txHash.toHexString(),
     call.transaction.index,
     allSales,
-    TRANSACTION_TYPE_SALE,
     MARKET_PLACE_TYPE,
     PROTOCOL_SELL_ACTION_TYPE,
     timestamp,

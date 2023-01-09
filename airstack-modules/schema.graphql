@@ -34,12 +34,6 @@ enum AirProtocolType {
   LAUNCHPAD
 }
 
-enum AirTransactionType { # TODO: Think if this should be just Action Types.
-  SALE
-  MINT
-  GIFT 
-}
-
 enum AirProtocolActionType {
   ALL ##to track all action stats of a dapp
   ### NFT Marketplace/Tokens ###
@@ -81,7 +75,7 @@ type AirBlock @entity {
 
 type AirMeta @entity {
   id: ID! # air_meta 
-  network: String!
+  network: AirNetwork!
   schemaVersion: String!
   slug: String! #Opensea_V1
   name: String! # Opeasea V1
@@ -100,13 +94,10 @@ type AirAccount @entity {
 	createdAt: AirBlock! 
 }
 
-
 type AirToken @entity {
 	id: ID! #chain-address
   address: String!
-  transactions: [AirNftTransaction!] @derivedFrom(field: "transactionToken")
 }
-
 
 interface AirTransaction {
 	id: ID ! #chain-hash-logIndex-< add as per context > NFT marketplace will have tokenId
@@ -114,12 +105,10 @@ interface AirTransaction {
   to: AirAccount!
   hash: String! #todo: Check if this should be bytes
   block: AirBlock!
-	type: AirTransactionType!
   index: BigInt!
   protocolType: AirProtocolType!
   protocolActionType: AirProtocolActionType!
 }
-
 
 type AirNftTransaction implements AirTransaction @entity {
   id: ID!
@@ -127,7 +116,6 @@ type AirNftTransaction implements AirTransaction @entity {
   to: AirAccount!
   hash: String! #todo: Check if this should be bytes
   block: AirBlock!
-	type: AirTransactionType!
   index: BigInt!
   protocolType: AirProtocolType!
   protocolActionType: AirProtocolActionType!
@@ -139,7 +127,7 @@ type AirNftTransaction implements AirTransaction @entity {
   royalties: [AirNftSaleRoyalty!] @derivedFrom(field: "nftTransaction")
   feeAmount: BigInt
   feeBeneficiary: AirAccount
-  tokenMetadata: AirTokenMetadata
+  extraData: AirExtraData
 }
 
 type AirNftSaleRoyalty @entity{
@@ -149,19 +137,6 @@ type AirNftSaleRoyalty @entity{
   nftTransaction: AirNftTransaction!
 }
 
-type AirTokenMetadata @entity {
-  id: ID!
-	displayContentType: AirTokenDisplayType!
-  displayContent: String
-}
-
-enum AirTokenDisplayType {
-  IMAGE
-  VIDEO
-  AUDIO
-  TEXT_IMAGE
-  TEXT
-}
 type AirExtraData @entity {
   id: ID!
   name: String!
