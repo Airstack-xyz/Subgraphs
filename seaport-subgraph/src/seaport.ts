@@ -223,7 +223,6 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
             txHash.toHexString(),
             event.transaction.index,
             allSales,
-            TRANSACTION_TYPE_SALE,
             MARKET_PLACE_TYPE,
             PROTOCOL_SELL_ACTION_TYPE,
             event.block.timestamp,

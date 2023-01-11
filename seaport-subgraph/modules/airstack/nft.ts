@@ -1,6 +1,7 @@
 import {
     Address,
     BigInt,
+    dataSource,
     log,
 } from "@graphprotocol/graph-ts";
 
@@ -14,7 +15,7 @@ import {
     AirMeta
 } from "../../generated/schema";
 
-import { AIR_ENTITY_ID, AIR_META_ID, BIGINT_ONE, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG } from "./utils";
+import { AIR_NFT_SALE_ENTITY_ID, AIR_META_ID, BIGINT_ONE, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork } from "./utils";
 
 export namespace nft {
     export function trackNFTSaleTransactions(
@@ -22,7 +23,6 @@ export namespace nft {
         txHash: string,
         txIndex: BigInt,
         NftSales: Sale[],
-        transactionType: string,
         protocolType: string,
         protocolActionType: string,
         timestamp: BigInt,
@@ -65,12 +65,11 @@ export namespace nft {
                     transactionId
                 );
 
-                transaction.index = updateAirEntityCounter(chainID, AIR_ENTITY_ID, block);
+                transaction.index = updateAirEntityCounter(chainID, AIR_NFT_SALE_ENTITY_ID, block);
             }
 
             transaction.to = buyerAccount.id;
             transaction.from = sellerAccount.id;
-            transaction.type = transactionType;
             transaction.protocolType = protocolType;
             transaction.protocolActionType = protocolActionType;
             transaction.tokenId = NftSales[i].nft.tokenId;
@@ -92,7 +91,7 @@ export namespace nft {
                     block.id
                 );
 
-                let royaltyId = chainID + "-" + transactionId + "-" + NftSales[i].royalties[j].beneficiary.toHexString();
+                let royaltyId = transactionId + "-" + NftSales[i].royalties[j].beneficiary.toHexString();
                 let royalty = getOrCreateRoyalty(royaltyId);
 
                 royalty.amount = NftSales[i].royalties[j].fee
@@ -202,7 +201,7 @@ export namespace nft {
             entity.count = BIGINT_ONE;
             entity.createdAt = block.id;
             entity.lastUpdatedAt = block.id;
-            createAirMeta(chainId, SUBGRAPH_SLUG, SUBGRAPH_NAME);
+            createAirMeta(SUBGRAPH_SLUG, SUBGRAPH_NAME);
         } else {
             entity.count = entity.count.plus(BIGINT_ONE);
             entity.lastUpdatedAt = block.id;
@@ -213,14 +212,13 @@ export namespace nft {
     }
 
     export function createAirMeta(
-        network: string,
         slug: string,
         name: string
     ): void {
         let meta = AirMeta.load(AIR_META_ID);
         if (meta == null) {
             meta = new AirMeta(AIR_META_ID);
-            meta.network = network;
+            meta.network = processNetwork(dataSource.network());
             meta.schemaVersion = SUBGRAPH_VERSION;
             meta.slug = slug;
             meta.name = name;

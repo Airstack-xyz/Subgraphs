@@ -244,6 +244,6 @@ function getAirMetaDetails(){
   let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
   fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, "");
   fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, "");
-  fileContent += `export const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
+  fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
   fs.writeFileSync(targetFile, fileContent, {encoding: "utf8"});
 }
