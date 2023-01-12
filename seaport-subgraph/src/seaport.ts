@@ -171,8 +171,10 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
     }
     
     for(let i = 0; i <allSales.length; i++){
+      if (royaltyBeneficiary != Address.zero()) {
         let royalty = new airstack.nft.CreatorRoyalty(royaltyFees.div(BigInt.fromI64(allSales.length)), royaltyBeneficiary);
         allSales[i].royalties.push(royalty);
+      }
         allSales[i].protocolFees = protocolFees.div(BigInt.fromI64(allSales.length));
         allSales[i].protocolFeesBeneficiary = protocolBeneficiary;
         allSales[i].paymentAmount = paymentAmount.div(
