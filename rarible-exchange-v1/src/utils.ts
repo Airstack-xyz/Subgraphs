@@ -22,7 +22,6 @@ export const BYTES_ZERO = Bytes.fromI32(0);
 export const DEFAULT_ORDER_TYPE = Bytes.fromHexString("0xffffffff");
 export const BIGINT_ZERO = BigInt.fromI32(0);
 export const ETHEREUM_MAINNET_ID = "1";
-export const TRANSACTION_TYPE_SALE = "SALE";
 
 export namespace AirProtocolType {
   export const GENERIC = "GENERIC";
