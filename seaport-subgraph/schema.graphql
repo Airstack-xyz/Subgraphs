@@ -1,3 +1,10 @@
+type WrappedEtherTransaction @entity {
+  id: ID!
+  from: String!
+  to: String!
+  hash: String!
+}
+
 #
 # --Airstack Schemas--
 
@@ -75,13 +82,13 @@ type AirBlock @entity {
  timestamp: BigInt!
 }
 
-
 type AirMeta @entity {
   id: ID! # air_meta 
   network: AirNetwork!
   schemaVersion: String!
   slug: String! #Opensea_V1
-  name: String! # Opeasea V1
+  name: String! # Opeasea/Rarible
+  version: String! #Seaport/Exchange V1
 }
 
 type AirEntityCounter @entity {
@@ -144,11 +151,4 @@ type AirExtraData @entity {
   id: ID!
   name: String!
   value: String!
-}
-
-type WrappedEtherTransaction @entity {
-  id: ID!
-  from: String!
-  to: String!
-  hash: String!
 }
