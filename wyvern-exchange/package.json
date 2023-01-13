@@ -1,13 +1,13 @@
 {
-  "name": "wyvern",
+  "name": "opensea-wyvern-exchange",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ anshulforyou/wyvern",
-    "create-local": "graph create --node http://localhost:8020/ anshulforyou/wyvern",
-    "remove-local": "graph remove --node http://localhost:8020/ anshulforyou/wyvern",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 anshulforyou/wyvern",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ opensea-wyvern-exchange",
+    "create-local": "graph create --node http://localhost:8020/ opensea-wyvern-exchange",
+    "remove-local": "graph remove --node http://localhost:8020/ opensea-wyvern-exchange",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 opensea-wyvern-exchange",
     "test": "graph test"
   },
   "dependencies": {

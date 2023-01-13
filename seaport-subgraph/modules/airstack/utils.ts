@@ -7,7 +7,8 @@ export const AIR_NFT_SALE_ENTITY_ID = "AIR_NFT_SALE_TRANSACTION_COUNTER";
 export const AIR_META_ID = "AIR_META";
 
 export const BIGINT_ONE = BigInt.fromI32(1);
-export const SUBGRAPH_VERSION = "1.0.0";
+export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
+
 
 
 
@@ -34,10 +35,11 @@ AIR_NETWORK_MAP.set("osmosis", "OSMOSIS");
 AIR_NETWORK_MAP.set("matic", "MATIC");
 AIR_NETWORK_MAP.set("xdai", "XDAI");
 
-export function processNetwork(network: string): string{
+export function processNetwork(network: string): string {
     const value = AIR_NETWORK_MAP.get(network);
     const result: string = value !== null ? value : "unknown";
     return result;
 }
-export const SUBGRAPH_NAME = "Opensea Seaport";
+export const SUBGRAPH_NAME = "Opensea";
+export const SUBGRAPH_VERSION = "Seaport";
 export const SUBGRAPH_SLUG = "opensea-seaport";

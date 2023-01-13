@@ -15,7 +15,7 @@ import {
     AirMeta
 } from "../../generated/schema";
 
-import { AIR_NFT_SALE_ENTITY_ID, AIR_META_ID, BIGINT_ONE, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork } from "./utils";
+import { AIR_NFT_SALE_ENTITY_ID, AIR_META_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork } from "./utils";
 
 export namespace nft {
     export function trackNFTSaleTransactions(
@@ -219,7 +219,8 @@ export namespace nft {
         if (meta == null) {
             meta = new AirMeta(AIR_META_ID);
             meta.network = processNetwork(dataSource.network());
-            meta.schemaVersion = SUBGRAPH_VERSION;
+            meta.schemaVersion = SUBGRAPH_SCHEMA_VERSION;
+            meta.version = SUBGRAPH_VERSION;
             meta.slug = slug;
             meta.name = name;
             meta.save();
