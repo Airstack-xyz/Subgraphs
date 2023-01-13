@@ -72,13 +72,13 @@ type AirBlock @entity {
  timestamp: BigInt!
 }
 
-
 type AirMeta @entity {
   id: ID! # air_meta 
   network: AirNetwork!
   schemaVersion: String!
   slug: String! #Opensea_V1
-  name: String! # Opeasea V1
+  name: String! # Opeasea/Rarible
+  version: String! #Seaport/Exchange V1
 }
 
 type AirEntityCounter @entity {

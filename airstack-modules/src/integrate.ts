@@ -41,44 +41,44 @@ export async function integrate(
             }
 
             const arrayOfFiles: Array<string> = []
-            getAllFiles(targetDirectory,arrayOfFiles)
-            
+            getAllFiles(targetDirectory, arrayOfFiles)
+
             let dataSourceName = "";
-            if(dataSources && dataSources.length>0) {
+            if (dataSources && dataSources.length > 0) {
               dataSourceName = dataSources[0];
 
-            }else if(templates && templates.length>0) {
+            } else if (templates && templates.length > 0) {
               dataSourceName = templates[0];
 
-            }else {
+            } else {
               const yamlSchemas = fs.readFileSync(yamlPath, "utf8");
               const sourceSubgraphYaml = yaml.load(yamlSchemas) as Record<string, any>;
-              if(sourceSubgraphYaml.dataSources && sourceSubgraphYaml.dataSources.length>0){
+              if (sourceSubgraphYaml.dataSources && sourceSubgraphYaml.dataSources.length > 0) {
                 dataSourceName = sourceSubgraphYaml.dataSources[0].name;
-              } else if(sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length>0){
+              } else if (sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length > 0) {
                 dataSourceName = sourceSubgraphYaml.templates[0].name;
               }
             }
 
             const writeFilePromise: Array<Promise<void>> = [];
-            arrayOfFiles.forEach((filePath:string)=>{
-              writeFilePromise.push(new Promise((res, rej)=>{
+            arrayOfFiles.forEach((filePath: string) => {
+              writeFilePromise.push(new Promise((res, rej) => {
                 const fileContent = fs.readFileSync(filePath, "utf8");
-                const finalFileContent = mustache.render(fileContent, {dataSource: dataSourceName})
-                
+                const finalFileContent = mustache.render(fileContent, { dataSource: dataSourceName })
+
                 fs.writeFile(filePath, finalFileContent, (err) => {
                   if (err) {
-                    console.log(err); 
-                    rej();               
+                    console.log(err);
+                    rej();
                   } else {
-                    res();       
+                    res();
                   }
-                });  
+                });
               }));
             });
-            Promise.all(writeFilePromise).then(()=>{
+            Promise.all(writeFilePromise).then(() => {
               resolve();
-            }).catch(()=>{
+            }).catch(() => {
               reject();
             })
           })
@@ -129,7 +129,7 @@ async function writeSubgraphYaml(
           }
         });
 
-        const existingAbiNames = dataSrc.mapping.abis.map((abiObj: Record<string,string>)=> {
+        const existingAbiNames = dataSrc.mapping.abis.map((abiObj: Record<string, string>) => {
           return abiObj.name;
         });
       }
@@ -145,19 +145,19 @@ async function writeSubgraphYaml(
               dataSrc.mapping.entities.push(airEntity);
             }
           });
-          const existingAbiNames = dataSrc.mapping.abis.map((abiObj: Record<string,string>)=> {
+          const existingAbiNames = dataSrc.mapping.abis.map((abiObj: Record<string, string>) => {
             return abiObj.name;
           });
         }
       });
     }
 
-    
+
     Utils.backupFiles(subgraphYamlPath).then((isBackupSuccess: boolean) => {
       if (isBackupSuccess) {
         Utils.createFile(
           subgraphYamlPath,
-          yaml.dump(targetSubgraphYaml, { lineWidth: -1 , noRefs: true})
+          yaml.dump(targetSubgraphYaml, { lineWidth: -1, noRefs: true })
         ).then((isWriteSuccess: boolean) => {
           if (isWriteSuccess) {
             resolve();
@@ -182,7 +182,7 @@ function writeSubgraphGraphql(
     if (sourceSchemas.includes("--Airstack Schemas--")) {
       return resolve();
     }
-    
+
     const isBackupSuccess = await Utils.backupFiles(schemaGraphqlPath);
     if (!isBackupSuccess) {
       reject();
@@ -206,7 +206,7 @@ function copyAirstackModules(): string {
     fse.copySync(sourceDir, targetDir, { overwrite: true })
   } catch (err) {
     console.error(err)
-  } finally{
+  } finally {
     return targetDir
   }
 }
@@ -217,7 +217,7 @@ function getAllFiles(dirPath: string, arrayOfFiles: Array<string>) {
 
   arrayOfFiles = arrayOfFiles || []
 
-  files.forEach(function(file) {
+  files.forEach(function (file) {
     if (fs.statSync(dirPath + "/" + file).isDirectory()) {
       arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles)
     } else {
@@ -229,21 +229,27 @@ function getAllFiles(dirPath: string, arrayOfFiles: Array<string>) {
 }
 
 export var SUBGRAPH_NAME = "";
+export var SUBGRAPH_VERSION = "";
 export var SUBGRAPH_SLUG = "";
 
-function getAirMetaDetails(){
-  while(SUBGRAPH_NAME.trim()===""){
+function getAirMetaDetails() {
+  while (SUBGRAPH_NAME.trim() === "") {
     let subgraphName: string = readlineSync.question("Enter the name of the subgraph: ");
     SUBGRAPH_NAME = subgraphName;
   }
-  while(SUBGRAPH_SLUG.trim()===""){
+  while (SUBGRAPH_VERSION.trim() === "") {
+    let subgraphVersion: string = readlineSync.question("Enter the version of the subgraph: ");
+    SUBGRAPH_VERSION = subgraphVersion;
+  }
+  while (SUBGRAPH_SLUG.trim() === "") {
     let subgraphSlug: string = readlineSync.question("Enter the slug of the subgraph: ");
     SUBGRAPH_SLUG = subgraphSlug;
   }
   const targetFile = path.resolve(__dirname, '../../../../../modules/airstack/utils.ts');
   let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
   fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, "");
+  fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, "");
   fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, "");
-  fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
-  fs.writeFileSync(targetFile, fileContent, {encoding: "utf8"});
+  fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
+  fs.writeFileSync(targetFile, fileContent, { encoding: "utf8" });
 }

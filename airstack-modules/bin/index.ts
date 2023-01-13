@@ -101,7 +101,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           For documentation and examples please check: https://github.com/Airstack-xyz/airstack-subgraph/tree/task/npx-scripts
         `);
         break;
-    
+
       case Vertical.NftMarketplace:
         console.log(`
         Integration done. Please call the following functions.
@@ -112,7 +112,6 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           txHash: string,
           txIndex: BigInt,
           NftSales: Sale[],
-          transactionType: string,
           protocolType: string,
           protocolActionType: string,
           timestamp: BigInt,
@@ -123,7 +122,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
         For documentation and examples please check: https://github.com/Airstack-xyz/airstack-subgraph/tree/task/npx-scripts
         `);
         break;
-    
+
       default:
         break;
     }
