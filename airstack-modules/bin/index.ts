@@ -123,6 +123,15 @@ integrate(vertical, yaml, graphql, dataSources, templates)
         `);
         break;
 
+      case Vertical.Domain:
+        console.log(`
+        Integration done. Please call the following functions.
+
+        For documentation and examples please check: https://github.com/Airstack-xyz/airstack-subgraph/tree/task/npx-scripts
+        `
+        );
+        break;
+
       default:
         break;
     }

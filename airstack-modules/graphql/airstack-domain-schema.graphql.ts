@@ -1,3 +1,7 @@
+const schema = `
+#
+# --Airstack Schemas--
+
 type AirBlock @entity {
  id: ID! #chain-number
  hash: String!
@@ -142,3 +146,6 @@ type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   domain: Domain! # - name
   index: BigInt! # - NA
 }
+`
+
+export default schema;

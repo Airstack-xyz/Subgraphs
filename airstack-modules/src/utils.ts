@@ -3,9 +3,11 @@ import * as fs from "fs";
 import * as yaml from "js-yaml";
 import dexSchema from "../graphql/airstack-dex-schema.graphql";
 import nftMarketPlaceSchema from "../graphql/airstack-nft-marketplace-schema.graphql";
+import domainSchema from "../graphql/airstack-domain-schema.graphql";
 
 import dexYamlString from "../yamls/dex.yaml";
 import nftMarketPlaceYamlString from "../yamls/nft-marketplace.yaml";
+import domainYamlString from "../yamls/domain.yaml";
 
 export namespace Utils {
   export function isVerticalSupported(verticalName: string): boolean {
@@ -34,6 +36,8 @@ export namespace Utils {
         yamlString = dexYamlString;
       case Vertical.NftMarketplace:
         yamlString = nftMarketPlaceYamlString;
+      case Vertical.Domain:
+        yamlString = domainYamlString;
       default:
         break;
     }
@@ -56,6 +60,8 @@ export namespace Utils {
         return dexSchema;
       case Vertical.NftMarketplace:
         return nftMarketPlaceSchema;
+      case Vertical.Domain:
+        return domainSchema;
       default:
         break;
     }
