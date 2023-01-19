@@ -14,10 +14,11 @@ import {
   AirBlock,
   AirMeta,
   AirDomain,
-  AirDomainOwnerChangedTransaction
+  AirDomainOwnerChangedTransaction,
+  AirDomainTransferTransaction,
 } from "../../generated/schema";
 
-import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS } from "./utils";
+import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS } from "./utils";
 
 export namespace domain {
   /**
@@ -70,6 +71,48 @@ export namespace domain {
       )
       entity.block = airBlock.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, airBlock);
+      entity.save();
+    }
+  }
+
+  export function trackDomainTransferTransaction(
+    from: string,
+    to: string,
+    blockHeight: BigInt,
+    blockHash: string,
+    blockTimestamp: BigInt,
+    chainId: string,
+    logIndex: BigInt,
+    transactionHash: Bytes,
+    tokenId: string,
+    domainId: string,
+  ): void {
+    // id: ID!
+    // from: AirAccount! # - NA - prev owner
+    // to: AirAccount! # - NA - new owner
+    // block: AirBlock!
+    // transactionHash: String!
+    // tokenId: String! # dec(labelhash)  # - NA
+    // domain: AirDomain!
+    // index: BigInt! # - NA
+    // get the domain - find the previous owner
+    let id = createEntityId(transactionHash, blockHeight, logIndex);
+    let entity = AirDomainTransferTransaction.load(id);
+    if (entity == null) {
+      entity = new AirDomainTransferTransaction(id);
+      entity.from = from;
+      entity.to = to;
+      let airBlock = getOrCreateAirBlock(
+        chainId,
+        blockHeight,
+        blockHash,
+        blockTimestamp,
+      )
+      entity.block = airBlock.id;
+      entity.transactionHash = transactionHash.toHex();
+      entity.tokenId = tokenId;
+      entity.domain = domainId;
+      entity.index = updateAirEntityCounter(AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, airBlock);
       entity.save();
     }
   }
@@ -131,10 +174,9 @@ export namespace domain {
     //     createdAt: AirBlock!
     //     lastBlock: AirBlock! # - NA
     //   }
-    let id = createAirDomainEntityId(domain.node, domain.label);
-    let entity = AirDomain.load(id);
+    let entity = AirDomain.load(domain.id);
     if (entity == null) {
-      entity = new AirDomain(id);
+      entity = new AirDomain(domain.id);
       if (domain.name) {
         entity.name = domain.name;
       }
@@ -340,8 +382,8 @@ export namespace domain {
    */
   export class Domain {
     constructor(
-      public node: Bytes,
-      public label: Bytes,
+      public id: string,
+      public label: Bytes = Bytes.fromHexString("0x"),
       public name: string = "",
       public labelName: string = "",
       public labelhash: Bytes = Bytes.fromHexString("0x"),
