@@ -7,9 +7,10 @@ import {
 } from "../generated/EnsRegistry/EnsRegistry"
 import * as airstack from "../modules/airstack";
 import {
-} from "../generated/schema"
-import { ETHEREUM_MAINNET_ID } from "./utils";
-import { BIG_INT_ZERO, ZERO_ADDRESS } from "../modules/airstack/utils";
+  ens
+} from "@graphprotocol/graph-ts";
+import { ETHEREUM_MAINNET_ID, ZERO_NODE } from "./utils";
+import { BIGINT_ONE, BIG_INT_ZERO, ZERO_ADDRESS } from "../modules/airstack/utils";
 
 /**
  * @dev this functions maps the NewOwner event to airstack trackDomainOwnerChangedTransaction
@@ -17,10 +18,48 @@ import { BIG_INT_ZERO, ZERO_ADDRESS } from "../modules/airstack/utils";
  */
 export function handleNewOwner(event: NewOwnerEvent): void {
   // do data mapping
-  let domainId = airstack.domain.createAirDomainEntityId(event.params.node, event.params.label);
+  let node = event.params.node;
+  let airBlock = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  let domainId = airstack.domain.createAirDomainEntityId(node, event.params.label);
   let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(
     domainId,
-  ))
+    ETHEREUM_MAINNET_ID,
+    airBlock,
+  ));
+  let parent = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(
+    event.params.node.toHexString(),
+    ETHEREUM_MAINNET_ID,
+    airBlock,
+  ));
+  if (domain.parent == null && parent != null) {
+    parent.subdomainCount = parent.subdomainCount.plus(BIGINT_ONE);
+  }
+  if (domain.name == null) {
+    let label = ens.nameByHash(event.params.label.toHexString());
+    if (label != null) {
+      domain.labelName = label;
+    }
+    if (label === null) {
+      label = '[' + event.params.label.toHexString().slice(2) + ']';
+    }
+    if (node.toHexString() == ZERO_NODE) {
+      domain.name = label;
+    } else {
+      parent = parent!
+      let name = parent.name;
+      if (label && name) {
+        domain.name = label + '.' + name;
+      }
+    }
+  }
+  domain.owner = airstack.domain.getOrCreateAirAccount(ETHEREUM_MAINNET_ID, event.params.owner.toHexString()).id;
+  domain.parent = parent.id;
+  domain.labelhash = event.params.label;
+  // below conversion is going into overflow
+  // domain.tokenId = event.params.label.toU32().toString();
+  airstack.domain.recurseDomainDelete(domain, ETHEREUM_MAINNET_ID);
+  domain.save();
+
   // send to airstack
   airstack.domain.trackDomainOwnerChangedTransaction(
     event.block.number,
@@ -39,14 +78,15 @@ export function handleNewOwner(event: NewOwnerEvent): void {
 export function handleTransfer(event: TransferEvent): void {
   // do data mapping
   let node = event.params.node.toHexString();
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(node));
-  let previousOwner = domain.owner;
-  if (previousOwner == null) {
-    previousOwner = ZERO_ADDRESS;
+  let airBlock = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(node, ETHEREUM_MAINNET_ID, airBlock));
+  let previousOwnerId = domain.owner;
+  if (previousOwnerId == null) {
+    previousOwnerId = airstack.domain.getOrCreateAirAccount(ETHEREUM_MAINNET_ID, ZERO_ADDRESS).id;
   }
   // send to airstack
   airstack.domain.trackDomainTransferTransaction(
-    previousOwner,
+    previousOwnerId,
     event.params.owner.toHexString(),
     event.block.number,
     event.block.hash.toHexString(),

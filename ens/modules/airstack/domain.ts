@@ -46,20 +46,12 @@ export namespace domain {
     tokenId: string,
     domain: AirDomain,
   ): void {
-    // id: ID! - done
-    // previousOwner: AirAccount! # - NA - done
-    // newOwner: AirAccount! # - owner - done
-    // blockNumber: AirBlock! - done
-    // transactionHash: String! - done - done
-    // tokenId: String! # dec(labelhash)  # - NA - done
-    // domain: Domain! - done
-    // index: BigInt! # - NA - done
     let id = createEntityId(transactionHash, blockHeight, logIndex);
     let entity = AirDomainOwnerChangedTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainOwnerChangedTransaction(id);
-      entity.previousOwner = previousOwner;
-      entity.newOwner = newOwner;
+      entity.previousOwner = getOrCreateAirAccount(chainId, previousOwner).id;
+      entity.newOwner = getOrCreateAirAccount(chainId, newOwner).id;
       entity.transactionHash = transactionHash.toHex();
       entity.tokenId = tokenId;
       entity.domain = domain.id;
@@ -76,8 +68,8 @@ export namespace domain {
   }
 
   export function trackDomainTransferTransaction(
-    from: string,
-    to: string,
+    previousOwnerId: string,
+    newOwnerAddress: string,
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
@@ -86,21 +78,12 @@ export namespace domain {
     transactionHash: Bytes,
     domain: AirDomain,
   ): void {
-    // id: ID!
-    // from: AirAccount! # - NA - prev owner
-    // to: AirAccount! # - NA - new owner
-    // block: AirBlock!
-    // transactionHash: String!
-    // tokenId: String! # dec(labelhash)  # - NA
-    // domain: AirDomain!
-    // index: BigInt! # - NA
-    // get the domain - find the previous owner
     let id = createEntityId(transactionHash, blockHeight, logIndex);
     let entity = AirDomainTransferTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainTransferTransaction(id);
-      entity.from = getOrCreateAirAccount(chainId, from).id;
-      entity.to = getOrCreateAirAccount(chainId, to).id;
+      entity.from = previousOwnerId;
+      entity.to = getOrCreateAirAccount(chainId, newOwnerAddress).id;
       let airBlock = getOrCreateAirBlock(
         chainId,
         blockHeight,
@@ -176,6 +159,9 @@ export namespace domain {
     let entity = AirDomain.load(domain.id);
     if (entity == null) {
       entity = new AirDomain(domain.id);
+      entity.subdomainCount = BIG_INT_ZERO;
+      entity.isPrimary = domain.isPrimary;
+      entity.createdAt = domain.block.id;
       if (domain.name) {
         entity.name = domain.name;
       }
@@ -184,36 +170,23 @@ export namespace domain {
       }
       if (domain.labelhash) {
         entity.labelhash = domain.labelhash;
-      }
-      if (domain.tokenId) {
-        entity.tokenId = domain.tokenId;
+        entity.tokenId = domain.labelhash.toU32().toString();
       }
       if (domain.parent) {
         entity.parent = domain.parent.id;
       }
-      if (domain.subdomainCount) {
-        entity.subdomainCount = domain.subdomainCount.toI32();
-      }
       if (domain.resolvedAddress && domain.chainId) {
         entity.resolvedAddress = getOrCreateAirAccount(domain.chainId, domain.resolvedAddress).id;
       }
-      if (domain.owner == "" && domain.chainId == "") {
-        entity.owner = "";
-      } else {
+      if (domain.owner && domain.chainId) {
         entity.owner = getOrCreateAirAccount(domain.chainId, domain.owner).id;
       }
       if (domain.ttl) {
         entity.ttl = domain.ttl;
       }
-      entity.isPrimary = domain.isPrimary;
-      if (domain.block) {
-        entity.createdAt = domain.block.id;
-      }
-      if (domain.lastBlock) {
-        entity.lastBlock = domain.lastBlock.id;
-      }
-      entity.save();
     }
+    entity.lastBlock = domain.block.id;
+    entity.save();
     return entity as AirDomain;
   }
 
@@ -271,6 +244,19 @@ export namespace domain {
       entity.save();
     }
     return entity as AirDomainOwnerChangedTransaction;
+  }
+
+  export function recurseDomainDelete(domain: AirDomain, chainId: string): string | null {
+    if (domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
+      const parentDomain = AirDomain.load(domain.parent!)
+      if (parentDomain != null) {
+        parentDomain.subdomainCount = parentDomain.subdomainCount.minus(BIGINT_ONE)
+        parentDomain.save()
+        return recurseDomainDelete(parentDomain, chainId)
+      }
+      return null
+    }
+    return domain.id
   }
 
   /**
@@ -388,6 +374,8 @@ export namespace domain {
   export class Domain {
     constructor(
       public id: string,
+      public chainId: string,
+      public block: AirBlock,
       public label: Bytes = Bytes.fromHexString("0x"),
       public name: string = "",
       public labelName: string = "",
@@ -399,9 +387,6 @@ export namespace domain {
       public owner: string = "",
       public ttl: BigInt = BIG_INT_ZERO,
       public isPrimary: boolean = false,
-      public block: AirBlock = new AirBlock(""),
-      public lastBlock: AirBlock = new AirBlock(""),
-      public chainId: string = "",
     ) { }
   }
 
