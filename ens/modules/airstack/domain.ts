@@ -18,7 +18,7 @@ import {
   AirDomainTransferTransaction,
 } from "../../generated/schema";
 
-import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS } from "./utils";
+import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS, EMPTY_STRING } from "./utils";
 
 export namespace domain {
   /**
@@ -68,7 +68,7 @@ export namespace domain {
         blockHeight,
         blockHash,
         blockTimestamp,
-      )
+      );
       entity.block = airBlock.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, airBlock);
       entity.save();
@@ -84,8 +84,7 @@ export namespace domain {
     chainId: string,
     logIndex: BigInt,
     transactionHash: Bytes,
-    tokenId: string,
-    domainId: string,
+    domain: AirDomain,
   ): void {
     // id: ID!
     // from: AirAccount! # - NA - prev owner
@@ -100,18 +99,18 @@ export namespace domain {
     let entity = AirDomainTransferTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainTransferTransaction(id);
-      entity.from = from;
-      entity.to = to;
+      entity.from = getOrCreateAirAccount(chainId, from).id;
+      entity.to = getOrCreateAirAccount(chainId, to).id;
       let airBlock = getOrCreateAirBlock(
         chainId,
         blockHeight,
         blockHash,
         blockTimestamp,
-      )
+      );
       entity.block = airBlock.id;
       entity.transactionHash = transactionHash.toHex();
-      entity.tokenId = tokenId;
-      entity.domain = domainId;
+      entity.tokenId = domain.tokenId;
+      entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, airBlock);
       entity.save();
     }
@@ -198,7 +197,9 @@ export namespace domain {
       if (domain.resolvedAddress && domain.chainId) {
         entity.resolvedAddress = getOrCreateAirAccount(domain.chainId, domain.resolvedAddress).id;
       }
-      if (domain.owner && domain.chainId) {
+      if (domain.owner == "" && domain.chainId == "") {
+        entity.owner = "";
+      } else {
         entity.owner = getOrCreateAirAccount(domain.chainId, domain.owner).id;
       }
       if (domain.ttl) {
@@ -369,10 +370,14 @@ export namespace domain {
    * @returns AirAccount entity
    */
   export function getOrCreateAirAccount(chainID: string, address: string): AirAccount {
+    if (address == EMPTY_STRING) {
+      address = ZERO_ADDRESS;
+    }
     let entity = AirAccount.load(chainID + "-" + address);
     if (entity == null) {
       entity = new AirAccount(chainID + "-" + address);
       entity.address = address;
+      entity.save();
     }
     return entity as AirAccount;
   }

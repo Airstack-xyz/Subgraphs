@@ -52,7 +52,7 @@ type AirDomain @entity {
 interface AirDomainEvent {
   block: AirBlock!
   transactionHash: String!
-  tokenId: String! # dec(labelhash) - NA
+  tokenId: String # dec(labelhash) - NA
   domain: AirDomain!
   index: BigInt! # - NA
 }
@@ -63,7 +63,7 @@ type AirDomainTransferTransaction implements AirDomainEvent @entity {
   to: AirAccount! # - NA
   block: AirBlock!
   transactionHash: String!
-  tokenId: String! # dec(labelhash)  # - NA
+  tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
 }
@@ -74,7 +74,7 @@ type AirDomainOwnerChangedTransaction implements AirDomainEvent @entity {
   newOwner: AirAccount! # - owner
   block: AirBlock!
   transactionHash: String!
-  tokenId: String! # dec(labelhash)  # - NA
+  tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
 }
@@ -85,7 +85,7 @@ type AirDomainNewResolverTransaction implements AirDomainEvent @entity {
   newOwnerResolver: AirAccount! # - resolver
   block: AirBlock!
   transactionHash: String!
-  tokenId: String! # dec(labelhash)  # - NA
+  tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
 }
@@ -96,7 +96,7 @@ type AirDomainNewTTLTransaction implements AirDomainEvent @entity {
   newTTL: BigInt! # - ttl
   block: AirBlock!
   transactionHash: String!
-  tokenId: String! # dec(labelhash)  # - NA
+  tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
 }
@@ -113,7 +113,7 @@ type AirNameRegisteredTransaction implements AirDomainEvent & AirDomainRegistrat
   id: ID!
   block: AirBlock!
   transactionHash: String!
-  tokenId: String! # dec(labelhash)  # - NA
+  tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
   cost: BigInt!
@@ -127,7 +127,7 @@ type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration
 	id: ID!
   block: AirBlock!
   transactionHash: String!
-  tokenId: String! # dec(labelhash)  # - NA
+  tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
   cost: BigInt!
@@ -142,7 +142,7 @@ type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   resolverAddress: String! #make sure toremove the old primary ens if changed
   block: AirBlock!
   transactionHash: String!
-  tokenId: String! # dec(labelhash) # - NA
+  tokenId: String # dec(labelhash) # - NA
   domain: AirDomain! # - name
   index: BigInt! # - NA
 }
