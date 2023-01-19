@@ -1,0 +1,1 @@
+export const ETHEREUM_MAINNET_ID = "1";

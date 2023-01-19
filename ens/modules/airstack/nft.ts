@@ -8,10 +8,8 @@ import {
 import {
     AirAccount,
     AirEntityCounter,
-    AirNftTransaction,
     AirToken,
     AirBlock,
-    AirNftSaleRoyalty,
     AirMeta
 } from "../../generated/schema";
 

@@ -7,10 +7,13 @@ export const AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID = "AIR_DOMAIN_OWNER_CHAN
 export const AIR_META_ID = "AIR_META";
 
 export const BIGINT_ONE = BigInt.fromI32(1);
+export const BIG_INT_ZERO = BigInt.fromI32(0);
+export const ROOT_NODE = '0x0000000000000000000000000000000000000000000000000000000000000000'
+export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
-
-
-
+export const SUBGRAPH_NAME = "AIRSTACK-SUBGRAPH";
+export const SUBGRAPH_VERSION = "AIRSTACK-SUBGRAPH";
+export const SUBGRAPH_SLUG = "AIRSTACK-SUBGRAPH";
 
 const AIR_NETWORK_MAP = new TypedMap<string, string>();
 AIR_NETWORK_MAP.set("arbitrum-one", "ARBITRUM_ONE");
@@ -40,6 +43,3 @@ export function processNetwork(network: string): string {
     const result: string = value !== null ? value : "unknown";
     return result;
 }
-export const SUBGRAPH_NAME = "Rarible";
-export const SUBGRAPH_VERSION = "Exchange V1";
-export const SUBGRAPH_SLUG = "rarible-exchange-v1";
