@@ -56,6 +56,7 @@ export function handleNewOwner(event: NewOwnerEvent): void {
   domain.labelhash = event.params.label;
   // below conversion is going into overflow
   domain.tokenId = BigInt.fromUnsignedBytes(event.params.label).toString();
+  domain.lastBlock = airBlock.id;
   airstack.domain.recurseDomainDelete(domain, ETHEREUM_MAINNET_ID);
   domain.save();
 

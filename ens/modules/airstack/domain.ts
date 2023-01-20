@@ -135,6 +135,7 @@ export namespace domain {
       domain.resolvedAddress = resolverEntity.addr;
     }
     // do recursive domain delete
+    domain.lastBlock = block.id;
     recurseDomainDelete(domain, chainId);
     domain.save();
 
