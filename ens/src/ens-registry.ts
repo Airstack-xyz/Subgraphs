@@ -7,10 +7,10 @@ import {
 } from "../generated/EnsRegistry/EnsRegistry"
 import * as airstack from "../modules/airstack";
 import {
+  BigInt,
   ens
 } from "@graphprotocol/graph-ts";
-import { ETHEREUM_MAINNET_ID, ZERO_NODE } from "./utils";
-import { BIGINT_ONE, BIG_INT_ZERO, ZERO_ADDRESS } from "../modules/airstack/utils";
+import { BIGINT_ONE, BIG_INT_ZERO, ZERO_ADDRESS, ETHEREUM_MAINNET_ID, ROOT_NODE } from "../modules/airstack/utils";
 
 /**
  * @dev this functions maps the NewOwner event to airstack trackDomainOwnerChangedTransaction
@@ -42,10 +42,9 @@ export function handleNewOwner(event: NewOwnerEvent): void {
     if (label === null) {
       label = '[' + event.params.label.toHexString().slice(2) + ']';
     }
-    if (node.toHexString() == ZERO_NODE) {
+    if (node.toHexString() == ROOT_NODE) {
       domain.name = label;
     } else {
-      parent = parent!
       let name = parent.name;
       if (label && name) {
         domain.name = label + '.' + name;
@@ -56,7 +55,7 @@ export function handleNewOwner(event: NewOwnerEvent): void {
   domain.parent = parent.id;
   domain.labelhash = event.params.label;
   // below conversion is going into overflow
-  // domain.tokenId = event.params.label.toU32().toString();
+  domain.tokenId = BigInt.fromUnsignedBytes(event.params.label).toString();
   airstack.domain.recurseDomainDelete(domain, ETHEREUM_MAINNET_ID);
   domain.save();
 
@@ -98,19 +97,17 @@ export function handleTransfer(event: TransferEvent): void {
   )
 }
 
-// export function handleNewResolver(event: NewResolverEvent): void {
-//   let entity = new NewResolver(
-//     event.transaction.hash.concatI32(event.logIndex.toI32())
-//   )
-//   entity.node = event.params.node
-//   entity.resolver = event.params.resolver
-
-//   entity.blockNumber = event.block.number
-//   entity.blockTimestamp = event.block.timestamp
-//   entity.transactionHash = event.transaction.hash
-
-//   entity.save()
-// }
+export function handleNewResolver(event: NewResolverEvent): void {
+  let airBlock = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  airstack.domain.trackDomainNewResolverTransaction(
+    event.params.resolver.toHexString(),
+    event.params.node.toHexString(),
+    ETHEREUM_MAINNET_ID,
+    airBlock,
+    event.transaction.hash,
+    event.logIndex,
+  )
+}
 
 // export function handleNewTTL(event: NewTTLEvent): void {
 //   let entity = new NewTTL(

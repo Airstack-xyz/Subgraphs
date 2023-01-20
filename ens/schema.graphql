@@ -42,7 +42,7 @@ type AirDomain @entity {
   subdomainCount: BigInt!                                  # The number of subdomains
   resolvedAddress: AirAccount                           # Address logged from current resolver, if any
   owner: AirAccount!
-  # resolver: Resolver
+  resolver: AirResolver
   ttl: BigInt
   isPrimary: Boolean! #- NA
   createdAt: AirBlock!
@@ -81,7 +81,7 @@ type AirDomainOwnerChangedTransaction implements AirDomainEvent @entity {
 
 type AirDomainNewResolverTransaction implements AirDomainEvent @entity {
   id: ID!
-  previousResolver: AirAccount! # - NA
+  previousResolver: AirAccount # - NA
   newOwnerResolver: AirAccount! # - resolver
   block: AirBlock!
   transactionHash: String!
@@ -99,6 +99,32 @@ type AirDomainNewTTLTransaction implements AirDomainEvent @entity {
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
+}
+
+type AirResolver @entity {
+  id: ID!                   # Concatenation of resolver address and namehash
+  domain: AirDomain
+  address: AirAccount!           # Address of resolver contract
+  addr: AirAccount             # Current value of addr record (per events)
+  # contentHash: Bytes        # Content hash, in binary format.
+  # texts: [String!]          # Set of observed text record keys
+  # coinTypes: [BigInt!]      # Set of observed SLIP-44 coin types
+  events: [AirResolverEvent!]! @derivedFrom(field: "resolver")
+}
+
+interface AirResolverEvent {
+  id: ID!                   # Concatenation of block number and log ID
+  resolver: AirResolver!       # Used to derive relationships to Resolvers
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+}
+
+type AirAddrChanged implements AirResolverEvent @entity {
+  id: ID!
+  resolver: AirResolver!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  address: AirAccount!
 }
 
 interface AirDomainRegistration  {

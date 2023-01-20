@@ -4,7 +4,7 @@ import {
   dataSource,
   Bytes,
   crypto,
-  ByteArray,
+  log,
 } from "@graphprotocol/graph-ts";
 
 import {
@@ -16,9 +16,11 @@ import {
   AirDomain,
   AirDomainOwnerChangedTransaction,
   AirDomainTransferTransaction,
+  AirResolver,
+  AirDomainNewResolverTransaction,
 } from "../../generated/schema";
 
-import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS, EMPTY_STRING } from "./utils";
+import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS, EMPTY_STRING } from "./utils";
 
 export namespace domain {
   /**
@@ -67,6 +69,18 @@ export namespace domain {
     }
   }
 
+  /**
+   * @dev This function tracks a domain transfer transaction
+   * @param previousOwnerId previous domain owner id
+   * @param newOwnerAddress new domain owner address
+   * @param blockHeight block number
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param chainId chain id
+   * @param logIndex event log index - used to create unique id
+   * @param transactionHash transaction hash
+   * @param domain air domain object
+   */
   export function trackDomainTransferTransaction(
     previousOwnerId: string,
     newOwnerAddress: string,
@@ -97,6 +111,52 @@ export namespace domain {
       entity.index = updateAirEntityCounter(AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, airBlock);
       entity.save();
     }
+  }
+
+  export function trackDomainNewResolverTransaction(
+    resolver: string,
+    node: string,
+    chainId: string,
+    block: AirBlock,
+    transactionHash: Bytes,
+    logIndex: BigInt,
+  ): void {
+    // get domain
+    let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    // get previous resolver
+    let previousResolverId = domain.resolver;
+    // create new resolver
+    let resolverEntity = getOrCreateAirResolver(domain, chainId, resolver);
+    log.info("resolverEntity: {}", [resolverEntity.address])
+    // update domain resolver
+    domain.resolver = resolverEntity.id;
+    // update domain resolved address
+    if (resolverEntity.addr) {
+      domain.resolvedAddress = resolverEntity.addr;
+    }
+    // do recursive domain delete
+    recurseDomainDelete(domain, chainId);
+    domain.save();
+
+    // create new resolver transaction
+    getOrCreateAirDomainNewResolverTransaction(
+      previousResolverId,
+      resolverEntity.address,
+      block,
+      transactionHash,
+      logIndex,
+      domain,
+    )
+  }
+
+  /**
+   * @dev This function creates a resolver entity id
+   * @param resolver domain resolver address
+   * @param node domain node
+   * @returns returns a resolver entity id
+   */
+  export function createResolverEntityId(resolver: string, node: string): string {
+    return resolver.concat("-").concat(node);
   }
 
   /**
@@ -132,6 +192,58 @@ export namespace domain {
   }
 
   /**
+   * @dev 
+   * @param domain air domain entity
+   * @param chainId chain id
+   * @param resolver resolver contract address
+   * @param addr content value of addr record
+   * @returns 
+   */
+  export function getOrCreateAirResolver(
+    domain: AirDomain,
+    chainId: string,
+    resolver: string,
+    addr: string = "",
+  ): AirResolver {
+    let id = createResolverEntityId(resolver, domain.id);
+    let entity = AirResolver.load(id);
+    if (entity == null) {
+      entity = new AirResolver(id);
+      entity.address = getOrCreateAirAccount(chainId, resolver).id;
+      entity.domain = domain.id;
+    }
+    if (addr != "") {
+      entity.addr = getOrCreateAirAccount(chainId, addr).id;
+    }
+    entity.save();
+    return entity as AirResolver;
+  }
+
+  export function getOrCreateAirDomainNewResolverTransaction(
+    previousResolverId: string | null,
+    newResolverId: string,
+    block: AirBlock,
+    transactionHash: Bytes,
+    logIndex: BigInt,
+    domain: AirDomain,
+  ): AirDomainNewResolverTransaction {
+    let id = createEntityId(transactionHash, block.number, logIndex);
+    let entity = AirDomainNewResolverTransaction.load(id);
+    if (entity == null) {
+      entity = new AirDomainNewResolverTransaction(id);
+      entity.previousResolver = previousResolverId;
+      entity.newOwnerResolver = newResolverId;
+      entity.block = block.id;
+      entity.transactionHash = transactionHash.toHex();
+      entity.tokenId = domain.tokenId;
+      entity.domain = domain.id;
+      entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, block);
+      entity.save();
+    }
+    return entity as AirDomainNewResolverTransaction;
+  }
+
+  /**
    * @dev this function gets or creates a new air domain entity
    * @param domain Domain class object
    * @returns AirDomain entity
@@ -139,41 +251,31 @@ export namespace domain {
   export function getOrCreateAirDomain(
     domain: Domain,
   ): AirDomain {
-    // type AirDomain @entity {
-    //     id: ID!                                               # The namehash of the name
-    //     name: String                                          # The human readable name, if known.Unknown portions replaced with hash in square brackets(eg, foo.[1234].eth)
-    //     labelName: String                                     # The human readable label name(imported from CSV), if known
-    //     labelhash: Bytes                                      # keccak256(labelName)
-    //     tokenId: String!                                      # dec(labelHash)
-    //     parent: AirDomain                                        # The namehash(id) of the parent name
-    //     subdomains: [AirDomain!]! @derivedFrom(field: "parent")  # Can count domains from length of array
-    //     subdomainCount: Int!                                  # The number of subdomains
-    //     resolvedAddress: AirAccount                           # Address logged from current resolver, if any
-    //     owner: AirAccount!
-    //     # resolver: Resolver
-    //     ttl: BigInt
-    //     isPrimary: Boolean! # - NA
-    //     createdAt: AirBlock!
-    //     lastBlock: AirBlock! # - NA
-    //   }
+    // return root domain if id is ROOT_NODE
+    if (domain.id == ROOT_NODE) {
+      return getOrCreateAirRootDomain(domain.block);
+    }
     let entity = AirDomain.load(domain.id);
     if (entity == null) {
       entity = new AirDomain(domain.id);
       entity.subdomainCount = BIG_INT_ZERO;
       entity.isPrimary = domain.isPrimary;
       entity.createdAt = domain.block.id;
-      if (domain.name) {
+      if (domain.name != EMPTY_STRING) {
         entity.name = domain.name;
       }
       if (domain.labelName) {
         entity.labelName = domain.labelName;
       }
-      if (domain.labelhash) {
-        entity.labelhash = domain.labelhash;
-        entity.tokenId = domain.labelhash.toU32().toString();
+      if (domain.labelHash) {
+        entity.labelhash = domain.labelHash;
+        entity.tokenId = BigInt.fromUnsignedBytes(domain.labelHash).toString();
       }
       if (domain.parent) {
         entity.parent = domain.parent.id;
+      }
+      if (domain.resolver != EMPTY_STRING) {
+        entity.resolver = domain.resolver;
       }
       if (domain.resolvedAddress && domain.chainId) {
         entity.resolvedAddress = getOrCreateAirAccount(domain.chainId, domain.resolvedAddress).id;
@@ -188,6 +290,25 @@ export namespace domain {
     entity.lastBlock = domain.block.id;
     entity.save();
     return entity as AirDomain;
+  }
+
+  /**
+   * @dev this function gets or creates a new air root domain entity
+   * @param block air block for current transaction
+   * @returns root AirDomain entity
+   */
+  function getOrCreateAirRootDomain(block: AirBlock): AirDomain {
+    let rootNode = AirDomain.load(ROOT_NODE);
+    if (rootNode == null) {
+      rootNode = new AirDomain(ROOT_NODE);
+      rootNode.tokenId = ROOT_NODE;
+      rootNode.subdomainCount = BIG_INT_ZERO;
+      rootNode.owner = ZERO_ADDRESS;
+      rootNode.isPrimary = false;
+      rootNode.createdAt = block.id;
+      rootNode.lastBlock = block.id;
+    }
+    return rootNode as AirDomain;
   }
 
   /**
@@ -216,14 +337,6 @@ export namespace domain {
     tokenId: string,
     domain: AirDomain,
   ): AirDomainOwnerChangedTransaction {
-    // id: ID! - done
-    // previousOwner: AirAccount! # - NA - done
-    // newOwner: AirAccount! # - owner - done
-    // blockNumber: AirBlock! - done
-    // transactionHash: String! - done - done
-    // tokenId: String! # dec(labelhash)  # - NA - done 
-    // domain: Domain! - done
-    // index: BigInt! # - NA - done
     let id = createEntityId(transactionHash, blockHeight, logIndex);
     let entity = AirDomainOwnerChangedTransaction.load(id);
     if (entity == null) {
@@ -246,6 +359,12 @@ export namespace domain {
     return entity as AirDomainOwnerChangedTransaction;
   }
 
+  /**
+   * @dev this function deletes all subdomains of a given domain
+   * @param domain air domain entity
+   * @param chainId chain id
+   * @returns parent domain id
+   */
   export function recurseDomainDelete(domain: AirDomain, chainId: string): string | null {
     if (domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
       const parentDomain = AirDomain.load(domain.parent!)
@@ -376,18 +495,17 @@ export namespace domain {
       public id: string,
       public chainId: string,
       public block: AirBlock,
-      public label: Bytes = Bytes.fromHexString("0x"),
-      public name: string = "",
-      public labelName: string = "",
-      public labelhash: Bytes = Bytes.fromHexString("0x"),
-      public tokenId: string = "",
-      public parent: AirDomain = new AirDomain(""),
+      public label: Bytes = Bytes.fromHexString(ZERO_ADDRESS),
+      public name: string = EMPTY_STRING,
+      public labelName: string = EMPTY_STRING,
+      public labelHash: Bytes = Bytes.fromHexString(ZERO_ADDRESS),
+      public parent: AirDomain = new AirDomain(ROOT_NODE),
       public subdomainCount: BigInt = BIG_INT_ZERO,
-      public resolvedAddress: string = "",
-      public owner: string = "",
+      public resolvedAddress: string = EMPTY_STRING,
+      public owner: string = EMPTY_STRING,
       public ttl: BigInt = BIG_INT_ZERO,
       public isPrimary: boolean = false,
+      public resolver: string = EMPTY_STRING,
     ) { }
   }
-
 }

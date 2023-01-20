@@ -23,8 +23,8 @@ dataSources:
           handler: handleNewOwner
         - event: Transfer(indexed bytes32,address)
           handler: handleTransfer
-        # - event: NewResolver(indexed bytes32,address)
-        #   handler: handleNewResolver
+        - event: NewResolver(indexed bytes32,address)
+          handler: handleNewResolver
         # - event: NewTTL(indexed bytes32,uint64)
         #   handler: handleNewTTL
       file: ./src/ens-registry.ts
