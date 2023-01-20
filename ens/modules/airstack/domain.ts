@@ -349,6 +349,7 @@ export namespace domain {
       entity.isPrimary = domain.isPrimary;
       entity.createdAt = domain.block.id;
       entity.lastBlock = domain.block.id;
+      entity.isMigrated = domain.isMigrated;
       if (domain.name != EMPTY_STRING) {
         entity.name = domain.name;
       }
@@ -392,6 +393,7 @@ export namespace domain {
       rootNode.subdomainCount = BIG_INT_ZERO;
       rootNode.owner = ZERO_ADDRESS;
       rootNode.isPrimary = false;
+      rootNode.isMigrated = true;
       rootNode.createdAt = block.id;
       rootNode.lastBlock = block.id;
     }
@@ -582,6 +584,7 @@ export namespace domain {
       public id: string,
       public chainId: string,
       public block: AirBlock,
+      public isMigrated: boolean = false,
       public label: Bytes = Bytes.fromHexString(ZERO_ADDRESS),
       public name: string = EMPTY_STRING,
       public labelName: string = EMPTY_STRING,

@@ -44,6 +44,7 @@ type AirDomain @entity {
   owner: AirAccount!
   resolver: AirResolver
   ttl: BigInt
+  isMigrated: Boolean!
   isPrimary: Boolean! #- NA
   createdAt: AirBlock!
 	lastBlock: AirBlock #- NA
