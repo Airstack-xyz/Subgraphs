@@ -261,6 +261,7 @@ export namespace domain {
       entity.subdomainCount = BIG_INT_ZERO;
       entity.isPrimary = domain.isPrimary;
       entity.createdAt = domain.block.id;
+      entity.lastBlock = domain.block.id;
       if (domain.name != EMPTY_STRING) {
         entity.name = domain.name;
       }
@@ -287,7 +288,6 @@ export namespace domain {
         entity.ttl = domain.ttl;
       }
     }
-    entity.lastBlock = domain.block.id;
     entity.save();
     return entity as AirDomain;
   }
