@@ -75,6 +75,10 @@ export function handleNewOwner(event: NewOwnerEvent): void {
   )
 }
 
+/**
+ * @dev this functions maps the NewTransfer event to airstack trackDomainTransferTransaction
+ * @param event NewTransferEvent from ENS Registry
+ */
 export function handleTransfer(event: TransferEvent): void {
   // do data mapping
   let node = event.params.node.toHexString();
@@ -98,6 +102,10 @@ export function handleTransfer(event: TransferEvent): void {
   )
 }
 
+/**
+ * @dev this functions maps the NewResolver event to airstack trackDomainNewResolverTransaction
+ * @param event NewResolverEvent from ENS Registry
+ */
 export function handleNewResolver(event: NewResolverEvent): void {
   let airBlock = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
   airstack.domain.trackDomainNewResolverTransaction(
@@ -110,18 +118,20 @@ export function handleNewResolver(event: NewResolverEvent): void {
   )
 }
 
-// export function handleNewTTL(event: NewTTLEvent): void {
-//   let entity = new NewTTL(
-//     event.transaction.hash.concatI32(event.logIndex.toI32())
-//   )
-//   entity.node = event.params.node
-//   entity.ttl = event.params.ttl
-
-//   entity.blockNumber = event.block.number
-//   entity.blockTimestamp = event.block.timestamp
-//   entity.transactionHash = event.transaction.hash
-
-//   entity.save()
-// }
+/**
+ * @dev this functions maps the NewTTL event to airstack trackDomainNewTTLTransaction
+ * @param event NewTTLEvent from ENS Registry
+ */
+export function handleNewTTL(event: NewTTLEvent): void {
+  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  airstack.domain.trackDomainNewTTLTransaction(
+    event.params.node.toHexString(),
+    event.params.ttl,
+    ETHEREUM_MAINNET_ID,
+    block,
+    event.logIndex,
+    event.transaction.hash,
+  )
+}
 
 

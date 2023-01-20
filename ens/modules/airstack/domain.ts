@@ -18,9 +18,10 @@ import {
   AirDomainTransferTransaction,
   AirResolver,
   AirDomainNewResolverTransaction,
+  AirDomainNewTTLTransaction,
 } from "../../generated/schema";
 
-import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS, EMPTY_STRING } from "./utils";
+import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS, EMPTY_STRING } from "./utils";
 
 export namespace domain {
   /**
@@ -113,6 +114,15 @@ export namespace domain {
     }
   }
 
+  /**
+   * @dev This function tracks a new resolver transaction
+   * @param resolver resolver contract address
+   * @param node domain node
+   * @param chainId chain id
+   * @param block air block object
+   * @param transactionHash transaction hash
+   * @param logIndex event log index
+   */
   export function trackDomainNewResolverTransaction(
     resolver: string,
     node: string,
@@ -146,6 +156,36 @@ export namespace domain {
       block,
       transactionHash,
       logIndex,
+      domain,
+    )
+  }
+
+  export function trackDomainNewTTLTransaction(
+    node: string,
+    newTTL: BigInt,
+    chainId: string,
+    block: AirBlock,
+    logIndex: BigInt,
+    transactionHash: Bytes,
+  ): void {
+    // get domain
+    let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    // get previous ttl
+    let oldTTL: BigInt | null = BIG_INT_ZERO;
+    if (domain.ttl) {
+      oldTTL = domain.ttl;
+    }
+    // update domain ttl
+    domain.ttl = newTTL;
+    domain.save();
+    // create AirDomainNewTTLTransaction
+    getOrCreateAirDomainNewTTLTransaction(
+      transactionHash,
+      block.number,
+      logIndex,
+      oldTTL,
+      newTTL,
+      block,
       domain,
     )
   }
@@ -220,6 +260,52 @@ export namespace domain {
     return entity as AirResolver;
   }
 
+  /**
+   * @dev This function gets or creates a new AirDomainNewTTLTransaction entity
+   * @param transactionHash transaction hash
+   * @param blockHeight block number in the chain
+   * @param logIndex txn log index
+   * @param oldTTL old ttl value - can be 0
+   * @param newTTL new ttl value
+   * @param block air block object
+   * @param domain air domain object
+   * @returns returns a air domain new ttl transaction entity
+   */
+  export function getOrCreateAirDomainNewTTLTransaction(
+    transactionHash: Bytes,
+    blockHeight: BigInt,
+    logIndex: BigInt,
+    oldTTL: BigInt | null,
+    newTTL: BigInt,
+    block: AirBlock,
+    domain: AirDomain,
+  ): AirDomainNewTTLTransaction {
+    let id = createEntityId(transactionHash, blockHeight, logIndex);
+    let entity = new AirDomainNewTTLTransaction(id);
+    if (entity == null) {
+      entity = new AirDomainNewTTLTransaction(id);
+      entity.oldTTL = oldTTL;
+      entity.newTTL = newTTL;
+      entity.block = block.id;
+      entity.transactionHash = transactionHash.toHexString();
+      entity.tokenId = domain.tokenId;
+      entity.domain = domain.id;
+      entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, block);
+      entity.save();
+    }
+    return entity as AirDomainNewTTLTransaction;
+  }
+
+  /**
+   * @dev this function gets or creates a new AirDomainNewResolverTransaction entity
+   * @param previousResolverId previous resolver Id, can also be null
+   * @param newResolverId new resolver Id
+   * @param block air block entity
+   * @param transactionHash transaction hash
+   * @param logIndex log index
+   * @param domain air domain entity
+   * @returns AirDomainNewResolverTransaction entity
+   */
   export function getOrCreateAirDomainNewResolverTransaction(
     previousResolverId: string | null,
     newResolverId: string,
@@ -401,7 +487,7 @@ export namespace domain {
       entity.lastUpdatedAt = block.id;
     }
     entity.save();
-    return entity.count;
+    return entity.count as BigInt;
   }
 
   /**

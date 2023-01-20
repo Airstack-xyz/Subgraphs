@@ -92,7 +92,7 @@ type AirDomainNewResolverTransaction implements AirDomainEvent @entity {
 
 type AirDomainNewTTLTransaction implements AirDomainEvent @entity {
   id: ID!
-  oldTTL: BigInt! # - NA
+  oldTTL: BigInt # - NA
   newTTL: BigInt! # - ttl
   block: AirBlock!
   transactionHash: String!
