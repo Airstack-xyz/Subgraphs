@@ -8,7 +8,8 @@ import {
 import * as airstack from "../modules/airstack";
 import {
   BigInt,
-  ens
+  ens,
+  log,
 } from "@graphprotocol/graph-ts";
 import { BIGINT_ONE, BIG_INT_ZERO, ZERO_ADDRESS, ETHEREUM_MAINNET_ID, ROOT_NODE } from "../modules/airstack/utils";
 
@@ -68,6 +69,7 @@ export function handleNewResolver(event: NewResolverEvent): void {
  * @param event NewTTLEvent from ENS Registry
  */
 export function handleNewTTL(event: NewTTLEvent): void {
+  log.info("handleNewTTL: {} {} {} ", [event.params.ttl.toString(), event.params.node.toHexString(), event.transaction.hash.toHexString()]);
   let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
   airstack.domain.trackDomainNewTTLTransaction(
     event.params.node.toHexString(),
@@ -111,6 +113,8 @@ export function handleNewResolverOldRegistry(event: NewResolverEvent): void {
 export function handleNewTTLOldRegistry(event: NewTTLEvent): void {
   let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
   let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(event.params.node.toHexString(), ETHEREUM_MAINNET_ID, block));
+
+  log.info("handleNewTTLOldRegistry: {} {} {}", [event.params.ttl.toString(), event.params.node.toHexString(), event.transaction.hash.toHexString(), domain.isMigrated.toString()]);
   if (domain.isMigrated == false) {
     handleNewTTL(event);
   }

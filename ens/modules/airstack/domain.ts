@@ -137,7 +137,6 @@ export namespace domain {
     let previousResolverId = domain.resolver;
     // create new resolver
     let resolverEntity = getOrCreateAirResolver(domain, chainId, resolver);
-    log.info("resolverEntity: {}", [resolverEntity.address])
     // update domain resolver
     domain.resolver = resolverEntity.id;
     // update domain resolved address
@@ -175,6 +174,7 @@ export namespace domain {
     if (domain.ttl) {
       oldTTL = domain.ttl;
     }
+    log.info("new ttl {} txnHash {} node {} logIndex {} domainId {}", [newTTL.toString(), transactionHash.toHex(), node, logIndex.toString(), domain.id]);
     // update domain ttl
     domain.ttl = newTTL;
     domain.save();
