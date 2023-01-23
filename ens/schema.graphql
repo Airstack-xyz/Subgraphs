@@ -50,14 +50,6 @@ type AirDomain @entity {
 	lastBlock: AirBlock #- NA
 }
 
-interface AirDomainEvent {
-  block: AirBlock!
-  transactionHash: String!
-  tokenId: String # dec(labelhash) - NA
-  domain: AirDomain!
-  index: BigInt! # - NA
-}
-
 type AirDomainTransferTransaction implements AirDomainEvent @entity {
   id: ID!
   from: AirAccount! # - NA
@@ -128,6 +120,14 @@ type AirAddrChanged implements AirResolverEvent @entity {
   address: AirAccount!
 }
 
+interface AirDomainEvent {
+  block: AirBlock!
+  transactionHash: String!
+  tokenId: String # dec(labelhash) - NA
+  domain: AirDomain!
+  index: BigInt! # - NA
+}
+
 interface AirDomainRegistration  {
   cost: BigInt!
   paymentToken: AirToken!
@@ -148,6 +148,7 @@ type AirNameRegisteredTransaction implements AirDomainEvent & AirDomainRegistrat
   registrant: AirAccount!
   expiryBlock: AirBlock! # - expiryDate
   registrationBlock: AirBlock! # - block
+  labelName: String
 }
 
 type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration @entity {

@@ -19,9 +19,10 @@ import {
   AirResolver,
   AirDomainNewResolverTransaction,
   AirDomainNewTTLTransaction,
+  AirNameRegisteredTransaction,
 } from "../../generated/schema";
 
-import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS, EMPTY_STRING } from "./utils";
+import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS, EMPTY_STRING, expiryDateToBlockNumber } from "./utils";
 
 export namespace domain {
   /**
@@ -191,6 +192,51 @@ export namespace domain {
   }
 
   /**
+   * @dev This function tracks a domain name registered transaction
+   * @param transactionHash transaction hash
+   * @param blockHeight block number in the chain
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param logIndex txn log index
+   * @param domain air domain object
+   * @param chainId chain id
+   * @param registrantAddress registrant address 
+   * @param expiryDate expiry date
+   * @param labelName label name
+   * @param paymentToken payment token - optional
+   * @param cost cost - optional
+   */
+  export function trackNameRegisteredTransaction(
+    transactionHash: Bytes,
+    blockHeight: BigInt,
+    blockHash: string,
+    blockTimestamp: BigInt,
+    logIndex: BigInt,
+    domain: AirDomain,
+    chainId: string,
+    registrantAddress: string,
+    expiryDate: BigInt,
+    labelName: string | null,
+    paymentToken: string = ZERO_ADDRESS,
+    cost: BigInt = BIG_INT_ZERO,
+  ): void {
+    getOrCreateAirNameRegisteredTransaction(
+      transactionHash,
+      blockHeight,
+      blockHash,
+      blockTimestamp,
+      logIndex,
+      domain,
+      chainId,
+      registrantAddress,
+      expiryDate,
+      labelName,
+      paymentToken,
+      cost,
+    );
+  }
+
+  /**
    * @dev This function creates a resolver entity id
    * @param resolver domain resolver address
    * @param node domain node
@@ -230,6 +276,57 @@ export namespace domain {
    */
   function makeSubnode(node: Bytes, label: Bytes): string {
     return crypto.keccak256(node.concat(label)).toHexString()
+  }
+
+  /**
+   * @dev this function gets or creates an AirNameRegisteredTransaction entity
+   * @param transactionHash transaction hash
+   * @param blockHeight block number in the chain
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param logIndex txn log index
+   * @param domain air domain object
+   * @param chainId chain id
+   * @param registrantAddress registrant address 
+   * @param expiryDate expiry date
+   * @param labelName label name
+   * @param paymentToken payment token - optional
+   * @param cost cost - optional
+   * @returns an AirNameRegisteredTransaction entity
+   */
+  function getOrCreateAirNameRegisteredTransaction(
+    transactionHash: Bytes,
+    blockHeight: BigInt,
+    blockHash: string,
+    blockTimestamp: BigInt,
+    logIndex: BigInt,
+    domain: AirDomain,
+    chainId: string,
+    registrantAddress: string,
+    expiryDate: BigInt,
+    labelName: string | null,
+    paymentToken: string,
+    cost: BigInt,
+  ): AirNameRegisteredTransaction {
+    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let id = createEntityId(transactionHash, block.number, logIndex);
+    let entity = AirNameRegisteredTransaction.load(id);
+    if (entity == null) {
+      entity = new AirNameRegisteredTransaction(id);
+      entity.block = block.id;
+      entity.transactionHash = transactionHash.toHex();
+      entity.tokenId = domain.tokenId;
+      entity.domain = domain.id;
+      entity.index = updateAirEntityCounter(AIR_NAME_REGISTERED_TRANSACTION_COUNTER_ID, block);
+      entity.cost = cost;
+      entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
+      entity.registrant = getOrCreateAirAccount(chainId, registrantAddress).id;
+      // expiry block is not available in the event - expiryDate is available
+      // entity.expiryBlock = getOrCreateAirBlock(chainId, expiryDateToBlockNumber(expiryDate)).id;
+      entity.registrationBlock = block.id;
+      entity.labelName = labelName;
+    }
+    return entity as AirNameRegisteredTransaction;
   }
 
   /**
