@@ -16,8 +16,15 @@ import {
   NameRegistered as NameRegisteredEvent,
   NameRenewed as NameRenewedEvent,
   Transfer as TransferEvent
-} from '../generated/BaseRegistrar/BaseRegistrar'
-
+} from '../generated/BaseRegistrar/BaseRegistrar';
+import {
+  NameRegistered as ControllerNameRegisteredEventOld,
+} from '../generated/EthRegistrarControllerOld/EthRegistrarControllerOld';
+import {
+  NameRegistered as ControllerNameRegisteredEvent,
+  NameRenewed as ControllerNameRenewedEvent
+} from '../generated/EthRegistrarController/EthRegistrarController';
+import { AirBlock } from '../generated/schema';
 const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae");
 
 /**
@@ -96,3 +103,47 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
     event.params.expires,
   );
 }
+
+export function handleNameRegisteredByControllerOld(event: ControllerNameRegisteredEventOld): void {
+  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  setNamePreimage(event.params.name, event.params.label, event.params.cost, block);
+}
+
+export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
+  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  setNamePreimage(event.params.name, event.params.label, event.params.cost, block);
+}
+
+export function handleNameRenewedByController(event: ControllerNameRenewedEvent): void {
+  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  setNamePreimage(event.params.name, event.params.label, event.params.cost, block);
+}
+
+function setNamePreimage(name: string, label: Bytes, cost: BigInt, block: AirBlock): void {
+  const labelHash = crypto.keccak256(ByteArray.fromUTF8(name));
+  if (!labelHash.equals(label)) {
+    log.warning(
+      "Expected '{}' to hash to {}, but got {} instead. Skipping.",
+      [name, labelHash.toHex(), label.toHex()]
+    );
+    return;
+  }
+
+  if (name.indexOf(".") !== -1) {
+    log.warning("Invalid label '{}'. Skipping.", [name]);
+    return;
+  }
+
+  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(
+    crypto.keccak256(rootNode.concat(label)).toHex(),
+    ETHEREUM_MAINNET_ID,
+    block
+  ));
+
+  if (domain.labelName !== name) {
+    domain.labelName = name
+    domain.name = name + '.eth'
+    domain.save()
+  }
+}
+
