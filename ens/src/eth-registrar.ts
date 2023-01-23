@@ -56,7 +56,10 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
     ETHEREUM_MAINNET_ID,
     registrantAddress,
     event.params.expires,
+    label,
     labelName,
+    null,
+    null,
   );
 }
 

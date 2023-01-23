@@ -112,7 +112,7 @@ interface AirResolverEvent {
   transactionHash: Bytes!
 }
 
-type AirAddrChanged implements AirResolverEvent @entity {
+type AddrChanged implements AirResolverEvent @entity {
   id: ID!
   resolver: AirResolver!
   blockNumber: BigInt!
@@ -128,49 +128,53 @@ interface AirDomainEvent {
   index: BigInt! # - NA
 }
 
-interface AirDomainRegistration  {
-  cost: BigInt!
-  paymentToken: AirToken!
-  registrant: AirAccount!
-  expiryBlock: AirBlock!
+type AirRegistration @entity {
+  id: ID!
+  domain: AirDomain!
   registrationBlock: AirBlock!
+  expiryDate: BigInt!
+  cost: BigInt #cost of registration
+  paymentToken: AirToken #latest payment token for above cost
+  registrant: AirAccount!
+  labelName: String
+  lastBlock: AirBlock!
+  # events: [AirDomainRegistrationEvent!]! @derivedFrom(field: "registration")
 }
 
-type AirNameRegisteredTransaction implements AirDomainEvent & AirDomainRegistration @entity {
+interface AirDomainRegistrationEvent  {
+  registration: AirRegistration!
+  expiryDate: BigInt!
+}
+
+type AirNameRegisteredTransaction implements AirDomainEvent & AirDomainRegistrationEvent @entity {
   id: ID!
   block: AirBlock!
   transactionHash: String!
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
-  cost: BigInt!
-  paymentToken: AirToken! # - NA
-  registrant: AirAccount!
-  expiryBlock: AirBlock! # - expiryDate
-  registrationBlock: AirBlock! # - block
-  labelName: String
+  registration: AirRegistration!
+  expiryDate: BigInt! # - expiryDate to be added to registration
 }
 
-type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration @entity {
+type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistrationEvent @entity {
 	id: ID!
   block: AirBlock!
   transactionHash: String!
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
-  cost: BigInt!
-  paymentToken: AirToken! # - NA
-  registrant: AirAccount!
-  expiryBlock: AirBlock! # - expiryDate
-  registrationBlock: AirBlock! # - block
+  registration: AirRegistration!
+  expiryDate: BigInt! # - expiryDate to be added to registration
 }
-#where is this coming from? NameChanged?
+
+#where is this coming from? NameChanged or have to implement a resolver here
 type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   id: ID!
-  resolverAddress: String! #make sure toremove the old primary ens if changed
   block: AirBlock!
   transactionHash: String!
   tokenId: String # dec(labelhash) # - NA
   domain: AirDomain! # - name
   index: BigInt! # - NA
+  resolverAddress: String! #make sure to remove the old primary ens if changed
 }
