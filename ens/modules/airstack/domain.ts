@@ -528,7 +528,7 @@ export namespace domain {
    * @param domain Domain class object
    * @returns AirDomain entity
    */
-  export function CreateAirDomain(
+  export function getOrCreateAirDomain(
     domain: Domain,
   ): AirDomain {
     let entity = AirDomain.load(domain.id);
@@ -544,26 +544,6 @@ export namespace domain {
     }
     entity.save();
     return entity as AirDomain;
-  }
-
-  /**
-   * @dev this function gets or creates a new air root domain entity
-   * @param block air block for current transaction
-   * @returns root AirDomain entity
-   */
-  function getOrCreateAirRootDomain(block: AirBlock): AirDomain {
-    let rootNode = AirDomain.load(ROOT_NODE);
-    if (rootNode == null) {
-      rootNode = new AirDomain(ROOT_NODE);
-      rootNode.tokenId = BIG_INT_ZERO.toString();
-      rootNode.subdomainCount = BIG_INT_ZERO;
-      rootNode.owner = ZERO_ADDRESS;
-      rootNode.isPrimary = false;
-      rootNode.isMigrated = true;
-      rootNode.createdAt = block.id;
-      rootNode.lastBlock = block.id;
-    }
-    return rootNode as AirDomain;
   }
 
   /**
