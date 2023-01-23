@@ -191,9 +191,9 @@ dataSources:
     name: EthRegistrarController
     network: mainnet
     source:
-      address: "0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5"
+      address: "0x82994379B1Ec951C8E001DFceC2A7Ce8f4f39b97"
       abi: EthRegistrarController
-      startBlock: 9380471
+      startBlock: 11787529
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -228,6 +228,6 @@ dataSources:
           file: ./abis/EthRegistrarControllerOld.json
       eventHandlers:
         - event: NameRegistered(string,indexed bytes32,indexed address,uint256,uint256)
-          handler: handleNameRegisteredByController
-        - event: "NameRenewed(string,indexed bytes32,uint256,uint256)"
+          handler: handleNameRegisteredByControllerOld
+        - event: NameRenewed(string,indexed bytes32,uint256,uint256)
           handler: handleNameRenewedByController
