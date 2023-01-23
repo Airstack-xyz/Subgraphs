@@ -35,7 +35,7 @@ export namespace domain {
    * @param blockTimestamp block timestamp
    * @param logIndex txn log index
    * @param chainId chain id
-   * @param previousOwner specifies the previous owner of the domain
+   * @param previousOwnerId specifies the previous owner id of the domain
    * @param newOwner specifies the new owner of the domain
    * @param transactionHash transaction hash
    * @param tokenId token id
@@ -47,7 +47,7 @@ export namespace domain {
     blockTimestamp: BigInt,
     logIndex: BigInt,
     chainId: string,
-    previousOwner: string,
+    previousOwnerId: string,
     newOwner: string,
     transactionHash: Bytes,
     tokenId: string,
@@ -57,7 +57,7 @@ export namespace domain {
     let entity = AirDomainOwnerChangedTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainOwnerChangedTransaction(id);
-      entity.previousOwner = getOrCreateAirAccount(chainId, previousOwner).id;
+      entity.previousOwner = previousOwnerId;
       entity.newOwner = getOrCreateAirAccount(chainId, newOwner).id;
       entity.transactionHash = transactionHash.toHex();
       entity.tokenId = tokenId;
@@ -76,27 +76,24 @@ export namespace domain {
 
   /**
    * @dev This function tracks a domain transfer transaction
-   * @param previousOwnerId previous domain owner id
-   * @param newOwnerAddress new domain owner address
-   * @param blockHeight block number
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
-   * @param chainId chain id
-   * @param logIndex event log index - used to create unique id
-   * @param transactionHash transaction hash
-   * @param domain air domain object
+
    */
   export function trackDomainTransferTransaction(
-    previousOwnerId: string,
+    node: string,
+    chainId: string,
     newOwnerAddress: string,
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
-    chainId: string,
     logIndex: BigInt,
     transactionHash: Bytes,
-    domain: AirDomain,
   ): void {
+    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    let previousOwnerId = domain.owner;
+    if (previousOwnerId == null) {
+      previousOwnerId = getOrCreateAirAccount(chainId, ZERO_ADDRESS).id;
+    }
     let id = createEntityId(transactionHash, blockHeight, logIndex);
     let entity = AirDomainTransferTransaction.load(id);
     if (entity == null) {
@@ -131,10 +128,14 @@ export namespace domain {
     resolver: string,
     node: string,
     chainId: string,
-    block: AirBlock,
+    blockHeight: BigInt,
+    blockHash: string,
+    blockTimestamp: BigInt,
     transactionHash: Bytes,
     logIndex: BigInt,
   ): void {
+    // get block
+    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
     // get previous resolver
@@ -167,10 +168,14 @@ export namespace domain {
     node: string,
     newTTL: BigInt,
     chainId: string,
-    block: AirBlock,
+    blockHeight: BigInt,
+    blockHash: string,
+    blockTimestamp: BigInt,
     logIndex: BigInt,
     transactionHash: Bytes,
   ): void {
+    // get block
+    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
     // get previous ttl
