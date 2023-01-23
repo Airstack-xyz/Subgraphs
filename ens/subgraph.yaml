@@ -77,5 +77,5 @@ dataSources:
       eventHandlers:
         - event: NameRegistered(indexed uint256,indexed address,uint256)
           handler: handleNameRegistered
-        # - event: NameRenewed(indexed uint256,uint256)
-        #   handler: handleNameRenewed
+        - event: NameRenewed(indexed uint256,uint256)
+          handler: handleNameRenewed
