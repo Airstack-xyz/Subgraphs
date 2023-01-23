@@ -46,6 +46,7 @@ type AirDomain @entity {
   ttl: BigInt
   isMigrated: Boolean!
   isPrimary: Boolean! #- NA
+  expiryDate: BigInt!
   createdAt: AirBlock!
 	lastBlock: AirBlock #- NA
 }
@@ -128,21 +129,9 @@ interface AirDomainEvent {
   index: BigInt! # - NA
 }
 
-type AirRegistration @entity {
-  id: ID!
-  domain: AirDomain!
-  registrationBlock: AirBlock!
-  expiryDate: BigInt!
-  cost: BigInt #cost of registration
-  paymentToken: AirToken #latest payment token for above cost
-  registrant: AirAccount!
-  labelName: String
-  lastBlock: AirBlock!
-  # events: [AirDomainRegistrationEvent!]! @derivedFrom(field: "registration")
-}
-
 interface AirDomainRegistrationEvent  {
-  registration: AirRegistration!
+  cost: BigInt!
+  paymentToken: AirToken!
   expiryDate: BigInt!
 }
 
@@ -153,8 +142,10 @@ type AirNameRegisteredTransaction implements AirDomainEvent & AirDomainRegistrat
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
-  registration: AirRegistration!
-  expiryDate: BigInt! # - expiryDate to be added to registration
+  cost: BigInt!
+  paymentToken: AirToken!
+  registrant: AirAccount!
+  expiryDate: BigInt! # - expiryDate to be added to air domain
 }
 
 type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistrationEvent @entity {
@@ -164,8 +155,10 @@ type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
-  registration: AirRegistration!
-  expiryDate: BigInt! # - expiryDate to be added to registration
+  cost: BigInt!
+  paymentToken: AirToken!
+  renewer: AirAccount!
+  expiryDate: BigInt! # - expiryDate to be added to air domain
 }
 
 #where is this coming from? NameChanged or have to implement a resolver here
