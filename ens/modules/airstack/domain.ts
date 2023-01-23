@@ -382,7 +382,7 @@ export namespace domain {
       entity.address = getOrCreateAirAccount(chainId, resolver).id;
       entity.domain = domain.id;
     }
-    if (addr != "") {
+    if (addr != EMPTY_STRING) {
       entity.addr = getOrCreateAirAccount(chainId, addr).id;
     }
     entity.save();
@@ -414,9 +414,9 @@ export namespace domain {
     if (entity == null) {
       entity = new AirDomainNewTTLTransaction(id);
       entity.oldTTL = oldTTL;
+      entity.transactionHash = transactionHash.toHexString();
       entity.newTTL = newTTL;
       entity.block = block.id;
-      entity.transactionHash = transactionHash.toHexString();
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, block);
@@ -479,6 +479,7 @@ export namespace domain {
       entity.createdAt = domain.block.id;
       entity.lastBlock = domain.block.id;
       entity.isMigrated = domain.isMigrated;
+      entity.expiryDate = domain.expiryDate;
       if (domain.name != EMPTY_STRING) {
         entity.name = domain.name;
       }
@@ -713,6 +714,7 @@ export namespace domain {
       public id: string,
       public chainId: string,
       public block: AirBlock,
+      public expiryDate: BigInt = BIG_INT_ZERO,
       public isMigrated: boolean = false,
       public label: Bytes = Bytes.fromHexString(ZERO_ADDRESS),
       public name: string = EMPTY_STRING,
