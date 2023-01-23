@@ -373,7 +373,7 @@ export namespace domain {
     domain: AirDomain,
     chainId: string,
     resolver: string,
-    addr: string = "",
+    addr: string | null = EMPTY_STRING,
   ): AirResolver {
     let id = createResolverEntityId(resolver, domain.id);
     let entity = AirResolver.load(id);
@@ -382,8 +382,10 @@ export namespace domain {
       entity.address = getOrCreateAirAccount(chainId, resolver).id;
       entity.domain = domain.id;
     }
-    if (addr != EMPTY_STRING) {
+    if (addr != EMPTY_STRING && addr != null) {
       entity.addr = getOrCreateAirAccount(chainId, addr).id;
+    } else if (addr == null) {
+      entity.addr = null;
     }
     entity.save();
     return entity as AirResolver;
