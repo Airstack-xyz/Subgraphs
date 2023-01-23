@@ -1,5 +1,4 @@
 import {
-  ApprovalForAll as ApprovalForAllEvent,
   NewOwner as NewOwnerEvent,
   NewResolver as NewResolverEvent,
   NewTTL as NewTTLEvent,

@@ -100,25 +100,22 @@ type AirResolver @entity {
   domain: AirDomain
   address: AirAccount!           # Address of resolver contract
   addr: AirAccount             # Current value of addr record (per events)
-  # contentHash: Bytes        # Content hash, in binary format.
-  # texts: [String!]          # Set of observed text record keys
-  # coinTypes: [BigInt!]      # Set of observed SLIP-44 coin types
   events: [AirResolverEvent!]! @derivedFrom(field: "resolver")
 }
 
 interface AirResolverEvent {
   id: ID!                   # Concatenation of block number and log ID
   resolver: AirResolver!       # Used to derive relationships to Resolvers
-  blockNumber: BigInt!
-  transactionHash: Bytes!
+  block: AirBlock!
+  transactionHash: String!
 }
 
-type AddrChanged implements AirResolverEvent @entity {
+type AirAddrChanged implements AirResolverEvent @entity {
   id: ID!
   resolver: AirResolver!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  address: AirAccount!
+  block: AirBlock!
+  transactionHash: String!
+  addr: AirAccount!
 }
 
 interface AirDomainEvent {
@@ -130,8 +127,8 @@ interface AirDomainEvent {
 }
 
 interface AirDomainRegistrationEvent  {
-  cost: BigInt!
-  paymentToken: AirToken!
+  cost: BigInt
+  paymentToken: AirToken
   expiryDate: BigInt!
 }
 
@@ -142,8 +139,8 @@ type AirNameRegisteredTransaction implements AirDomainEvent & AirDomainRegistrat
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
-  cost: BigInt!
-  paymentToken: AirToken!
+  cost: BigInt
+  paymentToken: AirToken
   registrant: AirAccount!
   expiryDate: BigInt! # - expiryDate to be added to air domain
 }
@@ -155,8 +152,8 @@ type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
-  cost: BigInt!
-  paymentToken: AirToken!
+  cost: BigInt
+  paymentToken: AirToken
   renewer: AirAccount!
   expiryDate: BigInt! # - expiryDate to be added to air domain
 }
