@@ -458,7 +458,7 @@ export namespace domain {
    * @param transactionHash transaction hash
    * @param blockHeight block number in the chain
    * @param logIndex txn log index
-   * @param oldTTL old ttl value - can be 0
+   * @param oldTTL old ttl value - can be null
    * @param newTTL new ttl value
    * @param block air block object
    * @param domain air domain object
@@ -534,11 +534,11 @@ export namespace domain {
     let entity = AirDomain.load(domain.id);
     if (entity == null) {
       entity = new AirDomain(domain.id);
-      entity.tokenId = BIG_INT_ZERO.toString();
       entity.subdomainCount = BIG_INT_ZERO;
       entity.owner = getOrCreateAirAccount(domain.chainId, ZERO_ADDRESS).id;
       entity.isPrimary = false;
       entity.isMigrated = true;
+      entity.expiryDate = BIG_INT_ZERO;
       entity.createdAt = domain.block.id;
       entity.lastBlock = domain.block.id;
     }

@@ -175,7 +175,6 @@ function _handleNewOwner(event: NewOwnerEvent, isMigrated: boolean): void {
   domain.parent = parent.id;
   domain.labelhash = event.params.label;
   domain.isMigrated = isMigrated;
-  // below conversion is going into overflow
   domain.tokenId = BigInt.fromUnsignedBytes(event.params.label).toString();
   domain.lastBlock = airBlock.id;
   airstack.domain.recurseDomainDelete(domain, ETHEREUM_MAINNET_ID);

@@ -18,9 +18,6 @@ export function handleAddrChanged(event: AddrChangedEvent): void {
   if (domain.resolver == resolver.id) {
     domain.resolvedAddress = addr.id;
   }
-  if (domain.owner == addr.id) {
-    domain.isPrimary = true;
-  }
   domain.save()
 
   airstack.domain.trackAddrChangedTransaction(
