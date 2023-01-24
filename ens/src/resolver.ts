@@ -6,6 +6,10 @@ import {
 import { log } from "@graphprotocol/graph-ts";
 import { ETHEREUM_MAINNET_ID } from "../modules/airstack/utils";
 
+/**
+ * @dev this function maps the AddrChanged event from the Resolver contract
+ * @param event AddrChangedEvent from Resolver contract
+ */
 export function handleAddrChanged(event: AddrChangedEvent): void {
   log.info("handleAddrChanged: node {} addr {} resolver {} txhash {}", [event.params.node.toHexString(), event.params.a.toHexString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackAddrChangedTransaction(
@@ -21,6 +25,10 @@ export function handleAddrChanged(event: AddrChangedEvent): void {
   );
 }
 
+/**
+ * @dev this function maps the VersionChanged event from the Resolver contract
+ * @param event VersionChangedEvent from Resolver contract
+ */
 export function handleVersionChanged(event: VersionChangedEvent): void {
   log.info("handleVersionChanged: node {} resolver {} txhash {}", [event.params.node.toHexString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackResolverVersionChange(

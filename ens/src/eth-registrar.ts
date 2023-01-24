@@ -48,6 +48,10 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
   );
 }
 
+/**
+ * @dev this function maps the NameRenewed event from the BaseRegistrar contract
+ * @param event NameRenewedEvent from BaseRegistrar contract
+ */
 export function handleNameRenewed(event: NameRenewedEvent): void {
   log.info("handleNameRenewed: renewer {} label {} expiry {} txhash {}", [event.transaction.from.toHexString(), event.params.id.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackNameRenewedTransaction(
@@ -65,6 +69,10 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
   );
 }
 
+/**
+ * @dev this function maps the NameRegistered from the EthRegistrarControllerOld contract 
+ * @param event ControllerNameRegisteredEventOld from EthRegistrarControllerOld contract
+ */
 export function handleNameRegisteredByControllerOld(event: ControllerNameRegisteredEventOld): void {
   log.info("handleNameRegisteredByControllerOld: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackSetNamePreImage(
@@ -79,6 +87,10 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
   )
 }
 
+/**
+ * @dev this function maps the NameRegistered event from the EthRegistrarController contract
+ * @param event ControllerNameRegisteredEvent from EthRegistrarController contract
+ */
 export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
   log.info("handleNameRegisteredByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackSetNamePreImage(
@@ -93,6 +105,10 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
   )
 }
 
+/**
+ * @dev this function maps the NameRenewed event from the EthRegistrarController and EthRegistrarControllerOld contract
+ * @param event ControllerNameRenewedEvent from EthRegistrarController and EthRegistrarControllerOld contract
+ */
 export function handleNameRenewedByController(event: ControllerNameRenewedEvent): void {
   log.info("handleNameRenewedByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackSetNamePreImage(

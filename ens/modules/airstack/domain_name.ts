@@ -113,7 +113,15 @@ export namespace domain {
 
   /**
    * @dev This function tracks a domain transfer transaction
-
+   * @param node specifies the node of the domain
+   * @param chainId chain id
+   * @param newOwnerAddress specifies the new owner of the domain
+   * @param blockHeight block number in the chain
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param logIndex txn log index
+   * @param transactionHash transaction hash
+   * @param fromOldRegistry specifies if the event is from the old registry
    */
   export function trackDomainTransferTransaction(
     node: string,
@@ -333,6 +341,20 @@ export namespace domain {
     );
   }
 
+  /**
+   * @dev This function tracks a name renewal transaction
+   * @param transactionHash transaction hash
+   * @param blockHeight block number
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param chainId chain id
+   * @param logIndex txn log index
+   * @param cost cost of renewal
+   * @param renewer renewer address
+   * @param labelId label id
+   * @param rootNode root node byte array
+   * @param expiryDate expiry date
+   */
   export function trackNameRenewedTransaction(
     transactionHash: Bytes,
     blockHeight: BigInt,
@@ -375,6 +397,17 @@ export namespace domain {
     );
   }
 
+  /**
+   * @dev This function tracks set name preimage transaction
+   * @param name domain name
+   * @param label label hash
+   * @param cost cost - still needs to be recorded
+   * @param blockHeight block height
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param chainId chain id
+   * @param rootNode root node ByteArray
+   */
   export function trackSetNamePreImage(
     name: string,
     label: Bytes,
@@ -522,6 +555,7 @@ export namespace domain {
     }
   }
 
+  // end of track functions and start of get or create and helper functions
   /**
    * @dev This function gets or creates a AirAddrChanged entity
    * @param chainId chain id
@@ -533,7 +567,7 @@ export namespace domain {
    * @param domain domain
    * @returns AirAddrChanged entity
    */
-  export function getOrCreateAirAddrChanged(
+  function getOrCreateAirAddrChanged(
     chainId: string,
     logIndex: BigInt,
     resolver: AirResolver,
@@ -563,7 +597,7 @@ export namespace domain {
    * @param node domain node
    * @returns returns a resolver entity id
    */
-  export function createResolverEntityId(resolver: string, node: string): string {
+  function createResolverEntityId(resolver: string, node: string): string {
     return resolver.concat("-").concat(node);
   }
 
@@ -574,7 +608,7 @@ export namespace domain {
    * @param logIndex txn log index
    * @returns entity id in string format
    */
-  export function createEntityId(transactionHash: Bytes, blockHeight: BigInt, logIndex: BigInt): string {
+  function createEntityId(transactionHash: Bytes, blockHeight: BigInt, logIndex: BigInt): string {
     return transactionHash.toHex().concat("-").concat(blockHeight.toString()).concat('-').concat(logIndex.toString());
   }
 
@@ -584,7 +618,7 @@ export namespace domain {
    * @param label takes the label param from the event
    * @returns returns a air domain entity id
    */
-  export function createAirDomainEntityId(node: Bytes, label: Bytes): string {
+  function createAirDomainEntityId(node: Bytes, label: Bytes): string {
     let subnode = makeSubnode(node, label);
     return subnode;
   }
@@ -599,6 +633,19 @@ export namespace domain {
     return crypto.keccak256(node.concat(label)).toHexString()
   }
 
+  /**
+   * @dev this function gets or creates a new AirNameRenewedTransaction entity
+   * @param transactionHash transaction hash
+   * @param chainId chain id
+   * @param block air block
+   * @param logIndex log index
+   * @param domain air domain
+   * @param cost cost of the transaction
+   * @param paymentToken payment token
+   * @param renewer renewer address
+   * @param expiryDate expiry date of the domain
+   * @returns AirNameRenewedTransaction entity
+   */
   function getOrCreateAirNameRenewedTransaction(
     transactionHash: Bytes,
     chainId: string,
@@ -632,6 +679,17 @@ export namespace domain {
 
   /**
    * @dev this function gets or creates an AirNameRegisteredTransaction entity
+   * @param chainId chain id
+   * @param blockHeight block height
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param transactionHash transaction hash
+   * @param logIndex log index
+   * @param domain air domain
+   * @param cost cost of the transaction
+   * @param paymentToken payment token - can be null
+   * @param registrant registrant address
+   * @param expiryDate expiry date of the domain
    * @returns returns an AirNameRegisteredTransaction entity
    */
   function getOrCreateAirNameRegisteredTransaction(
@@ -669,14 +727,14 @@ export namespace domain {
   }
 
   /**
-   * @dev 
+   * @dev this function gets or creates an AirResolver entity
    * @param domain air domain entity
    * @param chainId chain id
    * @param resolver resolver contract address
    * @param addr address of addr record or null
-   * @returns 
+   * @returns AirResolver entity
    */
-  export function getOrCreateAirResolver(
+  function getOrCreateAirResolver(
     domain: AirDomain,
     chainId: string,
     resolver: string,
@@ -709,7 +767,7 @@ export namespace domain {
    * @param domain air domain object
    * @returns returns a air domain new ttl transaction entity
    */
-  export function getOrCreateAirDomainNewTTLTransaction(
+  function getOrCreateAirDomainNewTTLTransaction(
     transactionHash: Bytes,
     blockHeight: BigInt,
     logIndex: BigInt,
@@ -738,7 +796,7 @@ export namespace domain {
 
   /**
    * @dev this function gets or creates a new AirDomainNewResolverTransaction entity
-   * @param previousResolverId previous resolver Id, can also be null
+   * @param previousResolverId previous resolver Id - can be null
    * @param newResolverId new resolver Id
    * @param block air block entity
    * @param transactionHash transaction hash
@@ -746,7 +804,7 @@ export namespace domain {
    * @param domain air domain entity
    * @returns AirDomainNewResolverTransaction entity
    */
-  export function getOrCreateAirDomainNewResolverTransaction(
+  function getOrCreateAirDomainNewResolverTransaction(
     previousResolverId: string | null,
     newResolverId: string,
     block: AirBlock,
@@ -775,7 +833,7 @@ export namespace domain {
    * @param domain Domain class object
    * @returns AirDomain entity
    */
-  export function getOrCreateAirDomain(
+  function getOrCreateAirDomain(
     domain: Domain,
   ): AirDomain {
     let entity = AirDomain.load(domain.id);
@@ -798,9 +856,17 @@ export namespace domain {
 
   /**
    * @dev this function gets or creates a new air domain owner changed transaction entity
+   * @param block air block entity
+   * @param logIndex log index
+   * @param chainId chain id
+   * @param previousOwnerId previous owner id
+   * @param newOwner new owner address
+   * @param transactionHash transaction hash
+   * @param tokenId token id
+   * @param domain air domain
    * @returns AirDomainOwnerChangedTransaction entity
    */
-  export function getOrCreateAirDomainOwnerChangedTransaction(
+  function getOrCreateAirDomainOwnerChangedTransaction(
     block: AirBlock,
     logIndex: BigInt,
     chainId: string,
@@ -827,13 +893,13 @@ export namespace domain {
   }
 
   /**
-   * @dev this function deletes all subdomains of a given domain
+   * @dev this function does a recursive domain deletion for a particular domain
    * @param domain air domain entity
    * @param chainId chain id
    * @param block air block entity
    * @returns parent domain id
    */
-  export function recurseDomainDelete(domain: AirDomain, chainId: string, block: AirBlock): string | null {
+  function recurseDomainDelete(domain: AirDomain, chainId: string, block: AirBlock): string | null {
     if (domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
       if (domain.parent) {
         const parentDomain = getOrCreateAirDomain(new Domain(domain.parent!, chainId, block));
@@ -855,7 +921,7 @@ export namespace domain {
    * @param block air block object
    * @returns updated entity count
    */
-  export function updateAirEntityCounter(
+  function updateAirEntityCounter(
     id: string,
     block: AirBlock,
   ): BigInt {
@@ -888,7 +954,7 @@ export namespace domain {
    * @param slug subgraph slug
    * @param name subgraph name
    */
-  export function createAirMeta(
+  function createAirMeta(
     slug: string,
     name: string
     // should ideally have version also being passed from here
@@ -913,7 +979,7 @@ export namespace domain {
    * @param blockTimestamp block timestamp
    * @returns AirBlock entity
    */
-  export function getOrCreateAirBlock(
+  function getOrCreateAirBlock(
     chainId: string,
     blockHeight: BigInt,
     blockHash: string,
@@ -938,7 +1004,7 @@ export namespace domain {
    * @param address token address
    * @returns AirToken entity
    */
-  export function getOrCreateAirToken(chainID: string, address: string): AirToken {
+  function getOrCreateAirToken(chainID: string, address: string): AirToken {
     let entity = AirToken.load(chainID + "-" + address);
     if (entity == null) {
       entity = new AirToken(chainID + "-" + address);
@@ -950,11 +1016,11 @@ export namespace domain {
 
   /**
    * @dev this function gets or creates a new air account entity
-   * @param chainID chain id
+   * @param chainId chain id
    * @param address account address
    * @returns AirAccount entity
    */
-  export function getOrCreateAirAccount(chainId: string, address: string): AirAccount {
+  function getOrCreateAirAccount(chainId: string, address: string): AirAccount {
     if (address == EMPTY_STRING) {
       address = ZERO_ADDRESS;
     }
@@ -969,6 +1035,9 @@ export namespace domain {
 
   /**
    * @dev this class has all fields required to create a domain entity
+   * @param id domain id
+   * @param chainId chain id
+   * @param block air block entity
    */
   export class Domain {
     constructor(
