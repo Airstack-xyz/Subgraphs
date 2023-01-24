@@ -346,7 +346,7 @@ export namespace domain {
     ensName: string,
     chainId: string,
     node: Bytes,
-    from: AirAccount,
+    from: string,
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
@@ -357,7 +357,8 @@ export namespace domain {
       chainId,
       block,
     ));
-    if (domain.name == ensName && domain.owner == from.id) {
+    let fromAccount = getOrCreateAirAccount(chainId, from);
+    if (domain.name == ensName && domain.owner == fromAccount.id) {
       domain.isPrimary = true;
       domain.lastBlock = block.id;
     }
