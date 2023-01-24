@@ -789,6 +789,9 @@ export namespace domain {
       entity.createdAt = domain.block.id;
       entity.lastBlock = domain.block.id;
     }
+    if (entity.id == ROOT_NODE) {
+      entity.isMigrated = true;
+    }
     entity.save();
     return entity as AirDomain;
   }
