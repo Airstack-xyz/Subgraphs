@@ -1,2 +1,2 @@
 export * from "./nft";
-export * from "./domain";
+export * from "./domain_name";
