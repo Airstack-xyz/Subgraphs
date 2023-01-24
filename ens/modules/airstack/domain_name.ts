@@ -607,7 +607,7 @@ export namespace domain {
     expiryDate: BigInt,
   ): AirNameRenewedTransaction {
     let id = createEntityId(transactionHash, block.number, logIndex);
-    let entity = new AirNameRenewedTransaction(id);
+    let entity = AirNameRenewedTransaction.load(id);
     if (entity == null) {
       entity = new AirNameRenewedTransaction(id);
       entity.block = block.id;
@@ -715,7 +715,7 @@ export namespace domain {
     domain: AirDomain,
   ): AirDomainNewTTLTransaction {
     let id = createEntityId(transactionHash, blockHeight, logIndex);
-    let entity = new AirDomainNewTTLTransaction(id);
+    let entity = AirDomainNewTTLTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainNewTTLTransaction(id);
       entity.oldTTL = oldTTL;
@@ -823,16 +823,19 @@ export namespace domain {
    * @dev this function deletes all subdomains of a given domain
    * @param domain air domain entity
    * @param chainId chain id
+   * @param block air block entity
    * @returns parent domain id
    */
   export function recurseDomainDelete(domain: AirDomain, chainId: string, block: AirBlock): string | null {
     if (domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
-      const parentDomain = AirDomain.load(domain.parent!)
-      if (parentDomain != null) {
-        parentDomain.subdomainCount = parentDomain.subdomainCount.minus(BIGINT_ONE)
-        parentDomain.lastBlock = block.id;
-        parentDomain.save();
-        return recurseDomainDelete(parentDomain, chainId, block)
+      if (domain.parent) {
+        const parentDomain = getOrCreateAirDomain(new Domain(domain.parent!, chainId, block));
+        if (parentDomain) {
+          parentDomain.subdomainCount = parentDomain.subdomainCount.minus(BIGINT_ONE)
+          parentDomain.lastBlock = block.id;
+          parentDomain.save();
+          return recurseDomainDelete(parentDomain, chainId, block)
+        }
       }
       return null
     }
@@ -851,16 +854,25 @@ export namespace domain {
   ): BigInt {
     let entity = AirEntityCounter.load(id);
     if (entity == null) {
+      if (id == AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID) {
+        log.info('Creating AirDomainNewTTLTransaction counter blockNo {}', [block.number.toString()]);
+      }
       entity = new AirEntityCounter(id);
       entity.count = BIGINT_ONE;
       entity.createdAt = block.id;
       entity.lastUpdatedAt = block.id;
       createAirMeta(SUBGRAPH_SLUG, SUBGRAPH_NAME);
     } else {
+      if (id == AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID) {
+        log.info('updating AirDomainNewTTLTransaction counter old {} new {} blockNo {}', [entity.count.toString(), entity.count.plus(BIGINT_ONE).toString(), block.number.toString()]);
+      }
       entity.count = entity.count.plus(BIGINT_ONE);
       entity.lastUpdatedAt = block.id;
     }
     entity.save();
+    if (id == AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID) {
+      log.info('updated AirDomainNewTTLTransaction entity counter {} blockNo', [entity.count.toString(), block.number.toString()]);
+    }
     return entity.count as BigInt;
   }
 
