@@ -324,14 +324,41 @@ export namespace domain {
     );
   }
 
+  /**
+   * @dev This function tracks a addr changed transaction
+   * @param chainId chain id
+   * @param logIndex event log index
+   * @param resolverAddress resolver contract address
+   * @param addr new addr
+   * @param node domain node
+   * @param blockHeight block number
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param transactionHash transaction hash
+   */
   export function trackAddrChangedTransaction(
     chainId: string,
     logIndex: BigInt,
-    resolver: AirResolver,
-    block: AirBlock,
-    transactionHash: Bytes,
+    resolverAddress: string,
     addr: string,
+    node: string,
+    blockHeight: BigInt,
+    blockHash: string,
+    blockTimestamp: BigInt,
+    transactionHash: Bytes,
   ): void {
+    let addrAccount = getOrCreateAirAccount(chainId, addr);
+    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+
+    let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, addr);
+    resolver.domain = domain.id;
+    resolver.save()
+
+    if (domain.resolver == resolver.id) {
+      domain.resolvedAddress = addrAccount.id;
+    }
+    domain.save()
     getOrCreateAirAddrChanged(
       chainId,
       logIndex,
@@ -342,6 +369,42 @@ export namespace domain {
     );
   }
 
+  /**
+   * @dev This function tracks a resolver version change
+   * @param chainId chaind id
+   * @param blockHeight block number
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param node domain node
+   * @param resolverAddress resolver contract address
+   */
+  export function trackResolverVersionChange(
+    chainId: string,
+    blockHeight: BigInt,
+    blockHash: string,
+    blockTimestamp: BigInt,
+    node: string,
+    resolverAddress: string,
+  ): void {
+    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, null);
+    if (domain && domain.resolver === resolver.id) {
+      domain.resolvedAddress = null
+      domain.save()
+    }
+  }
+
+  /**
+   * @dev This function tracks a set primary domain transaction
+   * @param ensName ens name
+   * @param chainId chain id
+   * @param node domain node
+   * @param from event.from address
+   * @param blockHeight block number
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   */
   export function trackSetPrimaryDomainTransaction(
     ensName: string,
     chainId: string,
@@ -365,6 +428,16 @@ export namespace domain {
     domain.save();
   }
 
+  /**
+   * @dev This function gets or creates a AirAddrChanged entity
+   * @param chainId chain id
+   * @param logIndex event log index
+   * @param resolver resolver contract address
+   * @param block air block
+   * @param transactionHash transaction hash 
+   * @param addr new addr
+   * @returns AirAddrChanged entity
+   */
   export function getOrCreateAirAddrChanged(
     chainId: string,
     logIndex: BigInt,
@@ -398,7 +471,7 @@ export namespace domain {
   }
 
   /**
-   * @dev this function creates ids for entities
+   * @dev this is a generic function to create ids for entities
    * @param transactionHash transaction hash
    * @param blockHeight block number in the chain
    * @param logIndex txn log index

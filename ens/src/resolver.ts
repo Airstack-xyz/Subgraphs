@@ -3,39 +3,32 @@ import {
   AddrChanged as AddrChangedEvent,
   VersionChanged as VersionChangedEvent,
 } from "../generated/Resolver/Resolver";
+import { log } from "@graphprotocol/graph-ts";
 import { ETHEREUM_MAINNET_ID } from "../modules/airstack/utils";
 
 export function handleAddrChanged(event: AddrChangedEvent): void {
-  let addr = airstack.domain.getOrCreateAirAccount(ETHEREUM_MAINNET_ID, event.params.a.toHexString());
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(event.params.node.toHexString(), ETHEREUM_MAINNET_ID, block));
-
-  let resolver = airstack.domain.getOrCreateAirResolver(domain, ETHEREUM_MAINNET_ID, event.address.toHexString(), addr.address);
-  resolver.domain = domain.id;
-  resolver.address = airstack.domain.getOrCreateAirAccount(ETHEREUM_MAINNET_ID, event.address.toHexString()).id;
-  resolver.save()
-
-  if (domain.resolver == resolver.id) {
-    domain.resolvedAddress = addr.id;
-  }
-  domain.save()
-
+  log.info("handleAddrChanged: node {} addr {} resolver {} txhash {}", [event.params.node.toHexString(), event.params.a.toHexString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackAddrChangedTransaction(
     ETHEREUM_MAINNET_ID,
     event.logIndex,
-    resolver,
-    block,
+    event.address.toHexString(),
+    event.params.a.toHexString(),
+    event.params.node.toHexString(),
+    event.block.number,
+    event.block.hash.toHexString(),
+    event.block.timestamp,
     event.transaction.hash,
-    addr.address,
   );
 }
 
 export function handleVersionChanged(event: VersionChangedEvent): void {
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(event.params.node.toHexString(), ETHEREUM_MAINNET_ID, block));
-  let resolver = airstack.domain.getOrCreateAirResolver(domain, ETHEREUM_MAINNET_ID, event.address.toHexString(), null);
-  if (domain && domain.resolver === resolver.id) {
-    domain.resolvedAddress = null
-    domain.save()
-  }
+  log.info("handleVersionChanged: node {} resolver {} txhash {}", [event.params.node.toHexString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
+  airstack.domain.trackResolverVersionChange(
+    ETHEREUM_MAINNET_ID,
+    event.block.number,
+    event.block.hash.toHexString(),
+    event.block.timestamp,
+    event.params.node.toHexString(),
+    event.address.toHexString(),
+  );
 }
