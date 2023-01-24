@@ -96,7 +96,7 @@ export namespace domain {
     domain.isMigrated = isMigrated;
     domain.tokenId = tokenId;
     domain.lastBlock = block.id;
-    recurseDomainDelete(domain, chainId);
+    recurseDomainDelete(domain, chainId, block);
     domain.save();
 
     getOrCreateAirDomainOwnerChangedTransaction(
@@ -201,7 +201,7 @@ export namespace domain {
     }
     // do recursive domain delete
     domain.lastBlock = block.id;
-    recurseDomainDelete(domain, chainId);
+    recurseDomainDelete(domain, chainId, block);
     domain.save();
 
     // create new resolver transaction
@@ -242,6 +242,7 @@ export namespace domain {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    log.info("fromOldRegistry {} newttl {} blockNo {} domainId {} isMigrated {} txhash {}", [fromOldRegistry.toString(), newTTL.toString(), blockHeight.toString(), domain.id, domain.isMigrated.toString(), transactionHash.toHex()]);
     if (fromOldRegistry && domain.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
@@ -251,10 +252,11 @@ export namespace domain {
     if (domain.ttl) {
       oldTTL = domain.ttl;
     }
-    log.info("new ttl {} txnHash {} node {} logIndex {} domainId {}", [newTTL.toString(), transactionHash.toHex(), node, logIndex.toString(), domain.id]);
     // update domain ttl
     domain.ttl = newTTL;
+    domain.lastBlock = block.id;
     domain.save();
+    log.info("saved domain for new ttl {} txnHash {} node {} domainId {}", [newTTL.toString(), transactionHash.toHex(), node, domain.id]);
     // create AirDomainNewTTLTransaction
     getOrCreateAirDomainNewTTLTransaction(
       transactionHash,
@@ -313,6 +315,7 @@ export namespace domain {
       domain.labelName = labelName
     }
     domain.expiryDate = expiryDate;
+    domain.lastBlock = block.id;
     domain.save();
     // create name registered transaction
     getOrCreateAirNameRegisteredTransaction(
@@ -356,6 +359,7 @@ export namespace domain {
       block,
     ));
     domain.expiryDate = expiryDate;
+    domain.lastBlock = block.id;
     domain.save();
     // create name renewed transaction
     getOrCreateAirNameRenewedTransaction(
@@ -405,7 +409,8 @@ export namespace domain {
     if (domain.labelName !== name) {
       domain.labelName = name
       domain.name = name + '.eth'
-      domain.save()
+      domain.lastBlock = block.id;
+      domain.save();
     }
   }
 
@@ -442,8 +447,10 @@ export namespace domain {
 
     if (domain.resolver == resolver.id) {
       domain.resolvedAddress = addrAccount.id;
+      domain.lastBlock = block.id;
+      domain.save();
     }
-    domain.save()
+
     getOrCreateAirAddrChanged(
       chainId,
       logIndex,
@@ -476,7 +483,8 @@ export namespace domain {
     let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, null);
     if (domain && domain.resolver === resolver.id) {
       domain.resolvedAddress = null
-      domain.save()
+      domain.lastBlock = block.id;
+      domain.save();
     }
   }
 
@@ -509,8 +517,8 @@ export namespace domain {
     if (domain.name == ensName && domain.owner == fromAccount.id) {
       domain.isPrimary = true;
       domain.lastBlock = block.id;
+      domain.save();
     }
-    domain.save();
   }
 
   /**
@@ -718,7 +726,9 @@ export namespace domain {
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, block);
       entity.save();
+      log.info('Created new AirDomainNewTTLTransaction entity: {} txhash {}', [id, transactionHash.toHexString()])
     }
+    log.info('Loaded AirDomainNewTTLTransaction entity: {} txhash {}', [id, transactionHash.toHexString()])
     return entity as AirDomainNewTTLTransaction;
   }
 
@@ -815,13 +825,14 @@ export namespace domain {
    * @param chainId chain id
    * @returns parent domain id
    */
-  export function recurseDomainDelete(domain: AirDomain, chainId: string): string | null {
+  export function recurseDomainDelete(domain: AirDomain, chainId: string, block: AirBlock): string | null {
     if (domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
       const parentDomain = AirDomain.load(domain.parent!)
       if (parentDomain != null) {
         parentDomain.subdomainCount = parentDomain.subdomainCount.minus(BIGINT_ONE)
-        parentDomain.save()
-        return recurseDomainDelete(parentDomain, chainId)
+        parentDomain.lastBlock = block.id;
+        parentDomain.save();
+        return recurseDomainDelete(parentDomain, chainId, block)
       }
       return null
     }
