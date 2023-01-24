@@ -117,6 +117,7 @@ type AirAddrChanged implements AirResolverEvent @entity {
   transactionHash: String!
   addr: AirAccount!
   index: BigInt!
+  domain: AirDomain!
 }
 
 interface AirDomainEvent {

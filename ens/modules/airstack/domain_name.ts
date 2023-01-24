@@ -458,6 +458,7 @@ export namespace domain {
       block,
       transactionHash,
       addr,
+      domain,
     );
   }
 
@@ -529,6 +530,7 @@ export namespace domain {
    * @param block air block
    * @param transactionHash transaction hash 
    * @param addr new addr
+   * @param domain domain
    * @returns AirAddrChanged entity
    */
   export function getOrCreateAirAddrChanged(
@@ -538,6 +540,7 @@ export namespace domain {
     block: AirBlock,
     transactionHash: Bytes,
     addr: string,
+    domain: AirDomain,
   ): AirAddrChanged {
     let id = createEntityId(transactionHash, block.number, logIndex);
     let entity = AirAddrChanged.load(id);
@@ -547,6 +550,7 @@ export namespace domain {
       entity.block = block.id;
       entity.transactionHash = transactionHash.toHexString();
       entity.addr = getOrCreateAirAccount(chainId, addr).id;
+      entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_ADDR_CHANGED_TRANSACTION_COUNTER_ID, block);
       entity.save();
     }
