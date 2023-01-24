@@ -25,7 +25,7 @@ import {
   AirNameRenewedTransaction,
   AirAddrChanged,
 } from "../../generated/schema";
-
+import { uint256ToByteArray } from "./utils";
 import { AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_TRANSACTION_COUNTER_ID, AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, AIR_NAME_REGISTERED_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS, EMPTY_STRING } from "./utils";
 
 export namespace domain {
@@ -268,7 +268,18 @@ export namespace domain {
   }
 
   /**
-   * @dev This function tracks a domain name registered transaction
+   * @dev This function tracks a new name registered transaction
+   * @param transactionHash transaction hash
+   * @param blockHeight block number
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param logIndex event log index
+   * @param chainId chain id
+   * @param registrantAddress registrant address
+   * @param expiryDate domain expiry date
+   * @param cost domain registration cost
+   * @param labelId label id
+   * @param rootNode root node bye array
    */
   export function trackNameRegisteredTransaction(
     transactionHash: Bytes,
@@ -276,13 +287,33 @@ export namespace domain {
     blockHash: string,
     blockTimestamp: BigInt,
     logIndex: BigInt,
-    domain: AirDomain,
     chainId: string,
     registrantAddress: string,
     expiryDate: BigInt,
-    paymentToken: string | null,
     cost: BigInt,
+    labelId: BigInt,
+    rootNode: ByteArray,
   ): void {
+    // prep mapping data
+    let label = uint256ToByteArray(labelId);
+    let labelName = ens.nameByHash(label.toHexString());
+    let paymentToken: string | null = ZERO_ADDRESS;
+    if (cost <= BIG_INT_ZERO) {
+      paymentToken = null;
+    }
+    let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
+    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let domain = getOrCreateAirDomain(new Domain(
+      domainId,
+      chainId,
+      block,
+    ));
+
+    if (labelName != null) {
+      domain.labelName = labelName
+    }
+    domain.expiryDate = expiryDate;
+    domain.save();
     // create name registered transaction
     getOrCreateAirNameRegisteredTransaction(
       chainId,
@@ -301,15 +332,31 @@ export namespace domain {
 
   export function trackNameRenewedTransaction(
     transactionHash: Bytes,
+    blockHeight: BigInt,
+    blockHash: string,
+    blockTimestamp: BigInt,
     chainId: string,
-    block: AirBlock,
     logIndex: BigInt,
-    domain: AirDomain,
     cost: BigInt,
-    paymentToken: string | null,
     renewer: string,
+    labelId: BigInt,
+    rootNode: ByteArray,
     expiryDate: BigInt,
   ): void {
+    let label = uint256ToByteArray(labelId);
+    let paymentToken: string | null = ZERO_ADDRESS;
+    if (cost <= BIG_INT_ZERO) {
+      paymentToken = null;
+    }
+    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
+    let domain = getOrCreateAirDomain(new Domain(
+      domainId,
+      chainId,
+      block,
+    ));
+    domain.expiryDate = expiryDate;
+    domain.save();
     // create name renewed transaction
     getOrCreateAirNameRenewedTransaction(
       transactionHash,
@@ -322,6 +369,44 @@ export namespace domain {
       renewer,
       expiryDate,
     );
+  }
+
+  export function trackSetNamePreImage(
+    name: string,
+    label: Bytes,
+    cost: BigInt,
+    blockHeight: BigInt,
+    blockHash: string,
+    blockTimestamp: BigInt,
+    chainId: string,
+    rootNode: ByteArray,
+  ): void {
+    const labelHash = crypto.keccak256(ByteArray.fromUTF8(name));
+    if (!labelHash.equals(label)) {
+      log.warning(
+        "Expected '{}' to hash to {}, but got {} instead. Skipping.",
+        [name, labelHash.toHex(), label.toHex()]
+      );
+      return;
+    }
+
+    if (name.indexOf(".") !== -1) {
+      log.warning("Invalid label '{}'. Skipping.", [name]);
+      return;
+    }
+    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let domain = getOrCreateAirDomain(new Domain(
+      crypto.keccak256(rootNode.concat(label)).toHex(),
+      chainId,
+      block
+    ));
+
+    // we also need to track cost here, but we dont have a registration entity and thus, the cost cannot be tracked yet
+    if (domain.labelName !== name) {
+      domain.labelName = name
+      domain.name = name + '.eth'
+      domain.save()
+    }
   }
 
   /**

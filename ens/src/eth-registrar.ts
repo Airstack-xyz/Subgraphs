@@ -32,118 +32,77 @@ const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c
  * @param event NameRegisteredEvent from BaseRegistrar contract
  */
 export function handleNameRegistered(event: NameRegisteredEvent): void {
-  // prep mapping data
-  let registrantAddress = event.params.owner.toHexString();
-  let label = uint256ToByteArray(event.params.id);
-  let labelName = ens.nameByHash(label.toHexString());
-  let cost = event.transaction.value;
-  let paymentToken: string | null = ZERO_ADDRESS;
-  if (cost <= BIG_INT_ZERO) {
-    paymentToken = null;
-  }
-  let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(
-    domainId,
-    ETHEREUM_MAINNET_ID,
-    block,
-  ));
-
-  if (labelName != null) {
-    domain.labelName = labelName
-  }
-  domain.expiryDate = event.params.expires;
-  domain.save();
-
-  // send to airstack
+  log.info("handleNameRegistered: registrant {} label {} expiry {} txhash {}", [event.params.owner.toHexString(), event.params.id.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackNameRegisteredTransaction(
     event.transaction.hash,
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
     event.logIndex,
-    domain,
     ETHEREUM_MAINNET_ID,
-    registrantAddress,
+    event.params.owner.toHexString(),
     event.params.expires,
-    paymentToken,
-    cost,
+    event.transaction.value,
+    event.params.id,
+    rootNode,
   );
 }
 
 export function handleNameRenewed(event: NameRenewedEvent): void {
-  // prep mapping data
-  let label = uint256ToByteArray(event.params.id);
-  let renewer = event.transaction.from.toHexString();
-  let cost = event.transaction.value;
-  let paymentToken: string | null = ZERO_ADDRESS;
-  if (cost <= BIG_INT_ZERO) {
-    paymentToken = null;
-  }
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(
-    domainId,
-    ETHEREUM_MAINNET_ID,
-    block,
-  ));
-  domain.expiryDate = event.params.expires;
-  domain.save();
-
-  // send to airstack
+  log.info("handleNameRenewed: renewer {} label {} expiry {} txhash {}", [event.transaction.from.toHexString(), event.params.id.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackNameRenewedTransaction(
     event.transaction.hash,
+    event.block.number,
+    event.block.hash.toHexString(),
+    event.block.timestamp,
     ETHEREUM_MAINNET_ID,
-    block,
     event.logIndex,
-    domain,
-    cost,
-    paymentToken,
-    renewer,
+    event.transaction.value,
+    event.transaction.from.toHexString(),
+    event.params.id,
+    rootNode,
     event.params.expires,
   );
 }
 
 export function handleNameRegisteredByControllerOld(event: ControllerNameRegisteredEventOld): void {
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  setNamePreimage(event.params.name, event.params.label, event.params.cost, block);
+  log.info("handleNameRegisteredByControllerOld: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  airstack.domain.trackSetNamePreImage(
+    event.params.name,
+    event.params.label,
+    event.params.cost,
+    event.block.number,
+    event.block.hash.toHexString(),
+    event.block.timestamp,
+    ETHEREUM_MAINNET_ID,
+    rootNode,
+  )
 }
 
 export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  setNamePreimage(event.params.name, event.params.label, event.params.cost, block);
+  log.info("handleNameRegisteredByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  airstack.domain.trackSetNamePreImage(
+    event.params.name,
+    event.params.label,
+    event.params.cost,
+    event.block.number,
+    event.block.hash.toHexString(),
+    event.block.timestamp,
+    ETHEREUM_MAINNET_ID,
+    rootNode,
+  )
 }
 
 export function handleNameRenewedByController(event: ControllerNameRenewedEvent): void {
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  setNamePreimage(event.params.name, event.params.label, event.params.cost, block);
-}
-
-function setNamePreimage(name: string, label: Bytes, cost: BigInt, block: AirBlock): void {
-  const labelHash = crypto.keccak256(ByteArray.fromUTF8(name));
-  if (!labelHash.equals(label)) {
-    log.warning(
-      "Expected '{}' to hash to {}, but got {} instead. Skipping.",
-      [name, labelHash.toHex(), label.toHex()]
-    );
-    return;
-  }
-
-  if (name.indexOf(".") !== -1) {
-    log.warning("Invalid label '{}'. Skipping.", [name]);
-    return;
-  }
-
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(
-    crypto.keccak256(rootNode.concat(label)).toHex(),
+  log.info("handleNameRenewedByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  airstack.domain.trackSetNamePreImage(
+    event.params.name,
+    event.params.label,
+    event.params.cost,
+    event.block.number,
+    event.block.hash.toHexString(),
+    event.block.timestamp,
     ETHEREUM_MAINNET_ID,
-    block
-  ));
-
-  if (domain.labelName !== name) {
-    domain.labelName = name
-    domain.name = name + '.eth'
-    domain.save()
-  }
+    rootNode,
+  )
 }
-
