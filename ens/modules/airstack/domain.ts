@@ -6,6 +6,7 @@ import {
   crypto,
   log,
   ByteArray,
+  ens,
 } from "@graphprotocol/graph-ts";
 
 import {
@@ -35,11 +36,12 @@ export namespace domain {
    * @param blockTimestamp block timestamp
    * @param logIndex txn log index
    * @param chainId chain id
-   * @param previousOwnerId specifies the previous owner id of the domain
    * @param newOwner specifies the new owner of the domain
    * @param transactionHash transaction hash
-   * @param tokenId token id
-   * @param domain specifies the domain object linked with the owner change transaction
+   * @param isMigrated specifies if the domain is migrated
+   * @param node specifies the node of the domain
+   * @param label specifies the label of the domain
+   * @param fromOldRegistry specifies if the event is from the old registry
    */
   export function trackDomainOwnerChangedTransaction(
     blockHeight: BigInt,
@@ -47,31 +49,66 @@ export namespace domain {
     blockTimestamp: BigInt,
     logIndex: BigInt,
     chainId: string,
-    previousOwnerId: string,
     newOwner: string,
     transactionHash: Bytes,
-    tokenId: string,
-    domain: AirDomain,
+    isMigrated: boolean,
+    node: Bytes,
+    label: Bytes,
+    fromOldRegistry: boolean,
   ): void {
-    let id = createEntityId(transactionHash, blockHeight, logIndex);
-    let entity = AirDomainOwnerChangedTransaction.load(id);
-    if (entity == null) {
-      entity = new AirDomainOwnerChangedTransaction(id);
-      entity.previousOwner = previousOwnerId;
-      entity.newOwner = getOrCreateAirAccount(chainId, newOwner).id;
-      entity.transactionHash = transactionHash.toHex();
-      entity.tokenId = tokenId;
-      entity.domain = domain.id;
-      let airBlock = getOrCreateAirBlock(
-        chainId,
-        blockHeight,
-        blockHash,
-        blockTimestamp,
-      );
-      entity.block = airBlock.id;
-      entity.index = updateAirEntityCounter(AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, airBlock);
-      entity.save();
+    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let domainId = createAirDomainEntityId(node, label);
+    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, block));
+    if (fromOldRegistry && domain.isMigrated == true) {
+      // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
+      return;
     }
+    let previousOwnerId = domain.owner;
+    let parent = getOrCreateAirDomain(new Domain(
+      node.toHexString(),
+      chainId,
+      block,
+    ));
+    if (domain.parent == null && parent != null) {
+      parent.subdomainCount = parent.subdomainCount.plus(BIGINT_ONE);
+    }
+    if (domain.name == null) {
+      let labelName = ens.nameByHash(label.toHexString());
+      if (labelName != null) {
+        domain.labelName = labelName;
+      }
+      if (labelName === null) {
+        labelName = '[' + label.toHexString().slice(2) + ']';
+      }
+      if (node.toHexString() == ROOT_NODE) {
+        domain.name = labelName;
+      } else {
+        let name = parent.name;
+        if (labelName && name) {
+          domain.name = labelName + '.' + name;
+        }
+      }
+    }
+    let tokenId = BigInt.fromUnsignedBytes(label).toString();
+    domain.owner = getOrCreateAirAccount(chainId, newOwner).id;
+    domain.parent = parent.id;
+    domain.labelhash = label;
+    domain.isMigrated = isMigrated;
+    domain.tokenId = tokenId;
+    domain.lastBlock = block.id;
+    recurseDomainDelete(domain, chainId);
+    domain.save();
+
+    getOrCreateAirDomainOwnerChangedTransaction(
+      block,
+      logIndex,
+      chainId,
+      previousOwnerId,
+      newOwner,
+      transactionHash,
+      tokenId,
+      domain,
+    );
   }
 
   /**
@@ -87,9 +124,14 @@ export namespace domain {
     blockTimestamp: BigInt,
     logIndex: BigInt,
     transactionHash: Bytes,
+    fromOldRegistry: boolean,
   ): void {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    if (fromOldRegistry && domain.isMigrated == true) {
+      // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
+      return;
+    }
     let previousOwnerId = domain.owner;
     if (previousOwnerId == null) {
       previousOwnerId = getOrCreateAirAccount(chainId, ZERO_ADDRESS).id;
@@ -120,9 +162,12 @@ export namespace domain {
    * @param resolver resolver contract address
    * @param node domain node
    * @param chainId chain id
-   * @param block air block object
+   * @param blockHeight block number in the chain
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
    * @param transactionHash transaction hash
    * @param logIndex event log index
+   * @param fromOldRegistry specifies if the event is from the old registry
    */
   export function trackDomainNewResolverTransaction(
     resolver: string,
@@ -133,11 +178,17 @@ export namespace domain {
     blockTimestamp: BigInt,
     transactionHash: Bytes,
     logIndex: BigInt,
+    fromOldRegistry: boolean,
   ): void {
     // get block
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+
+    if (fromOldRegistry && node != ROOT_NODE && domain.isMigrated == true) {
+      // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
+      return;
+    }
     // get previous resolver
     let previousResolverId = domain.resolver;
     // create new resolver
@@ -164,6 +215,18 @@ export namespace domain {
     )
   }
 
+  /**
+   * @dev This function tracks a new TTL transaction
+   * @param node domain node
+   * @param newTTL new TTL
+   * @param chainId chain id
+   * @param blockHeight block number
+   * @param blockHash block hash
+   * @param blockTimestamp block timestamp
+   * @param logIndex event log index
+   * @param transactionHash transaction hash
+   * @param fromOldRegistry specifies if the event is from the old registry
+   */
   export function trackDomainNewTTLTransaction(
     node: string,
     newTTL: BigInt,
@@ -173,11 +236,16 @@ export namespace domain {
     blockTimestamp: BigInt,
     logIndex: BigInt,
     transactionHash: Bytes,
+    fromOldRegistry: boolean,
   ): void {
     // get block
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    if (fromOldRegistry && domain.isMigrated == true) {
+      // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
+      return;
+    }
     // get previous ttl
     let oldTTL: BigInt | null = BIG_INT_ZERO;
     if (domain.ttl) {
@@ -543,7 +611,7 @@ export namespace domain {
       entity.subdomainCount = BIG_INT_ZERO;
       entity.owner = getOrCreateAirAccount(domain.chainId, ZERO_ADDRESS).id;
       entity.isPrimary = false;
-      entity.isMigrated = true;
+      entity.isMigrated = false;
       entity.expiryDate = BIG_INT_ZERO;
       entity.createdAt = domain.block.id;
       entity.lastBlock = domain.block.id;
@@ -554,47 +622,29 @@ export namespace domain {
 
   /**
    * @dev this function gets or creates a new air domain owner changed transaction entity
-   * @param blockHeight block number in the chain
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
-   * @param logIndex txn log index 
-   * @param chainId chain id
-   * @param previousOwner specifies the previous owner of the domain
-   * @param newOwner specifies the new owner of the domain
-   * @param transactionHash transaction hash
-   * @param tokenId token id
-   * @param domain specifies the domain object linked with the owner change transaction 
    * @returns AirDomainOwnerChangedTransaction entity
    */
   export function getOrCreateAirDomainOwnerChangedTransaction(
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
+    block: AirBlock,
     logIndex: BigInt,
     chainId: string,
-    previousOwner: Address,
-    newOwner: Address,
+    previousOwnerId: string,
+    newOwner: string,
     transactionHash: Bytes,
     tokenId: string,
     domain: AirDomain,
   ): AirDomainOwnerChangedTransaction {
-    let id = createEntityId(transactionHash, blockHeight, logIndex);
+    let id = createEntityId(transactionHash, block.number, logIndex);
     let entity = AirDomainOwnerChangedTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainOwnerChangedTransaction(id);
-      entity.previousOwner = previousOwner.toHex();
-      entity.newOwner = newOwner.toHex();
+      entity.previousOwner = previousOwnerId;
+      entity.newOwner = getOrCreateAirAccount(chainId, newOwner).id;
       entity.transactionHash = transactionHash.toHex();
       entity.tokenId = tokenId;
       entity.domain = domain.id;
-      let airBlock = getOrCreateAirBlock(
-        chainId,
-        blockHeight,
-        blockHash,
-        blockTimestamp,
-      )
-      entity.block = airBlock.id;
-      entity.index = updateAirEntityCounter(AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, airBlock);
+      entity.block = block.id;
+      entity.index = updateAirEntityCounter(AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, block);
       entity.save();
     }
     return entity as AirDomainOwnerChangedTransaction;

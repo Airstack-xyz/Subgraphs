@@ -17,7 +17,20 @@ import { BIGINT_ONE, BIG_INT_ZERO, ZERO_ADDRESS, ETHEREUM_MAINNET_ID, ROOT_NODE 
  * @param event NewOwnerEvent from ENS Registry
  */
 export function handleNewOwner(event: NewOwnerEvent): void {
-  _handleNewOwner(event, true);
+  log.info("handleNewOwner: owner {} node {} label {} txhash {}", [event.params.owner.toHexString(), event.params.node.toHexString(), event.params.label.toHexString(), event.transaction.hash.toHexString()]);
+  airstack.domain.trackDomainOwnerChangedTransaction(
+    event.block.number,
+    event.block.hash.toHexString(),
+    event.block.timestamp,
+    event.logIndex,
+    ETHEREUM_MAINNET_ID,
+    event.params.owner.toHexString(),
+    event.transaction.hash,
+    true,
+    event.params.node,
+    event.params.label,
+    false,
+  );
 }
 
 /**
@@ -25,7 +38,7 @@ export function handleNewOwner(event: NewOwnerEvent): void {
  * @param event NewTransferEvent from ENS Registry
  */
 export function handleTransfer(event: TransferEvent): void {
-  // send to airstack
+  log.info("handleTransfer: owner {} node {} txhash {}", [event.params.owner.toHexString(), event.params.node.toHexString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackDomainTransferTransaction(
     event.params.node.toHexString(),
     ETHEREUM_MAINNET_ID,
@@ -35,6 +48,7 @@ export function handleTransfer(event: TransferEvent): void {
     event.block.timestamp,
     event.logIndex,
     event.transaction.hash,
+    false,
   )
 }
 
@@ -43,6 +57,7 @@ export function handleTransfer(event: TransferEvent): void {
  * @param event NewResolverEvent from ENS Registry
  */
 export function handleNewResolver(event: NewResolverEvent): void {
+  log.info("handleNewResolver: resolver {} node {} txhash {}", [event.params.resolver.toHexString(), event.params.node.toHexString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackDomainNewResolverTransaction(
     event.params.resolver.toHexString(),
     event.params.node.toHexString(),
@@ -52,6 +67,7 @@ export function handleNewResolver(event: NewResolverEvent): void {
     event.block.timestamp,
     event.transaction.hash,
     event.logIndex,
+    false,
   )
 }
 
@@ -70,6 +86,7 @@ export function handleNewTTL(event: NewTTLEvent): void {
     event.block.timestamp,
     event.logIndex,
     event.transaction.hash,
+    false,
   )
 }
 
@@ -78,11 +95,20 @@ export function handleNewTTL(event: NewTTLEvent): void {
  * @param event NewOwnerEvent from ENS Registry
  */
 export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(event.params.node.toHexString(), ETHEREUM_MAINNET_ID, block));
-  if (domain == null || domain.isMigrated == false) {
-    _handleNewOwner(event, false);
-  }
+  log.info("handleNewOwnerOldRegistry: owner {} node {} label {} txhash {}", [event.params.owner.toHexString(), event.params.node.toHexString(), event.params.label.toHexString(), event.transaction.hash.toHexString()]);
+  airstack.domain.trackDomainOwnerChangedTransaction(
+    event.block.number,
+    event.block.hash.toHexString(),
+    event.block.timestamp,
+    event.logIndex,
+    ETHEREUM_MAINNET_ID,
+    event.params.owner.toHexString(),
+    event.transaction.hash,
+    false,
+    event.params.node,
+    event.params.label,
+    true,
+  );
 }
 
 /**
@@ -90,12 +116,18 @@ export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
  * @param event NewResolverEvent from ENS Registry
  */
 export function handleNewResolverOldRegistry(event: NewResolverEvent): void {
-  let node = event.params.node.toHexString();
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(node, ETHEREUM_MAINNET_ID, block));
-  if (node == ROOT_NODE || domain.isMigrated == false) {
-    handleNewResolver(event)
-  }
+  log.info("handleNewResolverOldRegistry: resolver {} node {} txhash {}", [event.params.resolver.toHexString(), event.params.node.toHexString(), event.transaction.hash.toHexString()]);
+  airstack.domain.trackDomainNewResolverTransaction(
+    event.params.resolver.toHexString(),
+    event.params.node.toHexString(),
+    ETHEREUM_MAINNET_ID,
+    event.block.number,
+    event.block.hash.toHexString(),
+    event.block.timestamp,
+    event.transaction.hash,
+    event.logIndex,
+    true,
+  )
 }
 
 /**
@@ -103,13 +135,18 @@ export function handleNewResolverOldRegistry(event: NewResolverEvent): void {
  * @param event NewTTLEvent from ENS Registry
  */
 export function handleNewTTLOldRegistry(event: NewTTLEvent): void {
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(event.params.node.toHexString(), ETHEREUM_MAINNET_ID, block));
-
-  log.info("handleNewTTLOldRegistry: {} {} {}", [event.params.ttl.toString(), event.params.node.toHexString(), event.transaction.hash.toHexString(), domain.isMigrated.toString()]);
-  if (domain.isMigrated == false) {
-    handleNewTTL(event);
-  }
+  log.info("handleNewTTLOldRegistry: {} {} {}", [event.params.ttl.toString(), event.params.node.toHexString(), event.transaction.hash.toHexString()]);
+  airstack.domain.trackDomainNewTTLTransaction(
+    event.params.node.toHexString(),
+    event.params.ttl,
+    ETHEREUM_MAINNET_ID,
+    event.block.number,
+    event.block.hash.toHexString(),
+    event.block.timestamp,
+    event.logIndex,
+    event.transaction.hash,
+    true,
+  )
 }
 
 /**
@@ -117,74 +154,16 @@ export function handleNewTTLOldRegistry(event: NewTTLEvent): void {
  * @param event NewTransferEvent from ENS Registry
  */
 export function handleTransferOldRegistry(event: TransferEvent): void {
-  let block = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(event.params.node.toHexString(), ETHEREUM_MAINNET_ID, block));
-  if (domain.isMigrated == false) {
-    handleTransfer(event);
-  }
-}
-
-/**
- * @dev this functions maps the NewOwner event for new registry to airstack trackDomainOwnerChangedTransaction
- * @param event NewOwnerEvent from ENS Registry
- * @param isMigrated true if the domain is migrated to new registry
- */
-function _handleNewOwner(event: NewOwnerEvent, isMigrated: boolean): void {
-  // do data mapping
-  let node = event.params.node;
-  let airBlock = airstack.domain.getOrCreateAirBlock(ETHEREUM_MAINNET_ID, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  let domainId = airstack.domain.createAirDomainEntityId(node, event.params.label);
-  let domain = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(
-    domainId,
-    ETHEREUM_MAINNET_ID,
-    airBlock,
-  ));
-  let oldOwnerId = domain.owner;
-  let parent = airstack.domain.getOrCreateAirDomain(new airstack.domain.Domain(
+  log.info("handleTransferOldRegistry: owner {} node {} txhash {}", [event.params.owner.toHexString(), event.params.node.toHexString(), event.transaction.hash.toHexString()]);
+  airstack.domain.trackDomainTransferTransaction(
     event.params.node.toHexString(),
     ETHEREUM_MAINNET_ID,
-    airBlock,
-  ));
-  if (domain.parent == null && parent != null) {
-    parent.subdomainCount = parent.subdomainCount.plus(BIGINT_ONE);
-  }
-  if (domain.name == null) {
-    let label = ens.nameByHash(event.params.label.toHexString());
-    if (label != null) {
-      domain.labelName = label;
-    }
-    if (label === null) {
-      label = '[' + event.params.label.toHexString().slice(2) + ']';
-    }
-    if (node.toHexString() == ROOT_NODE) {
-      domain.name = label;
-    } else {
-      let name = parent.name;
-      if (label && name) {
-        domain.name = label + '.' + name;
-      }
-    }
-  }
-  domain.owner = airstack.domain.getOrCreateAirAccount(ETHEREUM_MAINNET_ID, event.params.owner.toHexString()).id;
-  domain.parent = parent.id;
-  domain.labelhash = event.params.label;
-  domain.isMigrated = isMigrated;
-  domain.tokenId = BigInt.fromUnsignedBytes(event.params.label).toString();
-  domain.lastBlock = airBlock.id;
-  airstack.domain.recurseDomainDelete(domain, ETHEREUM_MAINNET_ID);
-  domain.save();
-
-  // send to airstack
-  airstack.domain.trackDomainOwnerChangedTransaction(
+    event.params.owner.toHexString(),
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
     event.logIndex,
-    ETHEREUM_MAINNET_ID,
-    oldOwnerId,
-    event.params.owner.toHexString(),
     event.transaction.hash,
-    BIG_INT_ZERO.toString(),
-    domain,
+    true,
   )
 }
