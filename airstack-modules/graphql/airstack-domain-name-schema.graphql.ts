@@ -66,7 +66,7 @@ type AirDomainTransferTransaction implements AirDomainEvent @entity {
   domain: AirDomain!
   index: BigInt! # - NA
 }
-# what is the diff b/w transfer and domain owner changed
+
 type AirDomainOwnerChangedTransaction implements AirDomainEvent @entity {
   id: ID!
   previousOwner: AirAccount! # - NA
@@ -159,7 +159,6 @@ type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration
   expiryTimestamp: BigInt! # - expiryTimestamp to be added to air domain
 }
 
-#where is this coming from? NameChanged or have to implement a resolver here
 type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   id: ID!
   block: AirBlock!

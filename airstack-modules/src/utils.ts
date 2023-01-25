@@ -7,7 +7,7 @@ import domainNameSchema from "../graphql/airstack-domain-name-schema.graphql";
 
 import dexYamlString from "../yamls/dex.yaml";
 import nftMarketPlaceYamlString from "../yamls/nft-marketplace.yaml";
-import domainNameYamlString from "../yamls/domain.yaml";
+import domainNameYamlString from "../yamls/domain-name.yaml";
 
 export namespace Utils {
   export function isVerticalSupported(verticalName: string): boolean {
