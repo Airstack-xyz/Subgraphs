@@ -33,6 +33,10 @@ const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c
  */
 export function handleNameRegistered(event: NameRegisteredEvent): void {
   log.info("handleNameRegistered: registrant {} label {} expiry {} txhash {}", [event.params.owner.toHexString(), event.params.id.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString()]);
+  let paymentToken: string | null = null
+  if (event.transaction.value > BIG_INT_ZERO) {
+    paymentToken = ZERO_ADDRESS;
+  }
   airstack.domain.trackNameRegisteredTransaction(
     event.transaction.hash,
     event.block.number,
@@ -43,7 +47,7 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
     event.params.owner.toHexString(),
     event.params.expires,
     event.transaction.value,
-    ZERO_ADDRESS,
+    paymentToken,
     event.params.id,
     rootNode,
   );
@@ -55,6 +59,10 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
  */
 export function handleNameRenewed(event: NameRenewedEvent): void {
   log.info("handleNameRenewed: renewer {} label {} expiry {} txhash {}", [event.transaction.from.toHexString(), event.params.id.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString()]);
+  let paymentToken: string | null = null
+  if (event.transaction.value > BIG_INT_ZERO) {
+    paymentToken = ZERO_ADDRESS;
+  }
   airstack.domain.trackNameRenewedTransaction(
     event.transaction.hash,
     event.block.number,
@@ -63,7 +71,7 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
     ETHEREUM_MAINNET_ID,
     event.logIndex,
     event.transaction.value,
-    ZERO_ADDRESS,
+    paymentToken,
     event.transaction.from.toHexString(),
     event.params.id,
     rootNode,

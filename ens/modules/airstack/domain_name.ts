@@ -302,7 +302,7 @@ export namespace domain {
     registrantAddress: string,
     expiryTimestamp: BigInt,
     cost: BigInt,
-    paymentToken: string,
+    paymentToken: string | null,
     labelId: BigInt,
     rootNode: ByteArray,
   ): void {
