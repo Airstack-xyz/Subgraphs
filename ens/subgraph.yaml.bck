@@ -15,20 +15,6 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - AirAccount
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
       abis:
         - name: EnsRegistry
           file: ./abis/EnsRegistry.json
@@ -55,20 +41,6 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - AirAccount
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
       abis:
         - name: EnsRegistry
           file: ./abis/EnsRegistry.json
@@ -96,20 +68,6 @@ dataSources:
       file: ./src/eth-registrar.ts
       entities:
         - AirAccount
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
       abis:
         - name: BaseRegistrar
           file: ./abis/BaseRegistrar.json
@@ -132,20 +90,6 @@ dataSources:
       file: ./src/resolver.ts
       entities:
         - AirAccount
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
       abis:
         - name: Resolver
           file: ./abis/PublicResolver.json
@@ -168,20 +112,6 @@ dataSources:
       file: ./src/resolver.ts
       entities:
         - AirAccount
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
       abis:
         - name: Resolver
           file: ./abis/PublicResolver.json
@@ -204,20 +134,6 @@ dataSources:
       file: ./src/resolver.ts
       entities:
         - AirAccount
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
       abis:
         - name: Resolver
           file: ./abis/PublicResolver.json
@@ -240,20 +156,6 @@ dataSources:
       file: ./src/resolver.ts
       entities:
         - AirAccount
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
       abis:
         - name: Resolver
           file: ./abis/PublicResolver.json
@@ -276,20 +178,6 @@ dataSources:
       file: ./src/reverse-registrar.ts
       entities:
         - AirAccount
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
       abis:
         - name: ReverseRegistrar
           file: ./abis/ReverseRegistrar.json
@@ -310,20 +198,6 @@ dataSources:
       file: ./src/eth-registrar.ts
       entities:
         - AirAccount
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
       abis:
         - name: EthRegistrarController
           file: ./abis/EthRegistrarController.json
@@ -346,20 +220,6 @@ dataSources:
       file: ./src/eth-registrar.ts
       entities:
         - AirAccount
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
       abis:
         - name: EthRegistrarControllerOld
           file: ./abis/EthRegistrarControllerOld.json
