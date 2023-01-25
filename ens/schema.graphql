@@ -35,7 +35,7 @@ type AirDomain @entity {
   id: ID!                                               # The namehash of the name
   name: String                                          # The human readable name, if known. Unknown portions replaced with hash in square brackets (eg, foo.[1234].eth)
   labelName: String                                     # The human readable label name (imported from CSV), if known
-  labelhash: Bytes                                      # keccak256(labelName)
+  labelHash: Bytes                                      # keccak256(labelName)
   tokenId: String                                      # dec(labelHash)
   parent: AirDomain                                        # The namehash (id) of the parent name
   subdomains: [AirDomain!]! @derivedFrom(field: "parent")  # Can count domains from length of array
@@ -100,7 +100,7 @@ type AirResolver @entity {
   id: ID!                   # Concatenation of resolver address and namehash
   domain: AirDomain
   address: AirAccount!           # Address of resolver contract
-  addr: AirAccount             # Current value of addr record (per events)
+  resolvedAddress: AirAccount             # Current value of addr record (per events)
 }
 
 type AirAddrChanged implements AirDomainEvent @entity {

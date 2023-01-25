@@ -92,7 +92,7 @@ export namespace domain {
     let tokenId = BigInt.fromUnsignedBytes(label).toString();
     domain.owner = getOrCreateAirAccount(chainId, newOwner).id;
     domain.parent = parent.id;
-    domain.labelhash = label;
+    domain.labelHash = label;
     domain.isMigrated = isMigrated;
     domain.tokenId = tokenId;
     domain.lastBlock = block.id;
@@ -204,8 +204,8 @@ export namespace domain {
     // update domain resolver
     domain.resolver = resolverEntity.id;
     // update domain resolved address
-    if (resolverEntity.addr) {
-      domain.resolvedAddress = resolverEntity.addr;
+    if (resolverEntity.resolvedAddress) {
+      domain.resolvedAddress = resolverEntity.resolvedAddress;
     }
     // do recursive domain delete
     domain.lastBlock = block.id;
@@ -745,7 +745,7 @@ export namespace domain {
     domain: AirDomain,
     chainId: string,
     resolver: string,
-    addr: string | null = EMPTY_STRING,
+    resolvedAddress: string | null = EMPTY_STRING,
   ): AirResolver {
     let id = createResolverEntityId(resolver, domain.id);
     let entity = AirResolver.load(id);
@@ -754,10 +754,10 @@ export namespace domain {
       entity.address = getOrCreateAirAccount(chainId, resolver).id;
       entity.domain = domain.id;
     }
-    if (addr && addr != EMPTY_STRING) {
-      entity.addr = getOrCreateAirAccount(chainId, addr).id;
-    } else if (addr == null) {
-      entity.addr = null;
+    if (resolvedAddress && resolvedAddress != EMPTY_STRING) {
+      entity.resolvedAddress = getOrCreateAirAccount(chainId, resolvedAddress).id;
+    } else if (resolvedAddress == null) {
+      entity.resolvedAddress = null;
     }
     entity.save();
     return entity as AirResolver;
