@@ -52,6 +52,8 @@ type AirDomain @entity {
   isPrimary: Boolean! #- NA
   expiryTimestamp: BigInt!
   registrationCost: BigInt!                            # Cost of domain registration in wei
+  paymentToken: AirToken                              # Token used to pay for registration
+  tokenAddress: String!                               # Domain (eg: ens) token contract address
   createdAt: AirBlock!
 	lastBlock: AirBlock #- NA
 }
@@ -159,6 +161,7 @@ type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration
   expiryTimestamp: BigInt! # - expiryTimestamp to be added to air domain
 }
 
+#where is this coming from? NameChanged or have to implement a resolver here
 type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   id: ID!
   block: AirBlock!

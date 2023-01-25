@@ -1,3 +1,6 @@
+#
+# --Airstack Schemas--
+
 type AirBlock @entity {
  id: ID! #chain-number
  hash: String!

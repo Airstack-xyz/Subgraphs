@@ -139,6 +139,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
             isMigrated: boolean,
             node: Bytes,
             label: Bytes,
+            tokenAddress: string,
             fromOldRegistry: boolean,
           )
 
@@ -152,6 +153,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockTimestamp: BigInt,
           logIndex: BigInt,
           transactionHash: Bytes,
+          tokenAddress: string,
           fromOldRegistry: boolean,
         )
 
@@ -165,6 +167,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockTimestamp: BigInt,
           transactionHash: Bytes,
           logIndex: BigInt,
+          tokenAddress: string,
           fromOldRegistry: boolean,
         )
 
@@ -178,6 +181,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockTimestamp: BigInt,
           logIndex: BigInt,
           transactionHash: Bytes,
+          tokenAddress: string,
           fromOldRegistry: boolean,
         )
 
@@ -195,6 +199,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           paymentToken: string | null,
           labelId: BigInt,
           rootNode: ByteArray,
+          tokenAddress: string,
         )
 
         6. Track name renewed transaction
@@ -211,6 +216,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           labelId: BigInt,
           rootNode: ByteArray,
           expiryTimestamp: BigInt,
+          tokenAddress: string,
         )
 
         7. Track set name preimage transaction
@@ -223,6 +229,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockTimestamp: BigInt,
           chainId: string,
           rootNode: ByteArray,
+          tokenAddress: string,
           fromRegistrationEvent: boolean,
         )
 
@@ -237,6 +244,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockHash: string,
           blockTimestamp: BigInt,
           transactionHash: Bytes,
+          tokenAddress: string,
         )
 
         9. Track resolver version changed transaction
@@ -247,6 +255,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockTimestamp: BigInt,
           node: string,
           resolverAddress: string,
+          tokenAddress: string,
         )
 
         10. Track set primary domain transaction
@@ -258,6 +267,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockHeight: BigInt,
           blockHash: string,
           blockTimestamp: BigInt,
+          tokenAddress: string,
         )
 
         For documentation and examples please check: https://github.com/Airstack-xyz/airstack-subgraph/tree/task/npx-scripts
