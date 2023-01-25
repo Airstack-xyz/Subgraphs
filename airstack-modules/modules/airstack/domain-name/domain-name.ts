@@ -250,7 +250,6 @@ export namespace domain {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
-    log.info("fromOldRegistry {} newttl {} blockNo {} domainId {} isMigrated {} txhash {}", [fromOldRegistry.toString(), newTTL.toString(), blockHeight.toString(), domain.id, domain.isMigrated.toString(), transactionHash.toHex()]);
     if (fromOldRegistry && domain.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
@@ -264,7 +263,6 @@ export namespace domain {
     domain.ttl = newTTL;
     domain.lastBlock = block.id;
     domain.save();
-    log.info("saved domain for new ttl {} txnHash {} node {} domainId {}", [newTTL.toString(), transactionHash.toHex(), node, domain.id]);
     // create AirDomainNewTTLTransaction
     getOrCreateAirDomainNewTTLTransaction(
       transactionHash,
@@ -795,9 +793,7 @@ export namespace domain {
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, block);
       entity.save();
-      log.info('Created new AirDomainNewTTLTransaction entity: {} txhash {}', [id, transactionHash.toHexString()])
     }
-    log.info('Loaded AirDomainNewTTLTransaction entity: {} txhash {}', [id, transactionHash.toHexString()])
     return entity as AirDomainNewTTLTransaction;
   }
 
@@ -935,25 +931,16 @@ export namespace domain {
   ): BigInt {
     let entity = AirEntityCounter.load(id);
     if (entity == null) {
-      if (id == AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID) {
-        log.info('Creating AirDomainNewTTLTransaction counter blockNo {}', [block.number.toString()]);
-      }
       entity = new AirEntityCounter(id);
       entity.count = BIGINT_ONE;
       entity.createdAt = block.id;
       entity.lastUpdatedAt = block.id;
       createAirMeta(SUBGRAPH_SLUG, SUBGRAPH_NAME);
     } else {
-      if (id == AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID) {
-        log.info('updating AirDomainNewTTLTransaction counter old {} new {} blockNo {}', [entity.count.toString(), entity.count.plus(BIGINT_ONE).toString(), block.number.toString()]);
-      }
       entity.count = entity.count.plus(BIGINT_ONE);
       entity.lastUpdatedAt = block.id;
     }
     entity.save();
-    if (id == AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID) {
-      log.info('updated AirDomainNewTTLTransaction entity counter {} blockNo', [entity.count.toString(), block.number.toString()]);
-    }
     return entity.count as BigInt;
   }
 
