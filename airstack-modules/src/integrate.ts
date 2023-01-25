@@ -202,11 +202,14 @@ function copyAirstackModules(vertical: Vertical): string {
     case Vertical.NftMarketplace:
       sourceDir = path.resolve(__dirname, '../../modules/airstack/nft-marketplace');
       targetDir = path.resolve(__dirname, '../../../../../modules/airstack/nft-marketplace');
+      break;
     case Vertical.DomainName:
       sourceDir = path.resolve(__dirname, '../../modules/airstack/domain-name');
       targetDir = path.resolve(__dirname, '../../../../../modules/airstack/domain-name');
+      break;
     default:
-      console.error("Invalid vertical");
+      console.error("Invalid vertical, please check the vertical name.");
+      process.exit(1); // an error occurred
       break;
   }
 
