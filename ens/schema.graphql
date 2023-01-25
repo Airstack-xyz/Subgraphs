@@ -100,24 +100,18 @@ type AirResolver @entity {
   domain: AirDomain
   address: AirAccount!           # Address of resolver contract
   addr: AirAccount             # Current value of addr record (per events)
-  events: [AirResolverEvent!]! @derivedFrom(field: "resolver")
 }
 
-interface AirResolverEvent {
-  id: ID!                   # Concatenation of block number and log ID
-  resolver: AirResolver!       # Used to derive relationships to Resolvers
-  block: AirBlock!
-  transactionHash: String!
-}
-
-type AirAddrChanged implements AirResolverEvent @entity {
+type AirAddrChanged implements AirDomainEvent @entity {
   id: ID!
   resolver: AirResolver!
+  previousResolvedAddress: AirAccount # previous addr record
+  newResolvedAddress: AirAccount! # new addr record
   block: AirBlock!
   transactionHash: String!
-  addr: AirAccount!
-  index: BigInt!
+  tokenId: String # dec(labelhash) - NA
   domain: AirDomain!
+  index: BigInt! # - NA
 }
 
 interface AirDomainEvent {

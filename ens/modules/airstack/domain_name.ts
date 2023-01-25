@@ -473,7 +473,7 @@ export namespace domain {
     let addrAccount = getOrCreateAirAccount(chainId, addr);
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
-
+    let previousResolvedAddressId = domain.resolvedAddress;
     let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, addr);
     resolver.domain = domain.id;
     resolver.save()
@@ -490,6 +490,7 @@ export namespace domain {
       resolver,
       block,
       transactionHash,
+      previousResolvedAddressId,
       addr,
       domain,
     );
@@ -563,7 +564,8 @@ export namespace domain {
    * @param resolver resolver contract address
    * @param block air block
    * @param transactionHash transaction hash 
-   * @param addr new addr
+   * @param previousResolvedAddressId air account id of previous resolved address
+   * @param newResolvedAddress new resolved address
    * @param domain domain
    * @returns AirAddrChanged entity
    */
@@ -573,7 +575,8 @@ export namespace domain {
     resolver: AirResolver,
     block: AirBlock,
     transactionHash: Bytes,
-    addr: string,
+    previousResolvedAddressId: string | null,
+    newResolvedAddress: string,
     domain: AirDomain,
   ): AirAddrChanged {
     let id = createEntityId(transactionHash, block.number, logIndex);
@@ -583,7 +586,8 @@ export namespace domain {
       entity.resolver = resolver.id;
       entity.block = block.id;
       entity.transactionHash = transactionHash.toHexString();
-      entity.addr = getOrCreateAirAccount(chainId, addr).id;
+      entity.previousResolvedAddress = previousResolvedAddressId;
+      entity.newResolvedAddress = getOrCreateAirAccount(chainId, newResolvedAddress).id;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_ADDR_CHANGED_TRANSACTION_COUNTER_ID, block);
       entity.save();
