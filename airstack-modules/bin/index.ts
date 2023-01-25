@@ -105,6 +105,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
       case Vertical.NftMarketplace:
         console.log(`
         Integration done. Please call the following functions.
+        
         1. Track NFT trade transaction
         trackNFTSaleTransactions(
           chainID: string,
