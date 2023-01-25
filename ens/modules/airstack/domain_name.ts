@@ -361,16 +361,13 @@ export namespace domain {
     chainId: string,
     logIndex: BigInt,
     cost: BigInt,
+    paymentToken: string | null,
     renewer: string,
     labelId: BigInt,
     rootNode: ByteArray,
     expiryTimestamp: BigInt,
   ): void {
     let label = uint256ToByteArray(labelId);
-    let paymentToken: string | null = ZERO_ADDRESS;
-    if (cost <= BIG_INT_ZERO) {
-      paymentToken = null;
-    }
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
     let domain = getOrCreateAirDomain(new Domain(

@@ -63,6 +63,7 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
     ETHEREUM_MAINNET_ID,
     event.logIndex,
     event.transaction.value,
+    ZERO_ADDRESS,
     event.transaction.from.toHexString(),
     event.params.id,
     rootNode,
