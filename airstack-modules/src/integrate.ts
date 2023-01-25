@@ -36,9 +36,7 @@ export async function integrate(
           .then(() => {
             const targetDirectory = copyAirstackModules(vertical as Vertical);
 
-            if (vertical === Vertical.NftMarketplace) {
-              getAirMetaDetails();
-            }
+            getAirMetaDetails(vertical as Vertical);
 
             const arrayOfFiles: Array<string> = []
             getAllFiles(targetDirectory, arrayOfFiles)
@@ -257,7 +255,7 @@ export var SUBGRAPH_NAME = "";
 export var SUBGRAPH_VERSION = "";
 export var SUBGRAPH_SLUG = "";
 
-function getAirMetaDetails() {
+function getAirMetaDetails(vertical: Vertical) {
   while (SUBGRAPH_NAME.trim() === "") {
     let subgraphName: string = readlineSync.question("Enter the name of the subgraph: ");
     SUBGRAPH_NAME = subgraphName;
@@ -270,11 +268,22 @@ function getAirMetaDetails() {
     let subgraphSlug: string = readlineSync.question("Enter the slug of the subgraph: ");
     SUBGRAPH_SLUG = subgraphSlug;
   }
-  const targetFile = path.resolve(__dirname, '../../../../../modules/airstack/utils.ts');
+  let targetFile = path.resolve(__dirname, '../../../../../modules/airstack/utils.ts');
+  switch (vertical) {
+    case Vertical.NftMarketplace:
+      targetFile = path.resolve(__dirname, '../../../../../modules/airstack/nft-marketplace/utils.ts');
+      break;
+    case Vertical.DomainName:
+      targetFile = path.resolve(__dirname, '../../../../../modules/airstack/domain-name/utils.ts');
+      break;
+    default:
+      console.error("Invalid vertical");
+      break;
+  }
   let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
-  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, "");
-  fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, "");
-  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, "");
-  fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
+  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, `export const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, `export const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`);
+  // fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
   fs.writeFileSync(targetFile, fileContent, { encoding: "utf8" });
 }
