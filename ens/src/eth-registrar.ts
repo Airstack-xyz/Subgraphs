@@ -85,10 +85,15 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
  */
 export function handleNameRegisteredByControllerOld(event: ControllerNameRegisteredEventOld): void {
   log.info("handleNameRegisteredByControllerOld: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  let paymentToken: string | null = null
+  if (event.params.cost > BIG_INT_ZERO) {
+    paymentToken = ZERO_ADDRESS;
+  }
   airstack.domain.trackSetNamePreImage(
     event.params.name,
     event.params.label,
     event.params.cost,
+    paymentToken,
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
@@ -104,10 +109,15 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
  */
 export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
   log.info("handleNameRegisteredByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  let paymentToken: string | null = null
+  if (event.params.cost > BIG_INT_ZERO) {
+    paymentToken = ZERO_ADDRESS;
+  }
   airstack.domain.trackSetNamePreImage(
     event.params.name,
     event.params.label,
     event.params.cost,
+    paymentToken,
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
@@ -123,10 +133,15 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
  */
 export function handleNameRenewedByController(event: ControllerNameRenewedEvent): void {
   log.info("handleNameRenewedByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  let paymentToken: string | null = null
+  if (event.params.cost > BIG_INT_ZERO) {
+    paymentToken = ZERO_ADDRESS;
+  }
   airstack.domain.trackSetNamePreImage(
     event.params.name,
     event.params.label,
     event.params.cost,
+    paymentToken,
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,

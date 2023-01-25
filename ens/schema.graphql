@@ -1,6 +1,3 @@
-#
-# --Airstack Schemas--
-
 type AirBlock @entity {
  id: ID! #chain-number
  hash: String!
@@ -51,6 +48,8 @@ type AirDomain @entity {
   isPrimary: Boolean! #- NA
   expiryTimestamp: BigInt!
   registrationCost: BigInt!                            # Cost of domain registration in wei
+  paymentToken: AirToken                              # Token used to pay for registration
+  # tokenAddress: String!                               # Domain (eg: ens) token contract address
   createdAt: AirBlock!
 	lastBlock: AirBlock #- NA
 }

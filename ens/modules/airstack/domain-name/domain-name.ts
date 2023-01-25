@@ -395,6 +395,7 @@ export namespace domain {
    * @param name domain name
    * @param label label hash
    * @param cost cost - still needs to be recorded
+   * @param paymentToken payment token address - can be null
    * @param blockHeight block height
    * @param blockHash block hash
    * @param blockTimestamp block timestamp
@@ -406,6 +407,7 @@ export namespace domain {
     name: string,
     label: Bytes,
     cost: BigInt,
+    paymentToken: string | null,
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
@@ -433,9 +435,10 @@ export namespace domain {
       block
     ));
 
-    // tracking registration cost in domain entity  - this is a temporary solution
+    // tracking registration cost in domain entity  - renewal cost is not being tracked yet
     if (fromRegistrationEvent) {
       domain.registrationCost = cost;
+      domain.paymentToken = paymentToken;
       domain.lastBlock = block.id;
     }
     if (domain.labelName !== name) {
