@@ -8,8 +8,8 @@ import {
   log
 } from '@graphprotocol/graph-ts'
 // 
-import { byteArrayFromHex, uint256ToByteArray, ETHEREUM_MAINNET_ID, BIG_INT_ZERO, ZERO_ADDRESS } from '../modules/airstack/utils'
-import * as airstack from "../modules/airstack";
+import { byteArrayFromHex, ETHEREUM_MAINNET_ID, BIG_INT_ZERO, ZERO_ADDRESS } from '../modules/airstack/domain-name/utils'
+import * as airstack from "../modules/airstack/domain-name";
 
 // Import event types from the registry contract ABI
 import {

@@ -123,7 +123,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
         `);
         break;
 
-      case Vertical.Domain:
+      case Vertical.DomainName:
         console.log(`
         Integration done. Please call the following functions.
 

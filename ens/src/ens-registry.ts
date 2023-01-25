@@ -4,13 +4,13 @@ import {
   NewTTL as NewTTLEvent,
   Transfer as TransferEvent
 } from "../generated/EnsRegistry/EnsRegistry"
-import * as airstack from "../modules/airstack";
+import * as airstack from "../modules/airstack/domain-name";
 import {
   BigInt,
   ens,
   log,
 } from "@graphprotocol/graph-ts";
-import { BIGINT_ONE, BIG_INT_ZERO, ZERO_ADDRESS, ETHEREUM_MAINNET_ID, ROOT_NODE } from "../modules/airstack/utils";
+import { ETHEREUM_MAINNET_ID } from "../modules/airstack/domain-name/utils";
 
 /**
  * @dev this functions maps the NewOwner event to airstack trackDomainOwnerChangedTransaction

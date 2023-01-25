@@ -1,9 +1,9 @@
-import * as airstack from "../modules/airstack";
+import * as airstack from "../modules/airstack/domain-name";
 import { log } from "@graphprotocol/graph-ts";
 import {
   SetNameCall,
 } from "../generated/ReverseRegistrar/ReverseRegistrar";
-import { ETHEREUM_MAINNET_ID } from "../modules/airstack/utils";
+import { ETHEREUM_MAINNET_ID } from "../modules/airstack/domain-name/utils";
 
 /**
  * @dev this function maps the SetName call from the ReverseRegistrar contract

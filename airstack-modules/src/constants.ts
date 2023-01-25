@@ -1,10 +1,10 @@
 export enum Vertical {
   Dex = "dex",
   NftMarketplace = "nft-marketplace",
-  Domain = "domain",
+  DomainName = "domain-name",
 }
 export const SupportedVerticals: Array<string> = [
   Vertical.Dex,
   Vertical.NftMarketplace,
-  Vertical.Domain,
+  Vertical.DomainName,
 ];

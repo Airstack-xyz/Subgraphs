@@ -1,3 +1,4 @@
+const schema = `
 #
 # --Airstack Schemas--
 
@@ -168,3 +169,6 @@ type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   index: BigInt! # - NA
   resolverAddress: String! #make sure to remove the old primary ens if changed
 }
+`
+
+export default schema;
