@@ -47,6 +47,7 @@ type AirDomain @entity {
   isMigrated: Boolean!
   isPrimary: Boolean! #- NA
   expiryTimestamp: BigInt!
+  registrationCost: BigInt!                            # Cost of domain registration in wei
   createdAt: AirBlock!
 	lastBlock: AirBlock #- NA
 }

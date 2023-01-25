@@ -288,6 +288,7 @@ export namespace domain {
    * @param registrantAddress registrant address
    * @param expiryTimestamp domain expiry date
    * @param cost domain registration cost
+   * @param paymentToken payment token address - can be null
    * @param labelId label id
    * @param rootNode root node bye array
    */
@@ -301,16 +302,13 @@ export namespace domain {
     registrantAddress: string,
     expiryTimestamp: BigInt,
     cost: BigInt,
+    paymentToken: string,
     labelId: BigInt,
     rootNode: ByteArray,
   ): void {
     // prep mapping data
     let label = uint256ToByteArray(labelId);
     let labelName = ens.nameByHash(label.toHexString());
-    let paymentToken: string | null = ZERO_ADDRESS;
-    if (cost <= BIG_INT_ZERO) {
-      paymentToken = null;
-    }
     let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domain = getOrCreateAirDomain(new Domain(
@@ -407,6 +405,7 @@ export namespace domain {
    * @param blockTimestamp block timestamp
    * @param chainId chain id
    * @param rootNode root node ByteArray
+   * @param fromRegistrationEvent true if called from a registration event
    */
   export function trackSetNamePreImage(
     name: string,
@@ -417,6 +416,7 @@ export namespace domain {
     blockTimestamp: BigInt,
     chainId: string,
     rootNode: ByteArray,
+    fromRegistrationEvent: boolean,
   ): void {
     const labelHash = crypto.keccak256(ByteArray.fromUTF8(name));
     if (!labelHash.equals(label)) {
@@ -438,13 +438,17 @@ export namespace domain {
       block
     ));
 
-    // we also need to track cost here, but we dont have a registration entity and thus, the cost cannot be tracked yet
+    // tracking registration cost in domain entity  - this is a temporary solution
+    if (fromRegistrationEvent) {
+      domain.registrationCost = cost;
+      domain.lastBlock = block.id;
+    }
     if (domain.labelName !== name) {
       domain.labelName = name
       domain.name = name + '.eth'
       domain.lastBlock = block.id;
-      domain.save();
     }
+    domain.save();
   }
 
   /**
@@ -848,6 +852,7 @@ export namespace domain {
       entity.isPrimary = false;
       entity.isMigrated = false;
       entity.expiryTimestamp = BIG_INT_ZERO;
+      entity.registrationCost = BIG_INT_ZERO;
       entity.createdAt = domain.block.id;
       entity.lastBlock = domain.block.id;
     }
