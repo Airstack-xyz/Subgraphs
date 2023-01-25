@@ -348,6 +348,7 @@ export namespace domain {
    * @param chainId chain id
    * @param logIndex txn log index
    * @param cost cost of renewal
+   * @param paymentToken payment token address - can be null
    * @param renewer renewer address
    * @param labelId label id
    * @param rootNode root node byte array
