@@ -591,6 +591,7 @@ export namespace domain {
       entity.previousResolvedAddress = previousResolvedAddressId;
       entity.newResolvedAddress = getOrCreateAirAccount(chainId, newResolvedAddress).id;
       entity.domain = domain.id;
+      entity.tokenId = domain.tokenId;
       entity.index = updateAirEntityCounter(AIR_ADDR_CHANGED_TRANSACTION_COUNTER_ID, block);
       entity.save();
     }
