@@ -46,7 +46,7 @@ type AirDomain @entity {
   ttl: BigInt
   isMigrated: Boolean!
   isPrimary: Boolean! #- NA
-  expiryDate: BigInt!
+  expiryTimestamp: BigInt!
   createdAt: AirBlock!
 	lastBlock: AirBlock #- NA
 }
@@ -131,7 +131,7 @@ interface AirDomainEvent {
 interface AirDomainRegistrationEvent  {
   cost: BigInt
   paymentToken: AirToken
-  expiryDate: BigInt!
+  expiryTimestamp: BigInt!
 }
 
 type AirNameRegisteredTransaction implements AirDomainEvent & AirDomainRegistrationEvent @entity {
@@ -144,7 +144,7 @@ type AirNameRegisteredTransaction implements AirDomainEvent & AirDomainRegistrat
   cost: BigInt
   paymentToken: AirToken
   registrant: AirAccount!
-  expiryDate: BigInt! # - expiryDate to be added to air domain
+  expiryTimestamp: BigInt! # - expiryTimestamp to be added to air domain
 }
 
 type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistrationEvent @entity {
@@ -157,7 +157,7 @@ type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration
   cost: BigInt
   paymentToken: AirToken
   renewer: AirAccount!
-  expiryDate: BigInt! # - expiryDate to be added to air domain
+  expiryTimestamp: BigInt! # - expiryTimestamp to be added to air domain
 }
 
 #where is this coming from? NameChanged or have to implement a resolver here

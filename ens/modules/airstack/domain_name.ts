@@ -286,7 +286,7 @@ export namespace domain {
    * @param logIndex event log index
    * @param chainId chain id
    * @param registrantAddress registrant address
-   * @param expiryDate domain expiry date
+   * @param expiryTimestamp domain expiry date
    * @param cost domain registration cost
    * @param labelId label id
    * @param rootNode root node bye array
@@ -299,7 +299,7 @@ export namespace domain {
     logIndex: BigInt,
     chainId: string,
     registrantAddress: string,
-    expiryDate: BigInt,
+    expiryTimestamp: BigInt,
     cost: BigInt,
     labelId: BigInt,
     rootNode: ByteArray,
@@ -322,7 +322,7 @@ export namespace domain {
     if (labelName != null) {
       domain.labelName = labelName
     }
-    domain.expiryDate = expiryDate;
+    domain.expiryTimestamp = expiryTimestamp;
     domain.lastBlock = block.id;
     domain.save();
     // create name registered transaction
@@ -337,7 +337,7 @@ export namespace domain {
       cost,
       paymentToken,
       registrantAddress,
-      expiryDate,
+      expiryTimestamp,
     );
   }
 
@@ -353,7 +353,7 @@ export namespace domain {
    * @param renewer renewer address
    * @param labelId label id
    * @param rootNode root node byte array
-   * @param expiryDate expiry date
+   * @param expiryTimestamp expiry date
    */
   export function trackNameRenewedTransaction(
     transactionHash: Bytes,
@@ -366,7 +366,7 @@ export namespace domain {
     renewer: string,
     labelId: BigInt,
     rootNode: ByteArray,
-    expiryDate: BigInt,
+    expiryTimestamp: BigInt,
   ): void {
     let label = uint256ToByteArray(labelId);
     let paymentToken: string | null = ZERO_ADDRESS;
@@ -380,7 +380,7 @@ export namespace domain {
       chainId,
       block,
     ));
-    domain.expiryDate = expiryDate;
+    domain.expiryTimestamp = expiryTimestamp;
     domain.lastBlock = block.id;
     domain.save();
     // create name renewed transaction
@@ -393,7 +393,7 @@ export namespace domain {
       cost,
       paymentToken,
       renewer,
-      expiryDate,
+      expiryTimestamp,
     );
   }
 
@@ -643,7 +643,7 @@ export namespace domain {
    * @param cost cost of the transaction
    * @param paymentToken payment token
    * @param renewer renewer address
-   * @param expiryDate expiry date of the domain
+   * @param expiryTimestamp expiry date of the domain
    * @returns AirNameRenewedTransaction entity
    */
   function getOrCreateAirNameRenewedTransaction(
@@ -655,7 +655,7 @@ export namespace domain {
     cost: BigInt,
     paymentToken: string | null,
     renewer: string,
-    expiryDate: BigInt,
+    expiryTimestamp: BigInt,
   ): AirNameRenewedTransaction {
     let id = createEntityId(transactionHash, block.number, logIndex);
     let entity = AirNameRenewedTransaction.load(id);
@@ -671,7 +671,7 @@ export namespace domain {
         entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
       }
       entity.renewer = getOrCreateAirAccount(chainId, renewer).id;
-      entity.expiryDate = expiryDate;
+      entity.expiryTimestamp = expiryTimestamp;
       entity.save();
     }
     return entity as AirNameRenewedTransaction;
@@ -689,7 +689,7 @@ export namespace domain {
    * @param cost cost of the transaction
    * @param paymentToken payment token - can be null
    * @param registrant registrant address
-   * @param expiryDate expiry date of the domain
+   * @param expiryTimestamp expiry date of the domain
    * @returns returns an AirNameRegisteredTransaction entity
    */
   function getOrCreateAirNameRegisteredTransaction(
@@ -703,7 +703,7 @@ export namespace domain {
     cost: BigInt,
     paymentToken: string | null,
     registrant: string,
-    expiryDate: BigInt,
+    expiryTimestamp: BigInt,
   ): AirNameRegisteredTransaction {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let id = createEntityId(transactionHash, block.number, logIndex);
@@ -720,7 +720,7 @@ export namespace domain {
         entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
       }
       entity.registrant = getOrCreateAirAccount(chainId, registrant).id;
-      entity.expiryDate = expiryDate;
+      entity.expiryTimestamp = expiryTimestamp;
       entity.save();
     }
     return entity as AirNameRegisteredTransaction;
@@ -843,7 +843,7 @@ export namespace domain {
       entity.owner = getOrCreateAirAccount(domain.chainId, ZERO_ADDRESS).id;
       entity.isPrimary = false;
       entity.isMigrated = false;
-      entity.expiryDate = BIG_INT_ZERO;
+      entity.expiryTimestamp = BIG_INT_ZERO;
       entity.createdAt = domain.block.id;
       entity.lastBlock = domain.block.id;
     }
