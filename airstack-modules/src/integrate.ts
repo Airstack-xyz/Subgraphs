@@ -196,34 +196,19 @@ function writeSubgraphGraphql(
 }
 
 function copyAirstackModules(vertical: Vertical): string {
+  let sourceDir: string = "";
+  let targetDir: string = "";
   switch (vertical) {
     case Vertical.NftMarketplace:
-      return copyNftMarketplaceModules();
+      sourceDir = path.resolve(__dirname, '../../modules/airstack/nft-marketplace');
+      targetDir = path.resolve(__dirname, '../../../../../modules/airstack/nft-marketplace');
     case Vertical.DomainName:
-      return copyDomainNameModules();
+      sourceDir = path.resolve(__dirname, '../../modules/airstack/domain-name');
+      targetDir = path.resolve(__dirname, '../../../../../modules/airstack/domain-name');
     default:
       console.error("Invalid vertical");
-      return "";
+      break;
   }
-}
-
-function copyNftMarketplaceModules(): string {
-  const sourceDir = path.resolve(__dirname, '../../modules/airstack/nft-marketplace');
-  const targetDir = path.resolve(__dirname, '../../../../../modules/airstack/nft-marketplace');
-
-  // To copy a folder or file, select overwrite accordingly
-  try {
-    fse.copySync(sourceDir, targetDir, { overwrite: true })
-  } catch (err) {
-    console.error(err)
-  } finally {
-    return targetDir
-  }
-}
-
-function copyDomainNameModules(): string {
-  const sourceDir = path.resolve(__dirname, '../../modules/airstack/domain-name');
-  const targetDir = path.resolve(__dirname, '../../../../../modules/airstack/domain-name');
 
   // To copy a folder or file, select overwrite accordingly
   try {
