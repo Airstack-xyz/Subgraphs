@@ -2,6 +2,7 @@ import {
     Address,
     BigInt,
     dataSource,
+    log,
 } from "@graphprotocol/graph-ts";
 
 import {
@@ -98,6 +99,15 @@ export namespace nft {
                 royalty.nftTransaction = transactionId
 
                 royalty.save()
+
+                log.debug("txId {} royaltyBeneficiary {} Amount {}",
+                    [
+                        transactionId,
+                        royalty.beneficiary,
+                        royalty.amount.toString(),
+                    ]
+                )
+
             }
             transaction.save();
         }
