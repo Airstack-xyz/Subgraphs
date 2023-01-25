@@ -7,8 +7,9 @@ import {
   ens,
   log
 } from '@graphprotocol/graph-ts'
-// 
-import { byteArrayFromHex, ETHEREUM_MAINNET_ID, BIG_INT_ZERO, ZERO_ADDRESS } from '../modules/airstack/domain-name/utils'
+
+import { TOKEN_ADDRESS_ENS } from "./utils";
+import { byteArrayFromHex, ETHEREUM_MAINNET_ID, BIG_INT_ZERO, ZERO_ADDRESS } from '../modules/airstack/domain-name/utils';
 import * as airstack from "../modules/airstack/domain-name";
 
 // Import event types from the registry contract ABI
@@ -50,6 +51,7 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
     paymentToken,
     event.params.id,
     rootNode,
+    TOKEN_ADDRESS_ENS,
   );
 }
 
@@ -76,6 +78,7 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
     event.params.id,
     rootNode,
     event.params.expires,
+    TOKEN_ADDRESS_ENS,
   );
 }
 
@@ -99,6 +102,7 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
     event.block.timestamp,
     ETHEREUM_MAINNET_ID,
     rootNode,
+    TOKEN_ADDRESS_ENS,
     true,
   )
 }
@@ -123,6 +127,7 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
     event.block.timestamp,
     ETHEREUM_MAINNET_ID,
     rootNode,
+    TOKEN_ADDRESS_ENS,
     true,
   )
 }
@@ -147,6 +152,7 @@ export function handleNameRenewedByController(event: ControllerNameRenewedEvent)
     event.block.timestamp,
     ETHEREUM_MAINNET_ID,
     rootNode,
+    TOKEN_ADDRESS_ENS,
     false,
   )
 }

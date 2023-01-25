@@ -40,6 +40,7 @@ export namespace domain {
    * @param isMigrated specifies if the domain is migrated
    * @param node specifies the node of the domain
    * @param label specifies the label of the domain
+   * @param tokenAddress contract address of nft token
    * @param fromOldRegistry specifies if the event is from the old registry
    */
   export function trackDomainOwnerChangedTransaction(
@@ -53,11 +54,12 @@ export namespace domain {
     isMigrated: boolean,
     node: Bytes,
     label: Bytes,
+    tokenAddress: string,
     fromOldRegistry: boolean,
   ): void {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domainId = createAirDomainEntityId(node, label);
-    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, block));
+    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, block, tokenAddress));
     if (fromOldRegistry && domain.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
@@ -67,6 +69,7 @@ export namespace domain {
       node.toHexString(),
       chainId,
       block,
+      tokenAddress,
     ));
     if (domain.parent == null && parent != null) {
       parent.subdomainCount = parent.subdomainCount.plus(BIGINT_ONE);
@@ -95,7 +98,7 @@ export namespace domain {
     domain.isMigrated = isMigrated;
     domain.tokenId = tokenId;
     domain.lastBlock = block.id;
-    recurseDomainDelete(domain, chainId, block);
+    recurseDomainDelete(domain, chainId, block, tokenAddress);
     domain.save();
 
     getOrCreateAirDomainOwnerChangedTransaction(
@@ -120,6 +123,7 @@ export namespace domain {
    * @param blockTimestamp block timestamp
    * @param logIndex txn log index
    * @param transactionHash transaction hash
+   * @param tokenAddress contract address of nft token
    * @param fromOldRegistry specifies if the event is from the old registry
    */
   export function trackDomainTransferTransaction(
@@ -131,10 +135,11 @@ export namespace domain {
     blockTimestamp: BigInt,
     logIndex: BigInt,
     transactionHash: Bytes,
+    tokenAddress: string,
     fromOldRegistry: boolean,
   ): void {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
     if (fromOldRegistry && domain.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
@@ -174,6 +179,7 @@ export namespace domain {
    * @param blockTimestamp block timestamp
    * @param transactionHash transaction hash
    * @param logIndex event log index
+   * @param tokenAddress contract address of nft token
    * @param fromOldRegistry specifies if the event is from the old registry
    */
   export function trackDomainNewResolverTransaction(
@@ -185,12 +191,13 @@ export namespace domain {
     blockTimestamp: BigInt,
     transactionHash: Bytes,
     logIndex: BigInt,
+    tokenAddress: string,
     fromOldRegistry: boolean,
   ): void {
     // get block
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
-    let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
 
     if (fromOldRegistry && node != ROOT_NODE && domain.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
@@ -208,7 +215,7 @@ export namespace domain {
     }
     // do recursive domain delete
     domain.lastBlock = block.id;
-    recurseDomainDelete(domain, chainId, block);
+    recurseDomainDelete(domain, chainId, block, tokenAddress);
     domain.save();
 
     // create new resolver transaction
@@ -232,6 +239,7 @@ export namespace domain {
    * @param blockTimestamp block timestamp
    * @param logIndex event log index
    * @param transactionHash transaction hash
+   * @param tokenAddress contract address of nft token
    * @param fromOldRegistry specifies if the event is from the old registry
    */
   export function trackDomainNewTTLTransaction(
@@ -243,12 +251,13 @@ export namespace domain {
     blockTimestamp: BigInt,
     logIndex: BigInt,
     transactionHash: Bytes,
+    tokenAddress: string,
     fromOldRegistry: boolean,
   ): void {
     // get block
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
-    let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
     if (fromOldRegistry && domain.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
@@ -287,7 +296,8 @@ export namespace domain {
    * @param cost domain registration cost
    * @param paymentToken payment token address - can be null
    * @param labelId label id
-   * @param rootNode root node bye array
+   * @param rootNode root node byte array
+   * @param tokenAddress contract address of nft token
    */
   export function trackNameRegisteredTransaction(
     transactionHash: Bytes,
@@ -302,6 +312,7 @@ export namespace domain {
     paymentToken: string | null,
     labelId: BigInt,
     rootNode: ByteArray,
+    tokenAddress: string,
   ): void {
     // prep mapping data
     let label = uint256ToByteArray(labelId);
@@ -312,6 +323,7 @@ export namespace domain {
       domainId,
       chainId,
       block,
+      tokenAddress,
     ));
 
     if (labelName != null) {
@@ -350,6 +362,7 @@ export namespace domain {
    * @param labelId label id
    * @param rootNode root node byte array
    * @param expiryTimestamp expiry date
+   * @param tokenAddress token address
    */
   export function trackNameRenewedTransaction(
     transactionHash: Bytes,
@@ -364,6 +377,7 @@ export namespace domain {
     labelId: BigInt,
     rootNode: ByteArray,
     expiryTimestamp: BigInt,
+    tokenAddress: string,
   ): void {
     let label = uint256ToByteArray(labelId);
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
@@ -372,6 +386,7 @@ export namespace domain {
       domainId,
       chainId,
       block,
+      tokenAddress,
     ));
     domain.expiryTimestamp = expiryTimestamp;
     domain.lastBlock = block.id;
@@ -401,6 +416,7 @@ export namespace domain {
    * @param blockTimestamp block timestamp
    * @param chainId chain id
    * @param rootNode root node ByteArray
+   * @param tokenAddress contract address of nft token
    * @param fromRegistrationEvent true if called from a registration event
    */
   export function trackSetNamePreImage(
@@ -413,6 +429,7 @@ export namespace domain {
     blockTimestamp: BigInt,
     chainId: string,
     rootNode: ByteArray,
+    tokenAddress: string,
     fromRegistrationEvent: boolean,
   ): void {
     const labelHash = crypto.keccak256(ByteArray.fromUTF8(name));
@@ -432,7 +449,8 @@ export namespace domain {
     let domain = getOrCreateAirDomain(new Domain(
       crypto.keccak256(rootNode.concat(label)).toHex(),
       chainId,
-      block
+      block,
+      tokenAddress,
     ));
 
     // tracking registration cost in domain entity  - renewal cost is not being tracked yet
@@ -460,6 +478,7 @@ export namespace domain {
    * @param blockHash block hash
    * @param blockTimestamp block timestamp
    * @param transactionHash transaction hash
+   * @param tokenAddress contract address of nft token
    */
   export function trackAddrChangedTransaction(
     chainId: string,
@@ -471,10 +490,11 @@ export namespace domain {
     blockHash: string,
     blockTimestamp: BigInt,
     transactionHash: Bytes,
+    tokenAddress: string,
   ): void {
     let addrAccount = getOrCreateAirAccount(chainId, addr);
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
     let previousResolvedAddressId = domain.resolvedAddress;
     let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, addr);
     resolver.domain = domain.id;
@@ -506,6 +526,7 @@ export namespace domain {
    * @param blockTimestamp block timestamp
    * @param node domain node
    * @param resolverAddress resolver contract address
+   * @param tokenAddress contract address of nft token
    */
   export function trackResolverVersionChange(
     chainId: string,
@@ -514,9 +535,10 @@ export namespace domain {
     blockTimestamp: BigInt,
     node: string,
     resolverAddress: string,
+    tokenAddress: string,
   ): void {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let domain = getOrCreateAirDomain(new Domain(node, chainId, block));
+    let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
     let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, null);
     if (domain && domain.resolver === resolver.id) {
       domain.resolvedAddress = null
@@ -534,6 +556,7 @@ export namespace domain {
    * @param blockHeight block number
    * @param blockHash block hash
    * @param blockTimestamp block timestamp
+   * @param tokenAddress contract address of nft token
    */
   export function trackSetPrimaryDomainTransaction(
     ensName: string,
@@ -543,12 +566,14 @@ export namespace domain {
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
+    tokenAddress: string,
   ): void {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domain = getOrCreateAirDomain(new Domain(
       node.toHexString(),
       chainId,
       block,
+      tokenAddress,
     ));
     let fromAccount = getOrCreateAirAccount(chainId, from);
     if (domain.name == ensName && domain.owner == fromAccount.id) {
@@ -846,6 +871,7 @@ export namespace domain {
       entity = new AirDomain(domain.id);
       entity.subdomainCount = BIG_INT_ZERO;
       entity.owner = getOrCreateAirAccount(domain.chainId, ZERO_ADDRESS).id;
+      entity.tokenAddress = getOrCreateAirToken(domain.chainId, domain.tokenAddress).id;
       entity.isPrimary = false;
       entity.isMigrated = false;
       entity.expiryTimestamp = BIG_INT_ZERO;
@@ -903,17 +929,18 @@ export namespace domain {
    * @param domain air domain entity
    * @param chainId chain id
    * @param block air block entity
+   * @param tokenAddress contract address of nft token
    * @returns parent domain id
    */
-  function recurseDomainDelete(domain: AirDomain, chainId: string, block: AirBlock): string | null {
+  function recurseDomainDelete(domain: AirDomain, chainId: string, block: AirBlock, tokenAddress: string): string | null {
     if (domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
       if (domain.parent) {
-        const parentDomain = getOrCreateAirDomain(new Domain(domain.parent!, chainId, block));
+        const parentDomain = getOrCreateAirDomain(new Domain(domain.parent!, chainId, block, tokenAddress));
         if (parentDomain) {
           parentDomain.subdomainCount = parentDomain.subdomainCount.minus(BIGINT_ONE)
           parentDomain.lastBlock = block.id;
           parentDomain.save();
-          return recurseDomainDelete(parentDomain, chainId, block)
+          return recurseDomainDelete(parentDomain, chainId, block, tokenAddress)
         }
       }
       return null
@@ -1035,12 +1062,14 @@ export namespace domain {
    * @param id domain id
    * @param chainId chain id
    * @param block air block entity
+   * @param tokenAddress token address of domain nft token contract
    */
   export class Domain {
     constructor(
       public id: string,
       public chainId: string,
       public block: AirBlock,
+      public tokenAddress: string,
     ) { }
   }
 }
