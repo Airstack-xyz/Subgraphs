@@ -3,7 +3,7 @@ import {
     TypedMap
 } from "@graphprotocol/graph-ts";
 
-export const AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID = "AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER";
+export const AIR_NFT_SALE_ENTITY_ID = "AIR_NFT_SALE_TRANSACTION_COUNTER";
 export const AIR_META_ID = "AIR_META";
 
 export const BIGINT_ONE = BigInt.fromI32(1);

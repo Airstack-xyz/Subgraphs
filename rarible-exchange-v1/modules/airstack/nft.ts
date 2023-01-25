@@ -15,7 +15,7 @@ import {
     AirMeta
 } from "../../generated/schema";
 
-import { AIR_META_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork } from "./utils";
+import { AIR_NFT_SALE_ENTITY_ID, AIR_META_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork } from "./utils";
 
 export namespace nft {
     export function trackNFTSaleTransactions(
