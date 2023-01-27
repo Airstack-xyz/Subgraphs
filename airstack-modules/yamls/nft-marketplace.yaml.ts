@@ -1,10 +1,13 @@
 const yamlString = `
 entities:
-  - AirAccount,
-  - AirNftTransaction,
-  - AirToken,
-  - AirBlock,
+  - AirBlock
+  - AirMeta
+  - AirEntityCounter
+  - AirAccount
+  - AirToken
+  - AirNftTransaction
   - AirNftSaleRoyalty
+  - AirExtraData
 `;
 
 export default yamlString;

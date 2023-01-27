@@ -13,7 +13,7 @@ import {
     AirBlock,
     AirNftSaleRoyalty,
     AirMeta
-} from "../../generated/schema";
+} from "../../../generated/schema";
 
 import { AIR_NFT_SALE_ENTITY_ID, AIR_META_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork } from "./utils";
 
@@ -100,13 +100,14 @@ export namespace nft {
 
                 royalty.save()
 
-                log.info("txId {} royaltyBeneficiary {} Amount {}",
+                log.debug("txId {} royaltyBeneficiary {} Amount {}",
                     [
                         transactionId,
                         royalty.beneficiary,
                         royalty.amount.toString(),
                     ]
                 )
+
             }
             transaction.save();
         }

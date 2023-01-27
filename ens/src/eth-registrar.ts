@@ -7,9 +7,10 @@ import {
   ens,
   log
 } from '@graphprotocol/graph-ts'
-// 
-import { byteArrayFromHex, uint256ToByteArray, ETHEREUM_MAINNET_ID, BIG_INT_ZERO, ZERO_ADDRESS } from '../modules/airstack/utils'
-import * as airstack from "../modules/airstack";
+
+import { TOKEN_ADDRESS_ENS } from "./utils";
+import { byteArrayFromHex, ETHEREUM_MAINNET_ID, BIG_INT_ZERO, ZERO_ADDRESS } from '../modules/airstack/domain-name/utils';
+import * as airstack from "../modules/airstack/domain-name";
 
 // Import event types from the registry contract ABI
 import {
@@ -50,6 +51,7 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
     paymentToken,
     event.params.id,
     rootNode,
+    TOKEN_ADDRESS_ENS,
   );
 }
 
@@ -76,6 +78,7 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
     event.params.id,
     rootNode,
     event.params.expires,
+    TOKEN_ADDRESS_ENS,
   );
 }
 
@@ -85,15 +88,21 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
  */
 export function handleNameRegisteredByControllerOld(event: ControllerNameRegisteredEventOld): void {
   log.info("handleNameRegisteredByControllerOld: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  let paymentToken: string | null = null
+  if (event.params.cost > BIG_INT_ZERO) {
+    paymentToken = ZERO_ADDRESS;
+  }
   airstack.domain.trackSetNamePreImage(
     event.params.name,
     event.params.label,
     event.params.cost,
+    paymentToken,
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
     ETHEREUM_MAINNET_ID,
     rootNode,
+    TOKEN_ADDRESS_ENS,
     true,
   )
 }
@@ -104,15 +113,21 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
  */
 export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
   log.info("handleNameRegisteredByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  let paymentToken: string | null = null
+  if (event.params.cost > BIG_INT_ZERO) {
+    paymentToken = ZERO_ADDRESS;
+  }
   airstack.domain.trackSetNamePreImage(
     event.params.name,
     event.params.label,
     event.params.cost,
+    paymentToken,
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
     ETHEREUM_MAINNET_ID,
     rootNode,
+    TOKEN_ADDRESS_ENS,
     true,
   )
 }
@@ -123,15 +138,21 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
  */
 export function handleNameRenewedByController(event: ControllerNameRenewedEvent): void {
   log.info("handleNameRenewedByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  let paymentToken: string | null = null
+  if (event.params.cost > BIG_INT_ZERO) {
+    paymentToken = ZERO_ADDRESS;
+  }
   airstack.domain.trackSetNamePreImage(
     event.params.name,
     event.params.label,
     event.params.cost,
+    paymentToken,
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
     ETHEREUM_MAINNET_ID,
     rootNode,
+    TOKEN_ADDRESS_ENS,
     false,
   )
 }

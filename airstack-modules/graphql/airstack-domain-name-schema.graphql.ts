@@ -1,3 +1,4 @@
+const schema = `
 #
 # --Airstack Schemas--
 
@@ -67,7 +68,7 @@ type AirDomainTransferTransaction implements AirDomainEvent @entity {
   domain: AirDomain!
   index: BigInt! # - NA
 }
-# what is the diff b/w transfer and domain owner changed
+
 type AirDomainOwnerChangedTransaction implements AirDomainEvent @entity {
   id: ID!
   previousOwner: AirAccount! # - NA
@@ -170,3 +171,6 @@ type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   index: BigInt! # - NA
   resolverAddress: String! #make sure to remove the old primary ens if changed
 }
+`
+
+export default schema;

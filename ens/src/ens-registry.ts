@@ -4,14 +4,14 @@ import {
   NewTTL as NewTTLEvent,
   Transfer as TransferEvent
 } from "../generated/EnsRegistry/EnsRegistry"
-import * as airstack from "../modules/airstack";
+import * as airstack from "../modules/airstack/domain-name";
 import {
   BigInt,
   ens,
   log,
 } from "@graphprotocol/graph-ts";
-import { BIGINT_ONE, BIG_INT_ZERO, ZERO_ADDRESS, ETHEREUM_MAINNET_ID, ROOT_NODE } from "../modules/airstack/utils";
-
+import { ETHEREUM_MAINNET_ID } from "../modules/airstack/domain-name/utils";
+import { TOKEN_ADDRESS_ENS } from "./utils";
 /**
  * @dev this functions maps the NewOwner event to airstack trackDomainOwnerChangedTransaction
  * @param event NewOwnerEvent from ENS Registry
@@ -29,6 +29,7 @@ export function handleNewOwner(event: NewOwnerEvent): void {
     true,
     event.params.node,
     event.params.label,
+    TOKEN_ADDRESS_ENS,
     false,
   );
 }
@@ -48,6 +49,7 @@ export function handleTransfer(event: TransferEvent): void {
     event.block.timestamp,
     event.logIndex,
     event.transaction.hash,
+    TOKEN_ADDRESS_ENS,
     false,
   )
 }
@@ -67,6 +69,7 @@ export function handleNewResolver(event: NewResolverEvent): void {
     event.block.timestamp,
     event.transaction.hash,
     event.logIndex,
+    TOKEN_ADDRESS_ENS,
     false,
   )
 }
@@ -86,6 +89,7 @@ export function handleNewTTL(event: NewTTLEvent): void {
     event.block.timestamp,
     event.logIndex,
     event.transaction.hash,
+    TOKEN_ADDRESS_ENS,
     false,
   )
 }
@@ -107,6 +111,7 @@ export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
     false,
     event.params.node,
     event.params.label,
+    TOKEN_ADDRESS_ENS,
     true,
   );
 }
@@ -126,6 +131,7 @@ export function handleNewResolverOldRegistry(event: NewResolverEvent): void {
     event.block.timestamp,
     event.transaction.hash,
     event.logIndex,
+    TOKEN_ADDRESS_ENS,
     true,
   )
 }
@@ -145,6 +151,7 @@ export function handleNewTTLOldRegistry(event: NewTTLEvent): void {
     event.block.timestamp,
     event.logIndex,
     event.transaction.hash,
+    TOKEN_ADDRESS_ENS,
     true,
   )
 }
@@ -164,6 +171,7 @@ export function handleTransferOldRegistry(event: TransferEvent): void {
     event.block.timestamp,
     event.logIndex,
     event.transaction.hash,
+    TOKEN_ADDRESS_ENS,
     true,
   )
 }

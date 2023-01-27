@@ -4,13 +4,11 @@
   "description": "Integrate Airstack schemas in any subgraph.",
   "main": "modules/airstack/index",
   "scripts": {
-    "codegen": "graph codegen",
-    "build:subgraph": "graph build",
     "build:package": "tsc",
     "lint": "eslint . --ext .ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "publish": "npm publish --tag alpha --access public",
-    "build": "npm run codegen && npm run build:subgraph && npm run build:package && npm pack"
+    "build": "npm run build:package && npm pack"
   },
   "bin": {
     "airstack": "dist/bin/index.js"

@@ -1,10 +1,10 @@
-import * as airstack from "../modules/airstack";
+import * as airstack from "../modules/airstack/domain-name";
 import { log } from "@graphprotocol/graph-ts";
 import {
   SetNameCall,
 } from "../generated/ReverseRegistrar/ReverseRegistrar";
-import { ETHEREUM_MAINNET_ID } from "../modules/airstack/utils";
-
+import { ETHEREUM_MAINNET_ID } from "../modules/airstack/domain-name/utils";
+import { TOKEN_ADDRESS_ENS } from "./utils";
 /**
  * @dev this function maps the SetName call from the ReverseRegistrar contract
  * @param call SetNameCall from ReverseRegistrar contract
@@ -18,6 +18,7 @@ export function handleSetName(call: SetNameCall): void {
     call.from.toHexString(),
     call.block.number,
     call.block.hash.toHexString(),
-    call.block.timestamp
+    call.block.timestamp,
+    TOKEN_ADDRESS_ENS,
   );
 }

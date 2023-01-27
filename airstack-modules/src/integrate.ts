@@ -34,11 +34,9 @@ export async function integrate(
       .then(() => {
         writeSubgraphGraphql(vertical as Vertical, graphql)
           .then(() => {
-            const targetDirectory = copyAirstackModules();
+            const targetDirectory = copyAirstackModules(vertical as Vertical);
 
-            if (vertical === Vertical.NftMarketplace) {
-              getAirMetaDetails();
-            }
+            getAirMetaDetails(vertical as Vertical);
 
             const arrayOfFiles: Array<string> = []
             getAllFiles(targetDirectory, arrayOfFiles)
@@ -197,9 +195,23 @@ function writeSubgraphGraphql(
   });
 }
 
-function copyAirstackModules(): string {
-  const sourceDir = path.resolve(__dirname, '../../modules');
-  const targetDir = path.resolve(__dirname, '../../../../../modules');
+function copyAirstackModules(vertical: Vertical): string {
+  let sourceDir: string = "";
+  let targetDir: string = "";
+  switch (vertical) {
+    case Vertical.NftMarketplace:
+      sourceDir = path.resolve(__dirname, '../../modules/airstack/nft-marketplace');
+      targetDir = path.resolve(__dirname, '../../../../../modules/airstack/nft-marketplace');
+      break;
+    case Vertical.DomainName:
+      sourceDir = path.resolve(__dirname, '../../modules/airstack/domain-name');
+      targetDir = path.resolve(__dirname, '../../../../../modules/airstack/domain-name');
+      break;
+    default:
+      console.error("Invalid vertical, please check the vertical name.");
+      process.exit(1); // an error occurred
+      break;
+  }
 
   // To copy a folder or file, select overwrite accordingly
   try {
@@ -210,7 +222,6 @@ function copyAirstackModules(): string {
     return targetDir
   }
 }
-
 
 function getAllFiles(dirPath: string, arrayOfFiles: Array<string>) {
   const files = fs.readdirSync(dirPath)
@@ -232,7 +243,7 @@ export var SUBGRAPH_NAME = "";
 export var SUBGRAPH_VERSION = "";
 export var SUBGRAPH_SLUG = "";
 
-function getAirMetaDetails() {
+function getAirMetaDetails(vertical: Vertical) {
   while (SUBGRAPH_NAME.trim() === "") {
     let subgraphName: string = readlineSync.question("Enter the name of the subgraph: ");
     SUBGRAPH_NAME = subgraphName;
@@ -245,11 +256,22 @@ function getAirMetaDetails() {
     let subgraphSlug: string = readlineSync.question("Enter the slug of the subgraph: ");
     SUBGRAPH_SLUG = subgraphSlug;
   }
-  const targetFile = path.resolve(__dirname, '../../../../../modules/airstack/utils.ts');
+  let targetFile = path.resolve(__dirname, '../../../../../modules/airstack/utils.ts');
+  switch (vertical) {
+    case Vertical.NftMarketplace:
+      targetFile = path.resolve(__dirname, '../../../../../modules/airstack/nft-marketplace/utils.ts');
+      break;
+    case Vertical.DomainName:
+      targetFile = path.resolve(__dirname, '../../../../../modules/airstack/domain-name/utils.ts');
+      break;
+    default:
+      console.error("Invalid vertical");
+      break;
+  }
   let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
-  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, "");
-  fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, "");
-  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, "");
-  fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
+  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, `export const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, `export const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`);
+  // fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
   fs.writeFileSync(targetFile, fileContent, { encoding: "utf8" });
 }
