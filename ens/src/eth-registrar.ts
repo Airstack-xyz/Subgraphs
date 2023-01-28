@@ -39,7 +39,7 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
     paymentToken = ZERO_ADDRESS;
   }
   airstack.domain.trackNameRegisteredTransaction(
-    event.transaction.hash,
+    event.transaction.hash.toHexString(),
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
@@ -66,7 +66,7 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
     paymentToken = ZERO_ADDRESS;
   }
   airstack.domain.trackNameRenewedTransaction(
-    event.transaction.hash,
+    event.transaction.hash.toHexString(),
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,

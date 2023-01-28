@@ -21,7 +21,7 @@ export function handleAddrChanged(event: AddrChangedEvent): void {
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
-    event.transaction.hash,
+    event.transaction.hash.toHexString(),
     TOKEN_ADDRESS_ENS,
   );
 }

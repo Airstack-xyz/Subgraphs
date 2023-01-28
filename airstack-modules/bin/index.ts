@@ -135,7 +135,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
             logIndex: BigInt,
             chainId: string,
             newOwner: string,
-            transactionHash: Bytes,
+            transactionHash: string,
             isMigrated: boolean,
             node: Bytes,
             label: Bytes,
@@ -152,7 +152,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockHash: string,
           blockTimestamp: BigInt,
           logIndex: BigInt,
-          transactionHash: Bytes,
+          transactionHash: string,
           tokenAddress: string,
           fromOldRegistry: boolean,
         )
@@ -165,7 +165,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockHeight: BigInt,
           blockHash: string,
           blockTimestamp: BigInt,
-          transactionHash: Bytes,
+          transactionHash: string,
           logIndex: BigInt,
           tokenAddress: string,
           fromOldRegistry: boolean,
@@ -180,14 +180,14 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockHash: string,
           blockTimestamp: BigInt,
           logIndex: BigInt,
-          transactionHash: Bytes,
+          transactionHash: string,
           tokenAddress: string,
           fromOldRegistry: boolean,
         )
 
         5. Track name registered transaction
         trackNameRegisteredTransaction(
-          transactionHash: Bytes,
+          transactionHash: string,
           blockHeight: BigInt,
           blockHash: string,
           blockTimestamp: BigInt,
@@ -204,7 +204,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
 
         6. Track name renewed transaction
         trackNameRenewedTransaction(
-          transactionHash: Bytes,
+          transactionHash: string,
           blockHeight: BigInt,
           blockHash: string,
           blockTimestamp: BigInt,
@@ -243,7 +243,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockHeight: BigInt,
           blockHash: string,
           blockTimestamp: BigInt,
-          transactionHash: Bytes,
+          transactionHash: string,
           tokenAddress: string,
         )
 

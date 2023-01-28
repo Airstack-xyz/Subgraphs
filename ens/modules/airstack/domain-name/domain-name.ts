@@ -49,7 +49,7 @@ export namespace domain {
     logIndex: BigInt,
     chainId: string,
     newOwner: string,
-    transactionHash: Bytes,
+    transactionHash: string,
     isMigrated: boolean,
     node: Bytes,
     label: Bytes,
@@ -133,7 +133,7 @@ export namespace domain {
     blockHash: string,
     blockTimestamp: BigInt,
     logIndex: BigInt,
-    transactionHash: Bytes,
+    transactionHash: string,
     tokenAddress: string,
     fromOldRegistry: boolean,
   ): void {
@@ -160,7 +160,7 @@ export namespace domain {
         blockTimestamp,
       );
       entity.block = airBlock.id;
-      entity.transactionHash = transactionHash.toHex();
+      entity.transactionHash = transactionHash;
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, airBlock);
@@ -188,7 +188,7 @@ export namespace domain {
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
-    transactionHash: Bytes,
+    transactionHash: string,
     logIndex: BigInt,
     tokenAddress: string,
     fromOldRegistry: boolean,
@@ -249,7 +249,7 @@ export namespace domain {
     blockHash: string,
     blockTimestamp: BigInt,
     logIndex: BigInt,
-    transactionHash: Bytes,
+    transactionHash: string,
     tokenAddress: string,
     fromOldRegistry: boolean,
   ): void {
@@ -299,7 +299,7 @@ export namespace domain {
    * @param tokenAddress contract address of nft token
    */
   export function trackNameRegisteredTransaction(
-    transactionHash: Bytes,
+    transactionHash: string,
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
@@ -364,7 +364,7 @@ export namespace domain {
    * @param tokenAddress token address
    */
   export function trackNameRenewedTransaction(
-    transactionHash: Bytes,
+    transactionHash: string,
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
@@ -488,7 +488,7 @@ export namespace domain {
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
-    transactionHash: Bytes,
+    transactionHash: string,
     tokenAddress: string,
   ): void {
     let addrAccount = getOrCreateAirAccount(chainId, addr);
@@ -600,7 +600,7 @@ export namespace domain {
     logIndex: BigInt,
     resolver: AirResolver,
     block: AirBlock,
-    transactionHash: Bytes,
+    transactionHash: string,
     previousResolvedAddressId: string | null,
     newResolvedAddress: string,
     domain: AirDomain,
@@ -611,7 +611,7 @@ export namespace domain {
       entity = new AirAddrChanged(id);
       entity.resolver = resolver.id;
       entity.block = block.id;
-      entity.transactionHash = transactionHash.toHexString();
+      entity.transactionHash = transactionHash;
       entity.previousResolvedAddress = previousResolvedAddressId;
       entity.newResolvedAddress = getOrCreateAirAccount(chainId, newResolvedAddress).id;
       entity.domain = domain.id;
@@ -639,8 +639,8 @@ export namespace domain {
    * @param logIndex txn log index
    * @returns entity id in string format
    */
-  function createEntityId(transactionHash: Bytes, blockHeight: BigInt, logIndex: BigInt): string {
-    return transactionHash.toHex().concat("-").concat(blockHeight.toString()).concat('-').concat(logIndex.toString());
+  function createEntityId(transactionHash: string, blockHeight: BigInt, logIndex: BigInt): string {
+    return transactionHash.concat("-").concat(blockHeight.toString()).concat('-').concat(logIndex.toString());
   }
 
   /**
@@ -678,7 +678,7 @@ export namespace domain {
    * @returns AirNameRenewedTransaction entity
    */
   function getOrCreateAirNameRenewedTransaction(
-    transactionHash: Bytes,
+    transactionHash: string,
     chainId: string,
     block: AirBlock,
     logIndex: BigInt,
@@ -693,7 +693,7 @@ export namespace domain {
     if (entity == null) {
       entity = new AirNameRenewedTransaction(id);
       entity.block = block.id;
-      entity.transactionHash = transactionHash.toHex();
+      entity.transactionHash = transactionHash;
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, block);
@@ -728,7 +728,7 @@ export namespace domain {
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
-    transactionHash: Bytes,
+    transactionHash: string,
     logIndex: BigInt,
     domain: AirDomain,
     cost: BigInt,
@@ -742,7 +742,7 @@ export namespace domain {
     if (entity == null) {
       entity = new AirNameRegisteredTransaction(id);
       entity.block = block.id;
-      entity.transactionHash = transactionHash.toHex();
+      entity.transactionHash = transactionHash;
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_NAME_REGISTERED_TRANSACTION_COUNTER_ID, block);
@@ -799,7 +799,7 @@ export namespace domain {
    * @returns returns a air domain new ttl transaction entity
    */
   function getOrCreateAirDomainNewTTLTransaction(
-    transactionHash: Bytes,
+    transactionHash: string,
     blockHeight: BigInt,
     logIndex: BigInt,
     oldTTL: BigInt | null,
@@ -812,7 +812,7 @@ export namespace domain {
     if (entity == null) {
       entity = new AirDomainNewTTLTransaction(id);
       entity.oldTTL = oldTTL;
-      entity.transactionHash = transactionHash.toHexString();
+      entity.transactionHash = transactionHash;
       entity.newTTL = newTTL;
       entity.block = block.id;
       entity.tokenId = domain.tokenId;
@@ -837,7 +837,7 @@ export namespace domain {
     previousResolverId: string | null,
     newResolverId: string,
     block: AirBlock,
-    transactionHash: Bytes,
+    transactionHash: string,
     logIndex: BigInt,
     domain: AirDomain,
   ): AirDomainNewResolverTransaction {
@@ -848,7 +848,7 @@ export namespace domain {
       entity.previousResolver = previousResolverId;
       entity.newOwnerResolver = newResolverId;
       entity.block = block.id;
-      entity.transactionHash = transactionHash.toHex();
+      entity.transactionHash = transactionHash;
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, block);
@@ -903,7 +903,7 @@ export namespace domain {
     chainId: string,
     previousOwnerId: string,
     newOwner: string,
-    transactionHash: Bytes,
+    transactionHash: string,
     tokenId: string,
     domain: AirDomain,
   ): AirDomainOwnerChangedTransaction {
@@ -913,7 +913,7 @@ export namespace domain {
       entity = new AirDomainOwnerChangedTransaction(id);
       entity.previousOwner = previousOwnerId;
       entity.newOwner = getOrCreateAirAccount(chainId, newOwner).id;
-      entity.transactionHash = transactionHash.toHex();
+      entity.transactionHash = transactionHash;
       entity.tokenId = tokenId;
       entity.domain = domain.id;
       entity.block = block.id;
