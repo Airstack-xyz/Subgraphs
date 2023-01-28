@@ -282,18 +282,7 @@ function getAirMetaDetails(vertical: Vertical) {
     let subgraphSlug: string = readlineSync.question("Enter the slug of the subgraph: ");
     SUBGRAPH_SLUG = subgraphSlug;
   }
-  let targetFile = path.resolve(__dirname, '../../../../../modules/airstack/utils.ts');
-  switch (vertical) {
-    case Vertical.NftMarketplace:
-      targetFile = path.resolve(__dirname, '../../../../../modules/airstack/nft-marketplace/utils.ts');
-      break;
-    case Vertical.DomainName:
-      targetFile = path.resolve(__dirname, '../../../../../modules/airstack/domain-name/utils.ts');
-      break;
-    default:
-      console.error("Invalid vertical");
-      break;
-  }
+  let targetFile = path.resolve(__dirname, '../../../../../modules/airstack/common/index.ts');
   let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
   fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";`);
   fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, `export const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";`);
