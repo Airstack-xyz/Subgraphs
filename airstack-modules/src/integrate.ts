@@ -34,12 +34,14 @@ export async function integrate(
       .then(() => {
         writeSubgraphGraphql(vertical as Vertical, graphql)
           .then(() => {
-            const targetDirectory = copyAirstackModules(vertical as Vertical);
+            const { targetDir, commontTargetDir } = copyAirstackModules(vertical as Vertical);
 
             getAirMetaDetails(vertical as Vertical);
 
             const arrayOfFiles: Array<string> = []
-            getAllFiles(targetDirectory, arrayOfFiles)
+            const arrayOfCommonFiles: Array<string> = []
+            getAllFiles(targetDir, arrayOfFiles)
+            getAllFiles(commontTargetDir, arrayOfCommonFiles)
 
             let dataSourceName = "";
             if (dataSources && dataSources.length > 0) {
@@ -77,6 +79,28 @@ export async function integrate(
             Promise.all(writeFilePromise).then(() => {
               resolve();
             }).catch(() => {
+              reject();
+            })
+            const writeCommonFilesPromise: Array<Promise<void>> = [];
+            arrayOfCommonFiles.forEach((filePath: string) => {
+              writeCommonFilesPromise.push(new Promise((res, rej) => {
+                const fileContent = fs.readFileSync(filePath, "utf8");
+                const finalFileContent = mustache.render(fileContent, { dataSource: dataSourceName })
+
+                fs.writeFile(filePath, finalFileContent, (err) => {
+                  if (err) {
+                    console.log(err);
+                    rej();
+                  } else {
+                    res();
+                  }
+                });
+              }));
+            });
+            Promise.all(writeCommonFilesPromise).then(() => {
+              resolve();
+            }
+            ).catch(() => {
               reject();
             })
           })
@@ -195,7 +219,7 @@ function writeSubgraphGraphql(
   });
 }
 
-function copyAirstackModules(vertical: Vertical): string {
+function copyAirstackModules(vertical: Vertical): { targetDir: string, commontTargetDir: string } {
   let sourceDir: string = "";
   let targetDir: string = "";
   switch (vertical) {
@@ -210,16 +234,18 @@ function copyAirstackModules(vertical: Vertical): string {
     default:
       console.error("Invalid vertical, please check the vertical name.");
       process.exit(1); // an error occurred
-      break;
   }
-
+  // to copy common.ts file
+  const commontSourceDir = path.resolve(__dirname, '../../modules/airstack/common');
+  const commontTargetDir = path.resolve(__dirname, '../../../../../modules/airstack/common');
   // To copy a folder or file, select overwrite accordingly
   try {
     fse.copySync(sourceDir, targetDir, { overwrite: true })
+    fse.copySync(commontSourceDir, commontTargetDir, { overwrite: true })
   } catch (err) {
     console.error(err)
   } finally {
-    return targetDir
+    return { targetDir, commontTargetDir };
   }
 }
 
