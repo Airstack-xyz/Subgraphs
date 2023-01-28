@@ -98,7 +98,7 @@ export namespace domain {
     domain.isMigrated = isMigrated;
     domain.tokenId = tokenId;
     domain.lastBlock = block.id;
-    recurseDomainDelete(domain, chainId, block, tokenAddress);
+    recurseSubdomainCountDecrement(domain, chainId, block, tokenAddress);
     domain.save();
 
     getOrCreateAirDomainOwnerChangedTransaction(
@@ -215,7 +215,7 @@ export namespace domain {
     }
     // do recursive domain delete
     domain.lastBlock = block.id;
-    recurseDomainDelete(domain, chainId, block, tokenAddress);
+    recurseSubdomainCountDecrement(domain, chainId, block, tokenAddress);
     domain.save();
 
     // create new resolver transaction
@@ -925,14 +925,14 @@ export namespace domain {
   }
 
   /**
-   * @dev this function does a recursive domain deletion for a particular domain
+   * @dev this function does a recursive subdomain count decrement
    * @param domain air domain entity
    * @param chainId chain id
    * @param block air block entity
    * @param tokenAddress contract address of nft token
-   * @returns parent domain id
+   * @returns air domain entity id
    */
-  function recurseDomainDelete(domain: AirDomain, chainId: string, block: AirBlock, tokenAddress: string): string | null {
+  function recurseSubdomainCountDecrement(domain: AirDomain, chainId: string, block: AirBlock, tokenAddress: string): string | null {
     if (domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
       if (domain.parent) {
         const parentDomain = getOrCreateAirDomain(new Domain(domain.parent!, chainId, block, tokenAddress));
@@ -940,7 +940,7 @@ export namespace domain {
           parentDomain.subdomainCount = parentDomain.subdomainCount.minus(BIGINT_ONE)
           parentDomain.lastBlock = block.id;
           parentDomain.save();
-          return recurseDomainDelete(parentDomain, chainId, block, tokenAddress)
+          return recurseSubdomainCountDecrement(parentDomain, chainId, block, tokenAddress)
         }
       }
       return null
