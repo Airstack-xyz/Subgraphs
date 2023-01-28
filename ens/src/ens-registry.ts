@@ -6,8 +6,6 @@ import {
 } from "../generated/EnsRegistry/EnsRegistry"
 import * as airstack from "../modules/airstack/domain-name";
 import {
-  BigInt,
-  ens,
   log,
 } from "@graphprotocol/graph-ts";
 import { ETHEREUM_MAINNET_ID } from "../modules/airstack/domain-name/utils";

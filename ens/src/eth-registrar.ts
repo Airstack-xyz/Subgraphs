@@ -1,22 +1,18 @@
 // Import types and APIs from graph-ts
 import {
-  BigInt,
   ByteArray,
-  Bytes,
-  crypto,
-  ens,
   log
 } from '@graphprotocol/graph-ts'
 
 import { TOKEN_ADDRESS_ENS } from "./utils";
-import { byteArrayFromHex, ETHEREUM_MAINNET_ID, BIG_INT_ZERO, ZERO_ADDRESS } from '../modules/airstack/domain-name/utils';
+import { byteArrayFromHex, ETHEREUM_MAINNET_ID, ZERO_ADDRESS } from '../modules/airstack/domain-name/utils';
+import { BIG_INT_ZERO } from '../modules/airstack/common';
 import * as airstack from "../modules/airstack/domain-name";
 
 // Import event types from the registry contract ABI
 import {
   NameRegistered as NameRegisteredEvent,
   NameRenewed as NameRenewedEvent,
-  Transfer as TransferEvent
 } from '../generated/BaseRegistrar/BaseRegistrar';
 import {
   NameRegistered as ControllerNameRegisteredEventOld,
@@ -25,7 +21,7 @@ import {
   NameRegistered as ControllerNameRegisteredEvent,
   NameRenewed as ControllerNameRenewedEvent
 } from '../generated/EthRegistrarController/EthRegistrarController';
-import { AirBlock } from '../generated/schema';
+
 const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae");
 
 /**
