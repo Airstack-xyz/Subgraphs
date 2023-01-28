@@ -98,7 +98,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
             blockNumber: BigInt
           ): void
 
-          For documentation and examples please check: https://github.com/Airstack-xyz/airstack-subgraph/tree/task/npx-scripts
+          For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs
         `);
         break;
 
@@ -119,7 +119,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockHash: string
         )
 
-        For documentation and examples please check: https://github.com/Airstack-xyz/airstack-subgraph/tree/task/npx-scripts
+        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs
         `);
         break;
 
@@ -270,7 +270,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           tokenAddress: string,
         )
 
-        For documentation and examples please check: https://github.com/Airstack-xyz/airstack-subgraph/tree/task/npx-scripts
+        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs
         `
         );
         break;
