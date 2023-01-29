@@ -260,7 +260,7 @@ export namespace domain {
       return;
     }
     // get previous ttl
-    let oldTTL: BigInt | null = BIG_INT_ZERO;
+    let oldTTL: BigInt | null = null;
     if (domain.ttl) {
       oldTTL = domain.ttl;
     }
