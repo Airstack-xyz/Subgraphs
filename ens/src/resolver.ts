@@ -2,7 +2,7 @@ import * as airstack from "../modules/airstack/domain-name";
 import {
   AddrChanged as AddrChangedEvent,
   VersionChanged as VersionChangedEvent,
-} from "../generated/Resolver/Resolver";
+} from "../generated/Resolver1/Resolver";
 import { log } from "@graphprotocol/graph-ts";
 import { ETHEREUM_MAINNET_ID } from "../modules/airstack/domain-name/utils";
 import { TOKEN_ADDRESS_ENS } from "./utils";
