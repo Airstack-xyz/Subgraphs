@@ -5,14 +5,14 @@ import { getTransactionHash } from "./common-utils"
 
 export function getHandleAddrChangedEvent(): AddrChanged {
   return createHandleAddrChangedEvent(
-    "0x0000000000000000000000000000000000000000000000000000000000000000",
-    "0x0000000000000000000000000000000000000000"
+    "0xea6cc843bbe16a18e678f7050e9183f09ccf900a3b4b74de12dae9ce1f95dff4",
+    "0x084b1c3c81545d370f3634392de611caabff8148"
   )
 }
 
 export function getHandleVersionChangedEvent(): VersionChanged {
   return createHandleVersionChangedEvent(
-    "0x0000000000000000000000000000000000000000000000000000000000000000"
+    "0xea6cc843bbe16a18e678f7050e9183f09ccf900a3b4b74de12dae9ce1f95dff4"
   )
 }
 
