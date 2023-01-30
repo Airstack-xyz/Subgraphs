@@ -453,7 +453,9 @@ export namespace domain {
     // tracking registration cost in domain entity  - renewal cost is not being tracked yet
     if (fromRegistrationEvent) {
       domain.registrationCost = cost;
-      domain.paymentToken = paymentToken;
+      if (paymentToken) {
+        domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
+      }
       domain.lastBlock = block.id;
     }
     if (domain.labelName !== name) {
