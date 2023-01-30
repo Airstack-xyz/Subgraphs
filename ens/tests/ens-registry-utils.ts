@@ -33,7 +33,6 @@ function createHandleNewOwnerEvent(): NewOwnerEvent {
   event.logIndex = BigInt.fromI32(76)
 
   event.parameters = new Array()
-  // name = nilufer.eth for node and label
   event.parameters.push(
     new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2") as Bytes))
   )
@@ -53,6 +52,14 @@ function createHandleTransferEvent(): TransferEvent {
   event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
   event.transaction.hash = getTransactionHash()
   event.logIndex = BigInt.fromI32(76)
+
+  event.parameters = new Array()
+  event.parameters.push(
+    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2") as Bytes))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("owner", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabff8148") as Address))
+  )
   return event
 }
 
@@ -63,6 +70,14 @@ function createHandleNewResolverEvent(): NewResolverEvent {
   event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
   event.transaction.hash = getTransactionHash()
   event.logIndex = BigInt.fromI32(76)
+
+  event.parameters = new Array()
+  event.parameters.push(
+    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407") as Bytes))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("resolver", ethereum.Value.fromAddress(Address.fromString("0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41") as Address))
+  )
   return event
 }
 

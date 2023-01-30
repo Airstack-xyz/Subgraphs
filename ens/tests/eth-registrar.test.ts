@@ -57,13 +57,13 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
     assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
     // AirNameRenewedTransaction
-    let nameRenewedId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
+    let nameRenewedId = event.transaction.hash.toHexString().concat("-").concat(domainId);
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "block", blockId);
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "transactionHash", event.transaction.hash.toHexString());
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "tokenId", "null");
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "domain", domainId);
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "index", BIGINT_ONE.toString());
-    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "cost", event.transaction.value.toString());
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "cost", "null");
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "renewer", ETHEREUM_MAINNET_ID.concat("-").concat(event.transaction.from.toHexString()));
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "expiryTimestamp", event.params.expires.toString());
   })
@@ -110,6 +110,17 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
+    // AirNameRenewedTransaction
+    let nameRenewedId = event.transaction.hash.toHexString().concat("-").concat(domainId);
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "block", blockId);
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "transactionHash", event.transaction.hash.toHexString());
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "tokenId", "null");
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "domain", domainId);
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "cost", event.params.cost.toString());
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "index", BIGINT_ONE.toString());
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "renewer", ETHEREUM_MAINNET_ID.concat("-").concat(event.transaction.from.toHexString()));
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "expiryTimestamp", event.params.expires.toString());
   })
 
 })

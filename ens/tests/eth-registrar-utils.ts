@@ -43,6 +43,7 @@ export function createHandleNameRegisteredEvent(
   event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
   event.transaction.hash = getTransactionHash()
   event.logIndex = BigInt.fromI32(76)
+  event.transaction.from = Address.fromString("0x084b1c3c81545d370f3634392de611caabff8148")
   event.transaction.value = BigInt.fromString("1000000000000000000")
 
   event.parameters.push(

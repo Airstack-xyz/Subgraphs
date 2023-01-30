@@ -88,6 +88,7 @@ export namespace domain {
         }
       }
     }
+
     let tokenId = BigInt.fromUnsignedBytes(label).toString();
     domain.owner = getOrCreateAirAccount(chainId, newOwner).id;
     domain.parent = parent.id;
@@ -367,8 +368,7 @@ export namespace domain {
     blockHash: string,
     blockTimestamp: BigInt,
     chainId: string,
-    logIndex: BigInt,
-    cost: BigInt,
+    cost: BigInt | null,
     paymentToken: string | null,
     renewer: string,
     labelId: BigInt,
@@ -393,7 +393,6 @@ export namespace domain {
       transactionHash,
       chainId,
       block,
-      logIndex,
       domain,
       cost,
       paymentToken,
@@ -414,6 +413,9 @@ export namespace domain {
    * @param chainId chain id
    * @param rootNode root node ByteArray
    * @param tokenAddress contract address of nft token
+   * @param transactionHash transaction hash
+   * @param renewer renewer address - can be null
+   * @param expiryTimestamp expiry date - can be null
    * @param fromRegistrationEvent true if called from a registration event
    */
   export function trackSetNamePreImage(
@@ -427,6 +429,9 @@ export namespace domain {
     chainId: string,
     rootNode: ByteArray,
     tokenAddress: string,
+    transactionHash: string,
+    renewer: string | null,
+    expiryTimestamp: BigInt | null,
     fromRegistrationEvent: boolean,
   ): void {
     const labelHash = crypto.keccak256(ByteArray.fromUTF8(name));
@@ -457,6 +462,19 @@ export namespace domain {
         domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
       }
       domain.lastBlock = block.id;
+    } else {
+      // name renewal event
+      // updating renewal cost in name renewed transaction entity
+      getOrCreateAirNameRenewedTransaction(
+        transactionHash,
+        chainId,
+        block,
+        domain,
+        cost,
+        paymentToken,
+        renewer!,
+        expiryTimestamp!,
+      );
     }
     if (domain.labelName !== name) {
       domain.labelName = name
@@ -464,6 +482,7 @@ export namespace domain {
       domain.lastBlock = block.id;
     }
     domain.save();
+    //new name registered event
   }
 
   /**
@@ -581,7 +600,11 @@ export namespace domain {
       domain.save();
     }
   }
-
+  // {
+  //   id: keccack("betashop.eth")
+  //   name: "betashop.eth",
+  //     domainId: "0x0000000000000000000000000000000000000000000000000000000000000000",
+  // }
   // end of track functions and start of get or create and helper functions
   /**
    * @dev This function gets or creates a AirAddrChanged entity
@@ -681,14 +704,13 @@ export namespace domain {
     transactionHash: string,
     chainId: string,
     block: AirBlock,
-    logIndex: BigInt,
     domain: AirDomain,
-    cost: BigInt,
+    cost: BigInt | null,
     paymentToken: string | null,
     renewer: string,
     expiryTimestamp: BigInt,
   ): AirNameRenewedTransaction {
-    let id = createEntityId(transactionHash, block.number, logIndex);
+    let id = transactionHash.concat("-").concat(domain.id);
     let entity = AirNameRenewedTransaction.load(id);
     if (entity == null) {
       entity = new AirNameRenewedTransaction(id);
@@ -696,13 +718,19 @@ export namespace domain {
       entity.transactionHash = transactionHash;
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
-      entity.index = updateAirEntityCounter(AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, block);
       entity.cost = cost;
+      entity.index = updateAirEntityCounter(AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, block);
       if (paymentToken) {
         entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
       }
       entity.renewer = getOrCreateAirAccount(chainId, renewer).id;
       entity.expiryTimestamp = expiryTimestamp;
+      entity.save();
+    }
+    // getting renewal events from 2 contracts, old contract gives cost, new contract gives null, so if old contract event is processed first, then we update the cost
+    // if new contract event is processed first, then we don't update the cost
+    if (cost && !entity.cost) {
+      entity.cost = cost;
       entity.save();
     }
     return entity as AirNameRenewedTransaction;

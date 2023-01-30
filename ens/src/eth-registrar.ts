@@ -67,8 +67,7 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
     event.block.hash.toHexString(),
     event.block.timestamp,
     ETHEREUM_MAINNET_ID,
-    event.logIndex,
-    event.transaction.value,
+    null,
     paymentToken,
     event.transaction.from.toHexString(),
     event.params.id,
@@ -99,6 +98,9 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
     ETHEREUM_MAINNET_ID,
     rootNode,
     TOKEN_ADDRESS_ENS,
+    event.transaction.hash.toHexString(),
+    null,
+    null,
     true,
   )
 }
@@ -124,6 +126,9 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
     ETHEREUM_MAINNET_ID,
     rootNode,
     TOKEN_ADDRESS_ENS,
+    event.transaction.hash.toHexString(),
+    null,
+    null,
     true,
   )
 }
@@ -149,6 +154,9 @@ export function handleNameRenewedByController(event: ControllerNameRenewedEvent)
     ETHEREUM_MAINNET_ID,
     rootNode,
     TOKEN_ADDRESS_ENS,
+    event.transaction.hash.toHexString(),
+    event.transaction.from.toHexString(),
+    event.params.expires,
     false,
   )
 }
