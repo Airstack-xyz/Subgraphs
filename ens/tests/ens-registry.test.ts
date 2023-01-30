@@ -167,7 +167,36 @@ describe("Unit tests for ens registry handlers", () => {
     // AirDomainNewResolverTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "previousResolver", "null");
-    assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "newOwnerResolver", resolverId);
+    assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "newOwnerResolver", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.resolver.toHexString()));
+    assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "block", blockId);
+    assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "transactionHash", event.transaction.hash.toHexString());
+    assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "tokenId", "null");
+    assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "domain", domainId);
+    assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "index", BIGINT_ONE.toString());
+  })
+
+  test("Test handleNewResolverOldRegistry", () => {
+    let event = getHandleNewResolverEvent();
+    handleNewResolver(event)
+    // assert here
+    let domainId = event.params.node.toHexString();
+    let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
+    let resolverId = event.params.resolver.toHexString().concat("-").concat(domainId);
+    // assert here
+    // AirMeta
+    assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    // AirDomain
+    assert.fieldEquals("AirDomain", domainId, "resolver", resolverId);
+    assert.fieldEquals("AirDomain", domainId, "subdomainCount", BIG_INT_ZERO.toString());
+    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    // AirDomainNewResolverTransaction
+    let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
+    assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "previousResolver", "null");
+    assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "newOwnerResolver", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.resolver.toHexString()));
     assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "block", blockId);
     assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "transactionHash", event.transaction.hash.toHexString());
     assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "tokenId", "null");
