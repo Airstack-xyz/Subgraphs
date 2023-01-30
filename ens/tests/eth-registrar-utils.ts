@@ -25,6 +25,14 @@ export function getHandleNameRegisteredByControllerOldEvent(): ControllerNameReg
   return createHandleNameRegisteredByControllerOldEvent()
 }
 
+export function getHandleNameRegisteredByControllerEvent(): ControllerNameRegisteredEvent {
+  return createHandleNameRegisteredByControllerEvent()
+}
+
+export function getHandleNameRenewedByControllerEvent(): ControllerNameRenewedEvent {
+  return createHandleNameRenewedByControllerEvent()
+}
+
 export function createHandleNameRegisteredEvent(
 ): NameRegisteredEvent {
   let event = changetype<NameRegisteredEvent>(newMockEvent())
@@ -89,6 +97,57 @@ export function createHandleNameRegisteredByControllerOldEvent(
   )
   event.parameters.push(
     new ethereum.EventParam("owner", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabff8148") as Address))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("cost", ethereum.Value.fromUnsignedBigInt(BigInt.fromString("1000000000000000000")))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("expires", ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(10098239)))
+  )
+  return event
+}
+
+export function createHandleNameRegisteredByControllerEvent(
+): ControllerNameRegisteredEvent {
+  let event = changetype<ControllerNameRegisteredEvent>(newMockEvent())
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+
+  event.parameters = new Array()
+
+  event.parameters.push(
+    new ethereum.EventParam("name", ethereum.Value.fromString("blackburn"))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("label", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0x99726e0d8b407cf2176c79d70375d2c906063193e0a0951bf2aa26e62bfadaab")))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("owner", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabff8148") as Address))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("cost", ethereum.Value.fromUnsignedBigInt(BigInt.fromString("1000000000000000000")))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("expires", ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(10098239)))
+  )
+  return event
+}
+
+export function createHandleNameRenewedByControllerEvent(
+): ControllerNameRenewedEvent {
+  let event = changetype<ControllerNameRenewedEvent>(newMockEvent())
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+
+  event.parameters = new Array()
+
+  event.parameters.push(
+    new ethereum.EventParam("name", ethereum.Value.fromString("blackburn"))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("label", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0x99726e0d8b407cf2176c79d70375d2c906063193e0a0951bf2aa26e62bfadaab")))
   )
   event.parameters.push(
     new ethereum.EventParam("cost", ethereum.Value.fromUnsignedBigInt(BigInt.fromString("1000000000000000000")))

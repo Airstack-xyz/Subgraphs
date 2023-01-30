@@ -6,8 +6,8 @@ import {
   afterEach,
 } from "matchstick-as/assembly/index"
 import { ByteArray, crypto } from "@graphprotocol/graph-ts"
-import { handleNameRegistered, handleNameRenewed, handleNameRegisteredByControllerOld } from "../src/eth-registrar"
-import { getHandleNameRegisteredEvent, getHandleNameRenewedEvent, getHandleNameRegisteredByControllerOldEvent } from "./eth-registrar-utils"
+import { handleNameRenewedByController, handleNameRegistered, handleNameRenewed, handleNameRegisteredByControllerOld, handleNameRegisteredByController } from "../src/eth-registrar"
+import { getHandleNameRenewedByControllerEvent, getHandleNameRegisteredEvent, getHandleNameRenewedEvent, getHandleNameRegisteredByControllerOldEvent, getHandleNameRegisteredByControllerEvent } from "./eth-registrar-utils"
 import { ETHEREUM_MAINNET_ID, ZERO_ADDRESS, byteArrayFromHex, uint256ToByteArray } from "../modules/airstack/domain-name/utils"
 import { BIGINT_ONE } from "../modules/airstack/common"
 
@@ -78,6 +78,35 @@ describe("Unit tests for eth registrar handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "registrationCost", event.params.cost.toString());
     assert.fieldEquals("AirDomain", domainId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
+    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
+    assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
+  })
+
+  test("test handleNameRegisteredByController", () => {
+    let event = getHandleNameRegisteredByControllerEvent();
+    handleNameRegisteredByController(event)
+    // assert here
+    let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
+    let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
+    // assert here
+    // AirDomain
+    assert.fieldEquals("AirDomain", domainId, "registrationCost", event.params.cost.toString());
+    assert.fieldEquals("AirDomain", domainId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
+    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
+    assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
+  })
+
+  test("test handleNameRenewedByController", () => {
+    let event = getHandleNameRenewedByControllerEvent();
+    handleNameRenewedByController(event)
+    // assert here
+    let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
+    let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
+    // assert here
+    // AirDomain
+    assert.fieldEquals("AirDomain", domainId, "registrationCost", "0");
     assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
