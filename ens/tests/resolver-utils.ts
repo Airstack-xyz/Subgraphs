@@ -20,40 +20,40 @@ export function createHandleAddrChangedEvent(
   node: string,
   a: string,
 ): AddrChanged {
-  let handleAddrChangedEvent = changetype<AddrChanged>(newMockEvent())
+  let event = changetype<AddrChanged>(newMockEvent())
 
-  handleAddrChangedEvent.parameters = new Array()
-  handleAddrChangedEvent.block.number = BigInt.fromI32(10098239);
-  handleAddrChangedEvent.block.timestamp = BigInt.fromI32(2879823);
-  handleAddrChangedEvent.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
-  handleAddrChangedEvent.transaction.hash = getTransactionHash()
-  handleAddrChangedEvent.address = Address.fromString("0x314159265dd8dbb310642f98f50c066173c1259b")
-  handleAddrChangedEvent.logIndex = BigInt.fromI32(76)
-  handleAddrChangedEvent.parameters.push(
+  event.parameters = new Array()
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  event.transaction.hash = getTransactionHash()
+  event.address = Address.fromString("0x314159265dd8dbb310642f98f50c066173c1259b")
+  event.logIndex = BigInt.fromI32(76)
+  event.parameters.push(
     new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(Bytes.fromHexString(node) as Bytes))
   )
-  handleAddrChangedEvent.parameters.push(
+  event.parameters.push(
     new ethereum.EventParam("a", ethereum.Value.fromAddress(Address.fromString(a) as Address))
   )
 
-  return handleAddrChangedEvent
+  return event
 }
 
 export function createHandleVersionChangedEvent(
   node: string,
 ): VersionChanged {
-  let handleVersionChangedEvent = changetype<VersionChanged>(newMockEvent())
+  let event = changetype<VersionChanged>(newMockEvent())
 
-  handleVersionChangedEvent.parameters = new Array()
-  handleVersionChangedEvent.block.number = BigInt.fromI32(10098239);
-  handleVersionChangedEvent.block.timestamp = BigInt.fromI32(2879823);
-  handleVersionChangedEvent.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
-  handleVersionChangedEvent.transaction.hash = getTransactionHash()
-  handleVersionChangedEvent.address = Address.fromString("0x314159265dd8dbb310642f98f50c066173c1259b")
-  handleVersionChangedEvent.parameters.push(
+  event.parameters = new Array()
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  event.transaction.hash = getTransactionHash()
+  event.address = Address.fromString("0x314159265dd8dbb310642f98f50c066173c1259b")
+  event.parameters.push(
     new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(Bytes.fromHexString(node) as Bytes))
   )
 
-  return handleVersionChangedEvent
+  return event
 }
 
