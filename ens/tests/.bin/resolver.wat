@@ -5572,6 +5572,31 @@
     call $~lib/@graphprotocol/graph-ts/common/conversion/typeConversion.bigIntToString
     call $~lib/string/String#concat
     local.set 4
+    i32.const 13424
+    i32.const 3056
+    i32.const 13696
+    i32.const 3360
+    call $~lib/matchstick-as/assembly/assert/assert.fieldEquals
+    i32.const 13424
+    i32.const 3056
+    i32.const 13664
+    i32.const 3424
+    call $~lib/matchstick-as/assembly/assert/assert.fieldEquals
+    i32.const 13424
+    i32.const 3056
+    i32.const 13616
+    i32.const 3392
+    call $~lib/matchstick-as/assembly/assert/assert.fieldEquals
+    i32.const 13424
+    i32.const 3056
+    i32.const 13568
+    i32.const 3328
+    call $~lib/matchstick-as/assembly/assert/assert.fieldEquals
+    i32.const 13424
+    i32.const 3056
+    i32.const 13520
+    i32.const 4224
+    call $~lib/matchstick-as/assembly/assert/assert.fieldEquals
     i32.const 12480
     local.get 2
     i32.const 12528

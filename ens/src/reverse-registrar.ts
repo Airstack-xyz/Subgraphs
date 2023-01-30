@@ -10,7 +10,7 @@ import { TOKEN_ADDRESS_ENS } from "./utils";
  * @param call SetNameCall from ReverseRegistrar contract
  */
 export function handleSetName(call: SetNameCall): void {
-  log.info("handleSetName: name {} node {} txhash {}", [call.inputs.name, call.outputs.value0.toHexString(), call.transaction.hash.toHexString()]);
+  log.info("handleSetName: name {} reverse node {} txhash {}", [call.inputs.name, call.outputs.value0.toHexString(), call.transaction.hash.toHexString()]);
   airstack.domain.trackSetPrimaryDomainTransaction(
     call.inputs.name,
     ETHEREUM_MAINNET_ID,
@@ -19,6 +19,7 @@ export function handleSetName(call: SetNameCall): void {
     call.block.number,
     call.block.hash.toHexString(),
     call.block.timestamp,
+    call.transaction.hash.toHexString(),
     TOKEN_ADDRESS_ENS,
   );
 }

@@ -57,7 +57,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomainOwnerChangedTransaction", domainOwnerChangedEntityId, "index", BIGINT_ONE.toString());
   })
 
-  test("Test handleNewOwner", () => {
+  test("Test handleNewOwnerOldRegistry", () => {
     let event = getHandleNewOwnerEvent();
     handleNewOwnerOldRegistry(event)
     // assert here
@@ -233,7 +233,7 @@ describe("Unit tests for ens registry handlers", () => {
 
   test("Test handleNewTTLOldRegistry", () => {
     let event = getHandleNewTTLEvent();
-    handleNewTTL(event)
+    handleNewTTLOldRegistry(event)
     // assert here
     let domainId = event.params.node.toHexString();
     let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());

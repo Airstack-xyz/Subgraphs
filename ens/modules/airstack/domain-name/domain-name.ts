@@ -20,6 +20,7 @@ import {
   AirNameRegisteredTransaction,
   AirNameRenewedTransaction,
   AirAddrChanged,
+  ReverseRegistrar,
 } from "../../../generated/schema";
 import { uint256ToByteArray, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_TRANSACTION_COUNTER_ID, AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, AIR_NAME_REGISTERED_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS } from "./utils";
 import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, updateAirEntityCounter, getOrCreateAirBlock } from "../common";
@@ -98,6 +99,11 @@ export namespace domain {
     domain.lastBlock = block.id;
     recurseSubdomainCountDecrement(domain, chainId, block, tokenAddress);
     domain.save();
+
+    // creating reverse registrar to get domainId when setting primary domain
+    if (domain.name) {
+      createReverseRegistrar(domain.name!, domain.id);
+    }
 
     getOrCreateAirDomainOwnerChangedTransaction(
       block,
@@ -480,6 +486,10 @@ export namespace domain {
       domain.labelName = name
       domain.name = name + '.eth'
       domain.lastBlock = block.id;
+      // creating reverse registrar to get domainId when setting primary domain
+      if (domain.name) {
+        createReverseRegistrar(domain.name!, domain.id);
+      }
     }
     domain.save();
     //new name registered event
@@ -584,15 +594,17 @@ export namespace domain {
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
+    transactionHash: string,
     tokenAddress: string,
   ): void {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let domain = getOrCreateAirDomain(new Domain(
-      node.toHexString(),
-      chainId,
-      block,
-      tokenAddress,
-    ));
+    let reverseRegistrar = getReverseRegistrar(ensName);
+    if (reverseRegistrar == null) {
+      log.warning("Reverse registrar not found for name {} txhash {}", [ensName, transactionHash]);
+      return;
+    }
+    log.info("Reverse registrar found for name {} domainId {} txHash {}", [ensName, reverseRegistrar.domain, transactionHash])
+    let domain = getOrCreateAirDomain(new Domain(reverseRegistrar.domain, chainId, block, tokenAddress));
     let fromAccount = getOrCreateAirAccount(chainId, from);
     if (domain.name == ensName && domain.owner == fromAccount.id) {
       domain.isPrimary = true;
@@ -600,11 +612,7 @@ export namespace domain {
       domain.save();
     }
   }
-  // {
-  //   id: keccack("betashop.eth")
-  //   name: "betashop.eth",
-  //     domainId: "0x0000000000000000000000000000000000000000000000000000000000000000",
-  // }
+
   // end of track functions and start of get or create and helper functions
   /**
    * @dev This function gets or creates a AirAddrChanged entity
@@ -885,6 +893,26 @@ export namespace domain {
     return entity as AirDomainNewResolverTransaction;
   }
 
+  function createReverseRegistrar(
+    name: string,
+    domainId: string,
+  ): ReverseRegistrar {
+    let entity = ReverseRegistrar.load(name);
+    if (entity == null) {
+      entity = new ReverseRegistrar(name);
+      entity.domain = domainId;
+      entity.save();
+    }
+    return entity as ReverseRegistrar;
+  }
+
+  function getReverseRegistrar(
+    name: string,
+  ): ReverseRegistrar | null {
+    let id = name;
+    return ReverseRegistrar.load(id);
+  }
+
   /**
    * @dev this function gets or creates a new air domain entity
    * @param domain Domain class object
@@ -905,11 +933,12 @@ export namespace domain {
       entity.registrationCost = BIG_INT_ZERO;
       entity.createdAt = domain.block.id;
       entity.lastBlock = domain.block.id;
+      entity.save();
     }
     if (entity.id == ROOT_NODE) {
       entity.isMigrated = true;
+      entity.save();
     }
-    entity.save();
     return entity as AirDomain;
   }
 

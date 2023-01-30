@@ -1,3 +1,8 @@
+type ReverseRegistrar @entity {
+  id: ID!
+  domain: AirDomain!
+}
+
 #
 # --Airstack Schemas--
 
