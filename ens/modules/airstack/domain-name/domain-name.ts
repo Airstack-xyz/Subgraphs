@@ -894,7 +894,7 @@ export namespace domain {
    * @dev this function creates a new reverse registrar entity if it does not exist
    * @param name ens name, ex: 'schiller.eth'
    * @param domainId air domain id
-   * 
+   * @param block air block entity
    * @returns ReverseRegistrar entity
    */
   function createReverseRegistrar(
