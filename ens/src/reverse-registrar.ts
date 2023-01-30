@@ -14,7 +14,6 @@ export function handleSetName(call: SetNameCall): void {
   airstack.domain.trackSetPrimaryDomainTransaction(
     call.inputs.name,
     ETHEREUM_MAINNET_ID,
-    call.outputs.value0,
     call.from.toHexString(),
     call.block.number,
     call.block.hash.toHexString(),

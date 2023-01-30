@@ -579,7 +579,6 @@ export namespace domain {
    * @dev This function tracks a set primary domain transaction
    * @param ensName ens name
    * @param chainId chain id
-   * @param node domain node
    * @param from event.from address
    * @param blockHeight block number
    * @param blockHash block hash
@@ -589,7 +588,6 @@ export namespace domain {
   export function trackSetPrimaryDomainTransaction(
     ensName: string,
     chainId: string,
-    node: Bytes,
     from: string,
     blockHeight: BigInt,
     blockHash: string,
