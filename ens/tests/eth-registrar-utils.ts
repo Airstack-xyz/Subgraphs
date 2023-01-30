@@ -26,21 +26,21 @@ export function createHandleNameRegisteredEvent(
   let handleNameRegisteredEvent = changetype<NameRegisteredEvent>(newMockEvent())
 
   handleNameRegisteredEvent.parameters = new Array()
-  handleNameRegisteredEvent.block.number = new BigInt(10098239);
-  handleNameRegisteredEvent.block.timestamp = new BigInt(2879823);
+  handleNameRegisteredEvent.block.number = BigInt.fromI32(10098239);
+  handleNameRegisteredEvent.block.timestamp = BigInt.fromI32(2879823);
   handleNameRegisteredEvent.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
   handleNameRegisteredEvent.transaction.hash = getTransactionHash()
-  handleNameRegisteredEvent.logIndex = new BigInt(76)
-  handleNameRegisteredEvent.transaction.value = BigInt.fromI32(3)
+  handleNameRegisteredEvent.logIndex = BigInt.fromI32(76)
+  handleNameRegisteredEvent.transaction.value = BigInt.fromString("1000000000000000000")
 
   handleNameRegisteredEvent.parameters.push(
-    new ethereum.EventParam("id", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0xea6cc843bbe16a18e678f7050e9183f09ccf900a3b4b74de12dae9ce1f95dff4") as Bytes))
+    new ethereum.EventParam("id", ethereum.Value.fromUnsignedBigInt(BigInt.fromString("91429126920367530313023827682976888360097522553506880517423103419682943364318")))
   )
   handleNameRegisteredEvent.parameters.push(
     new ethereum.EventParam("owner", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabff8148") as Address))
   )
   handleNameRegisteredEvent.parameters.push(
-    new ethereum.EventParam("expires", ethereum.Value.fromUnsignedBigInt(new BigInt(10098239)))
+    new ethereum.EventParam("expires", ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(10098239)))
   )
 
   return handleNameRegisteredEvent
@@ -49,7 +49,21 @@ export function createHandleNameRegisteredEvent(
 export function createHandleNameRenewedEvent(
 ): NameRenewedEvent {
   let handleNameRenewedEvent = changetype<NameRenewedEvent>(newMockEvent())
-  handleNameRenewedEvent.transaction.value = BigInt.fromI32(3)
+  handleNameRenewedEvent.block.number = BigInt.fromI32(10098239);
+  handleNameRenewedEvent.block.timestamp = BigInt.fromI32(2879823);
+  handleNameRenewedEvent.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  handleNameRenewedEvent.transaction.hash = getTransactionHash()
+  handleNameRenewedEvent.logIndex = BigInt.fromI32(76)
+  handleNameRenewedEvent.transaction.value = BigInt.fromString("1000000000000000000")
+  handleNameRenewedEvent.transaction.from = Address.fromString("0x084b1c3c81545d370f3634392de611caabff8148")
+
+  handleNameRenewedEvent.parameters = new Array()
+  handleNameRenewedEvent.parameters.push(
+    new ethereum.EventParam("id", ethereum.Value.fromUnsignedBigInt(BigInt.fromString("91429126920367530313023827682976888360097522553506880517423103419682943364318")))
+  )
+  handleNameRenewedEvent.parameters.push(
+    new ethereum.EventParam("expires", ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(10098239)))
+  )
 
   return handleNameRenewedEvent
 }
