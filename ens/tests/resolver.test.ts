@@ -98,13 +98,48 @@ describe("Unit tests for resolver hanlders", () => {
     let event = getHandleVersionChangedEvent();
     handleVersionChanged(event)
     // assert here
-    // below assert breaks the test
-    // assert.fieldEquals(
-    //   "AirDomain",
-    //   event.params.node.toHexString(),
-    //   "resolvedAddress",
-    //   "null"
-    // )
+    let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
+    // AirBlock
+    assert.fieldEquals(
+      "AirBlock",
+      blockId,
+      "number",
+      event.block.number.toString()
+    )
+    assert.fieldEquals(
+      "AirBlock",
+      blockId,
+      "hash",
+      event.block.hash.toHexString()
+    )
+    assert.fieldEquals(
+      "AirBlock",
+      blockId,
+      "timestamp",
+      event.block.timestamp.toString()
+    )
+    // AirDomain
+    let domainId = event.params.node.toHexString();
+    assert.fieldEquals(
+      "AirDomain",
+      domainId,
+      "lastBlock",
+      blockId
+    )
+    // AirResolver
+    let resolverId = event.address.toHexString().concat("-").concat(event.params.node.toHexString())
+    assert.fieldEquals(
+      "AirResolver",
+      resolverId,
+      "domain",
+      domainId
+    )
+    assert.fieldEquals(
+      "AirResolver",
+      resolverId,
+      "address",
+      ETHEREUM_MAINNET_ID.concat("-").concat(event.address.toHexString())
+    )
   })
 
 })
