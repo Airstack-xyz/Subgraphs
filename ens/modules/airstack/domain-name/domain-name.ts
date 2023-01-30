@@ -102,7 +102,7 @@ export namespace domain {
 
     // creating reverse registrar to get domainId when setting primary domain
     if (domain.name) {
-      createReverseRegistrar(domain.name!, domain.id);
+      createReverseRegistrar(domain.name!, domain.id, block);
     }
 
     getOrCreateAirDomainOwnerChangedTransaction(
@@ -488,7 +488,7 @@ export namespace domain {
       domain.lastBlock = block.id;
       // creating reverse registrar to get domainId when setting primary domain
       if (domain.name) {
-        createReverseRegistrar(domain.name!, domain.id);
+        createReverseRegistrar(domain.name!, domain.id, block);
       }
     }
     domain.save();
@@ -700,7 +700,6 @@ export namespace domain {
    * @param transactionHash transaction hash
    * @param chainId chain id
    * @param block air block
-   * @param logIndex log index
    * @param domain air domain
    * @param cost cost of the transaction
    * @param paymentToken payment token
@@ -893,19 +892,33 @@ export namespace domain {
     return entity as AirDomainNewResolverTransaction;
   }
 
+  /**
+   * @dev this function creates a new reverse registrar entity if it does not exist
+   * @param name ens name, ex: 'schiller.eth'
+   * @param domainId air domain id
+   * 
+   * @returns ReverseRegistrar entity
+   */
   function createReverseRegistrar(
     name: string,
     domainId: string,
+    block: AirBlock,
   ): ReverseRegistrar {
     let entity = ReverseRegistrar.load(name);
     if (entity == null) {
       entity = new ReverseRegistrar(name);
       entity.domain = domainId;
+      entity.createdAt = block.id;
       entity.save();
     }
     return entity as ReverseRegistrar;
   }
 
+  /**
+   * @dev this function gets a reverse registrar entity
+   * @param name ens name, ex: 'schiller.eth'
+   * @returns ReverseRegistrar entity
+   */
   function getReverseRegistrar(
     name: string,
   ): ReverseRegistrar | null {

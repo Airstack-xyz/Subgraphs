@@ -209,8 +209,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           blockHash: string,
           blockTimestamp: BigInt,
           chainId: string,
-          logIndex: BigInt,
-          cost: BigInt,
+          cost: BigInt | null,
           paymentToken: string | null,
           renewer: string,
           labelId: BigInt,
@@ -224,12 +223,16 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           name: string,
           label: Bytes,
           cost: BigInt,
+          paymentToken: string | null,
           blockHeight: BigInt,
           blockHash: string,
           blockTimestamp: BigInt,
           chainId: string,
           rootNode: ByteArray,
           tokenAddress: string,
+          transactionHash: string,
+          renewer: string | null,
+          expiryTimestamp: BigInt | null,
           fromRegistrationEvent: boolean,
         )
 
@@ -262,11 +265,11 @@ integrate(vertical, yaml, graphql, dataSources, templates)
         trackSetPrimaryDomainTransaction(
           ensName: string,
           chainId: string,
-          node: Bytes,
           from: string,
           blockHeight: BigInt,
           blockHash: string,
           blockTimestamp: BigInt,
+          transactionHash: string,
           tokenAddress: string,
         )
 

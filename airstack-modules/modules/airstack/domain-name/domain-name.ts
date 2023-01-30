@@ -20,6 +20,7 @@ import {
   AirNameRegisteredTransaction,
   AirNameRenewedTransaction,
   AirAddrChanged,
+  ReverseRegistrar,
 } from "../../../generated/schema";
 import { uint256ToByteArray, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_TRANSACTION_COUNTER_ID, AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, AIR_NAME_REGISTERED_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS } from "./utils";
 import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, updateAirEntityCounter, getOrCreateAirBlock } from "../common";
@@ -88,6 +89,7 @@ export namespace domain {
         }
       }
     }
+
     let tokenId = BigInt.fromUnsignedBytes(label).toString();
     domain.owner = getOrCreateAirAccount(chainId, newOwner).id;
     domain.parent = parent.id;
@@ -97,6 +99,11 @@ export namespace domain {
     domain.lastBlock = block.id;
     recurseSubdomainCountDecrement(domain, chainId, block, tokenAddress);
     domain.save();
+
+    // creating reverse registrar to get domainId when setting primary domain
+    if (domain.name) {
+      createReverseRegistrar(domain.name!, domain.id, block);
+    }
 
     getOrCreateAirDomainOwnerChangedTransaction(
       block,
@@ -367,8 +374,7 @@ export namespace domain {
     blockHash: string,
     blockTimestamp: BigInt,
     chainId: string,
-    logIndex: BigInt,
-    cost: BigInt,
+    cost: BigInt | null,
     paymentToken: string | null,
     renewer: string,
     labelId: BigInt,
@@ -393,7 +399,6 @@ export namespace domain {
       transactionHash,
       chainId,
       block,
-      logIndex,
       domain,
       cost,
       paymentToken,
@@ -414,6 +419,9 @@ export namespace domain {
    * @param chainId chain id
    * @param rootNode root node ByteArray
    * @param tokenAddress contract address of nft token
+   * @param transactionHash transaction hash
+   * @param renewer renewer address - can be null
+   * @param expiryTimestamp expiry date - can be null
    * @param fromRegistrationEvent true if called from a registration event
    */
   export function trackSetNamePreImage(
@@ -427,6 +435,9 @@ export namespace domain {
     chainId: string,
     rootNode: ByteArray,
     tokenAddress: string,
+    transactionHash: string,
+    renewer: string | null,
+    expiryTimestamp: BigInt | null,
     fromRegistrationEvent: boolean,
   ): void {
     const labelHash = crypto.keccak256(ByteArray.fromUTF8(name));
@@ -457,13 +468,31 @@ export namespace domain {
         domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
       }
       domain.lastBlock = block.id;
+    } else {
+      // name renewal event
+      // updating renewal cost in name renewed transaction entity
+      getOrCreateAirNameRenewedTransaction(
+        transactionHash,
+        chainId,
+        block,
+        domain,
+        cost,
+        paymentToken,
+        renewer!,
+        expiryTimestamp!,
+      );
     }
     if (domain.labelName !== name) {
       domain.labelName = name
       domain.name = name + '.eth'
       domain.lastBlock = block.id;
+      // creating reverse registrar to get domainId when setting primary domain
+      if (domain.name) {
+        createReverseRegistrar(domain.name!, domain.id, block);
+      }
     }
     domain.save();
+    //new name registered event
   }
 
   /**
@@ -565,15 +594,17 @@ export namespace domain {
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
+    transactionHash: string,
     tokenAddress: string,
   ): void {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let domain = getOrCreateAirDomain(new Domain(
-      node.toHexString(),
-      chainId,
-      block,
-      tokenAddress,
-    ));
+    let reverseRegistrar = getReverseRegistrar(ensName);
+    if (reverseRegistrar == null) {
+      log.warning("Reverse registrar not found for name {} txhash {}", [ensName, transactionHash]);
+      return;
+    }
+    log.info("Reverse registrar found for name {} domainId {} txHash {}", [ensName, reverseRegistrar.domain, transactionHash])
+    let domain = getOrCreateAirDomain(new Domain(reverseRegistrar.domain, chainId, block, tokenAddress));
     let fromAccount = getOrCreateAirAccount(chainId, from);
     if (domain.name == ensName && domain.owner == fromAccount.id) {
       domain.isPrimary = true;
@@ -669,7 +700,6 @@ export namespace domain {
    * @param transactionHash transaction hash
    * @param chainId chain id
    * @param block air block
-   * @param logIndex log index
    * @param domain air domain
    * @param cost cost of the transaction
    * @param paymentToken payment token
@@ -681,14 +711,13 @@ export namespace domain {
     transactionHash: string,
     chainId: string,
     block: AirBlock,
-    logIndex: BigInt,
     domain: AirDomain,
-    cost: BigInt,
+    cost: BigInt | null,
     paymentToken: string | null,
     renewer: string,
     expiryTimestamp: BigInt,
   ): AirNameRenewedTransaction {
-    let id = createEntityId(transactionHash, block.number, logIndex);
+    let id = transactionHash.concat("-").concat(domain.id);
     let entity = AirNameRenewedTransaction.load(id);
     if (entity == null) {
       entity = new AirNameRenewedTransaction(id);
@@ -696,13 +725,19 @@ export namespace domain {
       entity.transactionHash = transactionHash;
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
-      entity.index = updateAirEntityCounter(AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, block);
       entity.cost = cost;
+      entity.index = updateAirEntityCounter(AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, block);
       if (paymentToken) {
         entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
       }
       entity.renewer = getOrCreateAirAccount(chainId, renewer).id;
       entity.expiryTimestamp = expiryTimestamp;
+      entity.save();
+    }
+    // getting renewal events from 2 contracts, old contract gives cost, new contract gives null, so if old contract event is processed first, then we update the cost
+    // if new contract event is processed first, then we don't update the cost
+    if (cost && !entity.cost) {
+      entity.cost = cost;
       entity.save();
     }
     return entity as AirNameRenewedTransaction;
@@ -858,6 +893,40 @@ export namespace domain {
   }
 
   /**
+   * @dev this function creates a new reverse registrar entity if it does not exist
+   * @param name ens name, ex: 'schiller.eth'
+   * @param domainId air domain id
+   * 
+   * @returns ReverseRegistrar entity
+   */
+  function createReverseRegistrar(
+    name: string,
+    domainId: string,
+    block: AirBlock,
+  ): ReverseRegistrar {
+    let entity = ReverseRegistrar.load(name);
+    if (entity == null) {
+      entity = new ReverseRegistrar(name);
+      entity.domain = domainId;
+      entity.createdAt = block.id;
+      entity.save();
+    }
+    return entity as ReverseRegistrar;
+  }
+
+  /**
+   * @dev this function gets a reverse registrar entity
+   * @param name ens name, ex: 'schiller.eth'
+   * @returns ReverseRegistrar entity
+   */
+  function getReverseRegistrar(
+    name: string,
+  ): ReverseRegistrar | null {
+    let id = name;
+    return ReverseRegistrar.load(id);
+  }
+
+  /**
    * @dev this function gets or creates a new air domain entity
    * @param domain Domain class object
    * @returns AirDomain entity
@@ -877,11 +946,12 @@ export namespace domain {
       entity.registrationCost = BIG_INT_ZERO;
       entity.createdAt = domain.block.id;
       entity.lastBlock = domain.block.id;
+      entity.save();
     }
     if (entity.id == ROOT_NODE) {
       entity.isMigrated = true;
+      entity.save();
     }
-    entity.save();
     return entity as AirDomain;
   }
 
