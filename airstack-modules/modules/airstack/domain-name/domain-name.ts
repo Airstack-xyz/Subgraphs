@@ -22,7 +22,7 @@ import {
   AirAddrChanged,
   ReverseRegistrar,
 } from "../../../generated/schema";
-import { uint256ToByteArray, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_TRANSACTION_COUNTER_ID, AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, AIR_NAME_REGISTERED_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS } from "./utils";
+import { uint256ToByteArray, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS } from "./utils";
 import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, updateAirEntityCounter, getOrCreateAirBlock } from "../common";
 
 export namespace domain {
@@ -645,7 +645,7 @@ export namespace domain {
       entity.newResolvedAddress = getOrCreateAirAccount(chainId, newResolvedAddress).id;
       entity.domain = domain.id;
       entity.tokenId = domain.tokenId;
-      entity.index = updateAirEntityCounter(AIR_ADDR_CHANGED_TRANSACTION_COUNTER_ID, block);
+      entity.index = updateAirEntityCounter(AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, block);
       entity.save();
     }
     return entity as AirAddrChanged;
@@ -724,7 +724,7 @@ export namespace domain {
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.cost = cost;
-      entity.index = updateAirEntityCounter(AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, block);
+      entity.index = updateAirEntityCounter(AIR_NAME_RENEWED_ENTITY_COUNTER_ID, block);
       if (paymentToken) {
         entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
       }
@@ -778,7 +778,7 @@ export namespace domain {
       entity.transactionHash = transactionHash;
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
-      entity.index = updateAirEntityCounter(AIR_NAME_REGISTERED_TRANSACTION_COUNTER_ID, block);
+      entity.index = updateAirEntityCounter(AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, block);
       entity.cost = cost;
       if (paymentToken) {
         entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
@@ -850,7 +850,7 @@ export namespace domain {
       entity.block = block.id;
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
-      entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, block);
+      entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, block);
       entity.save();
     }
     return entity as AirDomainNewTTLTransaction;
