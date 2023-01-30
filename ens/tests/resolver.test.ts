@@ -3,17 +3,13 @@ import {
   describe,
   test,
   clearStore,
-  beforeAll,
-  afterAll,
   afterEach,
-  beforeEach
 } from "matchstick-as/assembly/index"
 import { handleAddrChanged, handleVersionChanged } from "../src/resolver"
 import { getHandleAddrChangedEvent, getHandleVersionChangedEvent } from "./resolver-utils"
-import { domain } from "../modules/airstack/domain-name/index"
 import { ETHEREUM_MAINNET_ID } from "../modules/airstack/domain-name/utils"
 
-describe("Unit tests for resolver hanlders", () => {
+describe("Unit tests for resolver handlers", () => {
   afterEach(() => {
     clearStore()
   })
