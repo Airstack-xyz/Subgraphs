@@ -1,6 +1,5 @@
 import {
   BigInt,
-  dataSource,
   Bytes,
   crypto,
   log,
@@ -10,10 +9,8 @@ import {
 
 import {
   AirAccount,
-  AirEntityCounter,
   AirToken,
   AirBlock,
-  AirMeta,
   AirDomain,
   AirDomainOwnerChangedTransaction,
   AirDomainTransferTransaction,
@@ -24,7 +21,8 @@ import {
   AirNameRenewedTransaction,
   AirAddrChanged,
 } from "../../../generated/schema";
-import { uint256ToByteArray, AIR_META_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_TRANSACTION_COUNTER_ID, AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, AIR_NAME_REGISTERED_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork, BIG_INT_ZERO, ROOT_NODE, ZERO_ADDRESS, EMPTY_STRING } from "./utils";
+import { uint256ToByteArray, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_TRANSACTION_COUNTER_ID, AIR_NAME_RENEWED_TRANSACTION_COUNTER_ID, AIR_NAME_REGISTERED_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_TTL_TRANSACTION_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS } from "./utils";
+import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, updateAirEntityCounter, getOrCreateAirBlock } from "../common";
 
 export namespace domain {
   /**
@@ -97,7 +95,7 @@ export namespace domain {
     domain.isMigrated = isMigrated;
     domain.tokenId = tokenId;
     domain.lastBlock = block.id;
-    recurseDomainDelete(domain, chainId, block, tokenAddress);
+    recurseSubdomainCountDecrement(domain, chainId, block, tokenAddress);
     domain.save();
 
     getOrCreateAirDomainOwnerChangedTransaction(
@@ -214,7 +212,7 @@ export namespace domain {
     }
     // do recursive domain delete
     domain.lastBlock = block.id;
-    recurseDomainDelete(domain, chainId, block, tokenAddress);
+    recurseSubdomainCountDecrement(domain, chainId, block, tokenAddress);
     domain.save();
 
     // create new resolver transaction
@@ -262,7 +260,7 @@ export namespace domain {
       return;
     }
     // get previous ttl
-    let oldTTL: BigInt | null = BIG_INT_ZERO;
+    let oldTTL: BigInt | null = null;
     if (domain.ttl) {
       oldTTL = domain.ttl;
     }
@@ -924,14 +922,14 @@ export namespace domain {
   }
 
   /**
-   * @dev this function does a recursive domain deletion for a particular domain
+   * @dev this function does a recursive subdomain count decrement
    * @param domain air domain entity
    * @param chainId chain id
    * @param block air block entity
    * @param tokenAddress contract address of nft token
-   * @returns parent domain id
+   * @returns air domain entity id
    */
-  function recurseDomainDelete(domain: AirDomain, chainId: string, block: AirBlock, tokenAddress: string): string | null {
+  function recurseSubdomainCountDecrement(domain: AirDomain, chainId: string, block: AirBlock, tokenAddress: string): string | null {
     if (domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
       if (domain.parent) {
         const parentDomain = getOrCreateAirDomain(new Domain(domain.parent!, chainId, block, tokenAddress));
@@ -939,86 +937,12 @@ export namespace domain {
           parentDomain.subdomainCount = parentDomain.subdomainCount.minus(BIGINT_ONE)
           parentDomain.lastBlock = block.id;
           parentDomain.save();
-          return recurseDomainDelete(parentDomain, chainId, block, tokenAddress)
+          return recurseSubdomainCountDecrement(parentDomain, chainId, block, tokenAddress)
         }
       }
       return null
     }
     return domain.id
-  }
-
-  /**
-   * @dev this function updates air entity counter for a given entity id
-   * @param id entity id for entity to be updated
-   * @param block air block object
-   * @returns updated entity count
-   */
-  function updateAirEntityCounter(
-    id: string,
-    block: AirBlock,
-  ): BigInt {
-    let entity = AirEntityCounter.load(id);
-    if (entity == null) {
-      entity = new AirEntityCounter(id);
-      entity.count = BIGINT_ONE;
-      entity.createdAt = block.id;
-      entity.lastUpdatedAt = block.id;
-      createAirMeta(SUBGRAPH_SLUG, SUBGRAPH_NAME);
-    } else {
-      entity.count = entity.count.plus(BIGINT_ONE);
-      entity.lastUpdatedAt = block.id;
-    }
-    entity.save();
-    return entity.count as BigInt;
-  }
-
-  /**
-   * @dev this function creates air meta entity
-   * @param slug subgraph slug
-   * @param name subgraph name
-   */
-  function createAirMeta(
-    slug: string,
-    name: string
-    // should ideally have version also being passed from here
-  ): void {
-    let meta = AirMeta.load(AIR_META_ID);
-    if (meta == null) {
-      meta = new AirMeta(AIR_META_ID);
-      meta.network = processNetwork(dataSource.network());
-      meta.schemaVersion = SUBGRAPH_SCHEMA_VERSION;
-      meta.version = SUBGRAPH_VERSION;
-      meta.slug = slug;
-      meta.name = name;
-      meta.save();
-    }
-  }
-
-  /**
-   * @dev this function gets or creates a new air block entity
-   * @param chainId chain id
-   * @param blockHeight block number
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
-   * @returns AirBlock entity
-   */
-  function getOrCreateAirBlock(
-    chainId: string,
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt
-  ): AirBlock {
-    let id = chainId.concat("-").concat(blockHeight.toString());
-
-    let block = AirBlock.load(id);
-    if (block == null) {
-      block = new AirBlock(id);
-      block.hash = blockHash;
-      block.number = blockHeight;
-      block.timestamp = blockTimestamp
-      block.save()
-    }
-    return block as AirBlock;
   }
 
   /**

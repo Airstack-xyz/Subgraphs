@@ -15,7 +15,8 @@ import {
     AirMeta
 } from "../../../generated/schema";
 
-import { AIR_NFT_SALE_ENTITY_ID, AIR_META_ID, BIGINT_ONE, SUBGRAPH_SCHEMA_VERSION, SUBGRAPH_VERSION, SUBGRAPH_NAME, SUBGRAPH_SLUG, processNetwork } from "./utils";
+import { AIR_NFT_SALE_ENTITY_ID } from "./utils";
+import { updateAirEntityCounter, getOrCreateAirBlock } from "../common";
 
 export namespace nft {
     export function trackNFTSaleTransactions(
@@ -65,7 +66,7 @@ export namespace nft {
                     transactionId
                 );
 
-                transaction.index = updateAirEntityCounter(chainID, AIR_NFT_SALE_ENTITY_ID, block);
+                transaction.index = updateAirEntityCounter(AIR_NFT_SALE_ENTITY_ID, block);
             }
 
             transaction.to = buyerAccount.id;
@@ -162,25 +163,6 @@ export namespace nft {
         return transaction as AirNftTransaction;
     }
 
-    export function getOrCreateAirBlock(
-        chainId: string,
-        blockHeight: BigInt,
-        blockHash: string,
-        blockTimestamp: BigInt
-    ): AirBlock {
-        let id = chainId.concat("-").concat(blockHeight.toString());
-
-        let block = AirBlock.load(id);
-        if (block == null) {
-            block = new AirBlock(id);
-            block.hash = blockHash;
-            block.number = blockHeight;
-            block.timestamp = blockTimestamp
-            block.save()
-        }
-        return block as AirBlock;
-    }
-
     export function getOrCreateRoyalty(
         id: string
     ): AirNftSaleRoyalty {
@@ -189,43 +171,6 @@ export namespace nft {
             royalty = new AirNftSaleRoyalty(id);
         }
         return royalty as AirNftSaleRoyalty;
-    }
-
-    export function updateAirEntityCounter(
-        chainId: string,
-        id: string,
-        block: AirBlock,
-    ): BigInt {
-        let entity = AirEntityCounter.load(id);
-        if (entity == null) {
-            entity = new AirEntityCounter(id);
-            entity.count = BIGINT_ONE;
-            entity.createdAt = block.id;
-            entity.lastUpdatedAt = block.id;
-            createAirMeta(SUBGRAPH_SLUG, SUBGRAPH_NAME);
-        } else {
-            entity.count = entity.count.plus(BIGINT_ONE);
-            entity.lastUpdatedAt = block.id;
-        }
-
-        entity.save();
-        return entity.count;
-    }
-
-    export function createAirMeta(
-        slug: string,
-        name: string
-    ): void {
-        let meta = AirMeta.load(AIR_META_ID);
-        if (meta == null) {
-            meta = new AirMeta(AIR_META_ID);
-            meta.network = processNetwork(dataSource.network());
-            meta.schemaVersion = SUBGRAPH_SCHEMA_VERSION;
-            meta.version = SUBGRAPH_VERSION;
-            meta.slug = slug;
-            meta.name = name;
-            meta.save();
-        }
     }
 
     export class Sale {
