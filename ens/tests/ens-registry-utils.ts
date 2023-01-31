@@ -1,101 +1,100 @@
 import { newMockEvent } from "matchstick-as"
 import { ethereum, Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
+import { getTransactionHash } from "./common-utils"
 import {
-  ApprovalForAll,
-  NewOwner,
-  NewResolver,
-  NewTTL,
-  Transfer
+  NewOwner as NewOwnerEvent,
+  NewResolver as NewResolverEvent,
+  NewTTL as NewTTLEvent,
+  Transfer as TransferEvent
 } from "../generated/EnsRegistry/EnsRegistry"
 
-export function createApprovalForAllEvent(
-  owner: Address,
-  operator: Address,
-  approved: boolean
-): ApprovalForAll {
-  let approvalForAllEvent = changetype<ApprovalForAll>(newMockEvent())
-
-  approvalForAllEvent.parameters = new Array()
-
-  approvalForAllEvent.parameters.push(
-    new ethereum.EventParam("owner", ethereum.Value.fromAddress(owner))
-  )
-  approvalForAllEvent.parameters.push(
-    new ethereum.EventParam("operator", ethereum.Value.fromAddress(operator))
-  )
-  approvalForAllEvent.parameters.push(
-    new ethereum.EventParam("approved", ethereum.Value.fromBoolean(approved))
-  )
-
-  return approvalForAllEvent
+export function getHandleNewOwnerEvent(): NewOwnerEvent {
+  return createHandleNewOwnerEvent()
 }
 
-export function createNewOwnerEvent(
-  node: Bytes,
-  label: Bytes,
-  owner: Address
-): NewOwner {
-  let newOwnerEvent = changetype<NewOwner>(newMockEvent())
-
-  newOwnerEvent.parameters = new Array()
-
-  newOwnerEvent.parameters.push(
-    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(node))
-  )
-  newOwnerEvent.parameters.push(
-    new ethereum.EventParam("label", ethereum.Value.fromFixedBytes(label))
-  )
-  newOwnerEvent.parameters.push(
-    new ethereum.EventParam("owner", ethereum.Value.fromAddress(owner))
-  )
-
-  return newOwnerEvent
+export function getHandleTransferEvent(): TransferEvent {
+  return createHandleTransferEvent()
 }
 
-export function createNewResolverEvent(
-  node: Bytes,
-  resolver: Address
-): NewResolver {
-  let newResolverEvent = changetype<NewResolver>(newMockEvent())
-
-  newResolverEvent.parameters = new Array()
-
-  newResolverEvent.parameters.push(
-    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(node))
-  )
-  newResolverEvent.parameters.push(
-    new ethereum.EventParam("resolver", ethereum.Value.fromAddress(resolver))
-  )
-
-  return newResolverEvent
+export function getHandleNewResolverEvent(): NewResolverEvent {
+  return createHandleNewResolverEvent()
 }
 
-export function createNewTTLEvent(node: Bytes, ttl: BigInt): NewTTL {
-  let newTtlEvent = changetype<NewTTL>(newMockEvent())
-
-  newTtlEvent.parameters = new Array()
-
-  newTtlEvent.parameters.push(
-    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(node))
-  )
-  newTtlEvent.parameters.push(
-    new ethereum.EventParam("ttl", ethereum.Value.fromUnsignedBigInt(ttl))
-  )
-
-  return newTtlEvent
+export function getHandleNewTTLEvent(): NewTTLEvent {
+  return createHandleNewTTLEvent()
 }
 
-export function createTransferEvent(node: Bytes, owner: Address): Transfer {
-  let transferEvent = changetype<Transfer>(newMockEvent())
+function createHandleNewOwnerEvent(): NewOwnerEvent {
+  let event = changetype<NewOwnerEvent>(newMockEvent())
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  event.transaction.hash = getTransactionHash()
+  event.logIndex = BigInt.fromI32(76)
 
-  transferEvent.parameters = new Array()
-
-  transferEvent.parameters.push(
-    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(node))
+  event.parameters = new Array()
+  event.parameters.push(
+    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2") as Bytes))
   )
-  transferEvent.parameters.push(
-    new ethereum.EventParam("owner", ethereum.Value.fromAddress(owner))
+  event.parameters.push(
+    new ethereum.EventParam("label", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0xa4757f81c024f155983881ff8228a21c098ecc3708b3b0ba64b8d605d5e9849b") as Bytes))
   )
+  event.parameters.push(
+    new ethereum.EventParam("owner", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabff8148") as Address))
+  )
+  return event
+}
 
-  return transferEvent
+function createHandleTransferEvent(): TransferEvent {
+  let event = changetype<TransferEvent>(newMockEvent())
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  event.transaction.hash = getTransactionHash()
+  event.logIndex = BigInt.fromI32(76)
+
+  event.parameters = new Array()
+  event.parameters.push(
+    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2") as Bytes))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("owner", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabff8148") as Address))
+  )
+  return event
+}
+
+function createHandleNewResolverEvent(): NewResolverEvent {
+  let event = changetype<NewResolverEvent>(newMockEvent())
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  event.transaction.hash = getTransactionHash()
+  event.logIndex = BigInt.fromI32(76)
+
+  event.parameters = new Array()
+  event.parameters.push(
+    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407") as Bytes))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("resolver", ethereum.Value.fromAddress(Address.fromString("0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41") as Address))
+  )
+  return event
+}
+
+function createHandleNewTTLEvent(): NewTTLEvent {
+  let event = changetype<NewTTLEvent>(newMockEvent())
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  event.transaction.hash = getTransactionHash()
+  event.logIndex = BigInt.fromI32(76)
+
+  event.parameters = new Array()
+  event.parameters.push(
+    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407") as Bytes))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("ttl", ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(100)))
+  )
+  return event
 }
