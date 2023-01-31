@@ -1,5 +1,6 @@
 type ReverseRegistrar @entity {
   id: ID!
+  name: String!
   domain: AirDomain!
   createdAt: AirBlock!
 }

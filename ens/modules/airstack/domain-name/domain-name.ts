@@ -984,9 +984,11 @@ export namespace domain {
     domainId: string,
     block: AirBlock,
   ): ReverseRegistrar {
-    let entity = ReverseRegistrar.load(name);
+    let id = crypto.keccak256(Bytes.fromUTF8(name)).toHexString();
+    let entity = ReverseRegistrar.load(id);
     if (entity == null) {
-      entity = new ReverseRegistrar(name);
+      entity = new ReverseRegistrar(id);
+      entity.name = name;
       entity.domain = domainId;
       entity.createdAt = block.id;
       entity.save();
@@ -1002,7 +1004,7 @@ export namespace domain {
   function getReverseRegistrar(
     name: string,
   ): ReverseRegistrar | null {
-    let id = name;
+    let id = crypto.keccak256(Bytes.fromUTF8(name)).toHexString();
     return ReverseRegistrar.load(id);
   }
 
