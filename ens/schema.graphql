@@ -179,5 +179,5 @@ type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   tokenId: String # dec(labelhash) # - NA
   domain: AirDomain! # - name
   index: BigInt! # - NA
-  resolvedAddress: String! #make sure to remove the old primary ens if changed
+  resolvedAddress: AirAccount! #make sure to remove the old primary ens if changed
 }
