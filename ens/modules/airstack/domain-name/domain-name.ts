@@ -300,7 +300,7 @@ export namespace domain {
    * @param registrantAddress registrant address
    * @param expiryTimestamp domain expiry date
    * @param cost domain registration cost
-   * @param paymentToken payment token address - can be null
+   * @param paymentToken payment token address
    * @param labelId label id
    * @param rootNode root node byte array
    * @param tokenAddress contract address of nft token
@@ -315,7 +315,7 @@ export namespace domain {
     registrantAddress: string,
     expiryTimestamp: BigInt,
     cost: BigInt,
-    paymentToken: string | null,
+    paymentToken: string,
     labelId: BigInt,
     rootNode: ByteArray,
     tokenAddress: string,
@@ -363,7 +363,7 @@ export namespace domain {
    * @param chainId chain id
    * @param logIndex txn log index
    * @param cost cost of renewal
-   * @param paymentToken payment token address - can be null
+   * @param paymentToken payment token address
    * @param renewer renewer address
    * @param labelId label id
    * @param rootNode root node byte array
@@ -377,7 +377,7 @@ export namespace domain {
     blockTimestamp: BigInt,
     chainId: string,
     cost: BigInt | null,
-    paymentToken: string | null,
+    paymentToken: string,
     renewer: string,
     labelId: BigInt,
     rootNode: ByteArray,
@@ -414,7 +414,7 @@ export namespace domain {
    * @param name domain name
    * @param label label hash
    * @param cost cost - still needs to be recorded
-   * @param paymentToken payment token address - can be null
+   * @param paymentToken payment token address
    * @param blockHeight block height
    * @param blockHash block hash
    * @param blockTimestamp block timestamp
@@ -430,7 +430,7 @@ export namespace domain {
     name: string,
     label: Bytes,
     cost: BigInt,
-    paymentToken: string | null,
+    paymentToken: string,
     blockHeight: BigInt,
     blockHash: string,
     blockTimestamp: BigInt,
@@ -793,7 +793,7 @@ export namespace domain {
     block: AirBlock,
     domain: AirDomain,
     cost: BigInt | null,
-    paymentToken: string | null,
+    paymentToken: string,
     renewer: string,
     expiryTimestamp: BigInt,
   ): AirNameRenewedTransaction {
@@ -847,7 +847,7 @@ export namespace domain {
     logIndex: BigInt,
     domain: AirDomain,
     cost: BigInt,
-    paymentToken: string | null,
+    paymentToken: string,
     registrant: string,
     expiryTimestamp: BigInt,
   ): AirNameRegisteredTransaction {

@@ -30,10 +30,7 @@ const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c
  */
 export function handleNameRegistered(event: NameRegisteredEvent): void {
   log.info("handleNameRegistered: registrant {} label {} expiry {} txhash {}", [event.params.owner.toHexString(), event.params.id.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString()]);
-  let paymentToken: string | null = null
-  if (event.transaction.value > BIG_INT_ZERO) {
-    paymentToken = ZERO_ADDRESS;
-  }
+
   airstack.domain.trackNameRegisteredTransaction(
     event.transaction.hash.toHexString(),
     event.block.number,
@@ -44,7 +41,7 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
     event.params.owner.toHexString(),
     event.params.expires,
     event.transaction.value,
-    paymentToken,
+    ZERO_ADDRESS,
     event.params.id,
     rootNode,
     TOKEN_ADDRESS_ENS,
@@ -57,10 +54,7 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
  */
 export function handleNameRenewed(event: NameRenewedEvent): void {
   log.info("handleNameRenewed: renewer {} label {} expiry {} txhash {}", [event.transaction.from.toHexString(), event.params.id.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString()]);
-  let paymentToken: string | null = null
-  if (event.transaction.value > BIG_INT_ZERO) {
-    paymentToken = ZERO_ADDRESS;
-  }
+
   airstack.domain.trackNameRenewedTransaction(
     event.transaction.hash.toHexString(),
     event.block.number,
@@ -68,7 +62,7 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
     event.block.timestamp,
     ETHEREUM_MAINNET_ID,
     null,
-    paymentToken,
+    ZERO_ADDRESS,
     event.transaction.from.toHexString(),
     event.params.id,
     rootNode,
@@ -83,15 +77,11 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
  */
 export function handleNameRegisteredByControllerOld(event: ControllerNameRegisteredEventOld): void {
   log.info("handleNameRegisteredByControllerOld: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
-  let paymentToken: string | null = null
-  if (event.params.cost > BIG_INT_ZERO) {
-    paymentToken = ZERO_ADDRESS;
-  }
   airstack.domain.trackSetNamePreImage(
     event.params.name,
     event.params.label,
     event.params.cost,
-    paymentToken,
+    ZERO_ADDRESS,
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
@@ -111,15 +101,12 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
  */
 export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
   log.info("handleNameRegisteredByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
-  let paymentToken: string | null = null
-  if (event.params.cost > BIG_INT_ZERO) {
-    paymentToken = ZERO_ADDRESS;
-  }
+
   airstack.domain.trackSetNamePreImage(
     event.params.name,
     event.params.label,
     event.params.cost,
-    paymentToken,
+    ZERO_ADDRESS,
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
@@ -139,15 +126,11 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
  */
 export function handleNameRenewedByController(event: ControllerNameRenewedEvent): void {
   log.info("handleNameRenewedByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
-  let paymentToken: string | null = null
-  if (event.params.cost > BIG_INT_ZERO) {
-    paymentToken = ZERO_ADDRESS;
-  }
   airstack.domain.trackSetNamePreImage(
     event.params.name,
     event.params.label,
     event.params.cost,
-    paymentToken,
+    ZERO_ADDRESS,
     event.block.number,
     event.block.hash.toHexString(),
     event.block.timestamp,
