@@ -48,8 +48,7 @@ type AirDomain @entity {
   owner: AirAccount!
   resolver: AirResolver
   ttl: BigInt
-  isMigrated: Boolean!
-  isPrimary: Boolean! #- NA
+  isPrimary: Boolean! # - NA                        # Is the primary domain for the resolved address
   expiryTimestamp: BigInt!
   registrationCost: BigInt!                            # Cost of domain registration in wei
   paymentToken: AirToken                              # Token used to pay for registration
@@ -161,7 +160,6 @@ type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration
   expiryTimestamp: BigInt! # - expiryTimestamp to be added to air domain
 }
 
-#where is this coming from? NameChanged or have to implement a resolver here
 type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   id: ID!
   block: AirBlock!
@@ -169,7 +167,7 @@ type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   tokenId: String # dec(labelhash) # - NA
   domain: AirDomain! # - name
   index: BigInt! # - NA
-  resolverAddress: String! #make sure to remove the old primary ens if changed
+  resolvedAddress: AirAccount! #make sure to remove the old primary ens if changed
 }
 `
 

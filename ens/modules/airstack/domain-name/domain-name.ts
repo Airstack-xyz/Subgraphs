@@ -61,7 +61,7 @@ export namespace domain {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domainId = createAirDomainEntityId(node, label);
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, block, tokenAddress));
-    let isMigratedMapping = getIsMigratedMapping(domainId);
+    let isMigratedMapping = getOrCreateIsMigratedMapping(domainId, block.id);
     if (fromOldRegistry && isMigratedMapping.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
@@ -107,7 +107,8 @@ export namespace domain {
     if (domain.name) {
       createReverseRegistrar(domain.name!, domain.id, block);
     }
-    createIsMigratedMapping(domainId, isMigrated, block);
+    // creating is migrated mapping
+    getOrCreateIsMigratedMapping(domainId, block.id, isMigrated);
     getOrCreateAirDomainOwnerChangedTransaction(
       block,
       logIndex,
@@ -147,7 +148,7 @@ export namespace domain {
   ): void {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
-    let isMigratedMapping = getIsMigratedMapping(domain.id);
+    let isMigratedMapping = getOrCreateIsMigratedMapping(domain.id, block.id);
     if (fromOldRegistry && isMigratedMapping.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
@@ -206,7 +207,7 @@ export namespace domain {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
-    let isMigratedMapping = getIsMigratedMapping(domain.id);
+    let isMigratedMapping = getOrCreateIsMigratedMapping(domain.id, block.id);
     if (fromOldRegistry && node != ROOT_NODE && isMigratedMapping.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
@@ -266,7 +267,7 @@ export namespace domain {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
-    let isMigratedMapping = getIsMigratedMapping(domain.id);
+    let isMigratedMapping = getOrCreateIsMigratedMapping(domain.id, block.id);
     if (fromOldRegistry && isMigratedMapping.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
@@ -978,23 +979,19 @@ export namespace domain {
   /**
    * @dev this function creates a new DomainVsIsMigratedMapping entity
    * @param domaiId air domain entity id
-   * @param isMigrated is migrated flag
-   * @param block air block entity
-  */
-  function createIsMigratedMapping(domainId: string, isMigrated: boolean, block: AirBlock): void {
-    let entity = new DomainVsIsMigratedMapping(domainId);
-    entity.isMigrated = isMigrated;
-    entity.lastUpdatedAt = block.id;
-    entity.save();
-  }
-
-  /**
-   * @dev this function gets a DomainVsIsMigratedMapping entity
-   * @param domainId air domain entity id
+   * @param blockId air block entity id
+   * @param isMigrated is migrated flag - only required when creating a new entity
    * @returns DomainVsIsMigratedMapping entity
-   */
-  function getIsMigratedMapping(domainId: string): DomainVsIsMigratedMapping {
-    return DomainVsIsMigratedMapping.load(domainId) as DomainVsIsMigratedMapping;
+  */
+  function getOrCreateIsMigratedMapping(domainId: string, blockId: string, isMigrated: boolean = false): DomainVsIsMigratedMapping {
+    let entity = DomainVsIsMigratedMapping.load(domainId);
+    if (entity == null) {
+      entity = new DomainVsIsMigratedMapping(domainId);
+      entity.isMigrated = isMigrated;
+      entity.lastUpdatedAt = blockId;
+      entity.save();
+    }
+    return entity as DomainVsIsMigratedMapping;
   }
 
   /**
