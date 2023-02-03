@@ -231,7 +231,7 @@ export namespace abi {
 
 	export function decodeSingleNftData(
 		txHash: string,
-		buyCallData: Bytes, sellCallData: Bytes, replacementPattern: Bytes
+		buyCallData: Bytes, sellCallData: Bytes, replacementPattern: Bytes,blockNo :BigInt
 	): Decoded_TransferFrom_Result | null {
 		/**
 		 * 
@@ -250,11 +250,11 @@ export namespace abi {
 		// todo Debug this call
 		log.info("Before guarded Array replacement, txhash {} {} {} {}", [txHash, buyCallData.toHexString(), sellCallData.toHexString(), replacementPattern.toHexString()])
 		let mergedCallData = guardedArrayReplace(buyCallData, sellCallData, replacementPattern)
-		return decodeAbi_transferFrom_Method(mergedCallData, txHash)
+		return decodeAbi_transferFrom_Method(mergedCallData, txHash,blockNo)
 
 	}
 
-	export function decodeAbi_transferFrom_Method(callData: Bytes, txHash: string = "dummy"): Decoded_TransferFrom_Result | null {
+	export function decodeAbi_transferFrom_Method(callData: Bytes, txHash: string = "dummy",blockNo:BigInt = BigInt.fromI32(0)): Decoded_TransferFrom_Result | null {
 		/**
 		 * callData as bytes doesn't have a trailing 0x but represents a hex string
 		 * first 4 Bytes cointains 8 hex chars for the function selector
@@ -316,8 +316,18 @@ export namespace abi {
 			let contract = decoded[2].toAddress();
 			let tokenId = decoded[3].toBigInt();
 			let amount = decoded[4].toBigInt();
-        
-			log.info("new decoded data txHash {} {} {} {} {}", [txHash ,senderAddress.toHexString(), recieverAddress.toHexString(), tokenId.toString(), contract.toHexString()]);
+            log.info(
+                    "ERC1155 blockNo {} txHash {} \n senderAddress {} \n recieverAddress {} \n tokenId {} \n contract {} amount {}",
+                    [	blockNo.toString(),
+                        txHash,
+                        senderAddress.toHexString(),
+                        recieverAddress.toHexString(),
+                        tokenId.toString(),
+                        contract.toHexString(),
+                        amount.toString(),
+                    ]
+            )
+			
 			return new Decoded_TransferFrom_Result(
 				functionSelector,
 				senderAddress,

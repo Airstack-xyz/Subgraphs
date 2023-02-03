@@ -149,11 +149,12 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
   } else {
     log.info("txHash {} not bundle sale", [txHash.toHexString()]);
     let decoded = abi.decodeSingleNftData(
-      txHash.toHexString(),
-      buyOrder.callData!,
-      sellOrder.callData!,
-      buyOrder.replacementPattern!
-    );
+        txHash.toHexString(),
+        buyOrder.callData!,
+        sellOrder.callData!,
+        buyOrder.replacementPattern!,
+        call.block.number
+    )
 
     if (decoded == null) {
       return;
