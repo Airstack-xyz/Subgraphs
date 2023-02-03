@@ -61,7 +61,7 @@ export namespace domain {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domainId = createAirDomainEntityId(node, label);
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, block, tokenAddress));
-    let isMigratedMapping = getOrCreateIsMigratedMapping(domainId, block.id);
+    let isMigratedMapping = getOrCreateIsMigratedMapping(domainId, block.id, isMigrated);
     if (fromOldRegistry && isMigratedMapping.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;

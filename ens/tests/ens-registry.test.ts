@@ -38,7 +38,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "owner", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
     assert.fieldEquals("AirDomain", domainId, "parent", parentDomainId);
     assert.fieldEquals("AirDomain", domainId, "labelHash", event.params.label.toHexString());
-    assert.fieldEquals("AirDomain", domainId, "isMigrated", "true");
+    assert.fieldEquals("DomainVsIsMigratedMapping", domainId, "isMigrated", "true");
     assert.fieldEquals("AirDomain", domainId, "tokenId", BigInt.fromUnsignedBytes(event.params.label).toString());
     assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "createdAt", blockId);
@@ -78,7 +78,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "owner", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
     assert.fieldEquals("AirDomain", domainId, "parent", parentDomainId);
     assert.fieldEquals("AirDomain", domainId, "labelHash", event.params.label.toHexString());
-    assert.fieldEquals("AirDomain", domainId, "isMigrated", "false");
+    assert.fieldEquals("DomainVsIsMigratedMapping", domainId, "isMigrated", "false");
     assert.fieldEquals("AirDomain", domainId, "tokenId", BigInt.fromUnsignedBytes(event.params.label).toString());
     assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "createdAt", blockId);
