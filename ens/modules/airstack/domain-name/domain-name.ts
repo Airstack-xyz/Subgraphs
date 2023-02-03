@@ -219,7 +219,7 @@ export namespace domain {
     if (resolverEntity.resolvedAddress) {
       domain.resolvedAddress = resolverEntity.resolvedAddress;
     }
-    // do recursive domain delete
+    // do recursive subdomain count decrement
     domain.lastBlock = block.id;
     recurseSubdomainCountDecrement(domain, chainId, block, tokenAddress);
     domain.save();
@@ -337,6 +337,8 @@ export namespace domain {
     }
     domain.expiryTimestamp = expiryTimestamp;
     domain.lastBlock = block.id;
+    domain.registrationCost = cost;
+    domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
     domain.save();
     // create name registered transaction
     getOrCreateAirNameRegisteredTransaction(
@@ -466,9 +468,7 @@ export namespace domain {
     // tracking registration cost in domain entity  - renewal cost is not being tracked yet
     if (fromRegistrationEvent) {
       domain.registrationCost = cost;
-      if (paymentToken) {
-        domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
-      }
+      domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
       domain.lastBlock = block.id;
     } else {
       // name renewal event
@@ -1084,7 +1084,8 @@ export namespace domain {
    * @returns air domain entity id
    */
   function recurseSubdomainCountDecrement(domain: AirDomain, chainId: string, block: AirBlock, tokenAddress: string): string | null {
-    if (domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
+    if ((domain.resolver == null || domain.resolver!.split("-")[0] == ZERO_ADDRESS) &&
+      domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
       if (domain.parent) {
         const parentDomain = getOrCreateAirDomain(new Domain(domain.parent!, chainId, block, tokenAddress));
         if (parentDomain) {
