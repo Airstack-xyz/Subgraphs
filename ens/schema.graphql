@@ -11,6 +11,12 @@ type PrimaryDomain @entity {
   lastUpdatedAt: AirBlock!
 }
 
+type DomainVsIsMigratedMapping @entity {
+  id: ID! #domain
+  isMigrated: Boolean!
+  lastUpdatedAt: AirBlock!
+}
+
 #
 # --Airstack Schemas--
 
@@ -60,7 +66,6 @@ type AirDomain @entity {
   owner: AirAccount!
   resolver: AirResolver
   ttl: BigInt
-  isMigrated: Boolean!
   isPrimary: Boolean! # - NA                        # Is the primary domain for the resolved address
   expiryTimestamp: BigInt!
   registrationCost: BigInt!                            # Cost of domain registration in wei

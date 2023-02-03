@@ -23,6 +23,7 @@ import {
   AirPrimaryDomainTransaction,
   ReverseRegistrar,
   PrimaryDomain,
+  DomainVsIsMigratedMapping,
 } from "../../../generated/schema";
 import { uint256ToByteArray, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
 import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, updateAirEntityCounter, getOrCreateAirBlock } from "../common";
@@ -60,7 +61,8 @@ export namespace domain {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domainId = createAirDomainEntityId(node, label);
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, block, tokenAddress));
-    if (fromOldRegistry && domain.isMigrated == true) {
+    let isMigratedMapping = getIsMigratedMapping(domainId);
+    if (fromOldRegistry && isMigratedMapping.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
     }
@@ -96,7 +98,6 @@ export namespace domain {
     domain.owner = getOrCreateAirAccount(chainId, newOwner).id;
     domain.parent = parent.id;
     domain.labelHash = label;
-    domain.isMigrated = isMigrated;
     domain.tokenId = tokenId;
     domain.lastBlock = block.id;
     recurseSubdomainCountDecrement(domain, chainId, block, tokenAddress);
@@ -106,7 +107,7 @@ export namespace domain {
     if (domain.name) {
       createReverseRegistrar(domain.name!, domain.id, block);
     }
-
+    createIsMigratedMapping(domainId, isMigrated, block);
     getOrCreateAirDomainOwnerChangedTransaction(
       block,
       logIndex,
@@ -146,7 +147,8 @@ export namespace domain {
   ): void {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
-    if (fromOldRegistry && domain.isMigrated == true) {
+    let isMigratedMapping = getIsMigratedMapping(domain.id);
+    if (fromOldRegistry && isMigratedMapping.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
     }
@@ -204,8 +206,8 @@ export namespace domain {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
-
-    if (fromOldRegistry && node != ROOT_NODE && domain.isMigrated == true) {
+    let isMigratedMapping = getIsMigratedMapping(domain.id);
+    if (fromOldRegistry && node != ROOT_NODE && isMigratedMapping.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
     }
@@ -264,7 +266,8 @@ export namespace domain {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
-    if (fromOldRegistry && domain.isMigrated == true) {
+    let isMigratedMapping = getIsMigratedMapping(domain.id);
+    if (fromOldRegistry && isMigratedMapping.isMigrated == true) {
       // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
       return;
     }
@@ -973,6 +976,28 @@ export namespace domain {
   }
 
   /**
+   * @dev this function creates a new DomainVsIsMigratedMapping entity
+   * @param domaiId air domain entity id
+   * @param isMigrated is migrated flag
+   * @param block air block entity
+  */
+  function createIsMigratedMapping(domainId: string, isMigrated: boolean, block: AirBlock): void {
+    let entity = new DomainVsIsMigratedMapping(domainId);
+    entity.isMigrated = isMigrated;
+    entity.lastUpdatedAt = block.id;
+    entity.save();
+  }
+
+  /**
+   * @dev this function gets a DomainVsIsMigratedMapping entity
+   * @param domainId air domain entity id
+   * @returns DomainVsIsMigratedMapping entity
+   */
+  function getIsMigratedMapping(domainId: string): DomainVsIsMigratedMapping {
+    return DomainVsIsMigratedMapping.load(domainId) as DomainVsIsMigratedMapping;
+  }
+
+  /**
    * @dev this function creates a new reverse registrar entity if it does not exist
    * @param name ens name, ex: 'schiller.eth'
    * @param domainId air domain id
@@ -1023,15 +1048,10 @@ export namespace domain {
       entity.owner = getOrCreateAirAccount(domain.chainId, ZERO_ADDRESS).id;
       entity.tokenAddress = getOrCreateAirToken(domain.chainId, domain.tokenAddress).id;
       entity.isPrimary = false;
-      entity.isMigrated = false;
       entity.expiryTimestamp = BIG_INT_ZERO;
       entity.registrationCost = BIG_INT_ZERO;
       entity.createdAt = domain.block.id;
       entity.lastBlock = domain.block.id;
-      entity.save();
-    }
-    if (entity.id == ROOT_NODE) {
-      entity.isMigrated = true;
       entity.save();
     }
     return entity as AirDomain;
