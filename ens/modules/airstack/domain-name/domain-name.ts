@@ -5,6 +5,7 @@ import {
   log,
   ByteArray,
   ens,
+  ethereum,
 } from "@graphprotocol/graph-ts";
 
 import {
@@ -31,86 +32,58 @@ import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, updateAirEntityCounter, getOrCr
 export namespace domain {
   /**
    * @dev This function tracks a domain owner change transaction
-   * @param blockHeight block number in the chain
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
-   * @param logIndex txn log index
    * @param chainId chain id
-   * @param newOwner specifies the new owner of the domain
+   * @param block ethreum block
    * @param transactionHash transaction hash
-   * @param isMigrated specifies if the domain is migrated
+   * @param logIndex txn log index
+   * @param domainId domain id
    * @param node specifies the node of the domain
-   * @param label specifies the label of the domain
    * @param tokenAddress contract address of nft token
-   * @param fromOldRegistry specifies if the event is from the old registry
-   */
+   * @param tokenId token id
+   * @param label specifies the label of the domain
+   * @param labelName label name
+   * @param name domain name
+   * @param newOwner specifies the new owner of the domain
+  */
   export function trackDomainOwnerChangedTransaction(
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
-    logIndex: BigInt,
     chainId: string,
-    newOwner: string,
+    block: ethereum.Block,
     transactionHash: string,
-    isMigrated: boolean,
-    node: Bytes,
-    label: Bytes,
+    logIndex: BigInt,
+    domainId: string,
+    node: string,
     tokenAddress: string,
-    fromOldRegistry: boolean,
+    tokenId: string,
+    label: string,
+    labelName: string | null,
+    name: string | null,
+    newOwner: string,
   ): void {
-    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let domainId = createAirDomainEntityId(node, label);
-    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, block, tokenAddress));
-    let isMigratedMapping = getOrCreateIsMigratedMapping(domainId, block.id, isMigrated);
-    if (fromOldRegistry && isMigratedMapping.isMigrated == true) {
-      // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
-      return;
-    }
+    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let previousOwnerId = domain.owner;
     let parent = getOrCreateAirDomain(new Domain(
-      node.toHexString(),
+      node,
       chainId,
-      block,
+      airBlock,
       tokenAddress,
     ));
     if (domain.parent == null && parent != null) {
       parent.subdomainCount = parent.subdomainCount.plus(BIGINT_ONE);
     }
-    if (domain.name == null) {
-      let labelName = ens.nameByHash(label.toHexString());
-      if (labelName != null) {
-        domain.labelName = labelName;
-      }
-      if (labelName === null) {
-        labelName = '[' + label.toHexString().slice(2) + ']';
-      }
-      if (node.toHexString() == ROOT_NODE) {
-        domain.name = labelName;
-      } else {
-        let name = parent.name;
-        if (labelName && name) {
-          domain.name = labelName + '.' + name;
-        }
-      }
-    }
-
-    let tokenId = BigInt.fromUnsignedBytes(label).toString();
+    domain.name = name;
+    domain.labelName = labelName;
     domain.owner = getOrCreateAirAccount(chainId, newOwner).id;
     domain.parent = parent.id;
     domain.labelHash = label;
     domain.tokenId = tokenId;
-    domain.lastBlock = block.id;
-    recurseSubdomainCountDecrement(domain, chainId, block, tokenAddress);
+    domain.lastBlock = airBlock.id;
+    recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
     domain.save();
 
-    // creating reverse registrar to get domainId when setting primary domain
-    if (domain.name) {
-      createReverseRegistrar(domain.name!, domain.id, block);
-    }
     // creating is migrated mapping
-    getOrCreateIsMigratedMapping(domainId, block.id, isMigrated);
     getOrCreateAirDomainOwnerChangedTransaction(
-      block,
+      airBlock,
       logIndex,
       chainId,
       previousOwnerId,
@@ -759,6 +732,7 @@ export namespace domain {
   }
 
   /**
+   * @dev this function needs to be removed
    * @dev this function creates subnode of the node and returns it as air domain entity id
    * @param node takes the node param from the event
    * @param label takes the label param from the event
@@ -770,6 +744,7 @@ export namespace domain {
   }
 
   /**
+   * @dev this function needs to be removed
    * @dev this function creates subnode of the node and label
    * @param node takes the node param from the event
    * @param label takes the label param from the event
@@ -977,6 +952,7 @@ export namespace domain {
   }
 
   /**
+   * @dev this function needs to be removed
    * @dev this function creates a new DomainVsIsMigratedMapping entity
    * @param domaiId air domain entity id
    * @param blockId air block entity id
@@ -1052,6 +1028,17 @@ export namespace domain {
       entity.save();
     }
     return entity as AirDomain;
+  }
+
+  /**
+   * @dev this function gets a air domain entity
+   * @param domainId air domain entity id
+   * @returns AirDomain entity - null if entity does not exist
+  */
+  export function getAirDomain(
+    domainId: string,
+  ): AirDomain | null {
+    return AirDomain.load(domainId);
   }
 
   /**
