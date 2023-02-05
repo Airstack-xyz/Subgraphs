@@ -69,43 +69,11 @@ for (let index = START_INDEX; index < args.length; index++) {
 integrate(vertical, yaml, graphql, dataSources, templates)
   .then(() => {
     switch (vertical) {
-      case Vertical.Dex:
-        console.log(`
-        Integration done. Please call the following functions.
-        1. Add pool
-        
-          function addDexPool(
-            poolAddress: string,
-            fee: BigInt,
-            inputTokens: Array<string>,
-            weights: Array<BigDecimal> | null = null,
-            outputToken: string | null = null
-          ): void
-
-        2. Add pool
-
-          function swap(
-            poolAddress: string,
-            inputAmounts: Array<BigInt>,
-            outputAmounts: Array<BigInt>,
-            inputTokenIndex: i32,
-            outputTokenIndex: i32,
-            from: string,
-            to: string,
-            hash: string,
-            logIndex: BigInt,
-            timestamp: BigInt,
-            blockNumber: BigInt
-          ): void
-
-          For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs
-        `);
-        break;
 
       case Vertical.NftMarketplace:
         console.log(`
         Integration done. Please call the following functions.
-        
+          
         1. Track NFT trade transaction
         trackNFTSaleTransactions(
           chainID: string,
@@ -127,121 +95,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
         console.log(`
         Integration for DOMAIN_NAME vertical done. Please call the following functions.
 
-        1. Track transaction when a domain owner is changed
-          trackDomainOwnerChangedTransaction(
-            block: ethereum.Block,
-            transactionHash: string,
-            logOrCallIndex: BigInt,
-            domainId: string,
-            parentDomainId: string,
-            tokenId: string,
-            label: string,
-            labelName: string | null,
-            name: string | null,
-            newOwner: string,
-            tokenAddress: string,
-          )
-
-        2. Track transaction when a domain is transferred
-        trackDomainTransferTransaction(
-          block: ethereum.Block,
-          transactionHash: string,
-          logOrCallIndex: BigInt,
-          domainId: string,
-          newOwnerAddress: string,
-          tokenAddress: string,
-        )
-
-        3. Track transaction when a domain resolver is changed
-        trackDomainNewResolverTransaction(
-          block: ethereum.Block,
-          transactionHash: string,
-          logOrCallIndex: BigInt,
-          domainId: string,
-          resolver: string,
-          tokenAddress: string,
-        )
-
-        4. Track transaction when a domain TTL is changed
-        trackDomainNewTTLTransaction(
-          block: ethereum.Block,
-          transactionHash: string,
-          logOrCallIndex: BigInt,
-          domainId: string,
-          newTTL: BigInt,
-          tokenAddress: string,
-        )
-
-        5. Track transaction when a domain is registered
-        trackNameRegisteredTransaction(
-          block: ethereum.Block,
-          transactionHash: string,
-          logOrCallIndex: BigInt,
-          domainId: string,
-          registrantAddress: string,
-          expiryTimestamp: BigInt,
-          cost: BigInt,
-          paymentToken: string,
-          labelName: string | null,
-          tokenAddress: string,
-        )
-
-        6. Track transaction when a domain is renewed
-        trackNameRenewedTransaction(
-          block: ethereum.Block,
-          transactionHash: string,
-          domainId: string,
-          cost: BigInt | null,
-          paymentToken: string,
-          renewer: string,
-          expiryTimestamp: BigInt,
-          tokenAddress: string,
-        )
-
-        7. Track controller transaction when a domain is renewed or registered
-        trackNameRenewedOrRegistrationByController(
-          block: ethereum.Block,
-          transactionHash: string,
-          domainId: string,
-          name: string,
-          label: Bytes,
-          cost: BigInt,
-          paymentToken: string,
-          renewer: string | null,
-          expiryTimestamp: BigInt | null,
-          fromRegistrationEvent: boolean,
-          tokenAddress: string, 
-        )
-
-        8. Track transaction when a domain's resolved address is changed
-        function trackResolvedAddressChangedTransaction(
-          block: ethereum.Block,
-          transactionHash: string,
-          logOrCallIndex: BigInt,
-          domainId: string,
-          resolverAddress: string,
-          resolvedAddress: string,
-          tokenAddress: string,
-        )
-
-        9. Track transaction when a domain's resolver version is changed
-        trackResolverVersionChange(
-          block: ethereum.Block,
-          domainId: string,
-          resolverAddress: string,
-          tokenAddress: string,
-        )
-
-        10. Track transaction when an resolved address's primary domain is changed
-        trackSetPrimaryDomainTransaction(
-          block: ethereum.Block,
-          transactionHash: string,
-          domainName: string,
-          from: string,
-          tokenAddress: string,
-        )
-
-        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs
+        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs/airstack-modules/modules/airstack/domain-name/Readme.md
         `
         );
         break;

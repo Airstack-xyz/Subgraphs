@@ -40,7 +40,7 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
     domainId,
     event.params.owner.toHexString(),
     event.params.expires,
-    event.transaction.value,
+    null,
     ZERO_ADDRESS,
     labelName,
     TOKEN_ADDRESS_ENS,

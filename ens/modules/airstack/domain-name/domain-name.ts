@@ -248,7 +248,7 @@ export namespace domain {
     domainId: string,
     registrantAddress: string,
     expiryTimestamp: BigInt,
-    cost: BigInt,
+    cost: BigInt | null,
     paymentToken: string,
     labelName: string | null,
     tokenAddress: string,
@@ -267,7 +267,9 @@ export namespace domain {
     }
     domain.expiryTimestamp = expiryTimestamp;
     domain.lastBlock = airBlock.id;
-    domain.registrationCost = cost;
+    if (cost) {
+      domain.registrationCost = cost;
+    }
     domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
     domain.save();
     // create name registered transaction
@@ -772,7 +774,7 @@ export namespace domain {
     transactionHash: string,
     logOrCallIndex: BigInt,
     domain: AirDomain,
-    cost: BigInt,
+    cost: BigInt | null,
     paymentToken: string,
     registrant: string,
     expiryTimestamp: BigInt,
