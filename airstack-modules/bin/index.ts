@@ -72,17 +72,15 @@ integrate(vertical, yaml, graphql, dataSources, templates)
 
       case Vertical.NftMarketplace:
         console.log(`
-        Integration for DOMAIN_NAME vertical done. Please call the following functions.
-
-        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs/blob/ens-airstack-module-refactor/airstack-modules/modules/airstack/nft-marketplace/Readme.md
+Integration for DOMAIN_NAME vertical done. For documentation and examples please check below link:
+https://github.com/Airstack-xyz/Subgraphs/blob/ens-airstack-module-refactor/airstack-modules/modules/airstack/nft-marketplace/Readme.md
         `);
         break;
 
       case Vertical.DomainName:
         console.log(`
-        Integration for DOMAIN_NAME vertical done. Please call the following functions.
-
-        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs/blob/ens-airstack-module-refactor/airstack-modules/modules/airstack/domain-name/Readme.md
+Integration for DOMAIN_NAME vertical done. For documentation and examples please check below link:
+https://github.com/Airstack-xyz/Subgraphs/blob/ens-airstack-module-refactor/airstack-modules/modules/airstack/domain-name/Readme.md
         `
         );
         break;
