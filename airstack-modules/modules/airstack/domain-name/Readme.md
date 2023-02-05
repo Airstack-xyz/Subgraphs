@@ -1,5 +1,5 @@
 # DOMAIN_NAME vertical integration
-### After Integration for DOMAIN_NAME vertical is done. Please call the below functions to track the transactions of the domain name vertical.
+### After module integration for DOMAIN_NAME vertical is done. Please call the below functions to track the transactions of the domain name vertical.
 ```
 1. Track transaction when a domain owner is changed
   trackDomainOwnerChangedTransaction(

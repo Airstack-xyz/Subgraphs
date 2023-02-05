@@ -74,7 +74,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
         console.log(`
         Integration for DOMAIN_NAME vertical done. Please call the following functions.
 
-        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs/airstack-modules/modules/airstack/nft-marketplace/Readme.md
+        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs/blob/ens-airstack-module-refactor/airstack-modules/modules/airstack/nft-marketplace/Readme.md
         `);
         break;
 
@@ -82,7 +82,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
         console.log(`
         Integration for DOMAIN_NAME vertical done. Please call the following functions.
 
-        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs/airstack-modules/modules/airstack/domain-name/Readme.md
+        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs/blob/ens-airstack-module-refactor/airstack-modules/modules/airstack/domain-name/Readme.md
         `
         );
         break;
