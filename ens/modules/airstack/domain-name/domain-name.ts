@@ -116,6 +116,9 @@ export namespace domain {
     if (previousOwnerId == null) {
       previousOwnerId = getOrCreateAirAccount(chainId, ZERO_ADDRESS).id;
     }
+    // update domain owner here
+    domain.owner = getOrCreateAirAccount(chainId, newOwnerAddress).id;
+    domain.save();
     let id = createEntityId(transactionHash, block.number, logOrCallIndex);
     let entity = AirDomainTransferTransaction.load(id);
     if (entity == null) {
