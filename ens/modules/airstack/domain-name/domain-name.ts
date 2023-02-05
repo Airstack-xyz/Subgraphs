@@ -104,7 +104,6 @@ export namespace domain {
    * @param logIndex txn log index
    * @param transactionHash transaction hash
    * @param tokenAddress contract address of nft token
-   * @param fromOldRegistry specifies if the event is from the old registry
    */
   export function trackDomainTransferTransaction(
     node: string,
@@ -116,15 +115,9 @@ export namespace domain {
     logIndex: BigInt,
     transactionHash: string,
     tokenAddress: string,
-    fromOldRegistry: boolean,
   ): void {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
-    let isMigratedMapping = getOrCreateIsMigratedMapping(domain.id, block.id);
-    if (fromOldRegistry && isMigratedMapping.isMigrated == true) {
-      // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
-      return;
-    }
     let previousOwnerId = domain.owner;
     if (previousOwnerId == null) {
       previousOwnerId = getOrCreateAirAccount(chainId, ZERO_ADDRESS).id;
@@ -161,7 +154,6 @@ export namespace domain {
    * @param transactionHash transaction hash
    * @param logIndex event log index
    * @param tokenAddress contract address of nft token
-   * @param fromOldRegistry specifies if the event is from the old registry
    */
   export function trackDomainNewResolverTransaction(
     resolver: string,
@@ -173,17 +165,11 @@ export namespace domain {
     transactionHash: string,
     logIndex: BigInt,
     tokenAddress: string,
-    fromOldRegistry: boolean,
   ): void {
     // get block
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
-    let isMigratedMapping = getOrCreateIsMigratedMapping(domain.id, block.id);
-    if (fromOldRegistry && node != ROOT_NODE && isMigratedMapping.isMigrated == true) {
-      // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
-      return;
-    }
     // get previous resolver
     let previousResolverId = domain.resolver;
     // create new resolver
@@ -221,7 +207,6 @@ export namespace domain {
    * @param logIndex event log index
    * @param transactionHash transaction hash
    * @param tokenAddress contract address of nft token
-   * @param fromOldRegistry specifies if the event is from the old registry
    */
   export function trackDomainNewTTLTransaction(
     node: string,
@@ -233,17 +218,11 @@ export namespace domain {
     logIndex: BigInt,
     transactionHash: string,
     tokenAddress: string,
-    fromOldRegistry: boolean,
   ): void {
     // get block
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
     let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
-    let isMigratedMapping = getOrCreateIsMigratedMapping(domain.id, block.id);
-    if (fromOldRegistry && isMigratedMapping.isMigrated == true) {
-      // this domain was migrated from the old registry, so we don't need to hanlde old registry event now
-      return;
-    }
     // get previous ttl
     let oldTTL: BigInt | null = null;
     if (domain.ttl) {
@@ -948,25 +927,6 @@ export namespace domain {
       entity.save();
     }
     return entity as AirDomainNewResolverTransaction;
-  }
-
-  /**
-   * @dev this function needs to be removed
-   * @dev this function creates a new DomainVsIsMigratedMapping entity
-   * @param domaiId air domain entity id
-   * @param blockId air block entity id
-   * @param isMigrated is migrated flag - only required when creating a new entity
-   * @returns DomainVsIsMigratedMapping entity
-  */
-  function getOrCreateIsMigratedMapping(domainId: string, blockId: string, isMigrated: boolean = false): DomainVsIsMigratedMapping {
-    let entity = DomainVsIsMigratedMapping.load(domainId);
-    if (entity == null) {
-      entity = new DomainVsIsMigratedMapping(domainId);
-      entity.isMigrated = isMigrated;
-      entity.lastUpdatedAt = blockId;
-      entity.save();
-    }
-    return entity as DomainVsIsMigratedMapping;
   }
 
   /**
