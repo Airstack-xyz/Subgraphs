@@ -92,15 +92,17 @@ export function handleTransfer(event: TransferEvent): void {
   isMigratedMapping.save();
   // sending transaction to airstack
   airstack.domain.trackDomainTransferTransaction(
-    event.params.node.toHexString(),
     ETHEREUM_MAINNET_ID,
-    event.params.owner.toHexString(),
-    event.block.number,
-    event.block.hash.toHexString(),
-    event.block.timestamp,
-    event.logIndex,
-    event.transaction.hash.toHexString(),
-    TOKEN_ADDRESS_ENS,
+    
+    // event.params.node.toHexString(),
+    // ETHEREUM_MAINNET_ID,
+    // event.params.owner.toHexString(),
+    // event.block.number,
+    // event.block.hash.toHexString(),
+    // event.block.timestamp,
+    // event.logIndex,
+    // event.transaction.hash.toHexString(),
+    // TOKEN_ADDRESS_ENS,
   )
 }
 

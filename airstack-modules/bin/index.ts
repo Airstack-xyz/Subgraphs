@@ -127,23 +127,23 @@ integrate(vertical, yaml, graphql, dataSources, templates)
         console.log(`
         Integration done. Please call the following functions.
 
-        1. Track domain owner change transaction
+        1. Track transaction when a domain owner is changed
           trackDomainOwnerChangedTransaction(
-            blockHeight: BigInt,
-            blockHash: string,
-            blockTimestamp: BigInt,
-            logIndex: BigInt,
             chainId: string,
-            newOwner: string,
+            block: ethereum.Block,
             transactionHash: string,
-            isMigrated: boolean,
-            node: Bytes,
-            label: Bytes,
+            logIndex: BigInt,
+            domainId: string,
+            node: string,
             tokenAddress: string,
-            fromOldRegistry: boolean,
+            tokenId: string,
+            label: string,
+            labelName: string | null,
+            name: string | null,
+            newOwner: string,
           )
 
-        2. Track domain transfer transaction
+        2. Track transaction when a domain is transferred
         trackDomainTransferTransaction(
           node: string,
           chainId: string,
@@ -154,10 +154,9 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           logIndex: BigInt,
           transactionHash: string,
           tokenAddress: string,
-          fromOldRegistry: boolean,
         )
 
-        3. Track domain new resolver transaction
+        3. Track transaction when a domain resolver is changed
         trackDomainNewResolverTransaction(
           resolver: string,
           node: string,
@@ -171,7 +170,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           fromOldRegistry: boolean,
         )
 
-        4. Track domain new ttl transaction
+        4. Track transaction when a domain TTL is changed
         trackDomainNewTTLTransaction(
           node: string,
           newTTL: BigInt,
@@ -185,7 +184,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           fromOldRegistry: boolean,
         )
 
-        5. Track name registered transaction
+        5. Track transaction when a domain is registered
         trackNameRegisteredTransaction(
           transactionHash: string,
           blockHeight: BigInt,
@@ -202,7 +201,7 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           tokenAddress: string,
         )
 
-        6. Track name renewed transaction
+        6. Track transaction when a domain is renewed
         trackNameRenewedTransaction(
           transactionHash: string,
           blockHeight: BigInt,

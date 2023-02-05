@@ -46,8 +46,38 @@ AIR_NETWORK_MAP.set("osmosis", "OSMOSIS");
 AIR_NETWORK_MAP.set("matic", "MATIC");
 AIR_NETWORK_MAP.set("xdai", "XDAI");
 
+const AIR_CHAIN_ID_MAP = new TypedMap<string, string>();
+AIR_NETWORK_MAP.set("arbitrum-one", "");
+AIR_NETWORK_MAP.set("arweave-mainnet", "ARWEAVE_MAINNET");
+AIR_NETWORK_MAP.set("aurora", "AURORA");
+AIR_NETWORK_MAP.set("avalanche", "AVALANCHE");
+AIR_NETWORK_MAP.set("boba", "BOBA");
+AIR_NETWORK_MAP.set("bsc", "BSC");
+AIR_NETWORK_MAP.set("celo", "CELO");
+AIR_NETWORK_MAP.set("COSMOS", "COSMOS");
+AIR_NETWORK_MAP.set("CRONOS", "CRONOS");
+AIR_NETWORK_MAP.set("mainnet", "1");
+AIR_NETWORK_MAP.set("fantom", "FANTOM");
+AIR_NETWORK_MAP.set("fuse", "FUSE");
+AIR_NETWORK_MAP.set("harmony", "HARMONY");
+AIR_NETWORK_MAP.set("juno", "JUNO");
+AIR_NETWORK_MAP.set("moonbeam", "MOONBEAM");
+AIR_NETWORK_MAP.set("moonriver", "MOONRIVER");
+AIR_NETWORK_MAP.set("near-mainnet", "NEAR_MAINNET");
+AIR_NETWORK_MAP.set("optimism", "OPTIMISM");
+AIR_NETWORK_MAP.set("osmosis", "OSMOSIS");
+AIR_NETWORK_MAP.set("matic", "137");
+AIR_NETWORK_MAP.set("xdai", "XDAI");
+
 export function processNetwork(network: string): string {
   const value = AIR_NETWORK_MAP.get(network);
+  const result: string = value !== null ? value : "unknown";
+  return result;
+}
+
+export function processChainId(): string {
+  let network = dataSource.network();
+  const value = AIR_CHAIN_ID_MAP.get(network);
   const result: string = value !== null ? value : "unknown";
   return result;
 }
