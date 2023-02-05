@@ -130,14 +130,14 @@ type AirResolver @entity {
   id: ID!                   # Concatenation of resolver address and namehash
   domain: AirDomain
   address: AirAccount!           # Address of resolver contract
-  resolvedAddress: AirAccount             # Current value of addr record (per events)
+  resolvedAddress: AirAccount             # Current value of resolved address record (per events)
 }
 
-type AirAddrChanged implements AirDomainEvent @entity {
+type AirResolvedAddressChanged implements AirDomainEvent @entity {
   id: ID!
   resolver: AirResolver!
-  previousResolvedAddress: AirAccount # previous addr record
-  newResolvedAddress: AirAccount! # new addr record
+  previousResolvedAddress: AirAccount # previous resolved address record
+  newResolvedAddress: AirAccount! # new resolved address record
   block: AirBlock!
   transactionHash: String!
   tokenId: String # dec(labelhash) - NA

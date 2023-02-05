@@ -20,7 +20,7 @@ import {
   AirDomainNewTTLTransaction,
   AirNameRegisteredTransaction,
   AirNameRenewedTransaction,
-  AirAddrChanged,
+  AirResolvedAddressChanged,
   AirPrimaryDomainTransaction,
   ReverseRegistrar,
   PrimaryDomain,
@@ -446,7 +446,7 @@ export namespace domain {
       domain.save();
     }
 
-    getOrCreateAirAddrChanged(
+    getOrCreateAirResolvedAddressChanged(
       chainId,
       logOrCallIndex,
       resolver,
@@ -630,7 +630,7 @@ export namespace domain {
    * @param domain domain
    * @returns AirAddrChanged entity
    */
-  function getOrCreateAirAddrChanged(
+  function getOrCreateAirResolvedAddressChanged(
     chainId: string,
     logOrCallIndex: BigInt,
     resolver: AirResolver,
@@ -639,11 +639,11 @@ export namespace domain {
     previousResolvedAddressId: string | null,
     newResolvedAddress: string,
     domain: AirDomain,
-  ): AirAddrChanged {
+  ): AirResolvedAddressChanged {
     let id = createEntityId(transactionHash, block.number, logOrCallIndex);
-    let entity = AirAddrChanged.load(id);
+    let entity = AirResolvedAddressChanged.load(id);
     if (entity == null) {
-      entity = new AirAddrChanged(id);
+      entity = new AirResolvedAddressChanged(id);
       entity.resolver = resolver.id;
       entity.block = block.id;
       entity.transactionHash = transactionHash;
@@ -654,7 +654,7 @@ export namespace domain {
       entity.index = updateAirEntityCounter(AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, block);
       entity.save();
     }
-    return entity as AirAddrChanged;
+    return entity as AirResolvedAddressChanged;
   }
 
   /**

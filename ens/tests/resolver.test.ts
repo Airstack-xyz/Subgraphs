@@ -37,14 +37,14 @@ describe("Unit tests for resolver handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId)
 
     // getOrCreateAirAddrChanged
-    assert.fieldEquals("AirAddrChanged", addrChangedId, "resolver", resolverId)
-    assert.fieldEquals("AirAddrChanged", addrChangedId, "block", blockId)
-    assert.fieldEquals("AirAddrChanged", addrChangedId, "transactionHash", event.transaction.hash.toHexString())
-    assert.fieldEquals("AirAddrChanged", addrChangedId, "previousResolvedAddress", "null")
-    assert.fieldEquals("AirAddrChanged", addrChangedId, "newResolvedAddress", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.a.toHexString()))
-    assert.fieldEquals("AirAddrChanged", addrChangedId, "domain", domainId)
-    assert.fieldEquals("AirAddrChanged", addrChangedId, "tokenId", "null",)
-    assert.fieldEquals("AirAddrChanged", addrChangedId, "index", "1")
+    assert.fieldEquals("AirResolvedAddressChanged", addrChangedId, "resolver", resolverId)
+    assert.fieldEquals("AirResolvedAddressChanged", addrChangedId, "block", blockId)
+    assert.fieldEquals("AirResolvedAddressChanged", addrChangedId, "transactionHash", event.transaction.hash.toHexString())
+    assert.fieldEquals("AirResolvedAddressChanged", addrChangedId, "previousResolvedAddress", "null")
+    assert.fieldEquals("AirResolvedAddressChanged", addrChangedId, "newResolvedAddress", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.a.toHexString()))
+    assert.fieldEquals("AirResolvedAddressChanged", addrChangedId, "domain", domainId)
+    assert.fieldEquals("AirResolvedAddressChanged", addrChangedId, "tokenId", "null",)
+    assert.fieldEquals("AirResolvedAddressChanged", addrChangedId, "index", "1")
   })
 
   test("test handleVersionChanged", () => {
