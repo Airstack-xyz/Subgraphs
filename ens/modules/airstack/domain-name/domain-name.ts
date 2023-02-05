@@ -24,9 +24,9 @@ import {
   AirPrimaryDomainTransaction,
   ReverseRegistrar,
   PrimaryDomain,
-  DomainVsIsMigratedMapping,
+  AirExtra,
 } from "../../../generated/schema";
-import { uint256ToByteArray, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
+import { uint256ToByteArray, AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
 import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, updateAirEntityCounter, getOrCreateAirBlock } from "../common";
 
 export namespace domain {
@@ -198,7 +198,7 @@ export namespace domain {
 
   /**
    * @dev This function tracks a new TTL transaction
-   * @param node domain node
+   * @param domainId domain node
    * @param newTTL new TTL
    * @param chainId chain id
    * @param blockHeight block number
@@ -209,7 +209,7 @@ export namespace domain {
    * @param tokenAddress contract address of nft token
    */
   export function trackDomainNewTTLTransaction(
-    node: string,
+    domainId: string,
     newTTL: BigInt,
     chainId: string,
     blockHeight: BigInt,
@@ -222,14 +222,20 @@ export namespace domain {
     // get block
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     // get domain
-    let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
+    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, block, tokenAddress));
     // get previous ttl
     let oldTTL: BigInt | null = null;
-    if (domain.ttl) {
-      oldTTL = domain.ttl;
+    // load extra entity for ttl
+    let extra = AirExtra.load(domainId.concat("-").concat(AIR_EXTRA_TTL));
+    if (extra != null) {
+      // if exists, assign oldTTL and update value with newTTL
+      oldTTL = BigInt.fromString(extra.value);
+      extra.value = newTTL.toString();
+    } else {
+      // else create new extra entity for ttl
+      extra = createAirExtra(AIR_EXTRA_TTL, newTTL.toString(), domainId);
     }
-    // update domain ttl
-    domain.ttl = newTTL;
+    extra.save();
     domain.lastBlock = block.id;
     domain.save();
     // create AirDomainNewTTLTransaction
@@ -594,6 +600,29 @@ export namespace domain {
   }
 
   // end of track functions and start of get or create and helper functions
+  /**
+   * @dev this function creates or updates an air extra entity
+   * @param name air extra name
+   * @param value air extra value
+   * @param domainId air domain id
+   * @returns air extra entity
+   */
+  function createAirExtra(
+    name: string,
+    value: string,
+    domainId: string,
+  ): AirExtra {
+    let id = domainId.concat("-").concat(name);
+    let entity = AirExtra.load(id);
+    if (entity == null) {
+      entity = new AirExtra(id);
+      entity.name = name;
+      entity.value = value;
+      entity.domain = domainId;
+    }
+    return entity as AirExtra;
+  }
+
   /**
    * @dev This function gets or creates a primary domain entity
    * @param domain air domain

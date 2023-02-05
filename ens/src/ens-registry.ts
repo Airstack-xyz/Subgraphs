@@ -158,7 +158,6 @@ export function handleNewTTL(event: NewTTLEvent): void {
     event.logIndex,
     event.transaction.hash.toHexString(),
     TOKEN_ADDRESS_ENS,
-    false,
   )
 }
 
@@ -292,7 +291,6 @@ export function handleNewTTLOldRegistry(event: NewTTLEvent): void {
     event.logIndex,
     event.transaction.hash.toHexString(),
     TOKEN_ADDRESS_ENS,
-    true,
   )
 }
 

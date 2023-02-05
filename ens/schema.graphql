@@ -43,6 +43,13 @@ type AirEntityCounter @entity {
 	lastUpdatedAt: AirBlock!
 }
 
+type AirExtra @entity {
+  id: ID! # Concatenation of domainId and name
+  domain: AirDomain!
+  name: String!
+  value: String!
+}
+
 type AirAccount @entity {
   id: ID!
   address: String!
@@ -65,7 +72,6 @@ type AirDomain @entity {
   resolvedAddress: AirAccount                           # Address logged from current resolver, if any
   owner: AirAccount!
   resolver: AirResolver
-  ttl: BigInt
   isPrimary: Boolean! # - NA                        # Is the primary domain for the resolved address
   expiryTimestamp: BigInt!
   registrationCost: BigInt!                            # Cost of domain registration in wei
@@ -73,6 +79,7 @@ type AirDomain @entity {
   tokenAddress: AirToken!                               # Domain (eg: ens) token contract address
   createdAt: AirBlock!
 	lastBlock: AirBlock #- NA
+  extras: [AirExtra!] @derivedFrom(field: "domain")
 }
 
 type AirDomainTransferTransaction implements AirDomainEvent @entity {
