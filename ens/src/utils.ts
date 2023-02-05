@@ -1,4 +1,3 @@
-export const TOKEN_ADDRESS_ENS = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
 import {
   DomainVsIsMigratedMapping,
   ReverseRegistrar,
@@ -7,7 +6,13 @@ import {
   Bytes,
   crypto,
   ethereum,
+  ByteArray,
+  BigInt,
 } from "@graphprotocol/graph-ts";
+
+// ens constants
+export const TOKEN_ADDRESS_ENS = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
+
 /**
  * @dev this function creates a new DomainVsIsMigratedMapping entity
  * @param domaiId air domain entity id
@@ -60,4 +65,21 @@ export function createReverseRegistrar(
     entity.save();
   }
   return entity as ReverseRegistrar;
+}
+
+// specific to ens
+export function byteArrayFromHex(s: string): ByteArray {
+  if (s.length % 2 !== 0) {
+    throw new TypeError("Hex string must have an even number of characters")
+  }
+  let out = new Uint8Array(s.length / 2)
+  for (var i = 0; i < s.length; i += 2) {
+    out[i / 2] = parseInt(s.substring(i, i + 2), 16) as u32
+  }
+  return changetype<ByteArray>(out)
+}
+
+export function uint256ToByteArray(i: BigInt): ByteArray {
+  let hex = i.toHex().slice(2).padStart(64, '0')
+  return byteArrayFromHex(hex)
 }

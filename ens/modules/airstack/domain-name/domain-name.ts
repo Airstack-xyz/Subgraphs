@@ -26,7 +26,7 @@ import {
   PrimaryDomain,
   AirExtra,
 } from "../../../generated/schema";
-import { uint256ToByteArray, AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
+import { AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
 import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, processChainId, updateAirEntityCounter, getOrCreateAirBlock } from "../common";
 
 export namespace domain {
@@ -34,28 +34,28 @@ export namespace domain {
    * @dev This function tracks a domain owner change transaction
    * @param block ethreum block
    * @param transactionHash transaction hash
-   * @param logIndex txn log index
+   * @param logOrCallIndex txn log or call index
    * @param domainId domain id
    * @param parentDomainId specifies the parentDomainId
-   * @param tokenAddress contract address of nft token
    * @param tokenId token id
    * @param label specifies the label of the domain
    * @param labelName label name
    * @param name domain name
    * @param newOwner specifies the new owner of the domain
+   * @param tokenAddress contract address of nft token
   */
   export function trackDomainOwnerChangedTransaction(
     block: ethereum.Block,
     transactionHash: string,
-    logIndex: BigInt,
+    logOrCallIndex: BigInt,
     domainId: string,
     parentDomainId: string,
-    tokenAddress: string,
     tokenId: string,
     label: string,
     labelName: string | null,
     name: string | null,
     newOwner: string,
+    tokenAddress: string,
   ): void {
     let chainId = processChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
@@ -82,7 +82,7 @@ export namespace domain {
 
     getOrCreateAirDomainOwnerChangedTransaction(
       airBlock,
-      logIndex,
+      logOrCallIndex,
       chainId,
       previousOwnerId,
       newOwner,
@@ -96,7 +96,7 @@ export namespace domain {
    * @dev This function tracks a domain transfer transaction
     * @param block ethereum block
     * @param transactionHash transaction hash
-    * @param logOrCallIndex txn log index
+    * @param logOrCallIndex txn log or call index
     * @param domainId domain id
     * @param newOwnerAddress specifies the new owner of the domain
     * @param tokenAddress contract address of nft token
@@ -133,30 +133,26 @@ export namespace domain {
 
   /**
    * @dev This function tracks a new resolver transaction
-   * @param resolver resolver contract address
-   * @param node domain node
-   * @param blockHeight block number in the chain
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
+   * @param block ethereum block
    * @param transactionHash transaction hash
-   * @param logIndex event log index
+   * @param logOrCallIndex txn log or call index
+   * @param domainId air domain id
+   * @param resolver resolver contract address
    * @param tokenAddress contract address of nft token
    */
   export function trackDomainNewResolverTransaction(
-    resolver: string,
-    node: string,
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
+    block: ethereum.Block,
     transactionHash: string,
-    logIndex: BigInt,
+    logOrCallIndex: BigInt,
+    domainId: string,
+    resolver: string,
     tokenAddress: string,
   ): void {
     let chainId = processChainId();
     // get block
-    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     // get domain
-    let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
+    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     // get previous resolver
     let previousResolverId = domain.resolver;
     // create new resolver
@@ -168,47 +164,43 @@ export namespace domain {
       domain.resolvedAddress = resolverEntity.resolvedAddress;
     }
     // do recursive subdomain count decrement
-    domain.lastBlock = block.id;
-    recurseSubdomainCountDecrement(domain, chainId, block, tokenAddress);
+    domain.lastBlock = airBlock.id;
+    recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
     domain.save();
 
     // create new resolver transaction
     getOrCreateAirDomainNewResolverTransaction(
       previousResolverId,
       resolverEntity.address,
-      block,
+      airBlock,
       transactionHash,
-      logIndex,
+      logOrCallIndex,
       domain,
     )
   }
 
   /**
    * @dev This function tracks a new TTL transaction
-   * @param domainId domain node
-   * @param newTTL new TTL
-   * @param blockHeight block number
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
-   * @param logIndex event log index
+   * @param block ethereum block
    * @param transactionHash transaction hash
+   * @param logOrCallIndex txn log or call index
+   * @param domainId air domain id
+   * @param newTTL new TTL
    * @param tokenAddress contract address of nft token
    */
   export function trackDomainNewTTLTransaction(
+    block: ethereum.Block,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
     domainId: string,
     newTTL: BigInt,
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
-    logIndex: BigInt,
-    transactionHash: string,
     tokenAddress: string,
   ): void {
     let chainId = processChainId();
     // get block
-    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     // get domain
-    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, block, tokenAddress));
+    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     // get previous ttl
     let oldTTL: BigInt | null = null;
     // load extra entity for ttl
@@ -222,78 +214,70 @@ export namespace domain {
       extra = createAirExtra(AIR_EXTRA_TTL, newTTL.toString(), domainId);
     }
     extra.save();
-    domain.lastBlock = block.id;
+    domain.lastBlock = airBlock.id;
     domain.save();
     // create AirDomainNewTTLTransaction
     getOrCreateAirDomainNewTTLTransaction(
       transactionHash,
       block.number,
-      logIndex,
+      logOrCallIndex,
       oldTTL,
       newTTL,
-      block,
+      airBlock,
       domain,
     )
   }
 
   /**
    * @dev This function tracks a new name registered transaction
+   * @param block ethereum block
    * @param transactionHash transaction hash
-   * @param blockHeight block number
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
-   * @param logIndex event log index
+   * @param logOrCallIndex txn log or call index
+   * @param domainId air domain id
    * @param registrantAddress registrant address
    * @param expiryTimestamp domain expiry date
    * @param cost domain registration cost
    * @param paymentToken payment token address
-   * @param labelId label id
-   * @param rootNode root node byte array
+   * @param labelName domain label name
    * @param tokenAddress contract address of nft token
    */
   export function trackNameRegisteredTransaction(
+    block: ethereum.Block,
     transactionHash: string,
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
-    logIndex: BigInt,
+    logOrCallIndex: BigInt,
+    domainId: string,
     registrantAddress: string,
     expiryTimestamp: BigInt,
     cost: BigInt,
     paymentToken: string,
-    labelId: BigInt,
-    rootNode: ByteArray,
+    labelName: string | null,
     tokenAddress: string,
   ): void {
     let chainId = processChainId();
     // prep mapping data
-    let label = uint256ToByteArray(labelId);
-    let labelName = ens.nameByHash(label.toHexString());
-    let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
-    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let domain = getOrCreateAirDomain(new Domain(
       domainId,
       chainId,
-      block,
+      airBlock,
       tokenAddress,
     ));
-
     if (labelName != null) {
       domain.labelName = labelName
     }
     domain.expiryTimestamp = expiryTimestamp;
-    domain.lastBlock = block.id;
+    domain.lastBlock = airBlock.id;
     domain.registrationCost = cost;
     domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
     domain.save();
     // create name registered transaction
     getOrCreateAirNameRegisteredTransaction(
       chainId,
-      blockHeight,
-      blockHash,
-      blockTimestamp,
+      block.number,
+      block.hash.toHexString(),
+      block.timestamp,
       transactionHash,
-      logIndex,
+      logOrCallIndex,
       domain,
       cost,
       paymentToken,
@@ -304,50 +288,41 @@ export namespace domain {
 
   /**
    * @dev This function tracks a name renewal transaction
+   * @param block ethereum block
    * @param transactionHash transaction hash
-   * @param blockHeight block number
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
-   * @param logIndex txn log index
+   * @param domainId air domain id
    * @param cost cost of renewal
    * @param paymentToken payment token address
    * @param renewer renewer address
-   * @param labelId label id
-   * @param rootNode root node byte array
    * @param expiryTimestamp expiry date
    * @param tokenAddress token address
    */
   export function trackNameRenewedTransaction(
+    block: ethereum.Block,
     transactionHash: string,
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
+    domainId: string,
     cost: BigInt | null,
     paymentToken: string,
     renewer: string,
-    labelId: BigInt,
-    rootNode: ByteArray,
     expiryTimestamp: BigInt,
     tokenAddress: string,
   ): void {
     let chainId = processChainId();
-    let label = uint256ToByteArray(labelId);
-    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
+    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let domain = getOrCreateAirDomain(new Domain(
       domainId,
       chainId,
-      block,
+      airBlock,
       tokenAddress,
     ));
     domain.expiryTimestamp = expiryTimestamp;
-    domain.lastBlock = block.id;
+    domain.lastBlock = airBlock.id;
     domain.save();
     // create name renewed transaction
     getOrCreateAirNameRenewedTransaction(
       transactionHash,
       chainId,
-      block,
+      airBlock,
       domain,
       cost,
       paymentToken,
@@ -358,34 +333,30 @@ export namespace domain {
 
   /**
    * @dev This function tracks trackNameRenewedOrRegistrationByController transaction
+   * @param block ethereum block
+   * @param transactionHash transaction hash
+   * @param domainId air domain id
    * @param name domain name
    * @param label label hash
    * @param cost cost - still needs to be recorded
    * @param paymentToken payment token address
-   * @param blockHeight block height
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
-   * @param rootNode root node ByteArray
-   * @param tokenAddress contract address of nft token
-   * @param transactionHash transaction hash
    * @param renewer renewer address - can be null
    * @param expiryTimestamp expiry date - can be null
    * @param fromRegistrationEvent true if called from a registration event
+   * @param tokenAddress contract address of nft token
    */
   export function trackNameRenewedOrRegistrationByController(
+    block: ethereum.Block,
+    transactionHash: string,
+    domainId: string,
     name: string,
     label: Bytes,
     cost: BigInt,
     paymentToken: string,
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
-    rootNode: ByteArray,
-    tokenAddress: string,
-    transactionHash: string,
     renewer: string | null,
     expiryTimestamp: BigInt | null,
     fromRegistrationEvent: boolean,
+    tokenAddress: string,
   ): void {
     let chainId = processChainId();
     const labelHash = crypto.keccak256(ByteArray.fromUTF8(name));
@@ -401,11 +372,11 @@ export namespace domain {
       log.warning("Invalid label '{}'. Skipping.", [name]);
       return;
     }
-    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let domain = getOrCreateAirDomain(new Domain(
-      crypto.keccak256(rootNode.concat(label)).toHex(),
+      domainId,
       chainId,
-      block,
+      airBlock,
       tokenAddress,
     ));
 
@@ -413,14 +384,14 @@ export namespace domain {
     if (fromRegistrationEvent) {
       domain.registrationCost = cost;
       domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
-      domain.lastBlock = block.id;
+      domain.lastBlock = airBlock.id;
     } else {
       // name renewal event
       // updating renewal cost in name renewed transaction entity
       getOrCreateAirNameRenewedTransaction(
         transactionHash,
         chainId,
-        block,
+        airBlock,
         domain,
         cost,
         paymentToken,
@@ -431,10 +402,10 @@ export namespace domain {
     if (domain.labelName !== name) {
       domain.labelName = name
       domain.name = name + '.eth'
-      domain.lastBlock = block.id;
+      domain.lastBlock = airBlock.id;
       // creating reverse registrar to get domainId when setting primary domain
       if (domain.name) {
-        createReverseRegistrar(domain.name!, domain.id, block);
+        createReverseRegistrar(domain.name!, domain.id, airBlock);
       }
     }
     domain.save();
@@ -442,136 +413,125 @@ export namespace domain {
   }
 
   /**
-   * @dev This function tracks a addr changed transaction
-   * @param logIndex event log index
-   * @param resolverAddress resolver contract address
-   * @param addr new addr
-   * @param node domain node
-   * @param blockHeight block number
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
+   * @dev This function tracks a resolved address changed transaction
+   * @param block ethereum block
    * @param transactionHash transaction hash
+   * @param logOrCallIndex txn log or call index
+   * @param domainId air domain id
+   * @param resolverAddress resolver contract address
+   * @param resolvedAddress resolved address of domain
    * @param tokenAddress contract address of nft token
    */
-  export function trackAddrChangedTransaction(
-    logIndex: BigInt,
-    resolverAddress: string,
-    addr: string,
-    node: string,
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
+  export function trackResolvedAddressChangedTransaction(
+    block: ethereum.Block,
     transactionHash: string,
+    logOrCallIndex: BigInt,
+    domainId: string,
+    resolverAddress: string,
+    resolvedAddress: string,
     tokenAddress: string,
   ): void {
     let chainId = processChainId();
-    let addrAccount = getOrCreateAirAccount(chainId, addr);
-    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
+    let addrAccount = getOrCreateAirAccount(chainId, resolvedAddress);
+    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let previousResolvedAddressId = domain.resolvedAddress;
-    let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, addr);
+    let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, resolvedAddress);
     resolver.domain = domain.id;
     resolver.save()
 
     if (domain.resolver == resolver.id) {
       domain.resolvedAddress = addrAccount.id;
-      domain.lastBlock = block.id;
+      domain.lastBlock = airBlock.id;
       domain.save();
     }
 
     getOrCreateAirAddrChanged(
       chainId,
-      logIndex,
+      logOrCallIndex,
       resolver,
-      block,
+      airBlock,
       transactionHash,
       previousResolvedAddressId,
-      addr,
+      resolvedAddress,
       domain,
     );
   }
 
   /**
    * @dev This function tracks a resolver version change
-   * @param blockHeight block number
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
-   * @param node domain node
+   * @param block ethereum block
+   * @param domainId air domain id
    * @param resolverAddress resolver contract address
    * @param tokenAddress contract address of nft token
    */
   export function trackResolverVersionChange(
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
-    node: string,
+    block: ethereum.Block,
+    domainId: string,
     resolverAddress: string,
     tokenAddress: string,
   ): void {
     let chainId = processChainId();
-    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let domain = getOrCreateAirDomain(new Domain(node, chainId, block, tokenAddress));
+    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, null);
     if (domain && domain.resolver === resolver.id) {
       domain.resolvedAddress = null
-      domain.lastBlock = block.id;
+      domain.lastBlock = airBlock.id;
       domain.save();
     }
   }
 
   /**
    * @dev This function tracks a set primary domain transaction
-   * @param ensName ens name
+   * @param block ethereum block
+   * @param transactionHash transaction hash
+   * @param domainName domain name
    * @param from event.from address
-   * @param blockHeight block number
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
    * @param tokenAddress contract address of nft token
    */
   export function trackSetPrimaryDomainTransaction(
-    ensName: string,
-    from: string,
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
+    block: ethereum.Block,
     transactionHash: string,
+    domainName: string,
+    from: string,
     tokenAddress: string,
   ): void {
     let chainId = processChainId();
-    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let reverseRegistrar = getReverseRegistrar(ensName);
+    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    let reverseRegistrar = getReverseRegistrar(domainName);
     if (reverseRegistrar == null) {
-      log.warning("Reverse registrar not found for name {} txhash {}", [ensName, transactionHash]);
+      log.warning("Reverse registrar not found for name {} txhash {}", [domainName, transactionHash]);
       return;
     }
-    log.info("Reverse registrar found for name {} domainId {} txHash {}", [ensName, reverseRegistrar.domain, transactionHash])
-    let domain = getOrCreateAirDomain(new Domain(reverseRegistrar.domain, chainId, block, tokenAddress));
+    log.info("Reverse registrar found for name {} domainId {} txHash {}", [domainName, reverseRegistrar.domain, transactionHash])
+    let domain = getOrCreateAirDomain(new Domain(reverseRegistrar.domain, chainId, airBlock, tokenAddress));
     let fromAccount = getOrCreateAirAccount(chainId, from);
     // when domain's resolvedAddress is set as from address
     if (domain.resolvedAddress == fromAccount.id) {
       // get or create primary domain entity
-      let primaryDomainEntity = getOrCreatePrimaryDomain(domain, fromAccount, block);
+      let primaryDomainEntity = getOrCreatePrimaryDomain(domain, fromAccount, airBlock);
       // when primary domain already exists for a resolved address and is not same as new domain
       if (primaryDomainEntity.domain != domain.id) {
         log.info("Primary domain already exists for resolvedAddressId {} oldDomain {} newDomain {}", [fromAccount.id, primaryDomainEntity.domain, domain.id])
         // unset isPrimary on old domain
-        let oldPrimaryDomain = getOrCreateAirDomain(new Domain(primaryDomainEntity.domain, chainId, block, tokenAddress));
+        let oldPrimaryDomain = getOrCreateAirDomain(new Domain(primaryDomainEntity.domain, chainId, airBlock, tokenAddress));
         oldPrimaryDomain.isPrimary = false;
-        oldPrimaryDomain.lastBlock = block.id;
+        oldPrimaryDomain.lastBlock = airBlock.id;
         oldPrimaryDomain.save();
         // set new primary domain for resolved address
         primaryDomainEntity.domain = domain.id;
-        primaryDomainEntity.lastUpdatedAt = block.id;
+        primaryDomainEntity.lastUpdatedAt = airBlock.id;
         primaryDomainEntity.save();
       }
       // set isPrimary on new domain
       domain.isPrimary = true;
-      domain.lastBlock = block.id;
+      domain.lastBlock = airBlock.id;
       domain.save();
     }
     // record a set primary domain transaction with new domain
     getOrCreateAirPrimaryDomainTransaction(
-      block,
+      airBlock,
       transactionHash,
       domain,
       from,
@@ -661,7 +621,7 @@ export namespace domain {
   /**
    * @dev This function gets or creates a AirAddrChanged entity
    * @param chainId chain id
-   * @param logIndex event log index
+   * @param logOrCallIndex txn log or index
    * @param resolver resolver contract address
    * @param block air block
    * @param transactionHash transaction hash 
@@ -672,7 +632,7 @@ export namespace domain {
    */
   function getOrCreateAirAddrChanged(
     chainId: string,
-    logIndex: BigInt,
+    logOrCallIndex: BigInt,
     resolver: AirResolver,
     block: AirBlock,
     transactionHash: string,
@@ -680,7 +640,7 @@ export namespace domain {
     newResolvedAddress: string,
     domain: AirDomain,
   ): AirAddrChanged {
-    let id = createEntityId(transactionHash, block.number, logIndex);
+    let id = createEntityId(transactionHash, block.number, logOrCallIndex);
     let entity = AirAddrChanged.load(id);
     if (entity == null) {
       entity = new AirAddrChanged(id);
@@ -711,11 +671,11 @@ export namespace domain {
    * @dev this is a generic function to create ids for entities
    * @param transactionHash transaction hash
    * @param blockHeight block number in the chain
-   * @param logIndex txn log index
+   * @param logOrCallIndex txn log or call index
    * @returns entity id in string format
    */
-  function createEntityId(transactionHash: string, blockHeight: BigInt, logIndex: BigInt): string {
-    return transactionHash.concat("-").concat(blockHeight.toString()).concat('-').concat(logIndex.toString());
+  function createEntityId(transactionHash: string, blockHeight: BigInt, logOrCallIndex: BigInt): string {
+    return transactionHash.concat("-").concat(blockHeight.toString()).concat('-').concat(logOrCallIndex.toString());
   }
 
   /**
@@ -796,7 +756,7 @@ export namespace domain {
    * @param blockHash block hash
    * @param blockTimestamp block timestamp
    * @param transactionHash transaction hash
-   * @param logIndex log index
+   * @param logOrCallIndex txn log or call index
    * @param domain air domain
    * @param cost cost of the transaction
    * @param paymentToken payment token - can be null
@@ -810,7 +770,7 @@ export namespace domain {
     blockHash: string,
     blockTimestamp: BigInt,
     transactionHash: string,
-    logIndex: BigInt,
+    logOrCallIndex: BigInt,
     domain: AirDomain,
     cost: BigInt,
     paymentToken: string,
@@ -818,7 +778,7 @@ export namespace domain {
     expiryTimestamp: BigInt,
   ): AirNameRegisteredTransaction {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    let id = createEntityId(transactionHash, block.number, logIndex);
+    let id = createEntityId(transactionHash, block.number, logOrCallIndex);
     let entity = AirNameRegisteredTransaction.load(id);
     if (entity == null) {
       entity = new AirNameRegisteredTransaction(id);
@@ -872,7 +832,7 @@ export namespace domain {
    * @dev This function gets or creates a new AirDomainNewTTLTransaction entity
    * @param transactionHash transaction hash
    * @param blockHeight block number in the chain
-   * @param logIndex txn log index
+   * @param logOrCallIndex txn log or call index
    * @param oldTTL old ttl value - can be null
    * @param newTTL new ttl value
    * @param block air block object
@@ -882,13 +842,13 @@ export namespace domain {
   function getOrCreateAirDomainNewTTLTransaction(
     transactionHash: string,
     blockHeight: BigInt,
-    logIndex: BigInt,
+    logOrCallIndex: BigInt,
     oldTTL: BigInt | null,
     newTTL: BigInt,
     block: AirBlock,
     domain: AirDomain,
   ): AirDomainNewTTLTransaction {
-    let id = createEntityId(transactionHash, blockHeight, logIndex);
+    let id = createEntityId(transactionHash, blockHeight, logOrCallIndex);
     let entity = AirDomainNewTTLTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainNewTTLTransaction(id);
@@ -910,7 +870,7 @@ export namespace domain {
    * @param newResolverId new resolver Id
    * @param block air block entity
    * @param transactionHash transaction hash
-   * @param logIndex log index
+   * @param logOrCallIndex txn log or call index
    * @param domain air domain entity
    * @returns AirDomainNewResolverTransaction entity
    */
@@ -919,10 +879,10 @@ export namespace domain {
     newResolverId: string,
     block: AirBlock,
     transactionHash: string,
-    logIndex: BigInt,
+    logOrCallIndex: BigInt,
     domain: AirDomain,
   ): AirDomainNewResolverTransaction {
-    let id = createEntityId(transactionHash, block.number, logIndex);
+    let id = createEntityId(transactionHash, block.number, logOrCallIndex);
     let entity = AirDomainNewResolverTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainNewResolverTransaction(id);
@@ -1012,7 +972,7 @@ export namespace domain {
   /**
    * @dev this function gets or creates a new air domain owner changed transaction entity
    * @param block air block entity
-   * @param logIndex log index
+   * @param logOrCallIndex log or call index
    * @param chainId chain id
    * @param previousOwnerId previous owner id
    * @param newOwner new owner address
@@ -1023,7 +983,7 @@ export namespace domain {
    */
   function getOrCreateAirDomainOwnerChangedTransaction(
     block: AirBlock,
-    logIndex: BigInt,
+    logOrCallIndex: BigInt,
     chainId: string,
     previousOwnerId: string,
     newOwner: string,
@@ -1031,7 +991,7 @@ export namespace domain {
     tokenId: string,
     domain: AirDomain,
   ): AirDomainOwnerChangedTransaction {
-    let id = createEntityId(transactionHash, block.number, logIndex);
+    let id = createEntityId(transactionHash, block.number, logOrCallIndex);
     let entity = AirDomainOwnerChangedTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainOwnerChangedTransaction(id);

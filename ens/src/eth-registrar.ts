@@ -1,14 +1,13 @@
 // Import types and APIs from graph-ts
 import {
   ByteArray,
-  log
+  log,
+  ens,
+  crypto,
 } from '@graphprotocol/graph-ts'
-
 import { TOKEN_ADDRESS_ENS } from "./utils";
-import { byteArrayFromHex, ETHEREUM_MAINNET_ID, ZERO_ADDRESS } from '../modules/airstack/domain-name/utils';
-import { BIG_INT_ZERO } from '../modules/airstack/common';
+import { ZERO_ADDRESS } from '../modules/airstack/domain-name/utils';
 import * as airstack from "../modules/airstack/domain-name";
-
 // Import event types from the registry contract ABI
 import {
   NameRegistered as NameRegisteredEvent,
@@ -21,6 +20,7 @@ import {
   NameRegistered as ControllerNameRegisteredEvent,
   NameRenewed as ControllerNameRenewedEvent
 } from '../generated/EthRegistrarController/EthRegistrarController';
+import { uint256ToByteArray, byteArrayFromHex } from './utils';
 
 const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae");
 
@@ -30,20 +30,19 @@ const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c
  */
 export function handleNameRegistered(event: NameRegisteredEvent): void {
   log.info("handleNameRegistered: registrant {} label {} expiry {} txhash {}", [event.params.owner.toHexString(), event.params.id.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString()]);
-
+  let label = uint256ToByteArray(event.params.id);
+  let labelName = ens.nameByHash(label.toHexString())!;
+  let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
   airstack.domain.trackNameRegisteredTransaction(
+    event.block,
     event.transaction.hash.toHexString(),
-    event.block.number,
-    event.block.hash.toHexString(),
-    event.block.timestamp,
     event.logIndex,
-    ETHEREUM_MAINNET_ID,
+    domainId,
     event.params.owner.toHexString(),
     event.params.expires,
     event.transaction.value,
     ZERO_ADDRESS,
-    event.params.id,
-    rootNode,
+    labelName,
     TOKEN_ADDRESS_ENS,
   );
 }
@@ -54,18 +53,15 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
  */
 export function handleNameRenewed(event: NameRenewedEvent): void {
   log.info("handleNameRenewed: renewer {} label {} expiry {} txhash {}", [event.transaction.from.toHexString(), event.params.id.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString()]);
-
+  let label = uint256ToByteArray(event.params.id);
+  let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
   airstack.domain.trackNameRenewedTransaction(
+    event.block,
     event.transaction.hash.toHexString(),
-    event.block.number,
-    event.block.hash.toHexString(),
-    event.block.timestamp,
-    ETHEREUM_MAINNET_ID,
+    domainId,
     null,
     ZERO_ADDRESS,
     event.transaction.from.toHexString(),
-    event.params.id,
-    rootNode,
     event.params.expires,
     TOKEN_ADDRESS_ENS,
   );
@@ -77,21 +73,19 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
  */
 export function handleNameRegisteredByControllerOld(event: ControllerNameRegisteredEventOld): void {
   log.info("handleNameRegisteredByControllerOld: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
   airstack.domain.trackNameRenewedOrRegistrationByController(
+    event.block,
+    event.transaction.hash.toHexString(),
+    domainId,
     event.params.name,
     event.params.label,
     event.params.cost,
     ZERO_ADDRESS,
-    event.block.number,
-    event.block.hash.toHexString(),
-    event.block.timestamp,
-    ETHEREUM_MAINNET_ID,
-    rootNode,
-    TOKEN_ADDRESS_ENS,
-    event.transaction.hash.toHexString(),
-    null,
-    null,
+    event.params.owner.toHexString(),
+    event.params.expires,
     true,
+    TOKEN_ADDRESS_ENS,
   )
 }
 
@@ -101,22 +95,19 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
  */
 export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
   log.info("handleNameRegisteredByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
-
+  let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
   airstack.domain.trackNameRenewedOrRegistrationByController(
+    event.block,
+    event.transaction.hash.toHexString(),
+    domainId,
     event.params.name,
     event.params.label,
     event.params.cost,
     ZERO_ADDRESS,
-    event.block.number,
-    event.block.hash.toHexString(),
-    event.block.timestamp,
-    ETHEREUM_MAINNET_ID,
-    rootNode,
-    TOKEN_ADDRESS_ENS,
-    event.transaction.hash.toHexString(),
-    null,
-    null,
+    event.params.owner.toHexString(),
+    event.params.expires,
     true,
+    TOKEN_ADDRESS_ENS,
   )
 }
 
@@ -126,20 +117,18 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
  */
 export function handleNameRenewedByController(event: ControllerNameRenewedEvent): void {
   log.info("handleNameRenewedByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
+  let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
   airstack.domain.trackNameRenewedOrRegistrationByController(
+    event.block,
+    event.transaction.hash.toHexString(),
+    domainId,
     event.params.name,
     event.params.label,
     event.params.cost,
     ZERO_ADDRESS,
-    event.block.number,
-    event.block.hash.toHexString(),
-    event.block.timestamp,
-    ETHEREUM_MAINNET_ID,
-    rootNode,
-    TOKEN_ADDRESS_ENS,
-    event.transaction.hash.toHexString(),
     event.transaction.from.toHexString(),
     event.params.expires,
     false,
+    TOKEN_ADDRESS_ENS,
   )
 }

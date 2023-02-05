@@ -12,16 +12,13 @@ import { TOKEN_ADDRESS_ENS } from "./utils";
  */
 export function handleAddrChanged(event: AddrChangedEvent): void {
   log.info("handleAddrChanged: node {} addr {} resolver {} txhash {}", [event.params.node.toHexString(), event.params.a.toHexString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
-  airstack.domain.trackAddrChangedTransaction(
-    ETHEREUM_MAINNET_ID,
+  airstack.domain.trackResolvedAddressChangedTransaction(
+    event.block,
+    event.transaction.hash.toHexString(),
     event.logIndex,
+    event.params.node.toHexString(),
     event.address.toHexString(),
     event.params.a.toHexString(),
-    event.params.node.toHexString(),
-    event.block.number,
-    event.block.hash.toHexString(),
-    event.block.timestamp,
-    event.transaction.hash.toHexString(),
     TOKEN_ADDRESS_ENS,
   );
 }
@@ -33,10 +30,7 @@ export function handleAddrChanged(event: AddrChangedEvent): void {
 export function handleVersionChanged(event: VersionChangedEvent): void {
   log.info("handleVersionChanged: node {} resolver {} txhash {}", [event.params.node.toHexString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
   airstack.domain.trackResolverVersionChange(
-    ETHEREUM_MAINNET_ID,
-    event.block.number,
-    event.block.hash.toHexString(),
-    event.block.timestamp,
+    event.block,
     event.params.node.toHexString(),
     event.address.toHexString(),
     TOKEN_ADDRESS_ENS,
