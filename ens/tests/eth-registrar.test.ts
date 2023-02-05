@@ -43,7 +43,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "tokenId", "null");
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "domain", domainId);
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "index", BIGINT_ONE.toString());
-    assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "cost", event.transaction.value.toString());
+    assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "cost", "null");
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "registrant", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "expiryTimestamp", event.params.expires.toString());
   })
