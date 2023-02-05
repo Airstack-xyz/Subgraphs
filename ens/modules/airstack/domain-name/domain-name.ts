@@ -38,7 +38,7 @@ export namespace domain {
    * @param domainId domain id
    * @param parentDomainId specifies the parentDomainId
    * @param tokenId token id
-   * @param label specifies the label of the domain
+   * @param labelHash specifies the label hash
    * @param labelName label name
    * @param name domain name
    * @param newOwner specifies the new owner of the domain
@@ -51,7 +51,7 @@ export namespace domain {
     domainId: string,
     parentDomainId: string,
     tokenId: string,
-    label: string,
+    labelHash: string,
     labelName: string | null,
     name: string | null,
     newOwner: string,
@@ -74,7 +74,7 @@ export namespace domain {
     domain.labelName = labelName;
     domain.owner = getOrCreateAirAccount(chainId, newOwner).id;
     domain.parent = parent.id;
-    domain.labelHash = label;
+    domain.labelHash = labelHash;
     domain.tokenId = tokenId;
     domain.lastBlock = airBlock.id;
     recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
@@ -342,7 +342,7 @@ export namespace domain {
    * @param transactionHash transaction hash
    * @param domainId air domain id
    * @param name domain name
-   * @param label label hash
+   * @param labelHash label hash
    * @param cost cost - still needs to be recorded
    * @param paymentToken payment token address
    * @param renewer renewer address - can be null
@@ -355,7 +355,7 @@ export namespace domain {
     transactionHash: string,
     domainId: string,
     name: string,
-    label: Bytes,
+    labelHash: Bytes,
     cost: BigInt,
     paymentToken: string,
     renewer: string | null,
@@ -364,11 +364,11 @@ export namespace domain {
     tokenAddress: string,
   ): void {
     let chainId = processChainId();
-    const labelHash = crypto.keccak256(ByteArray.fromUTF8(name));
-    if (!labelHash.equals(label)) {
+    const calculatedLabelHash = crypto.keccak256(ByteArray.fromUTF8(name));
+    if (!calculatedLabelHash.equals(labelHash)) {
       log.warning(
         "Expected '{}' to hash to {}, but got {} instead. Skipping.",
-        [name, labelHash.toHex(), label.toHex()]
+        [name, calculatedLabelHash.toHex(), labelHash.toHex()]
       );
       return;
     }
@@ -687,11 +687,11 @@ export namespace domain {
    * @dev this function needs to be removed
    * @dev this function creates subnode of the node and returns it as air domain entity id
    * @param node takes the node param from the event
-   * @param label takes the label param from the event
+   * @param labelHash takes the label param from the event
    * @returns returns a air domain entity id
    */
-  function createAirDomainEntityId(node: Bytes, label: Bytes): string {
-    let subnode = makeSubnode(node, label);
+  function createAirDomainEntityId(node: Bytes, labelHash: Bytes): string {
+    let subnode = makeSubnode(node, labelHash);
     return subnode;
   }
 
@@ -699,11 +699,11 @@ export namespace domain {
    * @dev this function needs to be removed
    * @dev this function creates subnode of the node and label
    * @param node takes the node param from the event
-   * @param label takes the label param from the event
+   * @param labelHash takes the label param from the event
    * @returns returns a subnode in hex string format
    */
-  function makeSubnode(node: Bytes, label: Bytes): string {
-    return crypto.keccak256(node.concat(label)).toHexString()
+  function makeSubnode(node: Bytes, labelHash: Bytes): string {
+    return crypto.keccak256(node.concat(labelHash)).toHexString()
   }
 
   /**
