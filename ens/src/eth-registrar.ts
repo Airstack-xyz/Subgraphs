@@ -31,7 +31,7 @@ const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c
 export function handleNameRegistered(event: NameRegisteredEvent): void {
   log.info("handleNameRegistered: registrant {} label {} expiry {} txhash {}", [event.params.owner.toHexString(), event.params.id.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString()]);
   let label = uint256ToByteArray(event.params.id);
-  let labelName = ens.nameByHash(label.toHexString())!;
+  let labelName = ens.nameByHash(label.toHexString());
   let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
   airstack.domain.trackNameRegisteredTransaction(
     event.block,
