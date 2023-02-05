@@ -218,8 +218,12 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
     assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
     // AirDomain
-    assert.fieldEquals("AirDomain", domainId, "ttl", event.params.ttl.toString());
     assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    // AirExtra
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "value", event.params.ttl.toString());
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "domain", domainId);
     // AirDomainNewTTLTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "oldTTL", "null");
@@ -245,8 +249,12 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
     assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
     // AirDomain
-    assert.fieldEquals("AirDomain", domainId, "ttl", event.params.ttl.toString());
     assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    // AirExtra
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "value", event.params.ttl.toString());
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "domain", domainId);
     // AirDomainNewTTLTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "oldTTL", "null");
