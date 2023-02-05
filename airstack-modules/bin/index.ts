@@ -72,22 +72,9 @@ integrate(vertical, yaml, graphql, dataSources, templates)
 
       case Vertical.NftMarketplace:
         console.log(`
-        Integration done. Please call the following functions.
-          
-        1. Track NFT trade transaction
-        trackNFTSaleTransactions(
-          chainID: string,
-          txHash: string,
-          txIndex: BigInt,
-          NftSales: Sale[],
-          protocolType: string,
-          protocolActionType: string,
-          timestamp: BigInt,
-          blockHeight: BigInt,
-          blockHash: string
-        )
+        Integration for DOMAIN_NAME vertical done. Please call the following functions.
 
-        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs
+        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs/airstack-modules/modules/airstack/nft-marketplace/Readme.md
         `);
         break;
 
