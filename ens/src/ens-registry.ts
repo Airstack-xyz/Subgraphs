@@ -17,6 +17,7 @@ import {
   createAirDomainEntityId,
   createReverseRegistrar,
 } from "./utils";
+import { AirDomain } from "../generated/schema";
 /**
  * @dev this functions maps the NewOwner event to airstack trackDomainOwnerChangedTransaction
  * @param event NewOwnerEvent from ENS Registry
@@ -45,7 +46,7 @@ export function handleNewOwner(event: NewOwnerEvent): void {
   if (event.params.node.toHexString() == ROOT_NODE) {
     name = labelName;
   } else {
-    let parent = airstack.domain.getAirDomain(event.params.node.toHexString());
+    let parent = AirDomain.load(event.params.node.toHexString());
     if (parent != null) {
       parentName = parent.name;
     } else {
@@ -195,7 +196,7 @@ export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
   if (event.params.node.toHexString() == ROOT_NODE) {
     name = labelName;
   } else {
-    let parent = airstack.domain.getAirDomain(event.params.node.toHexString());
+    let parent = AirDomain.load(event.params.node.toHexString());
     if (parent != null) {
       parentName = parent.name;
     } else {
