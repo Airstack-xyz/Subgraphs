@@ -601,7 +601,7 @@ export namespace domain {
 
   // end of track functions and start of get or create and helper functions
   /**
-   * @dev this function creates or updates an air extra entity
+   * @dev this function creates an air extra entity
    * @param name air extra name
    * @param value air extra value
    * @param domainId air domain id
