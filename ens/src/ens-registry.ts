@@ -26,12 +26,13 @@ export function handleNewOwner(event: NewOwnerEvent): void {
   let domainId = createAirDomainEntityId(event.params.node, event.params.label);
   let tokenId = BigInt.fromUnsignedBytes(event.params.label).toString();
   // marking the domain as migrated
-  getOrCreateIsMigratedMapping(
+  let isMigratedMapping = getOrCreateIsMigratedMapping(
     domainId,
     ETHEREUM_MAINNET_ID,
     event.block.number.toString(),
     true,
   );
+  isMigratedMapping.save();
   // creating labelName from label
   let labelName = ens.nameByHash(event.params.label.toHexString());
   if (labelName === null) {
@@ -151,6 +152,8 @@ export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
   if (isMigratedMapping.isMigrated == true) {
     return;
   }
+  // if the domain is not migrated yet, we save the above created mapping
+  isMigratedMapping.save();
   // creating labelName from label
   let labelName = ens.nameByHash(event.params.label.toHexString());
   if (labelName === null) {

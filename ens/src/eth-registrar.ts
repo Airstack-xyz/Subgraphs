@@ -77,7 +77,7 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
  */
 export function handleNameRegisteredByControllerOld(event: ControllerNameRegisteredEventOld): void {
   log.info("handleNameRegisteredByControllerOld: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
-  airstack.domain.trackSetNamePreImage(
+  airstack.domain.trackNameRenewedOrRegistrationByController(
     event.params.name,
     event.params.label,
     event.params.cost,
@@ -102,7 +102,7 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
 export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
   log.info("handleNameRegisteredByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
 
-  airstack.domain.trackSetNamePreImage(
+  airstack.domain.trackNameRenewedOrRegistrationByController(
     event.params.name,
     event.params.label,
     event.params.cost,
@@ -126,7 +126,7 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
  */
 export function handleNameRenewedByController(event: ControllerNameRenewedEvent): void {
   log.info("handleNameRenewedByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
-  airstack.domain.trackSetNamePreImage(
+  airstack.domain.trackNameRenewedOrRegistrationByController(
     event.params.name,
     event.params.label,
     event.params.cost,

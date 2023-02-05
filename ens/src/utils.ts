@@ -23,7 +23,6 @@ export function getOrCreateIsMigratedMapping(domainId: string, chainId: string, 
     entity = new DomainVsIsMigratedMapping(domainId);
     entity.isMigrated = isMigrated;
     entity.lastUpdatedAt = blockId;
-    entity.save();
   }
   return entity as DomainVsIsMigratedMapping;
 }

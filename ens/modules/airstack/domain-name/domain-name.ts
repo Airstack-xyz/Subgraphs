@@ -81,7 +81,6 @@ export namespace domain {
     recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
     domain.save();
 
-    // creating is migrated mapping
     getOrCreateAirDomainOwnerChangedTransaction(
       airBlock,
       logIndex,
@@ -389,7 +388,7 @@ export namespace domain {
   }
 
   /**
-   * @dev This function tracks set name preimage transaction
+   * @dev This function tracks trackNameRenewedOrRegistrationByController transaction
    * @param name domain name
    * @param label label hash
    * @param cost cost - still needs to be recorded
@@ -405,7 +404,7 @@ export namespace domain {
    * @param expiryTimestamp expiry date - can be null
    * @param fromRegistrationEvent true if called from a registration event
    */
-  export function trackSetNamePreImage(
+  export function trackNameRenewedOrRegistrationByController(
     name: string,
     label: Bytes,
     cost: BigInt,
