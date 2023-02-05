@@ -153,7 +153,7 @@ dataSources:
           handler: handleAddrChanged
         - event: VersionChanged(indexed bytes32,uint64)
           handler: handleVersionChanged
- - kind: ethereum/contract
+  - kind: ethereum/contract
     name: ReverseRegistrar
     network: mainnet
     source:
