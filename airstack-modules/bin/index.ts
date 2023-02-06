@@ -98,16 +98,16 @@ integrate(vertical, yaml, graphql, dataSources, templates)
             blockNumber: BigInt
           ): void
 
-          For documentation and examples please check: https://github.com/Airstack-xyz/airstack-subgraph/tree/task/npx-scripts
+          For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs
         `);
         break;
 
       case Vertical.NftMarketplace:
         console.log(`
         Integration done. Please call the following functions.
-        1. Track NFT trade
         
-        function trackNFTSaleTransactions(
+        1. Track NFT trade transaction
+        trackNFTSaleTransactions(
           chainID: string,
           txHash: string,
           txIndex: BigInt,
@@ -117,10 +117,165 @@ integrate(vertical, yaml, graphql, dataSources, templates)
           timestamp: BigInt,
           blockHeight: BigInt,
           blockHash: string
-      ): void
+        )
 
-        For documentation and examples please check: https://github.com/Airstack-xyz/airstack-subgraph/tree/task/npx-scripts
+        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs
         `);
+        break;
+
+      case Vertical.DomainName:
+        console.log(`
+        Integration done. Please call the following functions.
+
+        1. Track domain owner change transaction
+          trackDomainOwnerChangedTransaction(
+            blockHeight: BigInt,
+            blockHash: string,
+            blockTimestamp: BigInt,
+            logIndex: BigInt,
+            chainId: string,
+            newOwner: string,
+            transactionHash: string,
+            isMigrated: boolean,
+            node: Bytes,
+            label: Bytes,
+            tokenAddress: string,
+            fromOldRegistry: boolean,
+          )
+
+        2. Track domain transfer transaction
+        trackDomainTransferTransaction(
+          node: string,
+          chainId: string,
+          newOwnerAddress: string,
+          blockHeight: BigInt,
+          blockHash: string,
+          blockTimestamp: BigInt,
+          logIndex: BigInt,
+          transactionHash: string,
+          tokenAddress: string,
+          fromOldRegistry: boolean,
+        )
+
+        3. Track domain new resolver transaction
+        trackDomainNewResolverTransaction(
+          resolver: string,
+          node: string,
+          chainId: string,
+          blockHeight: BigInt,
+          blockHash: string,
+          blockTimestamp: BigInt,
+          transactionHash: string,
+          logIndex: BigInt,
+          tokenAddress: string,
+          fromOldRegistry: boolean,
+        )
+
+        4. Track domain new ttl transaction
+        trackDomainNewTTLTransaction(
+          node: string,
+          newTTL: BigInt,
+          chainId: string,
+          blockHeight: BigInt,
+          blockHash: string,
+          blockTimestamp: BigInt,
+          logIndex: BigInt,
+          transactionHash: string,
+          tokenAddress: string,
+          fromOldRegistry: boolean,
+        )
+
+        5. Track name registered transaction
+        trackNameRegisteredTransaction(
+          transactionHash: string,
+          blockHeight: BigInt,
+          blockHash: string,
+          blockTimestamp: BigInt,
+          logIndex: BigInt,
+          chainId: string,
+          registrantAddress: string,
+          expiryTimestamp: BigInt,
+          cost: BigInt,
+          paymentToken: string,
+          labelId: BigInt,
+          rootNode: ByteArray,
+          tokenAddress: string,
+        )
+
+        6. Track name renewed transaction
+        trackNameRenewedTransaction(
+          transactionHash: string,
+          blockHeight: BigInt,
+          blockHash: string,
+          blockTimestamp: BigInt,
+          chainId: string,
+          cost: BigInt | null,
+          paymentToken: string,
+          renewer: string,
+          labelId: BigInt,
+          rootNode: ByteArray,
+          expiryTimestamp: BigInt,
+          tokenAddress: string,
+        )
+
+        7. Track set name preimage transaction
+        trackSetNamePreImage(
+          name: string,
+          label: Bytes,
+          cost: BigInt,
+          paymentToken: string,
+          blockHeight: BigInt,
+          blockHash: string,
+          blockTimestamp: BigInt,
+          chainId: string,
+          rootNode: ByteArray,
+          tokenAddress: string,
+          transactionHash: string,
+          renewer: string | null,
+          expiryTimestamp: BigInt | null,
+          fromRegistrationEvent: boolean,
+        )
+
+        8. Track addr(resolvedAddress) changed transaction
+        trackAddrChangedTransaction(
+          chainId: string,
+          logIndex: BigInt,
+          resolverAddress: string,
+          addr: string,
+          node: string,
+          blockHeight: BigInt,
+          blockHash: string,
+          blockTimestamp: BigInt,
+          transactionHash: string,
+          tokenAddress: string,
+        )
+
+        9. Track resolver version changed transaction
+        trackResolverVersionChange(
+          chainId: string,
+          blockHeight: BigInt,
+          blockHash: string,
+          blockTimestamp: BigInt,
+          node: string,
+          resolverAddress: string,
+          tokenAddress: string,
+        )
+
+        10. Track set primary domain transaction
+        trackSetPrimaryDomainTransaction(
+          ensName: string,
+          chainId: string,
+          from: string,
+          blockHeight: BigInt,
+          blockHash: string,
+          blockTimestamp: BigInt,
+          transactionHash: string,
+          tokenAddress: string,
+        )
+
+        For documentation and examples please check: https://github.com/Airstack-xyz/Subgraphs
+        `
+        );
         break;
 
       default:

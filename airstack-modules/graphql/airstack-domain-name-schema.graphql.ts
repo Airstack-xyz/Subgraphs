@@ -1,22 +1,4 @@
-type ReverseRegistrar @entity {
-  id: ID!
-  name: String!
-  domain: AirDomain!
-  createdAt: AirBlock!
-}
-
-type PrimaryDomain @entity {
-  id: ID! #resolvedAddress
-  domain: AirDomain! #address's primary domain (if set)
-  lastUpdatedAt: AirBlock!
-}
-
-type DomainVsIsMigratedMapping @entity {
-  id: ID! #domain
-  isMigrated: Boolean!
-  lastUpdatedAt: AirBlock!
-}
-
+const schema = `
 #
 # --Airstack Schemas--
 
@@ -187,3 +169,6 @@ type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   index: BigInt! # - NA
   resolvedAddress: AirAccount! #make sure to remove the old primary ens if changed
 }
+`
+
+export default schema;

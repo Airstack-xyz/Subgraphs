@@ -34,14 +34,14 @@ export async function integrate(
       .then(() => {
         writeSubgraphGraphql(vertical as Vertical, graphql)
           .then(() => {
-            const targetDirectory = copyAirstackModules();
+            const { targetDir, commontTargetDir } = copyAirstackModules(vertical as Vertical);
 
-            if (vertical === Vertical.NftMarketplace) {
-              getAirMetaDetails();
-            }
+            getAirMetaDetails(vertical as Vertical);
 
             const arrayOfFiles: Array<string> = []
-            getAllFiles(targetDirectory, arrayOfFiles)
+            const arrayOfCommonFiles: Array<string> = []
+            getAllFiles(targetDir, arrayOfFiles)
+            getAllFiles(commontTargetDir, arrayOfCommonFiles)
 
             let dataSourceName = "";
             if (dataSources && dataSources.length > 0) {
@@ -79,6 +79,28 @@ export async function integrate(
             Promise.all(writeFilePromise).then(() => {
               resolve();
             }).catch(() => {
+              reject();
+            })
+            const writeCommonFilesPromise: Array<Promise<void>> = [];
+            arrayOfCommonFiles.forEach((filePath: string) => {
+              writeCommonFilesPromise.push(new Promise((res, rej) => {
+                const fileContent = fs.readFileSync(filePath, "utf8");
+                const finalFileContent = mustache.render(fileContent, { dataSource: dataSourceName })
+
+                fs.writeFile(filePath, finalFileContent, (err) => {
+                  if (err) {
+                    console.log(err);
+                    rej();
+                  } else {
+                    res();
+                  }
+                });
+              }));
+            });
+            Promise.all(writeCommonFilesPromise).then(() => {
+              resolve();
+            }
+            ).catch(() => {
               reject();
             })
           })
@@ -197,20 +219,35 @@ function writeSubgraphGraphql(
   });
 }
 
-function copyAirstackModules(): string {
-  const sourceDir = path.resolve(__dirname, '../../modules');
-  const targetDir = path.resolve(__dirname, '../../../../../modules');
-
+function copyAirstackModules(vertical: Vertical): { targetDir: string, commontTargetDir: string } {
+  let sourceDir: string = "";
+  let targetDir: string = "";
+  switch (vertical) {
+    case Vertical.NftMarketplace:
+      sourceDir = path.resolve(__dirname, '../../modules/airstack/nft-marketplace');
+      targetDir = path.resolve(__dirname, '../../../../../modules/airstack/nft-marketplace');
+      break;
+    case Vertical.DomainName:
+      sourceDir = path.resolve(__dirname, '../../modules/airstack/domain-name');
+      targetDir = path.resolve(__dirname, '../../../../../modules/airstack/domain-name');
+      break;
+    default:
+      console.error("Invalid vertical, please check the vertical name.");
+      process.exit(1); // an error occurred
+  }
+  // to copy common.ts file
+  const commontSourceDir = path.resolve(__dirname, '../../modules/airstack/common');
+  const commontTargetDir = path.resolve(__dirname, '../../../../../modules/airstack/common');
   // To copy a folder or file, select overwrite accordingly
   try {
     fse.copySync(sourceDir, targetDir, { overwrite: true })
+    fse.copySync(commontSourceDir, commontTargetDir, { overwrite: true })
   } catch (err) {
     console.error(err)
   } finally {
-    return targetDir
+    return { targetDir, commontTargetDir };
   }
 }
-
 
 function getAllFiles(dirPath: string, arrayOfFiles: Array<string>) {
   const files = fs.readdirSync(dirPath)
@@ -232,7 +269,7 @@ export var SUBGRAPH_NAME = "";
 export var SUBGRAPH_VERSION = "";
 export var SUBGRAPH_SLUG = "";
 
-function getAirMetaDetails() {
+function getAirMetaDetails(vertical: Vertical) {
   while (SUBGRAPH_NAME.trim() === "") {
     let subgraphName: string = readlineSync.question("Enter the name of the subgraph: ");
     SUBGRAPH_NAME = subgraphName;
@@ -245,11 +282,11 @@ function getAirMetaDetails() {
     let subgraphSlug: string = readlineSync.question("Enter the slug of the subgraph: ");
     SUBGRAPH_SLUG = subgraphSlug;
   }
-  const targetFile = path.resolve(__dirname, '../../../../../modules/airstack/utils.ts');
+  let targetFile = path.resolve(__dirname, '../../../../../modules/airstack/common/index.ts');
   let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
-  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, "");
-  fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, "");
-  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, "");
-  fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
+  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, `export const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, `export const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`);
+  // fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
   fs.writeFileSync(targetFile, fileContent, { encoding: "utf8" });
 }
