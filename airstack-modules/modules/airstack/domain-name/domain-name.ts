@@ -393,6 +393,7 @@ export namespace domain {
     } else {
       // name renewal event
       // updating renewal cost in name renewed transaction entity
+      domain.expiryTimestamp = expiryTimestamp!;
       getOrCreateAirNameRenewedTransaction(
         transactionHash,
         chainId,

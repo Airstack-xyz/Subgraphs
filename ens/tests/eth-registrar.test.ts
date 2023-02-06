@@ -124,6 +124,7 @@ describe("Unit tests for eth registrar handlers", () => {
     // assert here
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "registrationCost", "0");
+    assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
     assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
