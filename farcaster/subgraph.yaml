@@ -1,0 +1,50 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: FarcasterNameRegistry
+    network: goerli
+    source:
+      address: "0xe3be01d99baa8db9905b33a3ca391238234b79d1"
+      abi: FarcasterNameRegistry
+      startBlock: 7648795 
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - User
+        - UserFname
+      abis:
+        - name: FarcasterNameRegistry
+          file: ./abis/FarcasterNameRegistry.json
+        - name: FarcasterIdRegistry
+          file: ./abis/TokenIdRegistry.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: FarcasteIdRegistry
+    network: goerli
+    source:
+      address: "0xda107a1caf36d198b12c16c7b6a1d1c795978c42"
+      abi: FarcasterIdRegistry
+      startBlock: 7648795 
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - User
+        - UserFname
+      abis:
+        - name: FarcasterNameRegistry
+          file: ./abis/FarcasterNameRegistry.json
+        - name: FarcasterIdRegistry
+          file: ./abis/TokenIdRegistry.json
+      eventHandlers:
+        - event: Register(indexed address,indexed uint256,address,string)
+          handler: handleRegister
+      file: ./src/mapping.ts
