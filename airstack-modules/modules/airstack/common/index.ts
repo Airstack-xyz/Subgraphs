@@ -17,9 +17,11 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-export const SUBGRAPH_NAME = "AIRSTACK-SUBGRAPH";
-export const SUBGRAPH_VERSION = "AIRSTACK-SUBGRAPH";
-export const SUBGRAPH_SLUG = "AIRSTACK-SUBGRAPH";
+
+export const SUBGRAPH_NAME = "ens";
+export const SUBGRAPH_VERSION = "v1";
+export const SUBGRAPH_SLUG = "ens-v1";
+
 
 const AIR_NETWORK_MAP = new TypedMap<string, string>();
 AIR_NETWORK_MAP.set("arbitrum-one", "ARBITRUM_ONE");
@@ -44,8 +46,38 @@ AIR_NETWORK_MAP.set("osmosis", "OSMOSIS");
 AIR_NETWORK_MAP.set("matic", "MATIC");
 AIR_NETWORK_MAP.set("xdai", "XDAI");
 
+const AIR_CHAIN_ID_MAP = new TypedMap<string, string>();
+AIR_CHAIN_ID_MAP.set("arbitrum-one", "42161");
+AIR_CHAIN_ID_MAP.set("arweave-mainnet", "174");
+AIR_CHAIN_ID_MAP.set("aurora", "1313161554");
+AIR_CHAIN_ID_MAP.set("avalanche", "43114");
+AIR_CHAIN_ID_MAP.set("boba", "288");
+AIR_CHAIN_ID_MAP.set("bsc", "56");
+AIR_CHAIN_ID_MAP.set("celo", "42220");
+AIR_CHAIN_ID_MAP.set("COSMOS", "cosmos");
+AIR_CHAIN_ID_MAP.set("CRONOS", "25");
+AIR_CHAIN_ID_MAP.set("mainnet", "1");
+AIR_CHAIN_ID_MAP.set("fantom", "250");
+AIR_CHAIN_ID_MAP.set("fuse", "122");
+AIR_CHAIN_ID_MAP.set("harmony", "1666600000");
+AIR_CHAIN_ID_MAP.set("juno", "juno-1");
+AIR_CHAIN_ID_MAP.set("moonbeam", "1284");
+AIR_CHAIN_ID_MAP.set("moonriver", "1285");
+AIR_CHAIN_ID_MAP.set("near-mainnet", "1313161554");
+AIR_CHAIN_ID_MAP.set("optimism", "10");
+AIR_CHAIN_ID_MAP.set("osmosis", "osmosis-1");
+AIR_CHAIN_ID_MAP.set("matic", "137");
+AIR_CHAIN_ID_MAP.set("xdai", "100");
+
 export function processNetwork(network: string): string {
   const value = AIR_NETWORK_MAP.get(network);
+  const result: string = value !== null ? value : "unknown";
+  return result;
+}
+
+export function processChainId(): string {
+  let network = dataSource.network();
+  const value = AIR_CHAIN_ID_MAP.get(network);
   const result: string = value !== null ? value : "unknown";
   return result;
 }

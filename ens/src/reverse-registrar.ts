@@ -12,13 +12,10 @@ import { TOKEN_ADDRESS_ENS } from "./utils";
 export function handleSetName(call: SetNameCall): void {
   log.info("handleSetName: name {} txhash {}", [call.inputs.name, call.transaction.hash.toHexString()]);
   airstack.domain.trackSetPrimaryDomainTransaction(
-    call.inputs.name,
-    ETHEREUM_MAINNET_ID,
-    call.from.toHexString(),
-    call.block.number,
-    call.block.hash.toHexString(),
-    call.block.timestamp,
+    call.block,
     call.transaction.hash.toHexString(),
+    call.inputs.name,
+    call.from.toHexString(),
     TOKEN_ADDRESS_ENS,
   );
 }

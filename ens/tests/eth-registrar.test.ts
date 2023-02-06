@@ -8,9 +8,10 @@ import {
 import { ByteArray, crypto, Bytes } from "@graphprotocol/graph-ts"
 import { handleNameRenewedByController, handleNameRegistered, handleNameRenewed, handleNameRegisteredByControllerOld, handleNameRegisteredByController } from "../src/eth-registrar"
 import { getHandleNameRenewedByControllerEvent, getHandleNameRegisteredEvent, getHandleNameRenewedEvent, getHandleNameRegisteredByControllerOldEvent, getHandleNameRegisteredByControllerEvent } from "./eth-registrar-utils"
-import { ETHEREUM_MAINNET_ID, ZERO_ADDRESS, byteArrayFromHex, uint256ToByteArray } from "../modules/airstack/domain-name/utils"
+import { ETHEREUM_MAINNET_ID, ZERO_ADDRESS } from "../modules/airstack/domain-name/utils"
+import { uint256ToByteArray, byteArrayFromHex } from "../src/utils"
 import { BIGINT_ONE } from "../modules/airstack/common"
-import { AirDomain, ReverseRegistrar } from "../generated/schema"
+import { AirDomain } from "../generated/schema"
 
 const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae");
 
@@ -42,7 +43,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "tokenId", "null");
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "domain", domainId);
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "index", BIGINT_ONE.toString());
-    assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "cost", event.transaction.value.toString());
+    assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "cost", "null");
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "registrant", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "expiryTimestamp", event.params.expires.toString());
   })
