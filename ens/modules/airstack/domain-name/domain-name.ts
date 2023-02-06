@@ -27,7 +27,7 @@ import {
   AirExtra,
 } from "../../../generated/schema";
 import { AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
-import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, processChainId, updateAirEntityCounter, getOrCreateAirBlock } from "../common";
+import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, processChainId, updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount } from "../common";
 
 export namespace domain {
   /**
@@ -72,7 +72,7 @@ export namespace domain {
     }
     domain.name = name;
     domain.labelName = labelName;
-    domain.owner = getOrCreateAirAccount(chainId, newOwner).id;
+    domain.owner = getOrCreateAirAccount(chainId, newOwner, airBlock).id;
     domain.parent = parent.id;
     domain.labelHash = labelHash;
     domain.tokenId = tokenId;
@@ -114,17 +114,17 @@ export namespace domain {
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let previousOwnerId = domain.owner;
     if (previousOwnerId == null) {
-      previousOwnerId = getOrCreateAirAccount(chainId, ZERO_ADDRESS).id;
+      previousOwnerId = getOrCreateAirAccount(chainId, ZERO_ADDRESS, airBlock).id;
     }
     // update domain owner here
-    domain.owner = getOrCreateAirAccount(chainId, newOwnerAddress).id;
+    domain.owner = getOrCreateAirAccount(chainId, newOwnerAddress, airBlock).id;
     domain.save();
     let id = createEntityId(transactionHash, block.number, logOrCallIndex);
     let entity = AirDomainTransferTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainTransferTransaction(id);
       entity.from = previousOwnerId;
-      entity.to = getOrCreateAirAccount(chainId, newOwnerAddress).id;
+      entity.to = getOrCreateAirAccount(chainId, newOwnerAddress, airBlock).id;
       entity.block = airBlock.id;
       entity.transactionHash = transactionHash;
       entity.tokenId = domain.tokenId;
@@ -159,7 +159,7 @@ export namespace domain {
     // get previous resolver
     let previousResolverId = domain.resolver;
     // create new resolver
-    let resolverEntity = getOrCreateAirResolver(domain, chainId, resolver);
+    let resolverEntity = getOrCreateAirResolver(domain, chainId, airBlock, resolver);
     // update domain resolver
     domain.resolver = resolverEntity.id;
     // update domain resolved address
@@ -437,11 +437,11 @@ export namespace domain {
     tokenAddress: string,
   ): void {
     let chainId = processChainId();
-    let addrAccount = getOrCreateAirAccount(chainId, resolvedAddress);
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    let addrAccount = getOrCreateAirAccount(chainId, resolvedAddress, airBlock);
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let previousResolvedAddressId = domain.resolvedAddress;
-    let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, resolvedAddress);
+    let resolver = getOrCreateAirResolver(domain, chainId, airBlock, resolverAddress, resolvedAddress);
     resolver.domain = domain.id;
     resolver.save()
 
@@ -479,7 +479,7 @@ export namespace domain {
     let chainId = processChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
-    let resolver = getOrCreateAirResolver(domain, chainId, resolverAddress, null);
+    let resolver = getOrCreateAirResolver(domain, chainId, airBlock, resolverAddress, null);
     if (domain && domain.resolver === resolver.id) {
       domain.resolvedAddress = null
       domain.lastBlock = airBlock.id;
@@ -511,7 +511,7 @@ export namespace domain {
     }
     log.info("Reverse registrar found for name {} domainId {} txHash {}", [domainName, reverseRegistrar.domain, transactionHash])
     let domain = getOrCreateAirDomain(new Domain(reverseRegistrar.domain, chainId, airBlock, tokenAddress));
-    let fromAccount = getOrCreateAirAccount(chainId, from);
+    let fromAccount = getOrCreateAirAccount(chainId, from, airBlock);
     // when domain's resolvedAddress is set as from address
     if (domain.resolvedAddress == fromAccount.id) {
       // get or create primary domain entity
@@ -617,7 +617,7 @@ export namespace domain {
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, block);
-      entity.resolvedAddress = getOrCreateAirAccount(chainId, resolvedAddress).id; //make sure to remove the old primary ens if changed
+      entity.resolvedAddress = getOrCreateAirAccount(chainId, resolvedAddress, block).id; //make sure to remove the old primary ens if changed
       entity.save();
     }
     return entity as AirPrimaryDomainTransaction;
@@ -653,7 +653,7 @@ export namespace domain {
       entity.block = block.id;
       entity.transactionHash = transactionHash;
       entity.previousResolvedAddress = previousResolvedAddressId;
-      entity.newResolvedAddress = getOrCreateAirAccount(chainId, newResolvedAddress).id;
+      entity.newResolvedAddress = getOrCreateAirAccount(chainId, newResolvedAddress, block).id;
       entity.domain = domain.id;
       entity.tokenId = domain.tokenId;
       entity.index = updateAirEntityCounter(AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, block);
@@ -741,7 +741,7 @@ export namespace domain {
       if (paymentToken) {
         entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
       }
-      entity.renewer = getOrCreateAirAccount(chainId, renewer).id;
+      entity.renewer = getOrCreateAirAccount(chainId, renewer, block).id;
       entity.expiryTimestamp = expiryTimestamp;
       entity.save();
     }
@@ -796,7 +796,7 @@ export namespace domain {
       if (paymentToken) {
         entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
       }
-      entity.registrant = getOrCreateAirAccount(chainId, registrant).id;
+      entity.registrant = getOrCreateAirAccount(chainId, registrant, block).id;
       entity.expiryTimestamp = expiryTimestamp;
       entity.save();
     }
@@ -807,13 +807,15 @@ export namespace domain {
    * @dev this function gets or creates an AirResolver entity
    * @param domain air domain entity
    * @param chainId chain id
+   * @param block air block
    * @param resolver resolver contract address
-   * @param addr address of addr record or null
+   * @param resolvedAddress address of resolved address or null
    * @returns AirResolver entity
    */
   function getOrCreateAirResolver(
     domain: AirDomain,
     chainId: string,
+    block: AirBlock,
     resolver: string,
     resolvedAddress: string | null = EMPTY_STRING,
   ): AirResolver {
@@ -821,11 +823,11 @@ export namespace domain {
     let entity = AirResolver.load(id);
     if (entity == null) {
       entity = new AirResolver(id);
-      entity.address = getOrCreateAirAccount(chainId, resolver).id;
+      entity.address = getOrCreateAirAccount(chainId, resolver, block).id;
       entity.domain = domain.id;
     }
     if (resolvedAddress && resolvedAddress != EMPTY_STRING) {
-      entity.resolvedAddress = getOrCreateAirAccount(chainId, resolvedAddress).id;
+      entity.resolvedAddress = getOrCreateAirAccount(chainId, resolvedAddress, block).id;
     } else if (resolvedAddress == null) {
       entity.resolvedAddress = null;
     }
@@ -951,7 +953,7 @@ export namespace domain {
     if (entity == null) {
       entity = new AirDomain(domain.id);
       entity.subdomainCount = BIG_INT_ZERO;
-      entity.owner = getOrCreateAirAccount(domain.chainId, ZERO_ADDRESS).id;
+      entity.owner = getOrCreateAirAccount(domain.chainId, ZERO_ADDRESS, domain.block).id;
       entity.tokenAddress = getOrCreateAirToken(domain.chainId, domain.tokenAddress).id;
       entity.isPrimary = false;
       entity.expiryTimestamp = BIG_INT_ZERO;
@@ -1001,7 +1003,7 @@ export namespace domain {
     if (entity == null) {
       entity = new AirDomainOwnerChangedTransaction(id);
       entity.previousOwner = previousOwnerId;
-      entity.newOwner = getOrCreateAirAccount(chainId, newOwner).id;
+      entity.newOwner = getOrCreateAirAccount(chainId, newOwner, block).id;
       entity.transactionHash = transactionHash;
       entity.tokenId = tokenId;
       entity.domain = domain.id;
@@ -1022,7 +1024,7 @@ export namespace domain {
    */
   function recurseSubdomainCountDecrement(domain: AirDomain, chainId: string, block: AirBlock, tokenAddress: string): string | null {
     if ((domain.resolver == null || domain.resolver!.split("-")[0] == ZERO_ADDRESS) &&
-      domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS).id && domain.subdomainCount == BIG_INT_ZERO) {
+      domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS, block).id && domain.subdomainCount == BIG_INT_ZERO) {
       if (domain.parent) {
         const parentDomain = getOrCreateAirDomain(new Domain(domain.parent!, chainId, block, tokenAddress));
         if (parentDomain) {
@@ -1051,25 +1053,6 @@ export namespace domain {
       entity.save();
     }
     return entity as AirToken;
-  }
-
-  /**
-   * @dev this function gets or creates a new air account entity
-   * @param chainId chain id
-   * @param address account address
-   * @returns AirAccount entity
-   */
-  function getOrCreateAirAccount(chainId: string, address: string): AirAccount {
-    if (address == EMPTY_STRING) {
-      address = ZERO_ADDRESS;
-    }
-    let entity = AirAccount.load(chainId + "-" + address);
-    if (entity == null) {
-      entity = new AirAccount(chainId + "-" + address);
-      entity.address = address;
-      entity.save();
-    }
-    return entity as AirAccount;
   }
 
   /**
