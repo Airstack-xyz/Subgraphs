@@ -28,6 +28,7 @@ type AirEntityCounter @entity {
 type AirAccount @entity {
   id: ID!
   address: String!
+  createdAt: AirBlock!
 }
 
 type AirToken @entity {

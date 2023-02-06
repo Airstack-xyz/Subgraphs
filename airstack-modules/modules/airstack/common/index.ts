@@ -7,6 +7,7 @@ import {
   AirBlock,
   AirEntityCounter,
   AirMeta,
+  AirAccount,
 } from "../../../generated/schema";
 
 export const AIR_META_ID = "AIR_META";
@@ -17,11 +18,9 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-
 export const SUBGRAPH_NAME = "ens";
 export const SUBGRAPH_VERSION = "v1";
 export const SUBGRAPH_SLUG = "ens-v1";
-
 
 const AIR_NETWORK_MAP = new TypedMap<string, string>();
 AIR_NETWORK_MAP.set("arbitrum-one", "ARBITRUM_ONE");
@@ -156,4 +155,22 @@ export function getOrCreateAirBlock(
     block.save()
   }
   return block as AirBlock;
+}
+
+/**
+ * @dev this function gets or creates a new air account entity
+ * @param chainId chain id
+ * @param address account address
+ * @param block air block object
+ * @returns AirAccount entity
+ */
+export function getOrCreateAirAccount(chainId: string, address: string, block: AirBlock): AirAccount {
+  let id = chainId.concat("-").concat(address);
+  let entity = AirAccount.load(id);
+  if (entity == null) {
+    entity = new AirAccount(id);
+    entity.address = address;
+    entity.createdAt = block.id;
+  }
+  return entity as AirAccount;
 }

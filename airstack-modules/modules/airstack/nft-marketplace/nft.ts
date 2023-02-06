@@ -16,7 +16,7 @@ import {
 } from "../../../generated/schema";
 
 import { AIR_NFT_SALE_ENTITY_ID } from "./utils";
-import { updateAirEntityCounter, getOrCreateAirBlock } from "../common";
+import { updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount } from "../common";
 
 export namespace nft {
     export function trackNFTSaleTransactions(
@@ -42,9 +42,9 @@ export namespace nft {
             let paymentToken = getOrCreateAirToken(chainID, NftSales[i].paymentToken.toHexString());
 
             // Account
-            let buyerAccount = handleAccountCreation(chainID, NftSales[i].buyer.toHexString(), block.id);
-            let sellerAccount = handleAccountCreation(chainID, NftSales[i].seller.toHexString(), block.id);
-            let feeAccount = handleAccountCreation(chainID, NftSales[i].protocolFeesBeneficiary.toHexString(), block.id);
+            let buyerAccount = getOrCreateAirAccount(chainID, NftSales[i].buyer.toHexString(), block);
+            let sellerAccount = getOrCreateAirAccount(chainID, NftSales[i].seller.toHexString(), block);
+            let feeAccount = getOrCreateAirAccount(chainID, NftSales[i].protocolFeesBeneficiary.toHexString(), block);
 
             // Sale Token
             let saleToken = getOrCreateAirToken(
@@ -86,10 +86,10 @@ export namespace nft {
 
             // Creator Royalty
             for (let j = 0; j < NftSales[i].royalties.length; j++) {
-                let royaltyAccount = handleAccountCreation(
+                let royaltyAccount = getOrCreateAirAccount(
                     chainID,
                     NftSales[i].royalties[j].beneficiary.toHexString(),
-                    block.id
+                    block
                 );
 
                 let royaltyId = transactionId + "-" + NftSales[i].royalties[j].beneficiary.toHexString();
@@ -140,15 +140,6 @@ export namespace nft {
             entity.save();
         }
         return entity as AirToken;
-    }
-
-    export function getOrCreateAirAccount(chainID: string, address: string): AirAccount {
-        let entity = AirAccount.load(chainID + "-" + address);
-        if (entity == null) {
-            entity = new AirAccount(chainID + "-" + address);
-            entity.address = address;
-        }
-        return entity as AirAccount;
     }
 
     export function getOrCreateAirNftTransaction(
@@ -202,13 +193,4 @@ export namespace nft {
         ) { }
     }
 
-    export function handleAccountCreation(chainID: string, address: string, createdAt: string): AirAccount {
-        let account = AirAccount.load(chainID + "-" + address);
-        if (account == null) {
-            account = getOrCreateAirAccount(chainID, address);
-            account.createdAt = createdAt;
-            account.save();
-        }
-        return account as AirAccount;
-    }
 }
