@@ -337,6 +337,7 @@ export namespace domain {
   }
 
   /**
+   * @dev this function is specific to ens subgraph
    * @dev This function tracks trackNameRenewedOrRegistrationByController transaction
    * @param block ethereum block
    * @param transactionHash transaction hash
@@ -392,17 +393,17 @@ export namespace domain {
       domain.lastBlock = airBlock.id;
     } else {
       // name renewal event
-      // updating renewal cost in name renewed transaction entity
-      getOrCreateAirNameRenewedTransaction(
+      // updating renewal cost in name renewed transaction entity and domain entity
+      trackNameRenewedTransaction(
+        block,
         transactionHash,
-        chainId,
-        airBlock,
-        domain,
+        domainId,
         cost,
         paymentToken,
         renewer!,
         expiryTimestamp!,
-      );
+        tokenAddress,
+      )
     }
     if (domain.labelName !== name) {
       domain.labelName = name
