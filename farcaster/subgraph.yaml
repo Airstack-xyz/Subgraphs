@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.4
 schema:
   file: ./schema.graphql
 dataSources:
@@ -11,7 +11,7 @@ dataSources:
       startBlock: 7648795 
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - User
@@ -23,7 +23,7 @@ dataSources:
           file: ./abis/TokenIdRegistry.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,indexed uint256)
-          handler: handleTransfer
+          handler: handleFarcasterNameTransfer
       file: ./src/mapping.ts
   - kind: ethereum
     name: FarcasteIdRegistry
@@ -34,7 +34,7 @@ dataSources:
       startBlock: 7648795 
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - User
@@ -48,3 +48,5 @@ dataSources:
         - event: Register(indexed address,indexed uint256,address,string)
           handler: handleRegister
       file: ./src/mapping.ts
+
+      # listen to ChangeHomeUrl and ChangeRecoveryAddress events also from FarcasterIdRegistry

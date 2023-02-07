@@ -4,7 +4,7 @@ import {
   crypto,
   log,
   ByteArray,
-  ens,
+  ens,w
   ethereum,
 } from "@graphprotocol/graph-ts";
 
