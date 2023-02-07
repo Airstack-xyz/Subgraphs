@@ -84,6 +84,13 @@ https://github.com/Airstack-xyz/Subgraphs/tree/main/airstack-modules/modules/air
         `
         );
         break;
+      case Vertical.Social:
+        console.log(`
+Integration for SOCIAL vertical done. For documentation and examples please check below link:
+https://github.com/Airstack-xyz/Subgraphs/blob/ens-airstack-module-refactor/airstack-modules/modules/airstack/social/Readme.md
+        `
+        );
+        break;
 
       default:
         break;
