@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
+import { Bytes, log } from "@graphprotocol/graph-ts"
 import {
   FarcasterNameRegistry,
   Transfer
@@ -10,6 +10,10 @@ import { FARCASTER_ID_REGISTRY_CONTRACT } from "./utils";
 import { AirExtraData } from "../generated/schema";
 import { processChainId } from "../modules/airstack/common";
 
+/**
+ * @dev this function is called when a farcaster name is transfered
+ * @param event transfer event from farcaster name registry
+ */
 export function handleFarcasterNameTransfer(event: Transfer): void {
   let fromAdress = event.params.from;
   let toAdress = event.params.to;
@@ -42,6 +46,10 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
   );
 }
 
+/**
+ * @dev this function is called when a farcaster id is registered
+ * @param event register event from farcaster id registry
+ */
 export function handleRegister(event: Register): void {
   log.info("handleRegister to {} id {} contractAddress {} recovery {} url {}", [event.params.to.toHexString(), event.params.id.toHexString(), event.address.toHexString(), event.params.recovery.toHexString(), event.params.url]);
   // create air extra data for recovery address and home url
@@ -70,6 +78,10 @@ export function handleRegister(event: Register): void {
   );
 }
 
+/**
+ * @dev this function is called when a farcaster id home url is changed
+ * @param event ChangeHome event from farcaster id registry
+ */
 export function handleChangeHome(event: ChangeHome): void {
   log.info("handleChangeHome id {} contractAddress {} url {}", [event.params.id.toString(), event.address.toHexString(), event.params.url]);
   // load extra data for farcaster id
@@ -82,6 +94,10 @@ export function handleChangeHome(event: ChangeHome): void {
   }
 }
 
+/**
+ * @dev this function is called when a farcaster id recovery address is changed
+ * @param event ChangeRecoveryAddress event from farcaster id registry
+ */
 export function handleChangeRecoveryAddress(event: ChangeRecoveryAddress): void {
   log.info("handleChangeRecoveryAddress id {} contractAddress {} recovery {}", [event.params.id.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
   // load extra data for farcaster id
