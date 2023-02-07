@@ -18,9 +18,9 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-export const SUBGRAPH_NAME = "ens";
-export const SUBGRAPH_VERSION = "v1";
-export const SUBGRAPH_SLUG = "ens-v1";
+export const SUBGRAPH_NAME = "AIRSTACK_SUBGRAPH";
+export const SUBGRAPH_VERSION = "AIRSTACK_SUBGRAPH";
+export const SUBGRAPH_SLUG = "AIRSTACK_SUBGRAPH";
 
 const AIR_NETWORK_MAP = new TypedMap<string, string>();
 AIR_NETWORK_MAP.set("arbitrum-one", "ARBITRUM_ONE");
@@ -33,6 +33,7 @@ AIR_NETWORK_MAP.set("celo", "CELO");
 AIR_NETWORK_MAP.set("COSMOS", "COSMOS");
 AIR_NETWORK_MAP.set("CRONOS", "CRONOS");
 AIR_NETWORK_MAP.set("mainnet", "MAINNET");
+AIR_NETWORK_MAP.set("goerli", "GOERLI");
 AIR_NETWORK_MAP.set("fantom", "FANTOM");
 AIR_NETWORK_MAP.set("fuse", "FUSE");
 AIR_NETWORK_MAP.set("harmony", "HARMONY");
@@ -56,6 +57,7 @@ AIR_CHAIN_ID_MAP.set("celo", "42220");
 AIR_CHAIN_ID_MAP.set("COSMOS", "cosmos");
 AIR_CHAIN_ID_MAP.set("CRONOS", "25");
 AIR_CHAIN_ID_MAP.set("mainnet", "1");
+AIR_CHAIN_ID_MAP.set("goerli", "5");
 AIR_CHAIN_ID_MAP.set("fantom", "250");
 AIR_CHAIN_ID_MAP.set("fuse", "122");
 AIR_CHAIN_ID_MAP.set("harmony", "1666600000");
