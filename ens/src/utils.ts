@@ -17,12 +17,11 @@ export const TOKEN_ADDRESS_ENS = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
  * @dev this function creates a new DomainVsIsMigratedMapping entity
  * @param domaiId air domain entity id
  * @param chainId chain id
- * @param blockNumber block number
+ * @param blockId air block id
  * @param isMigrated is migrated flag - only required when creating a new entity
  * @returns DomainVsIsMigratedMapping entity
 */
-export function getOrCreateIsMigratedMapping(domainId: string, chainId: string, blockNumber: string, isMigrated: boolean = false): DomainVsIsMigratedMapping {
-  let blockId = chainId.concat("-").concat(blockNumber);
+export function getOrCreateIsMigratedMapping(domainId: string, chainId: string, blockId: string, isMigrated: boolean = false): DomainVsIsMigratedMapping {
   let entity = DomainVsIsMigratedMapping.load(domainId);
   if (entity == null) {
     entity = new DomainVsIsMigratedMapping(domainId);

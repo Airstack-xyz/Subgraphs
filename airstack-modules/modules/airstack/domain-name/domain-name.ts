@@ -490,7 +490,7 @@ export namespace domain {
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let resolver = getOrCreateAirResolver(domain, chainId, airBlock, resolverAddress, null);
-    if (domain && domain.resolver === resolver.id) {
+    if (domain && domain.resolver == resolver.id) {
       domain.resolvedAddress = null
       domain.lastBlock = airBlock.id;
       domain.save();

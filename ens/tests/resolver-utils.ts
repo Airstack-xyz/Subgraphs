@@ -2,6 +2,8 @@ import { newMockEvent } from "matchstick-as"
 import { ethereum, Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
 import { AddrChanged, VersionChanged } from "../generated/Resolver1/Resolver"
 import { getTransactionHash } from "./common-utils"
+import { AirDomain } from "../generated/schema"
+import { BIG_INT_ZERO } from "../modules/airstack/common/index"
 
 export function getHandleAddrChangedEvent(): AddrChanged {
   return createHandleAddrChangedEvent(
@@ -57,3 +59,17 @@ export function createHandleVersionChangedEvent(
   return event
 }
 
+export function createAirDomain(domainId: string): AirDomain {
+  let entity = new AirDomain(domainId);
+  entity.subdomainCount = BIG_INT_ZERO;
+  entity.name = "eth";
+  entity.owner = "1-472668903";
+  entity.tokenAddress = "1-472668903";
+  entity.isPrimary = false;
+  entity.expiryTimestamp = BIG_INT_ZERO;
+  entity.registrationCost = BIG_INT_ZERO;
+  entity.createdAt = "1-472668903";
+  entity.lastBlock = "1-472668903";
+  entity.save();
+  return entity as AirDomain;
+}
