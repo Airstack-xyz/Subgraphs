@@ -1,3 +1,5 @@
+#
+# --Airstack Schemas--
 enum AirProtocolType {
   SOCIAL
 }
