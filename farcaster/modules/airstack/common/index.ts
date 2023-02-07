@@ -18,9 +18,9 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-export const SUBGRAPH_NAME = "AIRSTACK_SUBGRAPH";
-export const SUBGRAPH_VERSION = "AIRSTACK_SUBGRAPH";
-export const SUBGRAPH_SLUG = "AIRSTACK_SUBGRAPH";
+export const SUBGRAPH_NAME = "farcaster";
+export const SUBGRAPH_VERSION = "v1";
+export const SUBGRAPH_SLUG = "farcaster-v1";
 
 const AIR_NETWORK_MAP = new TypedMap<string, string>();
 AIR_NETWORK_MAP.set("arbitrum-one", "ARBITRUM_ONE");

@@ -6,16 +6,22 @@ dataSources:
     name: FarcasterNameRegistry
     network: goerli
     source:
-      address: "0xe3be01d99baa8db9905b33a3ca391238234b79d1"
+      address: '0xe3be01d99baa8db9905b33a3ca391238234b79d1'
       abi: FarcasterNameRegistry
-      startBlock: 7648795 
+      startBlock: 7648795
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - User
-        - UserFname
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtraData
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: FarcasterNameRegistry
           file: ./abis/FarcasterNameRegistry.json
@@ -29,16 +35,22 @@ dataSources:
     name: FarcasteIdRegistry
     network: goerli
     source:
-      address: "0xda107a1caf36d198b12c16c7b6a1d1c795978c42"
+      address: '0xda107a1caf36d198b12c16c7b6a1d1c795978c42'
       abi: FarcasterIdRegistry
-      startBlock: 7648795 
+      startBlock: 7648795
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - User
-        - UserFname
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtraData
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: FarcasterNameRegistry
           file: ./abis/FarcasterNameRegistry.json
@@ -48,5 +60,3 @@ dataSources:
         - event: Register(indexed address,indexed uint256,address,string)
           handler: handleRegister
       file: ./src/mapping.ts
-
-      # listen to ChangeHomeUrl and ChangeRecoveryAddress events also from FarcasterIdRegistry
