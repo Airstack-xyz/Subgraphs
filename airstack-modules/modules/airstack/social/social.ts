@@ -10,6 +10,15 @@ import { EMPTY_STRING, getOrCreateAirAccount, getOrCreateAirBlock, processChainI
 import { AirProtocolType, AirProtocolActionType, AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER } from './utils';
 
 export namespace social {
+  /**
+   * @dev this function tracks a air profile transfer transaction
+   * @param block ethereum block
+   * @param fromAddress air transaction from address
+   * @param userAddress air transaction to address/ dappUserId owner address
+   * @param dappUserId dappUserId (eg: farcasterId)
+   * @param profileName profile name
+   * @param extras extra data (eg: farcaster tokenUri)
+   */
   export function trackAirProfileTransferTransaction(
     block: ethereum.Block,
     fromAddress: string, //not sure if this is supposed to be used in current schema
@@ -51,6 +60,16 @@ export namespace social {
     }
   };
 
+  /**
+   * @dev this function tracks a air user registered transaction
+   * @param block ethereum block
+   * @param userAddress air transaction from address/ dappUserId owner address
+   * @param contractAddress contract address/ air transaction frtoom address
+   * @param dappUserId dappUserId (eg: farcasterId)
+   * @param extras extra data (eg: farcaster homeUrl and recoveryAddress)
+   * @param logOrCallIndex log or call index
+   * @param transactionHash transaction hash
+   */
   export function trackUserRegisteredTransaction(
     block: ethereum.Block,
     userAddress: string,
@@ -98,6 +117,14 @@ export namespace social {
     airUserRegisteredTxn.save();
   }
 
+  /**
+   * @dev this function gets or creates a AirExtraData entity
+   * @param id air extra data entity id
+   * @param name name of the extra data (eg: tokenUri,homeUrl,recoveryAddress)
+   * @param value value of the extra data
+   * @param userId user id - air user entity id
+   * @returns air extra data entity
+   */
   function getOrCreateAirExtraData(
     id: string,
     name: string,
@@ -115,6 +142,11 @@ export namespace social {
     return entity as AirExtraData;
   }
 
+  /**
+   * @dev this function gets air extra data entity ids
+   * @param extras air extra data array
+   * @returns air extra data entity ids
+   */
   function getAirExtraDataEntityIds(
     extras: AirExtraData[],
   ): string[] {
@@ -126,6 +158,13 @@ export namespace social {
     return entityIds as string[];
   }
 
+  /**
+   * @dev this function gets or creates a AirUser entity
+   * @param chainId chain id
+   * @param block air block entity
+   * @param id air user entity id
+   * @param address air user address (owner of the dappUserId)
+  */
   function getOrCreateAirUser(
     chainId: string,
     block: AirBlock,
@@ -144,6 +183,15 @@ export namespace social {
     return entity as AirUser;
   }
 
+  /**
+   * @dev this function creates a AirProfile entity
+   * @param block ethereum block
+   * @param id air profile entity id
+   * @param userId air user entity id
+   * @param name air profile name
+   * @param extraIds air extra data entity ids
+   * @returns air profile entity
+   */
   function createAirProfile(
     block: AirBlock,
     id: string,
@@ -163,6 +211,21 @@ export namespace social {
     return entity as AirProfile;
   }
 
+  /**
+   * @dev this function does not save the returned entity
+   * @dev this function creates a AirUserRegisteredTransaction entity
+   * @param chainId chain id
+   * @param block air block entity
+   * @param id air user registered transaction entity id
+   * @param address user address (owner of the dappUserId)
+   * @param userId air user entity id
+   * @param from owner of the dappUserId
+   * @param to contract address - dapp contract address
+   * @param logOrCallIndex log or call index
+   * @param transactionHash transaction hash
+   * @param extras air extra data entity ids
+   * @returns 
+   */
   function createAirUserRegisteredTransaction(
     chainId: string,
     block: AirBlock,
@@ -201,6 +264,11 @@ export namespace social {
     return entity as AirUserRegisteredTransaction;
   }
 
+  /**
+   * @dev this class is used to create air extra data
+   * @param name name of the extra data (eg: tokenUri,homeUrl,recoveryAddress)
+   * @param value value of the extra data
+   */
   export class AirExtraDataClass {
     constructor(
       public name: string,

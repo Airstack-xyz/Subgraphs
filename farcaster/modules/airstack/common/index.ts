@@ -83,7 +83,7 @@ export function processChainId(): string {
   return result;
 }
 
-//air entity funcitons
+// common air entity functions
 
 /**
  * @dev this function updates air entity counter for a given entity id
@@ -160,6 +160,7 @@ export function getOrCreateAirBlock(
 }
 
 /**
+ * @dev this function does not save the returned entity
  * @dev this function gets or creates a new air account entity
  * @param chainId chain id
  * @param address account address
