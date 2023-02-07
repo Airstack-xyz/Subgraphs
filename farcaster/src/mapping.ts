@@ -3,9 +3,8 @@ import {
   FarcasterNameRegistry,
   Transfer
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
-import * as airstack from "../modules/airstack/social/social";
-
 import { Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress } from "../generated/FarcasterNameRegistry/FarcasterIdRegistry";
+import * as airstack from "../modules/airstack/social/social";
 import { FARCASTER_ID_REGISTRY_CONTRACT } from "./utils";
 import { AirExtraData } from "../generated/schema";
 import { processChainId } from "../modules/airstack/common";
@@ -89,6 +88,7 @@ export function handleChangeHome(event: ChangeHome): void {
   let id = chainId.concat("-").concat(event.params.id.toString()).concat("-").concat("homeUrl");
   let extraData = AirExtraData.load(id);
   if (extraData != null) {
+    log.info("handleChangeHome extraDataId {} name {} value {}", [extraData.id, extraData.name, extraData.value])
     extraData.value = event.params.url;
     extraData.save();
   }
