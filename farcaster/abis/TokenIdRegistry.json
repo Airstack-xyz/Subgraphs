@@ -195,14 +195,14 @@
     ],
     "name": "cancelRecovery",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
     "inputs": [{ "internalType": "string", "name": "url", "type": "string" }],
     "name": "changeHome",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -211,7 +211,7 @@
     ],
     "name": "changeRecoveryAddress",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -220,7 +220,7 @@
     ],
     "name": "changeTrustedCaller",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -229,7 +229,7 @@
     ],
     "name": "completeRecovery",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -243,7 +243,7 @@
     "inputs": [],
     "name": "disableTrustedOnly",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -277,7 +277,7 @@
     ],
     "name": "register",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -294,7 +294,7 @@
     ],
     "name": "requestRecovery",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -310,7 +310,7 @@
     "inputs": [{ "internalType": "address", "name": "to", "type": "address" }],
     "name": "transfer",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -328,7 +328,7 @@
     ],
     "name": "trustedRegister",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   }
 ]
