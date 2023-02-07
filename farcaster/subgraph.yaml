@@ -59,4 +59,8 @@ dataSources:
       eventHandlers:
         - event: Register(indexed address,indexed uint256,address,string)
           handler: handleRegister
+        - event: ChangeHome(indexed uint256,string)
+          handler: handleChangeHome
+        - event: ChangeRecoveryAddress(indexed uint256,indexed address)
+          handler: handleChangeRecoveryAddress
       file: ./src/mapping.ts
