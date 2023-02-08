@@ -45,7 +45,9 @@ export namespace nft {
             let buyerAccount = getOrCreateAirAccount(chainID, NftSales[i].buyer.toHexString(), block);
             let sellerAccount = getOrCreateAirAccount(chainID, NftSales[i].seller.toHexString(), block);
             let feeAccount = getOrCreateAirAccount(chainID, NftSales[i].protocolFeesBeneficiary.toHexString(), block);
-
+            buyerAccount.save();
+            sellerAccount.save();
+            feeAccount.save();
             // Sale Token
             let saleToken = getOrCreateAirToken(
                 chainID, NftSales[i].nft.collection.toHexString()
@@ -91,7 +93,7 @@ export namespace nft {
                     NftSales[i].royalties[j].beneficiary.toHexString(),
                     block
                 );
-
+                royaltyAccount.save();
                 let royaltyId = transactionId + "-" + NftSales[i].royalties[j].beneficiary.toHexString();
                 let royalty = getOrCreateRoyalty(royaltyId);
 
