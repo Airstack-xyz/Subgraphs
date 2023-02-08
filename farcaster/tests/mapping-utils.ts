@@ -4,6 +4,7 @@ import {
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
 import { Register, ChangeHome, ChangeRecoveryAddress } from "../generated/FarcasterNameRegistry/FarcasterIdRegistry";
 import { ethereum, Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
+import { UserRegAndProfileFarcasterMapping } from "../generated/schema";
 
 export function getHandleRegisterEvent(): Register {
   return createHandleRegisterEvent()
@@ -38,7 +39,7 @@ function createHandleRegisterEvent(): Register {
     new ethereum.EventParam("id", ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1234) as BigInt))
   )
   event.parameters.push(
-    new ethereum.EventParam("recovery", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabee8148") as Address))
+    new ethereum.EventParam("recovery", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabee8248") as Address))
   )
   event.parameters.push(
     new ethereum.EventParam("url", ethereum.Value.fromString("https://farcaster.com/u/1234"))
@@ -56,13 +57,13 @@ function createHandleFarcasterNameTransferEvent(): Transfer {
 
   event.parameters = new Array()
   event.parameters.push(
-    new ethereum.EventParam("from", ethereum.Value.fromAddress(Address.fromHexString("0x084b1c3c81545d370f3634392de611caabff8148") as Address))
+    new ethereum.EventParam("from", ethereum.Value.fromAddress(Address.fromString("0x0000000000000000000000000000000000000000") as Address))
   )
   event.parameters.push(
-    new ethereum.EventParam("to", ethereum.Value.fromAddress(Address.fromHexString("0x084b1c3c81545d370f3634392de611caabee8148") as Address))
+    new ethereum.EventParam("to", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabff8148") as Address))
   )
   event.parameters.push(
-    new ethereum.EventParam("tokenId", ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1234)))
+    new ethereum.EventParam("tokenId", ethereum.Value.fromUnsignedBigInt(BigInt.fromString("52188151743400395627052985077509996575321231749758347050596502733779185434624")))
   )
   return event as Transfer
 }
@@ -108,3 +109,40 @@ function getTransactionHash(): Bytes {
 }
 
 export const FARCASTER_ID_REGISTRY_CONTRACT = Address.fromString('0xda107a1caf36d198b12c16c7b6a1d1c795978c42');
+
+export function createOrUpdateUserRegAndProfileFarcasterMapping(
+  id: string,
+  farcasterId: string,
+  blockNumber: BigInt | null,
+  blockTimestamp: BigInt | null,
+  blockHash: string | null,
+  transactionHash: string | null,
+  logOrCallIndex: BigInt | null,
+  fromAddress: string | null,
+  toAddress: string,
+  tokenUri: string | null,
+  homeUrl: string | null,
+  recoveryAddress: string | null,
+  farcasterProfileName: string | null,
+  tokenId: string | null,
+): UserRegAndProfileFarcasterMapping {
+  let entity = UserRegAndProfileFarcasterMapping.load(id);
+  if (entity == null) {
+    entity = new UserRegAndProfileFarcasterMapping(id);
+  }
+  if (blockNumber) entity.blockNumber = blockNumber;
+  if (blockTimestamp) entity.blockTimestamp = blockTimestamp;
+  if (blockHash) entity.blockHash = blockHash;
+  if (transactionHash) entity.transactionHash = transactionHash;
+  if (logOrCallIndex) entity.logOrCallIndex = logOrCallIndex;
+  if (fromAddress) entity.fromAddress = fromAddress;
+  if (toAddress) entity.toAddress = toAddress;
+  if (farcasterProfileName) entity.farcasterProfileName = farcasterProfileName;
+  if (farcasterId) entity.farcasterId = farcasterId;
+  if (tokenUri) entity.tokenUri = tokenUri;
+  if (homeUrl) entity.homeUrl = homeUrl;
+  if (recoveryAddress) entity.recoveryAddress = recoveryAddress;
+  if (tokenId) entity.tokenId = tokenId;
+  entity.save();
+  return entity as UserRegAndProfileFarcasterMapping;
+}

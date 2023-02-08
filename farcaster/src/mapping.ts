@@ -41,12 +41,13 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
     null,
     null,
     farcasterName,
-    tokenId.toHexString(),
+    tokenId.toString(),
   );
   // validate all data before sending to airstack
   log.info("handleFarcasterNameTransfer from {} to {} tokenId {} contractAddress {} farcasterId {} farcasterName {} tokenUri {}", [event.params.from.toHexString(), event.params.to.toHexString(), event.params.tokenId.toHexString(), event.address.toHexString(), farcasterId.value.toString(), farcasterName, tokenURI.value]);
   let validationPassed = validateFarcasterMapping(mapping);
   if (validationPassed) {
+    log.info("handleFarcasterNameTransfer validation passed, sending data to airstack", []);
     // create profile extras data
     let profileExtras = new Array<airstack.social.AirExtraDataClass>();
     profileExtras.push(
@@ -113,6 +114,7 @@ export function handleRegister(event: Register): void {
   // validate all data before sending to airstack
   let validationPassed = validateFarcasterMapping(mapping);
   if (validationPassed) {
+    log.info("handleRegister validation passed, sending data to airstack", []);
     // create profile extras data
     let profileExtras = new Array<airstack.social.AirExtraDataClass>();
     profileExtras.push(
