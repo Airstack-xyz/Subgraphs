@@ -5,7 +5,7 @@ import {
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
 import { Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress } from "../generated/FarcasterNameRegistry/FarcasterIdRegistry";
 import * as airstack from "../modules/airstack/social/social";
-import { FARCASTER_ID_REGISTRY_CONTRACT } from "./utils";
+import { FARCASTER_ID_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping } from "./utils";
 import { AirExtraData } from "../generated/schema";
 import { processChainId } from "../modules/airstack/common";
 
@@ -25,24 +25,65 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
   // get token uri from name registry
   const nameRegistry = FarcasterNameRegistry.bind(event.address);
   const tokenURI = nameRegistry.try_tokenURI(tokenId);
-  // create air extra data for token uri
-  let airExtrasData = new Array<airstack.social.AirExtraDataClass>();
-  airExtrasData.push(
-    new airstack.social.AirExtraDataClass(
-      "tokenUri",
-      tokenURI.value,
-    )
-  );
-  // send transaction to airstack
-  log.info("handleFarcasterNameTransfer from {} to {} tokenId {} contractAddress {} farcasterId {} farcasterName {} tokenUri {}", [event.params.from.toHexString(), event.params.to.toHexString(), event.params.tokenId.toHexString(), event.address.toHexString(), farcasterId.value.toString(), farcasterName, tokenURI.value]);
-  airstack.social.trackAirProfileTransferTransaction(
-    event.block,
+  // store all data in UserRegAndProfileFarcasterMapping
+  let mappingId = farcasterId.value.toString().concat("-").concat(toAdress.toHexString());
+  let mapping = createOrUpdateUserRegAndProfileFarcasterMapping(
+    mappingId,
+    farcasterId.value.toString(),
+    null,
+    null,
+    null,
+    null,
+    null,
     fromAdress.toHexString(),
     toAdress.toHexString(),
-    farcasterId.value.toString(),
+    tokenURI.value,
+    null,
+    null,
     farcasterName,
-    airExtrasData,
+    tokenId.toHexString(),
   );
+  // validate all data before sending to airstack
+  log.info("handleFarcasterNameTransfer from {} to {} tokenId {} contractAddress {} farcasterId {} farcasterName {} tokenUri {}", [event.params.from.toHexString(), event.params.to.toHexString(), event.params.tokenId.toHexString(), event.address.toHexString(), farcasterId.value.toString(), farcasterName, tokenURI.value]);
+  let validationPassed = validateFarcasterMapping(mapping);
+  if (validationPassed) {
+    // create profile extras data
+    let profileExtras = new Array<airstack.social.AirExtraDataClass>();
+    profileExtras.push(
+      new airstack.social.AirExtraDataClass(
+        "tokenUri",
+        mapping.tokenUri!,
+      )
+    );
+    // create user extras data
+    let userExtras = new Array<airstack.social.AirExtraDataClass>();
+    userExtras.push(
+      new airstack.social.AirExtraDataClass(
+        "recoveryAddress",
+        mapping.recoveryAddress!,
+      )
+    );
+    userExtras.push(
+      new airstack.social.AirExtraDataClass(
+        "homeUrl",
+        mapping.homeUrl!,
+      )
+    );
+    // send transaction to airstack
+    airstack.social.trackUserAndProfileRegisteredTransaction(
+      mapping.blockNumber!,
+      mapping.blockHash!,
+      mapping.blockTimestamp!,
+      mapping.transactionHash!,
+      mapping.logOrCallIndex!,
+      mapping.fromAddress!,
+      mapping.toAddress!,
+      mapping.farcasterId,
+      mapping.farcasterProfileName!,
+      profileExtras,
+      userExtras,
+    );
+  }
 }
 
 /**
@@ -51,30 +92,64 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
  */
 export function handleRegister(event: Register): void {
   log.info("handleRegister to {} id {} contractAddress {} recovery {} url {}", [event.params.to.toHexString(), event.params.id.toHexString(), event.address.toHexString(), event.params.recovery.toHexString(), event.params.url]);
-  // create air extra data for recovery address and home url
-  let airExtrasData = new Array<airstack.social.AirExtraDataClass>();
-  airExtrasData.push(
-    new airstack.social.AirExtraDataClass(
-      "recoveryAddress",
-      event.params.recovery.toHexString(),
-    )
-  );
-  airExtrasData.push(
-    new airstack.social.AirExtraDataClass(
-      "homeUrl",
-      event.params.url,
-    ),
-  );
-  // send transaction to airstack
-  airstack.social.trackUserRegisteredTransaction(
-    event.block,
-    event.params.to.toHexString(), //owner of farcaster id
-    event.address.toHexString(), //contract address
-    event.params.id.toString(), //farcaster id
-    airExtrasData,
-    event.logIndex,
+  // store all data in UserRegAndProfileFarcasterMapping
+  let mappingId = event.params.id.toString().concat("-").concat(event.params.to.toHexString());
+  let mapping = createOrUpdateUserRegAndProfileFarcasterMapping(
+    mappingId,
+    event.params.id.toString(),
+    event.block.number,
+    event.block.timestamp,
+    event.block.hash.toHexString(),
     event.transaction.hash.toHexString(),
+    event.logIndex,
+    null,
+    event.params.to.toHexString(),
+    null,
+    event.params.url,
+    event.params.recovery.toHexString(),
+    null,
+    null,
   );
+  // validate all data before sending to airstack
+  let validationPassed = validateFarcasterMapping(mapping);
+  if (validationPassed) {
+    // create profile extras data
+    let profileExtras = new Array<airstack.social.AirExtraDataClass>();
+    profileExtras.push(
+      new airstack.social.AirExtraDataClass(
+        "tokenUri",
+        mapping.tokenUri!,
+      )
+    );
+    // create user extras data
+    let userExtras = new Array<airstack.social.AirExtraDataClass>();
+    userExtras.push(
+      new airstack.social.AirExtraDataClass(
+        "recoveryAddress",
+        mapping.recoveryAddress!,
+      )
+    );
+    userExtras.push(
+      new airstack.social.AirExtraDataClass(
+        "homeUrl",
+        mapping.homeUrl!,
+      )
+    );
+    // send transaction to airstack
+    airstack.social.trackUserAndProfileRegisteredTransaction(
+      mapping.blockNumber!,
+      mapping.blockHash!,
+      mapping.blockTimestamp!,
+      mapping.transactionHash!,
+      mapping.logOrCallIndex!,
+      mapping.fromAddress!,
+      mapping.toAddress!,
+      mapping.farcasterId,
+      mapping.farcasterProfileName!,
+      profileExtras,
+      userExtras,
+    );
+  }
 }
 
 /**

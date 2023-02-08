@@ -1,25 +1,28 @@
 # SOCIAL vertical integration
 ### After module integration for SOCIAL vertical is done. Please call the below functions to track the transactions of the social vertical.
+
+## Transaction tracking functions
 ```
-1. Track transaction when a AirProfile is transferred (eg: farcaster name/nft token transfer)
-  trackAirProfileTransferTransaction(
-    block: ethereum.Block,           #ethereum block object in subgraph
-    fromAddress: string,             #address of the user who sent the profile //not sure if this is supposed to be used in current schema
-    userAddress: string,             #address of the user who received the profile
-    dappUserId: string,              #dapp user id of the air user who received the profile (eg: farcasterId)
-    profileName: string,             #name of the profile transferred
-    extras: AirExtraDataClass[],     #extra data of the profile transferred (eg: tokenUri for ERC721 token in farcaster)
+1. Track transaction when a air user and profile is registered
+  trackUserAndProfileRegisteredTransaction(
+    blockNumber: BigInt,                        #block number of the user registration transaction
+    blockHash: string,                          #block hash of the user registration transaction
+    blockTimestamp: BigInt,                     #block timestamp of the user registration transaction
+    transactionHash: string,                    #transaction hash of the user registration transaction
+    logOrCallIndex: BigInt,                     #log or call index - used to differentiate between multiple logs or calls in a single transaction
+    fromAddress: string,                        #address from which the profile token is transferred
+    toAddress: string,                          #address to which the profile token is transferred
+    dappUserId: string,                         #dapp user id of the air user who registered (eg: farcasterId)
+    profileName: string,                        #name of the profile (eg: farcasterProfileName)
+    profileExtras: AirExtraDataClass[],         #extra data of the profile transferred (eg: tokenUri in farcaster)
+    userExtras: AirExtraDataClass[],            #extra data of the profile transferred (eg: recoveryAddress and homeUrl in farcaster)
   )
 ```
+
+## Supporting Classes
 ```
-2. Track transaction when a air user is registered
-  trackUserRegisteredTransaction(
-    block: ethereum.Block,          #ethereum block object in subgraph
-    userAddress: string,            #address of the user who registered the dappUserId (eg: farcasterId owner address)
-    contractAddress: string,        #address of the contract which registered the dappUserId (eg: farcasterIdRegistry contract address)
-    dappUserId: string,             #dapp user id of the air user who registered (eg: farcasterId)
-    extras: AirExtraDataClass[],    #extra data of the profile transferred (eg: recoveryAddress and homeUrl in farcaster)
-    logOrCallIndex: BigInt,         #log or call index - used to differentiate between multiple logs or calls in a single transaction
-    transactionHash: string,        #transaction hash
-  )
+class AirExtraDataClass {
+  name: string,                                 #name of the extra data (eg: "tokenUri","recoveryAddress","homeUrl" in farcaster)
+  value: string,                                #value of the extra data (eg: values of tokenUri,recoveryAddress,homeUrl in farcaster)
+}
 ```
