@@ -26,7 +26,7 @@ type AirMeta @entity {
 }
 
 type AirEntityCounter @entity {
-	id: ID! #AIR_DAILY_STATS_ACCOUNT - confirm that once - AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER
+	id: ID! #AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER
 	count: BigInt!
 	createdAt: AirBlock! 
 	lastUpdatedAt: AirBlock!
@@ -56,7 +56,6 @@ type AirUser @entity {
 type AirProfile @entity {
   id: ID! #<chainId>-<dappUserId>-<name>
   name: String!
-  # should we store from address here? - can get it from name registry transfer event
   user: AirUser!
   extras: [AirExtraData!] #Store tokenUri
   createdAt: AirBlock!
@@ -75,14 +74,14 @@ interface AirTransaction {
 }
 
 type AirUserRegisteredTransaction implements AirTransaction @entity {
-  id: ID! #<chainId>-<dappUserId>-<txnHash>-<logOrCallIndex>
+  id: ID! #<chainId>-<dappUserId>-<address>
   address: AirAccount! #dappUserId owner address
   user: AirUser!
-  # profile: AirProfile! @derivedfrom(field: "user") - moved to air user, cannot create a profile in user registered transaction, it will be a part of air user entity
-  name: String #not available in txn, but being set from token transfer event name registry
+  profile: AirProfile! @derivedfrom(field: "user") #dappUserId profile
+  name: String! #not available in txn, but being set from token transfer event name registry - make it mandatory
   extras: [AirExtraData!] #Store recovery address & home URLs
-  from: AirAccount! #keeping this as event.params.to address, is not available in the event data
-  to: AirAccount! #keeping this as contract address, is not available in the event data
+  from: AirAccount! #keeping this as event.params.to address, is not available in the event data - 0x for mint
+  to: AirAccount! #keeping this as contract address, is not available in the event data - owner address for mint/transfers
   logOrCallIndex: BigInt!
   hash: String! #txn hash
   block: AirBlock!
