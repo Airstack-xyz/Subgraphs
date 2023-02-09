@@ -4,7 +4,6 @@ import {
   VersionChanged as VersionChangedEvent,
 } from "../generated/Resolver1/Resolver";
 import { log } from "@graphprotocol/graph-ts";
-import { ETHEREUM_MAINNET_ID } from "../modules/airstack/domain-name/utils";
 import { TOKEN_ADDRESS_ENS } from "./utils";
 /**
  * @dev this function maps the AddrChanged event from the Resolver contract
