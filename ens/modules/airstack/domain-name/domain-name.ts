@@ -27,7 +27,7 @@ import {
   AirExtra,
 } from "../../../generated/schema";
 import { AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
-import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, processChainId, updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount } from "../common";
+import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, getChainId, updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount } from "../common";
 
 export namespace domain {
   /**
@@ -57,7 +57,7 @@ export namespace domain {
     newOwner: string,
     tokenAddress: string,
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let previousOwnerId = domain.owner;
@@ -111,7 +111,7 @@ export namespace domain {
     newOwnerAddress: string,
     tokenAddress: string,
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let previousOwnerId = domain.owner;
@@ -159,7 +159,7 @@ export namespace domain {
     resolver: string,
     tokenAddress: string,
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     // get block
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     // get domain
@@ -207,7 +207,7 @@ export namespace domain {
     newTTL: BigInt,
     tokenAddress: string,
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     // get block
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     // get domain
@@ -264,7 +264,7 @@ export namespace domain {
     labelName: string | null,
     tokenAddress: string,
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     // prep mapping data
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let domain = getOrCreateAirDomain(new Domain(
@@ -320,7 +320,7 @@ export namespace domain {
     expiryTimestamp: BigInt,
     tokenAddress: string,
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let domain = getOrCreateAirDomain(new Domain(
       domainId,
@@ -371,7 +371,7 @@ export namespace domain {
     fromRegistrationEvent: boolean,
     tokenAddress: string,
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     const calculatedLabelHash = crypto.keccak256(ByteArray.fromUTF8(name));
     if (!calculatedLabelHash.equals(labelHash)) {
       log.warning(
@@ -445,7 +445,7 @@ export namespace domain {
     resolvedAddress: string,
     tokenAddress: string,
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let addrAccount = getOrCreateAirAccount(chainId, resolvedAddress, airBlock);
     addrAccount.save();
@@ -486,7 +486,7 @@ export namespace domain {
     resolverAddress: string,
     tokenAddress: string,
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let resolver = getOrCreateAirResolver(domain, chainId, airBlock, resolverAddress, null);
@@ -512,7 +512,7 @@ export namespace domain {
     from: string,
     tokenAddress: string,
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     let reverseRegistrar = getReverseRegistrar(domainName);
     if (reverseRegistrar == null) {

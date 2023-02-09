@@ -68,13 +68,13 @@ AIR_CHAIN_ID_MAP.set("osmosis", "osmosis-1");
 AIR_CHAIN_ID_MAP.set("matic", "137");
 AIR_CHAIN_ID_MAP.set("xdai", "100");
 
-export function processNetwork(network: string): string {
+export function getNetwork(network: string): string {
   const value = AIR_NETWORK_MAP.get(network);
   const result: string = value !== null ? value : "unknown";
   return result;
 }
 
-export function processChainId(): string {
+export function getChainId(): string {
   let network = dataSource.network();
   const value = AIR_CHAIN_ID_MAP.get(network);
   const result: string = value !== null ? value : "unknown";
@@ -121,7 +121,7 @@ export function createAirMeta(
   let meta = AirMeta.load(AIR_META_ID);
   if (meta == null) {
     meta = new AirMeta(AIR_META_ID);
-    meta.network = processNetwork(dataSource.network());
+    meta.network = getNetwork(dataSource.network());
     meta.schemaVersion = SUBGRAPH_SCHEMA_VERSION;
     meta.version = SUBGRAPH_VERSION;
     meta.slug = slug;

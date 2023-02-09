@@ -3,7 +3,6 @@ import { log } from "@graphprotocol/graph-ts";
 import {
   SetNameCall,
 } from "../generated/ReverseRegistrar/ReverseRegistrar";
-import { ETHEREUM_MAINNET_ID } from "../modules/airstack/domain-name/utils";
 import { TOKEN_ADDRESS_ENS } from "./utils";
 /**
  * @dev this function maps the SetName call from the ReverseRegistrar contract
