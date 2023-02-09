@@ -77,5 +77,6 @@ export function validateFarcasterMapping(
   if (!mapping.homeUrl) { return false };
   if (!mapping.recoveryAddress) { return false };
   if (!mapping.farcasterProfileName) { return false };
+  if (!mapping.tokenId) { return false };
   return true;
 }
