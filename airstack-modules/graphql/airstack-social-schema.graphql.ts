@@ -56,6 +56,7 @@ type AirUser @entity {
 type AirProfile @entity {
   id: ID! #<chainId>-<dappUserId>-<name>
   name: String!
+  tokenId: String!
   user: AirUser!
   extras: [AirExtraData!] #Store tokenUri
   createdAt: AirBlock!
@@ -78,10 +79,11 @@ type AirUserRegisteredTransaction implements AirTransaction @entity {
   address: AirAccount! #dappUserId owner address
   user: AirUser!
   profile: AirProfile! @derivedfrom(field: "user") #dappUserId profile
-  name: String! #not available in txn, but being set from token transfer event name registry - make it mandatory
+  name: String!
+  tokenId: String!
   extras: [AirExtraData!] #Store recovery address & home URLs
-  from: AirAccount! #keeping this as event.params.to address, is not available in the event data - 0x for mint
-  to: AirAccount! #keeping this as contract address, is not available in the event data - owner address for mint/transfers
+  from: AirAccount!
+  to: AirAccount!
   logOrCallIndex: BigInt!
   hash: String! #txn hash
   block: AirBlock!
