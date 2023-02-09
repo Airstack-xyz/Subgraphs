@@ -77,7 +77,7 @@ export namespace social {
     let airProfileId = userId.concat("-").concat(profileName);
     let airProfile = createAirProfile(airBlock, airProfileId, airUser.id, profileName, airProfileExtraIds);
     // creating and saving air user registered transaction
-    let userRegisteredTxnId = chainId.concat('-').concat(dappUserId).concat('-').concat(toAddress);
+    let userRegisteredTxnId = chainId.concat('-').concat(dappUserId).concat('-').concat(toAddress).concat("-").concat(profileName);
     // create air user registered transaction
     createAirUserRegisteredTransaction(
       chainId,

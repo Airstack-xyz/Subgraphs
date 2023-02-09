@@ -62,8 +62,8 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "blockTimestamp", "2879823");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "blockHash", "0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5");
     // AirUserRegisteredTransaction
-    let airUserRegisteredTransactionId = "1-1234-0x084b1c3c81545d370f3634392de611caabff8148";
-    assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "id", "1-1234-0x084b1c3c81545d370f3634392de611caabff8148");
+    let airUserRegisteredTransactionId = "1-1234-0x084b1c3c81545d370f3634392de611caabff8148-sarvesh";
+    assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "id", "1-1234-0x084b1c3c81545d370f3634392de611caabff8148-sarvesh");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "user", "1-1234");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "profile", "1-1234-sarvesh");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "address", "1-0x084b1c3c81545d370f3634392de611caabff8148");
@@ -173,8 +173,8 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "blockTimestamp", "2879823");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "blockHash", "0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5");
     // AirUserRegisteredTransaction
-    let airUserRegisteredTransactionId = "1-1234-0x084b1c3c81545d370f3634392de611caabff8148";
-    assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "id", "1-1234-0x084b1c3c81545d370f3634392de611caabff8148");
+    let airUserRegisteredTransactionId = "1-1234-0x084b1c3c81545d370f3634392de611caabff8148-bard";
+    assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "id", "1-1234-0x084b1c3c81545d370f3634392de611caabff8148-bard");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "user", "1-1234");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "profile", "1-1234-bard");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "address", "1-0x084b1c3c81545d370f3634392de611caabff8148");
