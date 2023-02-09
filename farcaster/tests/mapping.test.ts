@@ -70,6 +70,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "extras", "[1-1234-recoveryAddress, 1-1234-homeUrl]");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "from", "1-0x0000000000000000000000000000000000000000");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "to", "1-0x084b1c3c81545d370f3634392de611caabff8148");
+    assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "tokenId", "52188151743400395627052985077509996575321231749758347050596502733779185434624");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "logOrCallIndex", "76");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "hash", "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "block", "1-10098239");
@@ -181,6 +182,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "extras", "[1-1234-recoveryAddress, 1-1234-homeUrl]");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "from", "1-0x0000000000000000000000000000000000000000");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "to", "1-0x084b1c3c81545d370f3634392de611caabff8148");
+    assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "tokenId", "234567890876543234567890987654");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "logOrCallIndex", "76");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "hash", "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467");
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "block", "1-10098239");
