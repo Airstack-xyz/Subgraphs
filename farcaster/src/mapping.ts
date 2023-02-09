@@ -7,7 +7,7 @@ import { Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress } from
 import * as airstack from "../modules/airstack/social/social";
 import { FARCASTER_ID_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping } from "./utils";
 import { AirExtraData } from "../generated/schema";
-import { processChainId } from "../modules/airstack/common";
+import { getChainId } from "../modules/airstack/common";
 
 /**
  * @dev this function is called when a farcaster name is transfered
@@ -161,7 +161,7 @@ export function handleRegister(event: Register): void {
 export function handleChangeHome(event: ChangeHome): void {
   log.info("handleChangeHome id {} contractAddress {} url {}", [event.params.id.toString(), event.address.toHexString(), event.params.url]);
   // load extra data for farcaster id
-  let chainId = processChainId();
+  let chainId = getChainId();
   let id = chainId.concat("-").concat(event.params.id.toString()).concat("-").concat("homeUrl");
   let extraData = AirExtraData.load(id);
   if (extraData != null) {
@@ -178,7 +178,7 @@ export function handleChangeHome(event: ChangeHome): void {
 export function handleChangeRecoveryAddress(event: ChangeRecoveryAddress): void {
   log.info("handleChangeRecoveryAddress id {} contractAddress {} recovery {}", [event.params.id.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
   // load extra data for farcaster id
-  let chainId = processChainId();
+  let chainId = getChainId();
   let id = chainId.concat("-").concat(event.params.id.toString()).concat("-").concat("recoveryAddress");
   let extraData = AirExtraData.load(id);
   if (extraData != null) {
