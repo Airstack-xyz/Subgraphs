@@ -3,7 +3,7 @@
 ```
 1. Track transaction when a domain owner is changed
   trackDomainOwnerChangedTransaction(
-    block: ethereum.Block,            #ethereum block object in subgraph            #ethereum block object in subgraph
+    block: ethereum.Block,            #ethereum block object in subgraph
     transactionHash: string,          #transaction hash
     logOrCallIndex: BigInt,           #log or call index - used to differentiate between multiple logs or calls in a single transaction
     domainId: string,                 #air domain entity id - needs to be unique for each domain
