@@ -52,8 +52,6 @@ dataSources:
         - AirProfile
         - AirUserRegisteredTransaction
       abis:
-        - name: FarcasterNameRegistry
-          file: ./abis/FarcasterNameRegistry.json
         - name: FarcasterIdRegistry
           file: ./abis/TokenIdRegistry.json
       eventHandlers:

@@ -44,7 +44,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
     tokenId.toString(),
   );
   // validate all data before sending to airstack
-  log.info("handleFarcasterNameTransfer from {} to {} tokenId {} contractAddress {} farcasterId {} farcasterName {} tokenUri {}", [event.params.from.toHexString(), event.params.to.toHexString(), event.params.tokenId.toHexString(), event.address.toHexString(), farcasterId.value.toString(), farcasterName, tokenURI.value]);
+  log.info("handleFarcasterNameTransfer from {} to {} tokenId {} contractAddress {} farcasterId {} farcasterName {} tokenUri {}", [event.params.from.toHexString(), event.params.to.toHexString(), event.params.tokenId.toString(), event.address.toHexString(), farcasterId.value.toString(), farcasterName, tokenURI.value]);
   let validationPassed = validateFarcasterMapping(mapping);
   if (validationPassed) {
     log.info("handleFarcasterNameTransfer validation passed, sending data to airstack", []);
