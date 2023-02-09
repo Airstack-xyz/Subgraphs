@@ -6,7 +6,7 @@ import {
   AirBlock,
   AirUserRegisteredTransaction,
 } from '../../../generated/schema';
-import { getOrCreateAirAccount, getOrCreateAirBlock, processChainId, updateAirEntityCounter } from '../common/index';
+import { getOrCreateAirAccount, getOrCreateAirBlock, getChainId, updateAirEntityCounter } from '../common/index';
 import { AirProtocolType, AirProtocolActionType, AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID } from './utils';
 
 export namespace social {
@@ -38,7 +38,7 @@ export namespace social {
     profileExtras: AirExtraDataClass[],
     userExtras: AirExtraDataClass[],
   ): void {
-    let chainId = processChainId();
+    let chainId = getChainId();
     // creating air block
     let airBlock = getOrCreateAirBlock(chainId, blockNumber, blockHash, blockTimestamp);
     // creating air user
