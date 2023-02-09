@@ -67,7 +67,7 @@ export namespace domain {
       airBlock,
       tokenAddress,
     ));
-    if (domain.parent == null && parent != null) {
+    if (domain.parent == null) {
       parent.subdomainCount = parent.subdomainCount.plus(BIGINT_ONE);
     }
     domain.name = name;
@@ -696,29 +696,6 @@ export namespace domain {
    */
   function createEntityId(transactionHash: string, blockHeight: BigInt, logOrCallIndex: BigInt): string {
     return transactionHash.concat("-").concat(blockHeight.toString()).concat('-').concat(logOrCallIndex.toString());
-  }
-
-  /**
-   * @dev this function needs to be removed
-   * @dev this function creates subnode of the node and returns it as air domain entity id
-   * @param node takes the node param from the event
-   * @param labelHash takes the label param from the event
-   * @returns returns a air domain entity id
-   */
-  function createAirDomainEntityId(node: Bytes, labelHash: Bytes): string {
-    let subnode = makeSubnode(node, labelHash);
-    return subnode;
-  }
-
-  /**
-   * @dev this function needs to be removed
-   * @dev this function creates subnode of the node and label
-   * @param node takes the node param from the event
-   * @param labelHash takes the label param from the event
-   * @returns returns a subnode in hex string format
-   */
-  function makeSubnode(node: Bytes, labelHash: Bytes): string {
-    return crypto.keccak256(node.concat(labelHash)).toHexString()
   }
 
   /**
