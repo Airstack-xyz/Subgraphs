@@ -20,6 +20,7 @@ export namespace social {
    * @param logOrCallIndex log or call index
    * @param fromAddress air transaction from which user token was transferred
    * @param toAddress air transaction to which user token was transferred
+   * @param tokenId tokenId of the profile token that was transferred - ERC721
    * @param dappUserId dappUserId (eg: farcasterId)
    * @param profileName profile name
    * @param profileExtras extra data (eg: farcaster tokenUri)
@@ -33,6 +34,7 @@ export namespace social {
     logOrCallIndex: BigInt,
     fromAddress: string,
     toAddress: string,
+    tokenId: string,
     dappUserId: string,
     profileName: string,
     profileExtras: AirExtraDataClass[],
@@ -75,7 +77,7 @@ export namespace social {
     let airProfileExtraIds = getAirExtraDataEntityIds(airProfileExtras);
     // create air profile
     let airProfileId = userId.concat("-").concat(profileName);
-    let airProfile = createAirProfile(airBlock, airProfileId, airUser.id, profileName, airProfileExtraIds);
+    let airProfile = createAirProfile(airBlock, airProfileId, airUser.id, profileName, tokenId, airProfileExtraIds);
     // creating and saving air user registered transaction
     let userRegisteredTxnId = chainId.concat('-').concat(dappUserId).concat('-').concat(toAddress).concat("-").concat(profileName);
     // create air user registered transaction
@@ -91,6 +93,7 @@ export namespace social {
       profileName,
       fromAddress,
       toAddress,
+      tokenId,
       airUserExtraIds,
     )
   }
@@ -167,6 +170,7 @@ export namespace social {
    * @param id air profile entity id
    * @param userId air user entity id
    * @param name air profile name
+   * @param tokenId air profile token id
    * @param extraIds air extra data entity ids
    * @returns air profile entity
    */
@@ -175,6 +179,7 @@ export namespace social {
     id: string,
     userId: string,
     name: string,
+    tokenId: string,
     extraIds: string[],
   ): AirProfile {
     let entity = AirProfile.load(id);
@@ -182,6 +187,7 @@ export namespace social {
       entity = new AirProfile(id);
       entity.name = name;
       entity.user = userId;
+      entity.tokenId = tokenId;
       if (extraIds.length > 0) entity.extras = extraIds;
       entity.createdAt = block.id;
       entity.save();
@@ -202,6 +208,7 @@ export namespace social {
    * @param name air profile name
    * @param from address from which user token was sent
    * @param to address to which user token was sent
+   * @param tokenId token id of the user token
    * @param userExtrasIds air user extra data entity ids
    * @returns air user registered transaction entity
    */
@@ -217,6 +224,7 @@ export namespace social {
     name: string,
     from: string,
     to: string,
+    tokenId: string,
     userExtrasIds: string[],
   ): AirUserRegisteredTransaction {
     let entity = AirUserRegisteredTransaction.load(id);
@@ -235,6 +243,7 @@ export namespace social {
       if (userExtrasIds.length > 0) entity.extras = userExtrasIds; //air user extra data entity ids
       entity.from = airAccountFrom.id;
       entity.to = airAccountTo.id;
+      entity.tokenId = tokenId;
       entity.logOrCallIndex = logOrCallIndex;
       entity.hash = transactionHash;
       entity.block = block.id;
