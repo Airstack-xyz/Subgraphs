@@ -38,28 +38,35 @@ type AirAccount @entity {
 	createdAt: AirBlock!
 }
 
-type AirExtraData @entity {
+type AirToken @entity {
+  id: ID!
+  address: String!
+}
+
+type AirExtra @entity {
   id: ID! #<chainId-dappUserId-homeUrl/recoveryAddress>
   name: String!
   value: String!
-  user: AirUser!
 }
 
 type AirUser @entity {
- id: ID! #<chainId>-<dappUserId>
- address: AirAccount!
- extras: [AirExtraData!] @derivedFrom(field: "user") #Store recovery address & home URLs
- profiles: [AirProfile!] @derivedFrom(field: "user")
- createdAt: AirBlock!
+  id: ID! #<chainId>-<dappUserId>
+  address: AirAccount!
+  extras: [AirExtra!] #Store recovery address & home URLs
+  profiles: [AirProfile!] @derivedFrom(field: "user")
+  createdAt: AirBlock!
+  lastUpdatedAt: AirBlock!
 }
 
 type AirProfile @entity {
   id: ID! #<chainId>-<dappUserId>-<name>
   name: String!
   tokenId: String!
+  tokenAddress: AirToken!
   user: AirUser!
-  extras: [AirExtraData!] #Store tokenUri
+  extras: [AirExtra!] #Store tokenUri
   createdAt: AirBlock!
+  lastUpdatedAt: AirBlock!
 }
 
 interface AirTransaction {
@@ -79,13 +86,14 @@ type AirUserRegisteredTransaction implements AirTransaction @entity {
   address: AirAccount! #dappUserId owner address
   user: AirUser!
   profile: AirProfile! @derivedfrom(field: "user") #dappUserId profile
-  name: String!
+  name: String! #not available in txn, but being set from token transfer event name registry - make it mandatory
+  extras: [AirExtra!] #Store recovery address & home URLs
+  from: AirAccount! #keeping this as event.params.to address, is not available in the event data - 0x for mint
+  to: AirAccount! #keeping this as contract address, is not available in the event data - owner address for mint/transfers
   tokenId: String!
-  extras: [AirExtraData!] #Store recovery address & home URLs
-  from: AirAccount!
-  to: AirAccount!
+  tokenAddress: AirToken!
   logOrCallIndex: BigInt!
-  hash: String! #txn hash
+  transactionHash: String!
   block: AirBlock!
   index: BigInt! #entity counter
   protocolType: AirProtocolType!  #SOCIAL
