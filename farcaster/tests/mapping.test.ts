@@ -24,9 +24,6 @@ describe("Mapping unit tests", () => {
     createOrUpdateUserRegAndProfileFarcasterMapping(
       UserRegAndProfileFarcasterMappingId,
       "1234",
-      BigInt.fromString("10098239"),
-      BigInt.fromString("2879823"),
-      "0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5",
       "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467",
       BigInt.fromString('76'),
       null,
@@ -59,9 +56,6 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "toAddress", "0x084b1c3c81545d370f3634392de611caabff8148");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "logOrCallIndex", "76");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "transactionHash", "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467");
-    assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "blockNumber", "10098239");
-    assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "blockTimestamp", "2879823");
-    assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "blockHash", "0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5");
     // AirUserRegisteredTransaction
     let airUserRegisteredTransactionId = "1-1234-0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467-0xe3be01d99baa8db9905b33a3ca391238234b79d1-52188151743400395627052985077509996575321231749758347050596502733779185434624";
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "id", "1-1234-0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467-0xe3be01d99baa8db9905b33a3ca391238234b79d1-52188151743400395627052985077509996575321231749758347050596502733779185434624");
@@ -159,9 +153,6 @@ describe("Mapping unit tests", () => {
       event.params.id.toString(),
       null,
       null,
-      null,
-      null,
-      null,
       "0x0000000000000000000000000000000000000000",
       event.params.to.toHexString(),
       "https://farcaster.com/u/tokenUri.json",
@@ -184,9 +175,6 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "toAddress", "0x084b1c3c81545d370f3634392de611caabff8148");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "logOrCallIndex", "76");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "transactionHash", "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467");
-    assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "blockNumber", "10098239");
-    assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "blockTimestamp", "2879823");
-    assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "blockHash", "0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5");
     // AirUserRegisteredTransaction
     let airUserRegisteredTransactionId = "1-1234-0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467-0xe3be01d99baa8db9905b33a3ca391238234b79d1-234567890876543234567890987654";
     assert.fieldEquals("AirUserRegisteredTransaction", airUserRegisteredTransactionId, "id", "1-1234-0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467-0xe3be01d99baa8db9905b33a3ca391238234b79d1-234567890876543234567890987654");

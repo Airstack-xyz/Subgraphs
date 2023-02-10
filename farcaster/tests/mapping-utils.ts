@@ -114,9 +114,6 @@ export const FARCASTER_NAME_REGISTRY_CONTRACT = Address.fromString('0xe3be01d99b
 export function createOrUpdateUserRegAndProfileFarcasterMapping(
   id: string,
   farcasterId: string,
-  blockNumber: BigInt | null,
-  blockTimestamp: BigInt | null,
-  blockHash: string | null,
   transactionHash: string | null,
   logOrCallIndex: BigInt | null,
   fromAddress: string | null,
@@ -131,9 +128,6 @@ export function createOrUpdateUserRegAndProfileFarcasterMapping(
   if (entity == null) {
     entity = new UserRegAndProfileFarcasterMapping(id);
   }
-  if (blockNumber) entity.blockNumber = blockNumber;
-  if (blockTimestamp) entity.blockTimestamp = blockTimestamp;
-  if (blockHash) entity.blockHash = blockHash;
   if (transactionHash) entity.transactionHash = transactionHash;
   if (logOrCallIndex) entity.logOrCallIndex = logOrCallIndex;
   if (fromAddress) entity.fromAddress = fromAddress;

@@ -8,9 +8,6 @@ export const FARCASTER_NAME_REGISTRY_CONTRACT = Address.fromString('0xe3be01d99b
  * @dev this function is used to temporarily store farcaster user registration and profile token transfer data before sending to airstack
  * @param id user and profile mapping id <farcasterId>-<to/ownerAddress>
  * @param farcasterId farcaster id (fid)
- * @param blockNumber block number of user reg txn
- * @param blockTimestamp block timestamp of user reg txn
- * @param blockHash block hash of user reg txn
  * @param transactionHash transaction hash of user reg txn
  * @param logOrCallIndex log index of user reg txn
  * @param fromAddress from address of token transfer txn
@@ -25,9 +22,6 @@ export const FARCASTER_NAME_REGISTRY_CONTRACT = Address.fromString('0xe3be01d99b
 export function createOrUpdateUserRegAndProfileFarcasterMapping(
   id: string,
   farcasterId: string,
-  blockNumber: BigInt | null,
-  blockTimestamp: BigInt | null,
-  blockHash: string | null,
   transactionHash: string | null,
   logOrCallIndex: BigInt | null,
   fromAddress: string | null,
@@ -42,9 +36,6 @@ export function createOrUpdateUserRegAndProfileFarcasterMapping(
   if (entity == null) {
     entity = new UserRegAndProfileFarcasterMapping(id);
   }
-  if (blockNumber) entity.blockNumber = blockNumber;
-  if (blockTimestamp) entity.blockTimestamp = blockTimestamp;
-  if (blockHash) entity.blockHash = blockHash;
   if (transactionHash) entity.transactionHash = transactionHash;
   if (logOrCallIndex) entity.logOrCallIndex = logOrCallIndex;
   if (fromAddress) entity.fromAddress = fromAddress;
@@ -67,9 +58,6 @@ export function createOrUpdateUserRegAndProfileFarcasterMapping(
 export function validateFarcasterMapping(
   mapping: UserRegAndProfileFarcasterMapping
 ): boolean {
-  if (!mapping.blockNumber) { return false };
-  if (!mapping.blockTimestamp) { return false };
-  if (!mapping.blockHash) { return false };
   if (!mapping.transactionHash) { return false };
   if (!mapping.logOrCallIndex) { return false };
   if (!mapping.fromAddress) { return false };
