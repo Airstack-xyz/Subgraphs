@@ -81,9 +81,9 @@ export namespace domain {
     domain.labelHash = labelHash;
     domain.tokenId = tokenId;
     domain.lastUpdatedBlock = airBlock.id;
-    recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
     parentDomain.save();
     domain.save();
+    recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
 
     let txn = getOrCreateAirDomainOwnerChangedTransaction(
       airBlock,
@@ -182,8 +182,8 @@ export namespace domain {
     }
     // do recursive subdomain count decrement
     domain.lastUpdatedBlock = airBlock.id;
-    recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
     domain.save();
+    recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
 
     // create new resolver transaction
     let tnx = getOrCreateAirDomainNewResolverTransaction(
