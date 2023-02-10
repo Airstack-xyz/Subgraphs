@@ -27,7 +27,7 @@ import {
   AirExtra,
 } from "../../../generated/schema";
 import { AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
-import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, getChainId, updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount, createAirExtra } from "../common";
+import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, getChainId, updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount, createAirExtra, getOrCreateAirToken } from "../common";
 
 export namespace domain {
   /**
@@ -1055,22 +1055,6 @@ export namespace domain {
       return null
     }
     return domain.id
-  }
-
-  /**
-   * @dev this function does not save the returned entity
-   * @dev this function gets or creates a new air token entity
-   * @param chainID chain id
-   * @param address token address
-   * @returns AirToken entity
-   */
-  function getOrCreateAirToken(chainID: string, address: string): AirToken {
-    let entity = AirToken.load(chainID + "-" + address);
-    if (entity == null) {
-      entity = new AirToken(chainID + "-" + address);
-      entity.address = address;
-    }
-    return entity as AirToken;
   }
 
   /**
