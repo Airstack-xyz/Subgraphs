@@ -74,15 +74,19 @@ AIR_CHAIN_ID_MAP.set("xdai", "100");
 
 export function getNetwork(network: string): string {
   const value = AIR_NETWORK_MAP.get(network);
-  const result: string = value !== null ? value : "unknown";
-  return result;
+  if (value != null) {
+    return value!;
+  }
+  throw new Error("Network not supported");
 }
 
 export function getChainId(): string {
   let network = dataSource.network();
   const value = AIR_CHAIN_ID_MAP.get(network);
-  const result: string = value !== null ? value : "unknown";
-  return result;
+  if (value != null) {
+    return value!;
+  }
+  throw new Error("Network not supported");
 }
 
 // common air entity functions
