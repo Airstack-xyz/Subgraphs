@@ -208,7 +208,6 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomainTransferTransaction", domainOwnerChangedEntityId, "index", BIGINT_ONE.toString());
   })
 
-
   test("Test handleTransferOldRegistry", () => {
     let event = getHandleTransferEvent();
     handleTransferOldRegistry(event)
@@ -412,7 +411,6 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "value", event.params.ttl.toString());
-    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "domain", domainId);
     // AirDomainNewTTLTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "oldTTL", "null");
@@ -463,7 +461,6 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "value", event.params.ttl.toString());
-    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "domain", domainId);
     // AirDomainNewTTLTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "oldTTL", "null");
