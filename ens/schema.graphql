@@ -45,7 +45,6 @@ type AirEntityCounter @entity {
 
 type AirExtra @entity {
   id: ID! # Concatenation of domainId and name
-  domain: AirDomain!
   name: String!
   value: String!
 }
@@ -80,7 +79,7 @@ type AirDomain @entity {
   tokenAddress: AirToken!                               # Domain (eg: ens) token contract address
   createdAt: AirBlock!
 	lastUpdatedBlock: AirBlock #- NA
-  extras: [AirExtra!] @derivedFrom(field: "domain")
+  extras: [AirExtra!]
 }
 
 type AirDomainTransferTransaction implements AirDomainEvent @entity {

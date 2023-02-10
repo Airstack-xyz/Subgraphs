@@ -233,6 +233,15 @@ export namespace domain {
       extra = createAirExtra(AIR_EXTRA_TTL, newTTL.toString(), domainId);
     }
     extra.save();
+    let extrasArray = new Array<string>();
+    if (domain.extras == null) {
+      extrasArray.push(extra.id);
+      domain.extras = extrasArray;
+    } else {
+      extrasArray = domain.extras!;
+      extrasArray.push(extra.id);
+      domain.extras = extrasArray;
+    }
     domain.lastUpdatedBlock = airBlock.id;
     domain.save();
     // create AirDomainNewTTLTransaction
@@ -600,7 +609,6 @@ export namespace domain {
       entity = new AirExtra(id);
       entity.name = name;
       entity.value = value;
-      entity.domain = domainId;
     }
     return entity as AirExtra;
   }
