@@ -26,8 +26,8 @@ import {
   PrimaryDomain,
   AirExtra,
 } from "../../../generated/schema";
-import { AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ROOT_NODE, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
-import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, getChainId, updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount } from "../common";
+import { AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
+import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, getChainId, updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount, createAirExtra, getOrCreateAirToken } from "../common";
 
 export namespace domain {
   /**
@@ -81,9 +81,9 @@ export namespace domain {
     domain.labelHash = labelHash;
     domain.tokenId = tokenId;
     domain.lastUpdatedBlock = airBlock.id;
-    recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
     parentDomain.save();
     domain.save();
+    recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
 
     let txn = getOrCreateAirDomainOwnerChangedTransaction(
       airBlock,
@@ -182,8 +182,8 @@ export namespace domain {
     }
     // do recursive subdomain count decrement
     domain.lastUpdatedBlock = airBlock.id;
-    recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
     domain.save();
+    recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
 
     // create new resolver transaction
     let tnx = getOrCreateAirDomainNewResolverTransaction(
@@ -223,16 +223,26 @@ export namespace domain {
     // get previous ttl
     let oldTTL: BigInt | null = null;
     // load extra entity for ttl
-    let extra = AirExtra.load(domainId.concat("-").concat(AIR_EXTRA_TTL));
+    let extraId = domainId.concat("-").concat(AIR_EXTRA_TTL);
+    let extra = AirExtra.load(extraId);
     if (extra != null) {
       // if exists, assign oldTTL and update value with newTTL
       oldTTL = BigInt.fromString(extra.value);
       extra.value = newTTL.toString();
     } else {
       // else create new extra entity for ttl
-      extra = createAirExtra(AIR_EXTRA_TTL, newTTL.toString(), domainId);
+      extra = createAirExtra(AIR_EXTRA_TTL, newTTL.toString(), extraId);
     }
     extra.save();
+    // update domain extras
+    let extrasArray = new Array<string>();
+    if (domain.extras == null) {
+      extrasArray.push(extra.id);
+    } else {
+      extrasArray = domain.extras!;
+      extrasArray.push(extra.id);
+    }
+    domain.extras = extrasArray;
     domain.lastUpdatedBlock = airBlock.id;
     domain.save();
     // create AirDomainNewTTLTransaction
@@ -581,29 +591,6 @@ export namespace domain {
   }
 
   // end of track functions and start of get or create and helper functions
-  /**
-   * @dev this function does not save the returned entity
-   * @dev this function creates an air extra entity
-   * @param name air extra name
-   * @param value air extra value
-   * @param domainId air domain id
-   * @returns air extra entity
-   */
-  function createAirExtra(
-    name: string,
-    value: string,
-    domainId: string,
-  ): AirExtra {
-    let id = domainId.concat("-").concat(name);
-    let entity = AirExtra.load(id);
-    if (entity == null) {
-      entity = new AirExtra(id);
-      entity.name = name;
-      entity.value = value;
-      entity.domain = domainId;
-    }
-    return entity as AirExtra;
-  }
 
   /**
    * @dev this function does not save the returned entity
@@ -1068,22 +1055,6 @@ export namespace domain {
       return null
     }
     return domain.id
-  }
-
-  /**
-   * @dev this function does not save the returned entity
-   * @dev this function gets or creates a new air token entity
-   * @param chainID chain id
-   * @param address token address
-   * @returns AirToken entity
-   */
-  function getOrCreateAirToken(chainID: string, address: string): AirToken {
-    let entity = AirToken.load(chainID + "-" + address);
-    if (entity == null) {
-      entity = new AirToken(chainID + "-" + address);
-      entity.address = address;
-    }
-    return entity as AirToken;
   }
 
   /**

@@ -8,6 +8,8 @@ import {
   AirEntityCounter,
   AirMeta,
   AirAccount,
+  AirExtra,
+  AirToken,
 } from "../../../generated/schema";
 
 export const AIR_META_ID = "AIR_META";
@@ -18,9 +20,9 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-export const SUBGRAPH_NAME = "ens";
-export const SUBGRAPH_VERSION = "v1";
-export const SUBGRAPH_SLUG = "ens-v1";
+export const SUBGRAPH_NAME = "AIRSTACK_SUBGRAPH";
+export const SUBGRAPH_VERSION = "AIRSTACK_SUBGRAPH";
+export const SUBGRAPH_SLUG = "AIRSTACK_SUBGRAPH";
 
 const AIR_NETWORK_MAP = new TypedMap<string, string>();
 AIR_NETWORK_MAP.set("arbitrum-one", "ARBITRUM_ONE");
@@ -174,4 +176,42 @@ export function getOrCreateAirAccount(chainId: string, address: string, block: A
     entity.createdAt = block.id;
   }
   return entity as AirAccount;
+}
+
+/**
+ * @dev this function does not save the returned entity
+ * @dev this function creates an air extra entity
+ * @param name air extra name
+ * @param value air extra value
+ * @param extraId air extra entity id
+ * @returns air extra entity
+ */
+export function createAirExtra(
+  name: string,
+  value: string,
+  id: string,
+): AirExtra {
+  let entity = AirExtra.load(id);
+  if (entity == null) {
+    entity = new AirExtra(id);
+    entity.name = name;
+    entity.value = value;
+  }
+  return entity as AirExtra;
+}
+
+/**
+ * @dev this function does not save the returned entity
+ * @dev this function gets or creates a new air token entity
+ * @param chainID chain id
+ * @param address token address
+ * @returns AirToken entity
+ */
+export function getOrCreateAirToken(chainID: string, address: string): AirToken {
+  let entity = AirToken.load(chainID + "-" + address);
+  if (entity == null) {
+    entity = new AirToken(chainID + "-" + address);
+    entity.address = address;
+  }
+  return entity as AirToken;
 }
