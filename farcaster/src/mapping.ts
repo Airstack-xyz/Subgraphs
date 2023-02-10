@@ -5,8 +5,8 @@ import {
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
 import { Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress } from "../generated/FarcasterNameRegistry/FarcasterIdRegistry";
 import * as airstack from "../modules/airstack/social/social";
-import { FARCASTER_ID_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping } from "./utils";
-import { AirExtraData } from "../generated/schema";
+import { FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping } from "./utils";
+import { AirExtra } from "../generated/schema";
 import { getChainId } from "../modules/airstack/common";
 
 /**
@@ -49,23 +49,23 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
   if (validationPassed) {
     log.info("handleFarcasterNameTransfer validation passed, sending data to airstack", []);
     // create profile extras data
-    let profileExtras = new Array<airstack.social.AirExtraDataClass>();
+    let profileExtras = new Array<airstack.social.AirExtraData>();
     profileExtras.push(
-      new airstack.social.AirExtraDataClass(
+      new airstack.social.AirExtraData(
         "tokenUri",
         mapping.tokenUri!,
       )
     );
     // create user extras data
-    let userExtras = new Array<airstack.social.AirExtraDataClass>();
+    let userExtras = new Array<airstack.social.AirExtraData>();
     userExtras.push(
-      new airstack.social.AirExtraDataClass(
+      new airstack.social.AirExtraData(
         "recoveryAddress",
         mapping.recoveryAddress!,
       )
     );
     userExtras.push(
-      new airstack.social.AirExtraDataClass(
+      new airstack.social.AirExtraData(
         "homeUrl",
         mapping.homeUrl!,
       )
@@ -80,6 +80,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
       mapping.fromAddress!,
       mapping.toAddress!,
       mapping.tokenId!,
+      FARCASTER_NAME_REGISTRY_CONTRACT.toHexString(),
       mapping.farcasterId,
       mapping.farcasterProfileName!,
       profileExtras,
@@ -93,7 +94,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
  * @param event register event from farcaster id registry
  */
 export function handleRegister(event: Register): void {
-  log.info("handleRegister to {} id {} contractAddress {} recovery {} url {}", [event.params.to.toHexString(), event.params.id.toHexString(), event.address.toHexString(), event.params.recovery.toHexString(), event.params.url]);
+  log.info("handleRegister to {} id {} contractAddress {} recovery {} url {}", [event.params.to.toHexString(), event.params.id.toString(), event.address.toHexString(), event.params.recovery.toHexString(), event.params.url]);
   // store all data in UserRegAndProfileFarcasterMapping
   let mappingId = event.params.id.toString().concat("-").concat(event.params.to.toHexString());
   let mapping = createOrUpdateUserRegAndProfileFarcasterMapping(
@@ -117,23 +118,23 @@ export function handleRegister(event: Register): void {
   if (validationPassed) {
     log.info("handleRegister validation passed, sending data to airstack", []);
     // create profile extras data
-    let profileExtras = new Array<airstack.social.AirExtraDataClass>();
+    let profileExtras = new Array<airstack.social.AirExtraData>();
     profileExtras.push(
-      new airstack.social.AirExtraDataClass(
+      new airstack.social.AirExtraData(
         "tokenUri",
         mapping.tokenUri!,
       )
     );
     // create user extras data
-    let userExtras = new Array<airstack.social.AirExtraDataClass>();
+    let userExtras = new Array<airstack.social.AirExtraData>();
     userExtras.push(
-      new airstack.social.AirExtraDataClass(
+      new airstack.social.AirExtraData(
         "recoveryAddress",
         mapping.recoveryAddress!,
       )
     );
     userExtras.push(
-      new airstack.social.AirExtraDataClass(
+      new airstack.social.AirExtraData(
         "homeUrl",
         mapping.homeUrl!,
       )
@@ -148,6 +149,7 @@ export function handleRegister(event: Register): void {
       mapping.fromAddress!,
       mapping.toAddress!,
       mapping.tokenId!,
+      FARCASTER_NAME_REGISTRY_CONTRACT.toHexString(),
       mapping.farcasterId,
       mapping.farcasterProfileName!,
       profileExtras,
@@ -165,11 +167,11 @@ export function handleChangeHome(event: ChangeHome): void {
   // load extra data for farcaster id
   let chainId = getChainId();
   let id = chainId.concat("-").concat(event.params.id.toString()).concat("-").concat("homeUrl");
-  let extraData = AirExtraData.load(id);
-  if (extraData != null) {
-    log.info("handleChangeHome extraDataId {} name {} value {}", [extraData.id, extraData.name, extraData.value])
-    extraData.value = event.params.url;
-    extraData.save();
+  let extraEntity = AirExtra.load(id);
+  if (extraEntity != null) {
+    log.info("handleChangeHome extraDataId {} name {} value {}", [extraEntity.id, extraEntity.name, extraEntity.value])
+    extraEntity.value = event.params.url;
+    extraEntity.save();
   }
 }
 
@@ -182,9 +184,9 @@ export function handleChangeRecoveryAddress(event: ChangeRecoveryAddress): void 
   // load extra data for farcaster id
   let chainId = getChainId();
   let id = chainId.concat("-").concat(event.params.id.toString()).concat("-").concat("recoveryAddress");
-  let extraData = AirExtraData.load(id);
-  if (extraData != null) {
-    extraData.value = event.params.recovery.toHexString();
-    extraData.save();
+  let extraEntity = AirExtra.load(id);
+  if (extraEntity != null) {
+    extraEntity.value = event.params.recovery.toHexString();
+    extraEntity.save();
   }
 }

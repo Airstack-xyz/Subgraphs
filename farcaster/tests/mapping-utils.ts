@@ -109,6 +109,7 @@ function getTransactionHash(): Bytes {
 }
 
 export const FARCASTER_ID_REGISTRY_CONTRACT = Address.fromString('0xda107a1caf36d198b12c16c7b6a1d1c795978c42');
+export const FARCASTER_NAME_REGISTRY_CONTRACT = Address.fromString('0xe3be01d99baa8db9905b33a3ca391238234b79d1');
 
 export function createOrUpdateUserRegAndProfileFarcasterMapping(
   id: string,
