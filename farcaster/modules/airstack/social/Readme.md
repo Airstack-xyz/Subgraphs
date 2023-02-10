@@ -5,9 +5,7 @@
 ```
 1. Track transaction when a air user and profile is registered
   trackUserAndProfileRegisteredTransaction(
-    blockNumber: BigInt,                        #block number of the user registration transaction
-    blockHash: string,                          #block hash of the user registration transaction
-    blockTimestamp: BigInt,                     #block timestamp of the user registration transaction
+    block: BigInt,                              #ethereum block of the user registration transaction
     transactionHash: string,                    #transaction hash of the user registration transaction
     logOrCallIndex: BigInt,                     #log or call index - used to differentiate between multiple logs or calls in a single transaction
     fromAddress: string,                        #address from which the profile token is transferred
@@ -16,8 +14,8 @@
     tokenAddress: string,                       #token address of the profile token - ERC721
     dappUserId: string,                         #dapp user id of the air user who registered (eg: farcasterId)
     profileName: string,                        #name of the profile (eg: farcasterProfileName)
-    profileExtras: AirExtraData[],         #extra data of the profile transferred (eg: tokenUri in farcaster)
-    userExtras: AirExtraData[],            #extra data of the profile transferred (eg: recoveryAddress and homeUrl in farcaster)
+    profileExtras: AirExtraData[],              #extra data of the profile transferred (eg: tokenUri in farcaster)
+    userExtras: AirExtraData[],                 #extra data of the profile transferred (eg: recoveryAddress and homeUrl in farcaster)
   )
 ```
 

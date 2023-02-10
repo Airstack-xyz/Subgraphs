@@ -1,4 +1,4 @@
-import { BigInt, log } from '@graphprotocol/graph-ts';
+import { BigInt, ethereum } from '@graphprotocol/graph-ts';
 import {
   AirExtra,
   AirUser,
@@ -13,9 +13,7 @@ export namespace social {
 
   /**
    * @dev this function tracks a air user and profile registered transaction
-   * @param blockNumber block number
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
+   * @param block ethereum block
    * @param transactionHash transaction hash
    * @param logOrCallIndex log or call index
    * @param fromAddress air transaction from which user token was transferred
@@ -28,9 +26,7 @@ export namespace social {
    * @param userExtras extra data (eg: farcaster homeUrl and recoveryAddress)
    */
   export function trackUserAndProfileRegisteredTransaction(
-    blockNumber: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
+    block: ethereum.Block,
     transactionHash: string,
     logOrCallIndex: BigInt,
     fromAddress: string,
@@ -44,7 +40,7 @@ export namespace social {
   ): void {
     let chainId = getChainId();
     // creating air block
-    let airBlock = getOrCreateAirBlock(chainId, blockNumber, blockHash, blockTimestamp);
+    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     airBlock.save();
     // creating air user
     let userId = chainId.concat('-').concat(dappUserId);
