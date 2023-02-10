@@ -72,9 +72,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
     );
     // send transaction to airstack
     airstack.social.trackUserAndProfileRegisteredTransaction(
-      mapping.blockNumber!,
-      mapping.blockHash!,
-      mapping.blockTimestamp!,
+      event.block,
       mapping.transactionHash!,
       mapping.logOrCallIndex!,
       mapping.fromAddress!,
@@ -141,9 +139,7 @@ export function handleRegister(event: Register): void {
     );
     // send transaction to airstack
     airstack.social.trackUserAndProfileRegisteredTransaction(
-      mapping.blockNumber!,
-      mapping.blockHash!,
-      mapping.blockTimestamp!,
+      event.block,
       mapping.transactionHash!,
       mapping.logOrCallIndex!,
       mapping.fromAddress!,
