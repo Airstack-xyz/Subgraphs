@@ -46,6 +46,7 @@ export namespace social {
     // creating air user
     let userId = chainId.concat('-').concat(dappUserId);
     let airUser = getOrCreateAirUser(chainId, airBlock, userId, toAddress);
+    airUser.save();
     // create air user extras
     let airUserExtras = new Array<AirExtraData>();
     for (let i = 0; i < userExtras.length; i++) {
@@ -57,6 +58,7 @@ export namespace social {
         extra.value,
         userId,
       );
+      airUserExtraData.save();
       airUserExtras.push(airUserExtraData);
     }
     // create air profile extras
@@ -70,6 +72,7 @@ export namespace social {
         extra.value,
         userId,
       );
+      airProfileExtraData.save();
       airProfileExtras.push(airProfileExtraData);
     }
     // get air extra data ids
@@ -78,10 +81,11 @@ export namespace social {
     // create air profile
     let airProfileId = userId.concat("-").concat(profileName);
     let airProfile = createAirProfile(airBlock, airProfileId, airUser.id, profileName, tokenId, airProfileExtraIds);
+    airProfile.save();
     // creating and saving air user registered transaction
     let userRegisteredTxnId = chainId.concat('-').concat(dappUserId).concat('-').concat(toAddress).concat("-").concat(profileName);
     // create air user registered transaction
-    createAirUserRegisteredTransaction(
+    let airUserRegisteredTransaction = createAirUserRegisteredTransaction(
       chainId,
       airBlock,
       transactionHash,
@@ -95,10 +99,12 @@ export namespace social {
       toAddress,
       tokenId,
       airUserExtraIds,
-    )
+    );
+    airUserRegisteredTransaction.save();
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function gets or creates a AirExtraData entity
    * @param id air extra data entity id
    * @param name name of the extra data (eg: tokenUri,homeUrl,recoveryAddress)
@@ -118,7 +124,6 @@ export namespace social {
       entity.name = name;
       entity.value = value;
       entity.user = userId;
-      entity.save();
     }
     return entity as AirExtraData;
   }
@@ -140,6 +145,7 @@ export namespace social {
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function gets or creates a AirUser entity
    * @param chainId chain id
    * @param block air block entity
@@ -159,12 +165,12 @@ export namespace social {
       airAccount.save();
       entity.address = airAccount.id;
       entity.createdAt = block.id;
-      entity.save();
     }
     return entity as AirUser;
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function creates a AirProfile entity
    * @param block ethereum block
    * @param id air profile entity id
@@ -190,12 +196,12 @@ export namespace social {
       entity.tokenId = tokenId;
       if (extraIds.length > 0) entity.extras = extraIds;
       entity.createdAt = block.id;
-      entity.save();
     }
     return entity as AirProfile;
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function creates a AirUserRegisteredTransaction entity
    * @param chainId chain id
    * @param block air block entity
@@ -250,7 +256,6 @@ export namespace social {
       entity.index = updateAirEntityCounter(AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID, block);
       entity.protocolType = AirProtocolType.SOCIAL;
       entity.protocolActionType = AirProtocolActionType.REGISTRATION;
-      entity.save();
     }
     return entity as AirUserRegisteredTransaction;
   }
