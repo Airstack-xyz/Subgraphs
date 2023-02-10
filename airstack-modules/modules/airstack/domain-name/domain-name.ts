@@ -131,8 +131,6 @@ export namespace domain {
     if (entity == null) {
       entity = new AirDomainTransferTransaction(id);
       entity.from = previousOwnerId;
-      let newOwnerAccount = getOrCreateAirAccount(chainId, newOwnerAddress, airBlock);
-      newOwnerAccount.save();
       entity.to = newOwnerAccount.id;
       entity.block = airBlock.id;
       entity.transactionHash = transactionHash;
