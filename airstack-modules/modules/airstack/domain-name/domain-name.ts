@@ -80,6 +80,7 @@ export namespace domain {
     domain.tokenId = tokenId;
     domain.lastBlock = airBlock.id;
     recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
+    parent.save();
     domain.save();
 
     getOrCreateAirDomainOwnerChangedTransaction(
