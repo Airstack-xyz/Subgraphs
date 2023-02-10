@@ -56,7 +56,7 @@ describe("Unit tests for eth registrar handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
     assert.fieldEquals("AirDomain", domainId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     // AirNameRegisteredTransaction
     let nameRegisteredId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "paymentToken", airTokenId);
@@ -105,7 +105,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirToken", airTokenId, "address", ZERO_ADDRESS);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     // AirNameRenewedTransaction
     let nameRenewedId = event.transaction.hash.toHexString().concat("-").concat(domainId);
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "paymentToken", airTokenId);
@@ -135,7 +135,7 @@ describe("Unit tests for eth registrar handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "registrationCost", event.params.cost.toString());
     assert.fieldEquals("AirDomain", domainId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
     // ReverseRegistrar
@@ -162,7 +162,7 @@ describe("Unit tests for eth registrar handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "registrationCost", event.params.cost.toString());
     assert.fieldEquals("AirDomain", domainId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
     // ReverseRegistrar
@@ -204,7 +204,7 @@ describe("Unit tests for eth registrar handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "registrationCost", "0");
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
     // AirNameRenewedTransaction

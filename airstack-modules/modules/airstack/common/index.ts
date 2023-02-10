@@ -18,9 +18,9 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-export const SUBGRAPH_NAME = "AIRSTACK_SUBGRAPH";
-export const SUBGRAPH_VERSION = "AIRSTACK_SUBGRAPH";
-export const SUBGRAPH_SLUG = "AIRSTACK_SUBGRAPH";
+export const SUBGRAPH_NAME = "ens";
+export const SUBGRAPH_VERSION = "v1";
+export const SUBGRAPH_SLUG = "ens-v1";
 
 const AIR_NETWORK_MAP = new TypedMap<string, string>();
 AIR_NETWORK_MAP.set("arbitrum-one", "ARBITRUM_ONE");
@@ -133,6 +133,7 @@ export function createAirMeta(
 }
 
 /**
+ * @dev this function does not save the returned entity
  * @dev this function gets or creates a new air block entity
  * @param chainId chain id
  * @param blockHeight block number
@@ -154,7 +155,6 @@ export function getOrCreateAirBlock(
     block.hash = blockHash;
     block.number = blockHeight;
     block.timestamp = blockTimestamp
-    block.save()
   }
   return block as AirBlock;
 }

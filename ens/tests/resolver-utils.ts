@@ -69,7 +69,7 @@ export function createAirDomain(domainId: string): AirDomain {
   entity.expiryTimestamp = BIG_INT_ZERO;
   entity.registrationCost = BIG_INT_ZERO;
   entity.createdAt = "1-472668903";
-  entity.lastBlock = "1-472668903";
+  entity.lastUpdatedBlock = "1-472668903";
   entity.save();
   return entity as AirDomain;
 }

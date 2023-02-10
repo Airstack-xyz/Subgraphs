@@ -55,7 +55,7 @@ type AirDomain @entity {
   paymentToken: AirToken                              # Token used to pay for registration
   tokenAddress: AirToken!                               # Domain (eg: ens) token contract address
   createdAt: AirBlock!
-	lastBlock: AirBlock #- NA
+	lastUpdatedBlock: AirBlock #- NA
 }
 
 type AirDomainTransferTransaction implements AirDomainEvent @entity {
