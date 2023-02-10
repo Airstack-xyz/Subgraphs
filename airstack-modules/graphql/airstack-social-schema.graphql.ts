@@ -74,7 +74,7 @@ interface AirTransaction {
   from: AirAccount!
   logOrCallIndex: BigInt!
   to: AirAccount!
-  hash: String! 
+  transactionHash: String! 
   block: AirBlock!
   index: BigInt!
   protocolType: AirProtocolType!  #SOCIAL
