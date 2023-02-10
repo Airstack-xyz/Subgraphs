@@ -55,7 +55,7 @@ describe("Unit tests for resolver handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "id", domainId)
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId)
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId)
     assert.fieldEquals("AirDomain", domainId, "resolvedAddress", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.a.toHexString()))
     // AirResolvedAddressChanged
     assert.fieldEquals("AirResolvedAddressChanged", addrChangedId, "resolver", resolverId)
@@ -90,7 +90,7 @@ describe("Unit tests for resolver handlers", () => {
     let domainId = event.params.node.toHexString();
     assert.fieldEquals("AirDomain", domainId, "id", domainId)
     assert.fieldEquals("AirDomain", domainId, "resolvedAddress", "null")
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId)
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId)
     // AirResolver
     let resolverId = event.address.toHexString().concat("-").concat(event.params.node.toHexString())
     assert.fieldEquals("AirResolver", resolverId, "id", resolverId)

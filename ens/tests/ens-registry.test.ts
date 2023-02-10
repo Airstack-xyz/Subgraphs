@@ -71,7 +71,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "labelHash", event.params.label.toHexString());
     assert.fieldEquals("DomainVsIsMigratedMapping", domainId, "isMigrated", "true");
     assert.fieldEquals("AirDomain", domainId, "tokenId", BigInt.fromUnsignedBytes(event.params.label).toString());
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "createdAt", blockId);
     assert.fieldEquals("AirDomain", domainId, "registrationCost", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", BIG_INT_ZERO.toString());
@@ -141,7 +141,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "labelHash", event.params.label.toHexString());
     assert.fieldEquals("DomainVsIsMigratedMapping", domainId, "isMigrated", "false");
     assert.fieldEquals("AirDomain", domainId, "tokenId", BigInt.fromUnsignedBytes(event.params.label).toString());
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "createdAt", blockId);
     assert.fieldEquals("AirDomain", domainId, "registrationCost", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", BIG_INT_ZERO.toString());
@@ -304,7 +304,7 @@ describe("Unit tests for ens registry handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "resolver", resolverId);
     assert.fieldEquals("AirDomain", domainId, "subdomainCount", BIG_INT_ZERO.toString());
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     // AirDomainNewResolverTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "previousResolver", "null");
@@ -361,7 +361,7 @@ describe("Unit tests for ens registry handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "resolver", resolverId);
     assert.fieldEquals("AirDomain", domainId, "subdomainCount", BIG_INT_ZERO.toString());
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     // AirDomainNewResolverTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "previousResolver", "null");
@@ -407,7 +407,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "createdAt", blockId);
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     // AirExtra
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
@@ -458,7 +458,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "createdAt", blockId);
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     // AirExtra
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");

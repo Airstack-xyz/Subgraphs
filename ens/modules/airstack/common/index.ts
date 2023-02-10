@@ -131,6 +131,7 @@ export function createAirMeta(
 }
 
 /**
+ * @dev this function does not save the returned entity
  * @dev this function gets or creates a new air block entity
  * @param chainId chain id
  * @param blockHeight block number
@@ -152,12 +153,12 @@ export function getOrCreateAirBlock(
     block.hash = blockHash;
     block.number = blockHeight;
     block.timestamp = blockTimestamp
-    block.save()
   }
   return block as AirBlock;
 }
 
 /**
+ * @dev this function does not save the returned entity
  * @dev this function gets or creates a new air account entity
  * @param chainId chain id
  * @param address account address

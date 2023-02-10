@@ -59,31 +59,33 @@ export namespace domain {
   ): void {
     let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let previousOwnerId = domain.owner;
-    let parent = getOrCreateAirDomain(new Domain(
+    let parentDomain = getOrCreateAirDomain(new Domain(
       parentDomainId,
       chainId,
       airBlock,
       tokenAddress,
     ));
     if (domain.parent == null) {
-      parent.subdomainCount = parent.subdomainCount.plus(BIGINT_ONE);
+      parentDomain.subdomainCount = parentDomain.subdomainCount.plus(BIGINT_ONE);
+      parentDomain.lastUpdatedBlock = airBlock.id;
     }
     domain.name = name;
     domain.labelName = labelName;
     let ownerAccount = getOrCreateAirAccount(chainId, newOwner, airBlock);
     ownerAccount.save();
     domain.owner = ownerAccount.id;
-    domain.parent = parent.id;
+    domain.parent = parentDomain.id;
     domain.labelHash = labelHash;
     domain.tokenId = tokenId;
-    domain.lastBlock = airBlock.id;
+    domain.lastUpdatedBlock = airBlock.id;
     recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
-    parent.save();
+    parentDomain.save();
     domain.save();
 
-    getOrCreateAirDomainOwnerChangedTransaction(
+    let txn = getOrCreateAirDomainOwnerChangedTransaction(
       airBlock,
       logOrCallIndex,
       chainId,
@@ -93,10 +95,11 @@ export namespace domain {
       tokenId,
       domain,
     );
+    txn.save();
   }
 
   /**
-   * @dev This function tracks a domain transfer transaction
+    * @dev This function tracks a domain transfer transaction
     * @param block ethereum block
     * @param transactionHash transaction hash
     * @param logOrCallIndex txn log or call index
@@ -114,6 +117,7 @@ export namespace domain {
   ): void {
     let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let previousOwnerId = domain.owner;
     if (previousOwnerId == null) {
@@ -125,14 +129,13 @@ export namespace domain {
     let newOwnerAccount = getOrCreateAirAccount(chainId, newOwnerAddress, airBlock);
     newOwnerAccount.save();
     domain.owner = newOwnerAccount.id;
+    domain.lastUpdatedBlock = airBlock.id;
     domain.save();
     let id = createEntityId(transactionHash, block.number, logOrCallIndex);
     let entity = AirDomainTransferTransaction.load(id);
     if (entity == null) {
       entity = new AirDomainTransferTransaction(id);
       entity.from = previousOwnerId;
-      let newOwnerAccount = getOrCreateAirAccount(chainId, newOwnerAddress, airBlock);
-      newOwnerAccount.save();
       entity.to = newOwnerAccount.id;
       entity.block = airBlock.id;
       entity.transactionHash = transactionHash;
@@ -163,12 +166,14 @@ export namespace domain {
     let chainId = getChainId();
     // get block
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
     // get domain
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     // get previous resolver
     let previousResolverId = domain.resolver;
     // create new resolver
     let resolverEntity = getOrCreateAirResolver(domain, chainId, airBlock, resolver);
+    resolverEntity.save();
     // update domain resolver
     domain.resolver = resolverEntity.id;
     // update domain resolved address
@@ -176,19 +181,20 @@ export namespace domain {
       domain.resolvedAddress = resolverEntity.resolvedAddress;
     }
     // do recursive subdomain count decrement
-    domain.lastBlock = airBlock.id;
+    domain.lastUpdatedBlock = airBlock.id;
     recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
     domain.save();
 
     // create new resolver transaction
-    getOrCreateAirDomainNewResolverTransaction(
+    let tnx = getOrCreateAirDomainNewResolverTransaction(
       previousResolverId,
       resolverEntity.address,
       airBlock,
       transactionHash,
       logOrCallIndex,
       domain,
-    )
+    );
+    tnx.save();
   }
 
   /**
@@ -211,6 +217,7 @@ export namespace domain {
     let chainId = getChainId();
     // get block
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
     // get domain
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     // get previous ttl
@@ -226,10 +233,10 @@ export namespace domain {
       extra = createAirExtra(AIR_EXTRA_TTL, newTTL.toString(), domainId);
     }
     extra.save();
-    domain.lastBlock = airBlock.id;
+    domain.lastUpdatedBlock = airBlock.id;
     domain.save();
     // create AirDomainNewTTLTransaction
-    getOrCreateAirDomainNewTTLTransaction(
+    let txn = getOrCreateAirDomainNewTTLTransaction(
       transactionHash,
       block.number,
       logOrCallIndex,
@@ -237,7 +244,8 @@ export namespace domain {
       newTTL,
       airBlock,
       domain,
-    )
+    );
+    txn.save();
   }
 
   /**
@@ -268,6 +276,7 @@ export namespace domain {
     let chainId = getChainId();
     // prep mapping data
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
     let domain = getOrCreateAirDomain(new Domain(
       domainId,
       chainId,
@@ -278,14 +287,16 @@ export namespace domain {
       domain.labelName = labelName
     }
     domain.expiryTimestamp = expiryTimestamp;
-    domain.lastBlock = airBlock.id;
+    domain.lastUpdatedBlock = airBlock.id;
     if (cost) {
       domain.registrationCost = cost;
     }
-    domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
+    let airToken = getOrCreateAirToken(chainId, paymentToken);
+    airToken.save();
+    domain.paymentToken = airToken.id;
     domain.save();
     // create name registered transaction
-    getOrCreateAirNameRegisteredTransaction(
+    let txn = getOrCreateAirNameRegisteredTransaction(
       chainId,
       block.number,
       block.hash.toHexString(),
@@ -298,6 +309,7 @@ export namespace domain {
       registrantAddress,
       expiryTimestamp,
     );
+    txn.save();
   }
 
   /**
@@ -323,6 +335,7 @@ export namespace domain {
   ): void {
     let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
     let domain = getOrCreateAirDomain(new Domain(
       domainId,
       chainId,
@@ -330,10 +343,10 @@ export namespace domain {
       tokenAddress,
     ));
     domain.expiryTimestamp = expiryTimestamp;
-    domain.lastBlock = airBlock.id;
+    domain.lastUpdatedBlock = airBlock.id;
     domain.save();
     // create name renewed transaction
-    getOrCreateAirNameRenewedTransaction(
+    let txn = getOrCreateAirNameRenewedTransaction(
       transactionHash,
       chainId,
       airBlock,
@@ -343,6 +356,7 @@ export namespace domain {
       renewer,
       expiryTimestamp,
     );
+    txn.save();
   }
 
   /**
@@ -387,6 +401,7 @@ export namespace domain {
       return;
     }
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
     let domain = getOrCreateAirDomain(new Domain(
       domainId,
       chainId,
@@ -397,13 +412,14 @@ export namespace domain {
     // tracking registration cost in domain entity  - renewal cost is not being tracked yet
     if (fromRegistrationEvent) {
       domain.registrationCost = cost;
-      domain.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
-      domain.lastBlock = airBlock.id;
+      let airToken = getOrCreateAirToken(chainId, paymentToken);
+      airToken.save();
+      domain.paymentToken = airToken.id;
     } else {
       // name renewal event
       // updating renewal cost in name renewed transaction entity
       domain.expiryTimestamp = expiryTimestamp!;
-      getOrCreateAirNameRenewedTransaction(
+      let txn = getOrCreateAirNameRenewedTransaction(
         transactionHash,
         chainId,
         airBlock,
@@ -413,16 +429,18 @@ export namespace domain {
         renewer!,
         expiryTimestamp!,
       );
+      txn.save();
     }
     if (domain.labelName !== name) {
       domain.labelName = name
       domain.name = name + '.eth'
-      domain.lastBlock = airBlock.id;
       // creating reverse registrar to get domainId when setting primary domain
       if (domain.name) {
-        createReverseRegistrar(domain.name!, domain.id, airBlock);
+        let reverseRegistrar = createReverseRegistrar(domain.name!, domain.id, airBlock);
+        reverseRegistrar.save();
       }
     }
+    domain.lastUpdatedBlock = airBlock.id;
     domain.save();
     //new name registered event
   }
@@ -448,6 +466,7 @@ export namespace domain {
   ): void {
     let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
     let addrAccount = getOrCreateAirAccount(chainId, resolvedAddress, airBlock);
     addrAccount.save();
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
@@ -458,11 +477,11 @@ export namespace domain {
 
     if (domain.resolver == resolver.id) {
       domain.resolvedAddress = addrAccount.id;
-      domain.lastBlock = airBlock.id;
+      domain.lastUpdatedBlock = airBlock.id;
       domain.save();
     }
 
-    getOrCreateAirResolvedAddressChanged(
+    let txn = getOrCreateAirResolvedAddressChanged(
       chainId,
       logOrCallIndex,
       resolver,
@@ -472,6 +491,7 @@ export namespace domain {
       resolvedAddress,
       domain,
     );
+    txn.save();
   }
 
   /**
@@ -489,13 +509,15 @@ export namespace domain {
   ): void {
     let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     let resolver = getOrCreateAirResolver(domain, chainId, airBlock, resolverAddress, null);
+    resolver.save();
     if (domain && domain.resolver == resolver.id) {
       domain.resolvedAddress = null
-      domain.lastBlock = airBlock.id;
-      domain.save();
+      domain.lastUpdatedBlock = airBlock.id;
     }
+    domain.save();
   }
 
   /**
@@ -515,6 +537,7 @@ export namespace domain {
   ): void {
     let chainId = getChainId();
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
     let reverseRegistrar = getReverseRegistrar(domainName);
     if (reverseRegistrar == null) {
       log.warning("Reverse registrar not found for name {} txhash {}", [domainName, transactionHash]);
@@ -534,7 +557,7 @@ export namespace domain {
         // unset isPrimary on old domain
         let oldPrimaryDomain = getOrCreateAirDomain(new Domain(primaryDomainEntity.domain, chainId, airBlock, tokenAddress));
         oldPrimaryDomain.isPrimary = false;
-        oldPrimaryDomain.lastBlock = airBlock.id;
+        oldPrimaryDomain.lastUpdatedBlock = airBlock.id;
         oldPrimaryDomain.save();
         // set new primary domain for resolved address
         primaryDomainEntity.domain = domain.id;
@@ -543,21 +566,23 @@ export namespace domain {
       }
       // set isPrimary on new domain
       domain.isPrimary = true;
-      domain.lastBlock = airBlock.id;
+      domain.lastUpdatedBlock = airBlock.id;
       domain.save();
     }
     // record a set primary domain transaction with new domain
-    getOrCreateAirPrimaryDomainTransaction(
+    let txn = getOrCreateAirPrimaryDomainTransaction(
       airBlock,
       transactionHash,
       domain,
       from,
       chainId,
-    )
+    );
+    txn.save();
   }
 
   // end of track functions and start of get or create and helper functions
   /**
+   * @dev this function does not save the returned entity
    * @dev this function creates an air extra entity
    * @param name air extra name
    * @param value air extra value
@@ -581,6 +606,7 @@ export namespace domain {
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev This function gets or creates a primary domain entity
    * @param domain air domain
    * @param fromAccount air account
@@ -598,13 +624,13 @@ export namespace domain {
       entity = new PrimaryDomain(id);
       entity.domain = domain.id;
       entity.lastUpdatedAt = block.id;
-      entity.save();
       log.info("Primary domain now for resolvedAddressId {} domain {}", [fromAccount.id, domain.id])
     }
     return entity as PrimaryDomain;
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev This function gets or creates a air primary domain transaction
    * @param block air block
    * @param transactionHash transaction hash
@@ -632,12 +658,12 @@ export namespace domain {
       let resolvedAddressAccount = getOrCreateAirAccount(chainId, resolvedAddress, block); //make sure to remove the old primary ens if changed
       resolvedAddressAccount.save();
       entity.resolvedAddress = resolvedAddressAccount.id;
-      entity.save();
     }
     return entity as AirPrimaryDomainTransaction;
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev This function gets or creates a AirAddrChanged entity
    * @param chainId chain id
    * @param logOrCallIndex txn log or index
@@ -673,7 +699,6 @@ export namespace domain {
       entity.domain = domain.id;
       entity.tokenId = domain.tokenId;
       entity.index = updateAirEntityCounter(AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, block);
-      entity.save();
     }
     return entity as AirResolvedAddressChanged;
   }
@@ -700,6 +725,7 @@ export namespace domain {
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function gets or creates a new AirNameRenewedTransaction entity
    * @param transactionHash transaction hash
    * @param chainId chain id
@@ -731,25 +757,24 @@ export namespace domain {
       entity.domain = domain.id;
       entity.cost = cost;
       entity.index = updateAirEntityCounter(AIR_NAME_RENEWED_ENTITY_COUNTER_ID, block);
-      if (paymentToken) {
-        entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
-      }
+      let airToken = getOrCreateAirToken(chainId, paymentToken);
+      airToken.save();
+      entity.paymentToken = airToken.id;
       let renewerAccount = getOrCreateAirAccount(chainId, renewer, block);
       renewerAccount.save();
       entity.renewer = renewerAccount.id;
       entity.expiryTimestamp = expiryTimestamp;
-      entity.save();
     }
     // getting renewal events from 2 contracts, old contract gives cost, new contract gives null, so if old contract event is processed first, then we update the cost
     // if new contract event is processed first, then we don't update the cost
     if (cost && !entity.cost) {
       entity.cost = cost;
-      entity.save();
     }
     return entity as AirNameRenewedTransaction;
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function gets or creates an AirNameRegisteredTransaction entity
    * @param chainId chain id
    * @param blockHeight block height
@@ -778,6 +803,7 @@ export namespace domain {
     expiryTimestamp: BigInt,
   ): AirNameRegisteredTransaction {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
+    block.save();
     let id = createEntityId(transactionHash, block.number, logOrCallIndex);
     let entity = AirNameRegisteredTransaction.load(id);
     if (entity == null) {
@@ -788,19 +814,19 @@ export namespace domain {
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, block);
       entity.cost = cost;
-      if (paymentToken) {
-        entity.paymentToken = getOrCreateAirToken(chainId, paymentToken).id;
-      }
+      let airToken = getOrCreateAirToken(chainId, paymentToken);
+      airToken.save();
+      entity.paymentToken = airToken.id;
       let registrantAccount = getOrCreateAirAccount(chainId, registrant, block);
       registrantAccount.save();
       entity.registrant = registrantAccount.id;
       entity.expiryTimestamp = expiryTimestamp;
-      entity.save();
     }
     return entity as AirNameRegisteredTransaction;
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function gets or creates an AirResolver entity
    * @param domain air domain entity
    * @param chainId chain id
@@ -832,11 +858,11 @@ export namespace domain {
     } else if (resolvedAddress == null) {
       entity.resolvedAddress = null;
     }
-    entity.save();
     return entity as AirResolver;
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev This function gets or creates a new AirDomainNewTTLTransaction entity
    * @param transactionHash transaction hash
    * @param blockHeight block number in the chain
@@ -867,12 +893,12 @@ export namespace domain {
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, block);
-      entity.save();
     }
     return entity as AirDomainNewTTLTransaction;
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function gets or creates a new AirDomainNewResolverTransaction entity
    * @param previousResolverId previous resolver Id - can be null
    * @param newResolverId new resolver Id
@@ -901,12 +927,12 @@ export namespace domain {
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, block);
-      entity.save();
     }
     return entity as AirDomainNewResolverTransaction;
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function creates a new reverse registrar entity if it does not exist
    * @param name ens name, ex: 'schiller.eth'
    * @param domainId air domain id
@@ -925,7 +951,6 @@ export namespace domain {
       entity.name = name;
       entity.domain = domainId;
       entity.createdAt = block.id;
-      entity.save();
     }
     return entity as ReverseRegistrar;
   }
@@ -943,6 +968,7 @@ export namespace domain {
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function gets or creates a new air domain entity
    * @param domain Domain class object
    * @returns AirDomain entity
@@ -957,13 +983,13 @@ export namespace domain {
       let ownerAccount = getOrCreateAirAccount(domain.chainId, ZERO_ADDRESS, domain.block);
       ownerAccount.save();
       entity.owner = ownerAccount.id;
-      entity.tokenAddress = getOrCreateAirToken(domain.chainId, domain.tokenAddress).id;
+      let airToken = getOrCreateAirToken(domain.chainId, domain.tokenAddress);
+      entity.tokenAddress = airToken.id;
       entity.isPrimary = false;
       entity.expiryTimestamp = BIG_INT_ZERO;
       entity.registrationCost = BIG_INT_ZERO;
       entity.createdAt = domain.block.id;
-      entity.lastBlock = domain.block.id;
-      entity.save();
+      entity.lastUpdatedBlock = domain.block.id;
     }
     return entity as AirDomain;
   }
@@ -980,6 +1006,7 @@ export namespace domain {
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function gets or creates a new air domain owner changed transaction entity
    * @param block air block entity
    * @param logOrCallIndex log or call index
@@ -1014,7 +1041,6 @@ export namespace domain {
       entity.domain = domain.id;
       entity.block = block.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, block);
-      entity.save();
     }
     return entity as AirDomainOwnerChangedTransaction;
   }
@@ -1034,7 +1060,7 @@ export namespace domain {
         const parentDomain = getOrCreateAirDomain(new Domain(domain.parent!, chainId, block, tokenAddress));
         if (parentDomain) {
           parentDomain.subdomainCount = parentDomain.subdomainCount.minus(BIGINT_ONE)
-          parentDomain.lastBlock = block.id;
+          parentDomain.lastUpdatedBlock = block.id;
           parentDomain.save();
           return recurseSubdomainCountDecrement(parentDomain, chainId, block, tokenAddress)
         }
@@ -1045,6 +1071,7 @@ export namespace domain {
   }
 
   /**
+   * @dev this function does not save the returned entity
    * @dev this function gets or creates a new air token entity
    * @param chainID chain id
    * @param address token address
@@ -1055,7 +1082,6 @@ export namespace domain {
     if (entity == null) {
       entity = new AirToken(chainID + "-" + address);
       entity.address = address;
-      entity.save();
     }
     return entity as AirToken;
   }
