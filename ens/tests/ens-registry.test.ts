@@ -407,6 +407,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "extras", "[0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407-ttl]");
     // AirExtra
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
@@ -457,6 +458,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "extras", "[0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407-ttl]");
     // AirExtra
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
