@@ -56,7 +56,8 @@ export function handleNewOwner(event: NewOwnerEvent): void {
     name = labelName + "." + parentName!;
   }
   if (name) {
-    createReverseRegistrar(name, domainId, ETHEREUM_MAINNET_ID, event.block);
+    let reverseRegistrar = createReverseRegistrar(name, domainId, ETHEREUM_MAINNET_ID, event.block);
+    reverseRegistrar.save();
   }
   // sending transaction to airstack
   airstack.domain.trackDomainOwnerChangedTransaction(
@@ -196,7 +197,8 @@ export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
     name = labelName + "." + parentName!;
   }
   if (name) {
-    createReverseRegistrar(name, domainId, getChainId(), event.block);
+    let reverseRegistrar = createReverseRegistrar(name, domainId, getChainId(), event.block);
+    reverseRegistrar.save();
   }
   // sending transaction to airstack
   airstack.domain.trackDomainOwnerChangedTransaction(

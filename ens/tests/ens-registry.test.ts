@@ -64,7 +64,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "createdAt", blockId);
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
-    assert.fieldEquals("AirDomain", parentDomainId, "subdomainCount", BIG_INT_ZERO.toString());
+    assert.fieldEquals("AirDomain", parentDomainId, "subdomainCount", BIGINT_ONE.toString());
     assert.fieldEquals("AirDomain", domainId, "labelName", labelName!);
     assert.fieldEquals("AirDomain", domainId, "owner", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
     assert.fieldEquals("AirDomain", domainId, "parent", parentDomainId);
@@ -134,7 +134,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "createdAt", blockId);
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
-    assert.fieldEquals("AirDomain", parentDomainId, "subdomainCount", BIG_INT_ZERO.toString());
+    assert.fieldEquals("AirDomain", parentDomainId, "subdomainCount", BIGINT_ONE.toString());
     assert.fieldEquals("AirDomain", domainId, "labelName", labelName!);
     assert.fieldEquals("AirDomain", domainId, "owner", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
     assert.fieldEquals("AirDomain", domainId, "parent", parentDomainId);
