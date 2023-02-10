@@ -20,9 +20,9 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-export const SUBGRAPH_NAME = "AIRSTACK_SUBGRAPH";
-export const SUBGRAPH_VERSION = "AIRSTACK_SUBGRAPH";
-export const SUBGRAPH_SLUG = "AIRSTACK_SUBGRAPH";
+export const SUBGRAPH_NAME = "ens";
+export const SUBGRAPH_VERSION = "v1";
+export const SUBGRAPH_SLUG = "ens-v1";
 
 const AIR_CHAIN_ID_MAP = new TypedMap<string, string>();
 AIR_CHAIN_ID_MAP.set("arbitrum-one", "42161");
