@@ -7,7 +7,7 @@ import {
   logStore,
 } from "matchstick-as/assembly/index"
 import { crypto, ens, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
-import { createParentDomain, getNameByLabelHashAndNode, getHandleNewTTLEvent, getHandleNewResolverEvent, getHandleTransferEvent, getHandleNewOwnerEvent } from "./ens-registry-utils"
+import { getHandleNewTTLEvent1, createParentDomain, getNameByLabelHashAndNode, getHandleNewTTLEvent, getHandleNewResolverEvent, getHandleTransferEvent, getHandleNewOwnerEvent } from "./ens-registry-utils"
 import { handleNewResolver, handleTransferOldRegistry, handleTransfer, handleNewOwnerOldRegistry, handleNewOwner, handleNewTTL, handleNewTTLOldRegistry, handleNewResolverOldRegistry } from "../src/ens-registry"
 import { ETHEREUM_MAINNET_ID, ZERO_ADDRESS } from "../modules/airstack/domain-name/utils"
 import { TOKEN_ADDRESS_ENS } from "../src/utils";
@@ -413,14 +413,60 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "value", event.params.ttl.toString());
     // AirDomainNewTTLTransaction
-    let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
-    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "oldTTL", "null");
-    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "newTTL", event.params.ttl.toString());
-    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "transactionHash", event.transaction.hash.toHexString());
-    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "block", blockId);
-    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "tokenId", "null");
-    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "domain", domainId);
-    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "index", BIGINT_ONE.toString());
+    let domainNewTTLEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "oldTTL", "null");
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "newTTL", event.params.ttl.toString());
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "transactionHash", event.transaction.hash.toHexString());
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "block", blockId);
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "tokenId", "null");
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "domain", domainId);
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "index", BIGINT_ONE.toString());
+    // testing multiple extra events in one test
+    let event1 = getHandleNewTTLEvent1();
+    handleNewTTL(event1)
+    // assert here
+    // AirMeta
+    assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    // AirBlock
+    assert.fieldEquals("AirBlock", blockId, "id", blockId);
+    assert.fieldEquals("AirBlock", blockId, "number", event1.block.number.toString());
+    assert.fieldEquals("AirBlock", blockId, "hash", event1.block.hash.toHexString());
+    assert.fieldEquals("AirBlock", blockId, "timestamp", event1.block.timestamp.toString());
+    // IsMigratedMapping
+    assert.fieldEquals("DomainVsIsMigratedMapping", domainId, "id", domainId);
+    assert.fieldEquals("DomainVsIsMigratedMapping", domainId, "isMigrated", "true");
+    assert.fieldEquals("DomainVsIsMigratedMapping", domainId, "lastUpdatedAt", blockId);
+    // AirAccount
+    zeroAccountId = ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS);
+    assert.fieldEquals("AirAccount", zeroAccountId, "id", zeroAccountId);
+    assert.fieldEquals("AirAccount", zeroAccountId, "address", ZERO_ADDRESS);
+    assert.fieldEquals("AirAccount", zeroAccountId, "createdAt", blockId);
+    // AirEntityCounter
+    airEntityCounterId = "AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER";
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "id", "AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "count", "2");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "createdAt", blockId);
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
+    // AirDomain
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "extras", "[0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407-ttl]");
+    // AirExtra
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
+    assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "value", event1.params.ttl.toString());
+    // AirDomainNewTTLTransaction
+    domainNewTTLEntityId = event1.transaction.hash.toHexString().concat("-").concat(event1.block.number.toString()).concat("-").concat(event1.logIndex.toString());
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "oldTTL", "100");
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "newTTL", event1.params.ttl.toString());
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "transactionHash", event1.transaction.hash.toHexString());
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "block", blockId);
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "tokenId", "null");
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "domain", domainId);
+    assert.fieldEquals("AirDomainNewTTLTransaction", domainNewTTLEntityId, "index", BIGINT_ONE.plus(BIGINT_ONE).toString());
   })
 
   test("Test handleNewTTLOldRegistry", () => {

@@ -26,6 +26,24 @@ export function getHandleNewTTLEvent(): NewTTLEvent {
   return createHandleNewTTLEvent()
 }
 
+export function getHandleNewTTLEvent1(): NewTTLEvent {
+  let event = changetype<NewTTLEvent>(newMockEvent())
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  event.transaction.hash = getTransactionHash()
+  event.logIndex = BigInt.fromI32(77)
+
+  event.parameters = new Array()
+  event.parameters.push(
+    new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(Bytes.fromHexString("0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407") as Bytes))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("ttl", ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(99)))
+  )
+  return event
+}
+
 function createHandleNewOwnerEvent(): NewOwnerEvent {
   let event = changetype<NewOwnerEvent>(newMockEvent())
   event.block.number = BigInt.fromI32(10098239);

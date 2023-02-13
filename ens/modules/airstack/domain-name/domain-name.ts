@@ -240,7 +240,9 @@ export namespace domain {
       extrasArray.push(extra.id);
     } else {
       extrasArray = domain.extras!;
-      extrasArray.push(extra.id);
+      if (extrasArray.indexOf(extra.id) == -1) {
+        extrasArray.push(extra.id);
+      }
     }
     domain.extras = extrasArray;
     domain.lastUpdatedBlock = airBlock.id;
@@ -1038,9 +1040,8 @@ export namespace domain {
    * @param chainId chain id
    * @param block air block entity
    * @param tokenAddress contract address of nft token
-   * @returns air domain entity id
    */
-  function recurseSubdomainCountDecrement(domain: AirDomain, chainId: string, block: AirBlock, tokenAddress: string): string | null {
+  function recurseSubdomainCountDecrement(domain: AirDomain, chainId: string, block: AirBlock, tokenAddress: string): void {
     if ((domain.resolver == null || domain.resolver!.split("-")[0] == ZERO_ADDRESS) &&
       domain.owner == getOrCreateAirAccount(chainId, ZERO_ADDRESS, block).id && domain.subdomainCount == BIG_INT_ZERO) {
       if (domain.parent) {
@@ -1049,12 +1050,10 @@ export namespace domain {
           parentDomain.subdomainCount = parentDomain.subdomainCount.minus(BIGINT_ONE)
           parentDomain.lastUpdatedBlock = block.id;
           parentDomain.save();
-          return recurseSubdomainCountDecrement(parentDomain, chainId, block, tokenAddress)
+          recurseSubdomainCountDecrement(parentDomain, chainId, block, tokenAddress)
         }
       }
-      return null
     }
-    return domain.id
   }
 
   /**
