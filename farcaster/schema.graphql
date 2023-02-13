@@ -64,6 +64,7 @@ type AirExtra @entity {
 
 type AirUser @entity {
   id: ID! #<chainId>-<dappUserId>
+  dappUserId: String!
   address: AirAccount!
   extras: [AirExtra!] #Store recovery address & home URLs
   profiles: [AirProfile!] @derivedFrom(field: "user")
