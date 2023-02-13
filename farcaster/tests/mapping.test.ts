@@ -125,6 +125,7 @@ describe("Mapping unit tests", () => {
     // AirUser
     let airUserId = "1-1234";
     assert.fieldEquals("AirUser", airUserId, "id", "1-1234");
+    // assert.fieldEquals("AirUser", airUserId, "dappUserId", "1234");
     assert.fieldEquals("AirUser", airUserId, "address", "1-0x084b1c3c81545d370f3634392de611caabff8148");
     assert.fieldEquals("AirUser", airUserId, "extras", "[1-1234-recoveryAddress, 1-1234-homeUrl]");
     // assert.fieldEquals("AirUser", airUserId, "profiles", "[1-1234-0xe3be01d99baa8db9905b33a3ca391238234b79d1-52188151743400395627052985077509996575321231749758347050596502733779185434624]");
@@ -244,6 +245,7 @@ describe("Mapping unit tests", () => {
     // AirUser
     let airUserId = "1-1234";
     assert.fieldEquals("AirUser", airUserId, "id", "1-1234");
+    // assert.fieldEquals("AirUser", airUserId, "dappUserId", "1234");
     assert.fieldEquals("AirUser", airUserId, "address", "1-0x084b1c3c81545d370f3634392de611caabff8148");
     // assert.fieldEquals("AirUser", airUserId, "profiles", "[1-1234-0xe3be01d99baa8db9905b33a3ca391238234b79d1-234567890876543234567890987654]");
     assert.fieldEquals("AirUser", airUserId, "extras", "[1-1234-recoveryAddress, 1-1234-homeUrl]");
