@@ -67,7 +67,7 @@ type AirUser @entity {
   dappUserId: String!
   address: AirAccount!
   extras: [AirExtra!] #Store recovery address & home URLs
-  profiles: [AirProfile!] @derivedfrom(field: "user")
+  profiles: [AirProfile!] @derivedFrom(field: "user")
   createdAt: AirBlock!
   lastUpdatedAt: AirBlock!
 }
