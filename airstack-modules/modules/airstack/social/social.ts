@@ -136,6 +136,7 @@ export namespace social {
       entity = new AirUser(id);
       let airAccount = getOrCreateAirAccount(chainId, address, block);
       airAccount.save();
+      entity.dappUserId = dappUserId;
       entity.address = airAccount.id;
       entity.createdAt = block.id;
       if (extras.length > 0) entity.extras = extras;
