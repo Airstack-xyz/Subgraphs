@@ -1,5 +1,5 @@
 import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts";
-
+import { BIGINT_ZERO } from "./utils";
 import {
     OrderFulfilled,
 } from "../generated/Seaport/Seaport"
@@ -171,8 +171,18 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
     }
     
     for(let i = 0; i <allSales.length; i++){
+      if (royaltyBeneficiary == Address.zero() && royaltyFees != BIGINT_ZERO) {
+        log.error("non-zero amount on royaltyBeneficiary {} amount {} txhash {}", [
+          royaltyBeneficiary.toHexString(),
+          royaltyFees.div(BigInt.fromI64(allSales.length)).toString(),
+          txHash.toHexString(),
+          ])
+        throw "non-zero amount on royaltyBeneficiary"
+      }
+      if (royaltyBeneficiary != Address.zero()) {
         let royalty = new airstack.nft.CreatorRoyalty(royaltyFees.div(BigInt.fromI64(allSales.length)), royaltyBeneficiary);
         allSales[i].royalties.push(royalty);
+      }
         allSales[i].protocolFees = protocolFees.div(BigInt.fromI64(allSales.length));
         allSales[i].protocolFeesBeneficiary = protocolBeneficiary;
         allSales[i].paymentAmount = paymentAmount.div(
