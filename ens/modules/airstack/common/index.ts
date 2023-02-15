@@ -7,6 +7,9 @@ import {
   AirBlock,
   AirEntityCounter,
   AirMeta,
+  AirAccount,
+  AirExtra,
+  AirToken,
 } from "../../../generated/schema";
 
 export const AIR_META_ID = "AIR_META";
@@ -17,11 +20,9 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-
 export const SUBGRAPH_NAME = "ens";
 export const SUBGRAPH_VERSION = "v1";
 export const SUBGRAPH_SLUG = "ens-v1";
-
 
 const AIR_NETWORK_MAP = new TypedMap<string, string>();
 AIR_NETWORK_MAP.set("arbitrum-one", "ARBITRUM_ONE");
@@ -46,8 +47,38 @@ AIR_NETWORK_MAP.set("osmosis", "OSMOSIS");
 AIR_NETWORK_MAP.set("matic", "MATIC");
 AIR_NETWORK_MAP.set("xdai", "XDAI");
 
-export function processNetwork(network: string): string {
+const AIR_CHAIN_ID_MAP = new TypedMap<string, string>();
+AIR_CHAIN_ID_MAP.set("arbitrum-one", "42161");
+AIR_CHAIN_ID_MAP.set("arweave-mainnet", "174");
+AIR_CHAIN_ID_MAP.set("aurora", "1313161554");
+AIR_CHAIN_ID_MAP.set("avalanche", "43114");
+AIR_CHAIN_ID_MAP.set("boba", "288");
+AIR_CHAIN_ID_MAP.set("bsc", "56");
+AIR_CHAIN_ID_MAP.set("celo", "42220");
+AIR_CHAIN_ID_MAP.set("COSMOS", "cosmos");
+AIR_CHAIN_ID_MAP.set("CRONOS", "25");
+AIR_CHAIN_ID_MAP.set("mainnet", "1");
+AIR_CHAIN_ID_MAP.set("fantom", "250");
+AIR_CHAIN_ID_MAP.set("fuse", "122");
+AIR_CHAIN_ID_MAP.set("harmony", "1666600000");
+AIR_CHAIN_ID_MAP.set("juno", "juno-1");
+AIR_CHAIN_ID_MAP.set("moonbeam", "1284");
+AIR_CHAIN_ID_MAP.set("moonriver", "1285");
+AIR_CHAIN_ID_MAP.set("near-mainnet", "1313161554");
+AIR_CHAIN_ID_MAP.set("optimism", "10");
+AIR_CHAIN_ID_MAP.set("osmosis", "osmosis-1");
+AIR_CHAIN_ID_MAP.set("matic", "137");
+AIR_CHAIN_ID_MAP.set("xdai", "100");
+
+export function getNetwork(network: string): string {
   const value = AIR_NETWORK_MAP.get(network);
+  const result: string = value !== null ? value : "unknown";
+  return result;
+}
+
+export function getChainId(): string {
+  let network = dataSource.network();
+  const value = AIR_CHAIN_ID_MAP.get(network);
   const result: string = value !== null ? value : "unknown";
   return result;
 }
@@ -92,7 +123,7 @@ export function createAirMeta(
   let meta = AirMeta.load(AIR_META_ID);
   if (meta == null) {
     meta = new AirMeta(AIR_META_ID);
-    meta.network = processNetwork(dataSource.network());
+    meta.network = getNetwork(dataSource.network());
     meta.schemaVersion = SUBGRAPH_SCHEMA_VERSION;
     meta.version = SUBGRAPH_VERSION;
     meta.slug = slug;
@@ -102,6 +133,7 @@ export function createAirMeta(
 }
 
 /**
+ * @dev this function does not save the returned entity
  * @dev this function gets or creates a new air block entity
  * @param chainId chain id
  * @param blockHeight block number
@@ -123,7 +155,63 @@ export function getOrCreateAirBlock(
     block.hash = blockHash;
     block.number = blockHeight;
     block.timestamp = blockTimestamp
-    block.save()
   }
   return block as AirBlock;
+}
+
+/**
+ * @dev this function does not save the returned entity
+ * @dev this function gets or creates a new air account entity
+ * @param chainId chain id
+ * @param address account address
+ * @param block air block object
+ * @returns AirAccount entity
+ */
+export function getOrCreateAirAccount(chainId: string, address: string, block: AirBlock): AirAccount {
+  let id = chainId.concat("-").concat(address);
+  let entity = AirAccount.load(id);
+  if (entity == null) {
+    entity = new AirAccount(id);
+    entity.address = address;
+    entity.createdAt = block.id;
+  }
+  return entity as AirAccount;
+}
+
+/**
+ * @dev this function does not save the returned entity
+ * @dev this function creates an air extra entity
+ * @param name air extra name
+ * @param value air extra value
+ * @param extraId air extra entity id
+ * @returns air extra entity
+ */
+export function createAirExtra(
+  name: string,
+  value: string,
+  id: string,
+): AirExtra {
+  let entity = AirExtra.load(id);
+  if (entity == null) {
+    entity = new AirExtra(id);
+    entity.name = name;
+    entity.value = value;
+  }
+  return entity as AirExtra;
+}
+
+/**
+ * @dev this function does not save the returned entity
+ * @dev this function gets or creates a new air token entity
+ * @param chainID chain id
+ * @param address token address
+ * @returns AirToken entity
+ */
+export function getOrCreateAirToken(chainID: string, address: string): AirToken {
+  let entity = AirToken.load(chainID + "-" + address);
+  if (entity == null) {
+    entity = new AirToken(chainID + "-" + address);
+    entity.address = address;
+  }
+  return entity as AirToken;
 }

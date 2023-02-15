@@ -43,9 +43,16 @@ type AirEntityCounter @entity {
 	lastUpdatedAt: AirBlock!
 }
 
+type AirExtra @entity {
+  id: ID! # Concatenation of domainId and name
+  name: String!
+  value: String!
+}
+
 type AirAccount @entity {
   id: ID!
   address: String!
+  createdAt: AirBlock!
 }
 
 type AirToken @entity {
@@ -57,7 +64,7 @@ type AirDomain @entity {
   id: ID!                                               # The namehash of the name
   name: String                                          # The human readable name, if known. Unknown portions replaced with hash in square brackets (eg, foo.[1234].eth)
   labelName: String                                     # The human readable label name (imported from CSV), if known
-  labelHash: Bytes                                      # keccak256(labelName)
+  labelHash: String                                      # keccak256(labelName)
   tokenId: String                                      # dec(labelHash)
   parent: AirDomain                                        # The namehash (id) of the parent name
   subdomains: [AirDomain!]! @derivedFrom(field: "parent")  # Can count domains from length of array
@@ -65,14 +72,14 @@ type AirDomain @entity {
   resolvedAddress: AirAccount                           # Address logged from current resolver, if any
   owner: AirAccount!
   resolver: AirResolver
-  ttl: BigInt
   isPrimary: Boolean! # - NA                        # Is the primary domain for the resolved address
   expiryTimestamp: BigInt!
   registrationCost: BigInt!                            # Cost of domain registration in wei
   paymentToken: AirToken                              # Token used to pay for registration
   tokenAddress: AirToken!                               # Domain (eg: ens) token contract address
   createdAt: AirBlock!
-	lastBlock: AirBlock #- NA
+	lastUpdatedBlock: AirBlock #- NA
+  extras: [AirExtra!]
 }
 
 type AirDomainTransferTransaction implements AirDomainEvent @entity {
@@ -123,14 +130,14 @@ type AirResolver @entity {
   id: ID!                   # Concatenation of resolver address and namehash
   domain: AirDomain
   address: AirAccount!           # Address of resolver contract
-  resolvedAddress: AirAccount             # Current value of addr record (per events)
+  resolvedAddress: AirAccount             # Current value of resolved address record (per events)
 }
 
-type AirAddrChanged implements AirDomainEvent @entity {
+type AirResolvedAddressChanged implements AirDomainEvent @entity {
   id: ID!
   resolver: AirResolver!
-  previousResolvedAddress: AirAccount # previous addr record
-  newResolvedAddress: AirAccount! # new addr record
+  previousResolvedAddress: AirAccount # previous resolved address record
+  newResolvedAddress: AirAccount! # new resolved address record
   block: AirBlock!
   transactionHash: String!
   tokenId: String # dec(labelhash) - NA

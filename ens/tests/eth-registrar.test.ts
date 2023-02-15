@@ -8,9 +8,10 @@ import {
 import { ByteArray, crypto, Bytes } from "@graphprotocol/graph-ts"
 import { handleNameRenewedByController, handleNameRegistered, handleNameRenewed, handleNameRegisteredByControllerOld, handleNameRegisteredByController } from "../src/eth-registrar"
 import { getHandleNameRenewedByControllerEvent, getHandleNameRegisteredEvent, getHandleNameRenewedEvent, getHandleNameRegisteredByControllerOldEvent, getHandleNameRegisteredByControllerEvent } from "./eth-registrar-utils"
-import { ETHEREUM_MAINNET_ID, ZERO_ADDRESS, byteArrayFromHex, uint256ToByteArray } from "../modules/airstack/domain-name/utils"
+import { ETHEREUM_MAINNET_ID, ZERO_ADDRESS } from "../modules/airstack/domain-name/utils"
+import { uint256ToByteArray, byteArrayFromHex } from "../src/utils"
 import { BIGINT_ONE } from "../modules/airstack/common"
-import { AirDomain, ReverseRegistrar } from "../generated/schema"
+import { AirDomain } from "../generated/schema"
 
 const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae");
 
@@ -32,17 +33,39 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
     assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    // AirBlock
+    assert.fieldEquals("AirBlock", blockId, "id", blockId);
+    assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
+    assert.fieldEquals("AirBlock", blockId, "hash", event.block.hash.toHexString());
+    assert.fieldEquals("AirBlock", blockId, "timestamp", event.block.timestamp.toString());
+    // AirAccount
+    let ownerAccountId = ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString());
+    assert.fieldEquals("AirAccount", ownerAccountId, "id", ownerAccountId);
+    assert.fieldEquals("AirAccount", ownerAccountId, "address", event.params.owner.toHexString());
+    assert.fieldEquals("AirAccount", ownerAccountId, "createdAt", blockId);
+    // AirEntityCounter
+    let airEntityCounterId = "AIR_NAME_REGISTERED_ENTITY_COUNTER";
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "id", "AIR_NAME_REGISTERED_ENTITY_COUNTER");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "count", "1");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "createdAt", blockId);
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
+    // AirToken
+    let airTokenId = ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS);
+    assert.fieldEquals("AirToken", airTokenId, "id", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
+    assert.fieldEquals("AirToken", airTokenId, "address", ZERO_ADDRESS);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     // AirNameRegisteredTransaction
     let nameRegisteredId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
+    assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "paymentToken", airTokenId);
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "block", blockId);
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "transactionHash", event.transaction.hash.toHexString());
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "tokenId", "null");
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "domain", domainId);
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "index", BIGINT_ONE.toString());
-    assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "cost", event.transaction.value.toString());
+    assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "cost", "null");
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "registrant", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "expiryTimestamp", event.params.expires.toString());
   })
@@ -54,11 +77,38 @@ describe("Unit tests for eth registrar handlers", () => {
     let domainId = crypto.keccak256(rootNode.concat(uint256ToByteArray(event.params.id))).toHex();
     let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
     // assert here
+    // AirMeta
+    assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    // AirBlock
+    assert.fieldEquals("AirBlock", blockId, "id", blockId);
+    assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
+    assert.fieldEquals("AirBlock", blockId, "hash", event.block.hash.toHexString());
+    assert.fieldEquals("AirBlock", blockId, "timestamp", event.block.timestamp.toString());
+    // AirAccount
+    let ownerAccountId = ETHEREUM_MAINNET_ID.concat("-").concat(event.transaction.from.toHexString());
+    assert.fieldEquals("AirAccount", ownerAccountId, "id", ownerAccountId);
+    assert.fieldEquals("AirAccount", ownerAccountId, "address", event.transaction.from.toHexString());
+    assert.fieldEquals("AirAccount", ownerAccountId, "createdAt", blockId);
+    // AirEntityCounter
+    let airEntityCounterId = "AIR_NAME_RENEWED_ENTITY_COUNTER";
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "id", "AIR_NAME_RENEWED_ENTITY_COUNTER");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "count", "1");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "createdAt", blockId);
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
+    // AirToken
+    let airTokenId = ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS);
+    assert.fieldEquals("AirToken", airTokenId, "id", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
+    assert.fieldEquals("AirToken", airTokenId, "address", ZERO_ADDRESS);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     // AirNameRenewedTransaction
     let nameRenewedId = event.transaction.hash.toHexString().concat("-").concat(domainId);
+    assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "paymentToken", airTokenId);
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "block", blockId);
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "transactionHash", event.transaction.hash.toHexString());
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "tokenId", "null");
@@ -77,10 +127,15 @@ describe("Unit tests for eth registrar handlers", () => {
     let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
     let reverseRegistrarId = crypto.keccak256(Bytes.fromUTF8(event.params.name.concat(".eth"))).toHexString();
     // assert here
+    // AirBlock
+    assert.fieldEquals("AirBlock", blockId, "id", blockId);
+    assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
+    assert.fieldEquals("AirBlock", blockId, "hash", event.block.hash.toHexString());
+    assert.fieldEquals("AirBlock", blockId, "timestamp", event.block.timestamp.toString());
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "registrationCost", event.params.cost.toString());
     assert.fieldEquals("AirDomain", domainId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
     // ReverseRegistrar
@@ -99,10 +154,15 @@ describe("Unit tests for eth registrar handlers", () => {
     let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
     let reverseRegistrarId = crypto.keccak256(Bytes.fromUTF8(event.params.name.concat(".eth"))).toHexString();
     // assert here
+    // AirBlock
+    assert.fieldEquals("AirBlock", blockId, "id", blockId);
+    assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
+    assert.fieldEquals("AirBlock", blockId, "hash", event.block.hash.toHexString());
+    assert.fieldEquals("AirBlock", blockId, "timestamp", event.block.timestamp.toString());
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "registrationCost", event.params.cost.toString());
     assert.fieldEquals("AirDomain", domainId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
     // ReverseRegistrar
@@ -121,9 +181,30 @@ describe("Unit tests for eth registrar handlers", () => {
     let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
     let reverseRegistrarId = crypto.keccak256(Bytes.fromUTF8(event.params.name.concat(".eth"))).toHexString();
     // assert here
+    // AirBlock
+    assert.fieldEquals("AirBlock", blockId, "id", blockId);
+    assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
+    assert.fieldEquals("AirBlock", blockId, "hash", event.block.hash.toHexString());
+    assert.fieldEquals("AirBlock", blockId, "timestamp", event.block.timestamp.toString());
+    // AirAccount
+    let ownerAccountId = ETHEREUM_MAINNET_ID.concat("-").concat(event.transaction.from.toHexString());
+    assert.fieldEquals("AirAccount", ownerAccountId, "id", ownerAccountId);
+    assert.fieldEquals("AirAccount", ownerAccountId, "address", event.transaction.from.toHexString());
+    assert.fieldEquals("AirAccount", ownerAccountId, "createdAt", blockId);
+    // AirEntityCounter
+    let airEntityCounterId = "AIR_NAME_RENEWED_ENTITY_COUNTER";
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "id", "AIR_NAME_RENEWED_ENTITY_COUNTER");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "count", "1");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "createdAt", blockId);
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
+    // AirToken
+    let airTokenId = ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS);
+    assert.fieldEquals("AirToken", airTokenId, "id", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
+    assert.fieldEquals("AirToken", airTokenId, "address", ZERO_ADDRESS);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "registrationCost", "0");
-    assert.fieldEquals("AirDomain", domainId, "lastBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
     // AirNameRenewedTransaction

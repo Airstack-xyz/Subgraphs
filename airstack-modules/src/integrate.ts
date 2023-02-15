@@ -284,9 +284,9 @@ function getAirMetaDetails(vertical: Vertical) {
   }
   let targetFile = path.resolve(__dirname, '../../../../../modules/airstack/common/index.ts');
   let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
-  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, `export const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";`);
   fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, `export const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";`);
-  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, `export const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, `export const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";`);
   // fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
   fs.writeFileSync(targetFile, fileContent, { encoding: "utf8" });
 }
