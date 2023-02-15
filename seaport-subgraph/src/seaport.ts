@@ -171,7 +171,7 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
     }
     
     for(let i = 0; i <allSales.length; i++){
-      if (royaltyBeneficiary == Address.zero() && royaltyFees.div(BigInt.fromI64(allSales.length)) != BIGINT_ZERO) {
+      if (royaltyBeneficiary == Address.zero() && royaltyFees != BIGINT_ZERO) {
         log.error("non-zero amount on royaltyBeneficiary {} amount {} txhash {}", [
           royaltyBeneficiary.toHexString(),
           royaltyFees.div(BigInt.fromI64(allSales.length)).toString(),
