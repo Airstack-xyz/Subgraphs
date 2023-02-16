@@ -95,7 +95,7 @@ describe("Mapping unit tests", () => {
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "id", "AIR_META")
     assert.fieldEquals("AirMeta", "AIR_META", "name", "farcaster")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
     assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
@@ -214,7 +214,7 @@ describe("Mapping unit tests", () => {
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "id", "AIR_META")
     assert.fieldEquals("AirMeta", "AIR_META", "name", "farcaster")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
     assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")

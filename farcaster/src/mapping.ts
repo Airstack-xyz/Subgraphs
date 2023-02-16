@@ -72,14 +72,20 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
       event.block,
       mapping.transactionHash!,
       mapping.logOrCallIndex!,
-      mapping.fromAddress!,
-      mapping.toAddress!,
-      mapping.tokenId!,
-      FARCASTER_NAME_REGISTRY_CONTRACT.toHexString(),
-      mapping.farcasterId,
-      mapping.farcasterProfileName!,
-      profileExtras,
-      userExtras,
+      new airstack.social.AirTransferData(
+        mapping.fromAddress!,
+        mapping.toAddress!,
+        mapping.tokenId!,
+        FARCASTER_NAME_REGISTRY_CONTRACT.toHexString(),
+      ),
+      new airstack.social.AirUserData(
+        mapping.farcasterId,
+        userExtras,
+      ),
+      new airstack.social.AirProfileData(
+        mapping.farcasterProfileName!,
+        profileExtras,
+      ),
     );
   }
 }
@@ -136,14 +142,20 @@ export function handleRegister(event: Register): void {
       event.block,
       mapping.transactionHash!,
       mapping.logOrCallIndex!,
-      mapping.fromAddress!,
-      mapping.toAddress!,
-      mapping.tokenId!,
-      FARCASTER_NAME_REGISTRY_CONTRACT.toHexString(),
-      mapping.farcasterId,
-      mapping.farcasterProfileName!,
-      profileExtras,
-      userExtras,
+      new airstack.social.AirTransferData(
+        mapping.fromAddress!,
+        mapping.toAddress!,
+        mapping.tokenId!,
+        FARCASTER_NAME_REGISTRY_CONTRACT.toHexString(),
+      ),
+      new airstack.social.AirUserData(
+        mapping.farcasterId,
+        userExtras,
+      ),
+      new airstack.social.AirProfileData(
+        mapping.farcasterProfileName!,
+        profileExtras,
+      ),
     );
   }
 }
