@@ -28,46 +28,47 @@ export namespace social {
     airUserData: AirUserData,
     airProfileData: AirProfileData,
   ): void {
-    let chainId = getChainId();
+    const chainId = getChainId();
     // creating air block
-    let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     airBlock.save();
     // creating air user
-    let userId = chainId.concat('-').concat(airUserData.dappUserId);
+    const userId = createUserEntityId(chainId, airUserData.dappUserId);
     // create air user extras
     let airUserExtras = new Array<AirExtra>();
+    let airUserExtraIds = new Array<string>();
     for (let i = 0; i < airUserData.userExtras.length; i++) {
-      let extra = airUserData.userExtras[i];
-      let extraId = userId.concat("-").concat(extra.name);
-      let airUserExtraData = createAirExtra(
+      const extra = airUserData.userExtras[i];
+      const extraId = userId.concat("-").concat(extra.name);
+      const airUserExtraData = createAirExtra(
         extra.name,
         extra.value,
         extraId,
       );
+      airUserExtraIds.push(extraId);
       airUserExtraData.save();
       airUserExtras.push(airUserExtraData);
     }
     // create air profile extras
     let airProfileExtras = new Array<AirExtra>();
+    let airProfileExtraIds = new Array<string>();
     for (let i = 0; i < airProfileData.profileExtras.length; i++) {
-      let extra = airProfileData.profileExtras[i];
-      let extraId = userId.concat("-").concat(extra.name);
-      let airProfileExtraData = createAirExtra(
+      const extra = airProfileData.profileExtras[i];
+      const extraId = userId.concat("-").concat(extra.name);
+      const airProfileExtraData = createAirExtra(
         extra.name,
         extra.value,
         extraId,
       );
+      airProfileExtraIds.push(extraId);
       airProfileExtraData.save();
       airProfileExtras.push(airProfileExtraData);
     }
-    // get air extra data ids
-    let airUserExtraIds = getAirExtraDataEntityIds(airUserExtras);
-    let airProfileExtraIds = getAirExtraDataEntityIds(airProfileExtras);
     // create air user
-    let airUser = getOrCreateAirUser(chainId, airBlock, airUserData.dappUserId, airTransferData.to, airUserExtraIds);
+    const airUser = getOrCreateAirUser(chainId, airBlock, airUserData.dappUserId, airTransferData.to, airUserExtraIds);
     airUser.save();
     // create air profile
-    let airProfile = getOrCreateAirProfile(airBlock, chainId, airUser.id, airProfileData.profileName, airTransferData.tokenId, airTransferData.tokenAddress, airProfileExtraIds);
+    const airProfile = getOrCreateAirProfile(airBlock, chainId, airUser.id, airProfileData.profileName, airTransferData.tokenId, airTransferData.tokenAddress, airProfileExtraIds);
     airProfile.save();
     // create air user registered transaction
     createAirUserRegisteredTransaction(
@@ -89,46 +90,33 @@ export namespace social {
   }
 
   /**
-   * @dev this function does not create any entity, it just returns the air extra data entity ids
-   * @param extras air extra data array
-   * @returns air extra data entity ids
-   */
-  function getAirExtraDataEntityIds(
-    extras: AirExtra[],
-  ): string[] {
-    let entityIds = new Array<string>();
-    for (let i = 0; i < extras.length; i++) {
-      let extra = extras[i];
-      entityIds.push(extra.id);
-    }
-    return entityIds as string[];
-  }
-
-  /**
    * @dev this function does not save the returned entity
    * @dev this function gets or creates a AirUser entity
    * @param chainId chain id
    * @param block air block entity
    * @param dappUserId dapp user id
    * @param address air user address (owner of the dappUserId)
+   * @param extrasIds air extra data entity ids
   */
   function getOrCreateAirUser(
     chainId: string,
     block: AirBlock,
     dappUserId: string,
     address: string,
-    extras: string[]
+    extrasIds: string[]
   ): AirUser {
-    let id = createUserEntityId(chainId, dappUserId);
+    const id = createUserEntityId(chainId, dappUserId);
     let entity = AirUser.load(id);
     if (entity == null) {
       entity = new AirUser(id);
-      let airAccount = getOrCreateAirAccount(chainId, address, block);
+      const airAccount = getOrCreateAirAccount(chainId, address, block);
       airAccount.save();
       entity.dappUserId = dappUserId;
       entity.address = airAccount.id;
       entity.createdAt = block.id;
-      if (extras.length > 0) entity.extras = extras;
+      if (extrasIds.length > 0) {
+        entity.extras = extrasIds
+      };
       entity.lastUpdatedAt = block.id;
     }
     return entity as AirUser;
@@ -155,14 +143,14 @@ export namespace social {
     tokenAddress: string,
     extraIds: string[],
   ): AirProfile {
-    let id = userId.concat("-").concat(tokenAddress).concat("-").concat(tokenId);
+    const id = userId.concat("-").concat(tokenAddress).concat("-").concat(tokenId);
     let entity = AirProfile.load(id);
     if (entity == null) {
       entity = new AirProfile(id);
       entity.name = name;
       entity.user = userId;
       entity.tokenId = tokenId;
-      let airToken = getOrCreateAirToken(chainId, tokenAddress);
+      const airToken = getOrCreateAirToken(chainId, tokenAddress);
       airToken.save();
       entity.tokenAddress = airToken.id;
       if (extraIds.length > 0) {
@@ -207,15 +195,15 @@ export namespace social {
     userExtrasIds: string[],
     profileExtraIds: string[],
   ): void {
-    let id = userId.concat('-').concat(transactionHash).concat('-').concat(tokenAddress).concat('-').concat(tokenId);
+    const id = userId.concat('-').concat(transactionHash).concat('-').concat(tokenAddress).concat('-').concat(tokenId);
     let entity = AirUserRegisteredTransaction.load(id);
     if (entity == null) {
       entity = new AirUserRegisteredTransaction(id);
-      let airAccount = getOrCreateAirAccount(chainId, address, block);
+      const airAccount = getOrCreateAirAccount(chainId, address, block);
       airAccount.save();
-      let airAccountFrom = getOrCreateAirAccount(chainId, from, block);
+      const airAccountFrom = getOrCreateAirAccount(chainId, from, block);
       airAccountFrom.save();
-      let airAccountTo = getOrCreateAirAccount(chainId, to, block);
+      const airAccountTo = getOrCreateAirAccount(chainId, to, block);
       airAccountTo.save();
       entity.address = airAccount.id; //dappUserId owner address
       entity.user = userId;
@@ -227,7 +215,8 @@ export namespace social {
       entity.from = airAccountFrom.id;
       entity.to = airAccountTo.id;
       entity.tokenId = tokenId;
-      let airToken = getOrCreateAirToken(chainId, tokenAddress);
+      const airToken = getOrCreateAirToken(chainId, tokenAddress);
+      airToken.save();
       entity.tokenAddress = airToken.id;
       entity.logOrCallIndex = logOrCallIndex;
       entity.transactionHash = transactionHash;
