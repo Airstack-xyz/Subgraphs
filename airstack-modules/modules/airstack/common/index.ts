@@ -81,7 +81,7 @@ export function getNetwork(network: string): string {
 }
 
 export function getChainId(): string {
-  let network = dataSource.network();
+  const network = dataSource.network();
   const value = AIR_CHAIN_ID_MAP.get(network);
   if (value != null) {
     return value!;
@@ -153,8 +153,7 @@ export function getOrCreateAirBlock(
   blockHash: string,
   blockTimestamp: BigInt
 ): AirBlock {
-  let id = chainId.concat("-").concat(blockHeight.toString());
-
+  const id = chainId.concat("-").concat(blockHeight.toString());
   let block = AirBlock.load(id);
   if (block == null) {
     block = new AirBlock(id);
@@ -174,7 +173,7 @@ export function getOrCreateAirBlock(
  * @returns AirAccount entity
  */
 export function getOrCreateAirAccount(chainId: string, address: string, block: AirBlock): AirAccount {
-  let id = chainId.concat("-").concat(address);
+  const id = chainId.concat("-").concat(address);
   let entity = AirAccount.load(id);
   if (entity == null) {
     entity = new AirAccount(id);

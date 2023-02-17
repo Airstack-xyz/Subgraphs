@@ -26,3 +26,26 @@ class AirExtraData {
   value: string,                                #value of the extra data (eg: values of tokenUri,recoveryAddress,homeUrl in farcaster)
 }
 ```
+
+```
+class AirTransferData {
+  from: string,                                 #sender address of ERC721 token
+  to: string,                                   #receiver address of ERC721 token
+  tokenId: string,                              #token id of ERC721 token
+  tokenAddress: string,                         #token address of ERC721 token
+}
+```
+
+```
+class AirUserData {
+  dappUserId: string,                           #dapp user id of air user (eg: farcasterId)
+  userExtras: AirExtraData[],                   #extras data for air user (eg: recoveryAddress and homeUrl in farcaster)
+}
+```
+
+```
+class AirProfileData {
+  profileName: string,                          #name of the profile (eg: farcasterProfileName)
+  profileExtras: AirExtraData[],                #extra data of air profile (eg: tokenUri in farcaster)
+}
+```
