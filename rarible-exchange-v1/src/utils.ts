@@ -9,7 +9,7 @@ import {
 } from "@graphprotocol/graph-ts";
 import { ExchangeV1 } from "../generated/ExchangeV1/ExchangeV1";
 import { SecondarySaleFees } from "../generated/ExchangeV1/SecondarySaleFees";
-import { nft } from "../modules/airstack";
+import { nft } from "../modules/airstack/nft-marketplace";
 
 export const INTERFACE_ID_FEES = Bytes.fromHexString("0xb7799584");
 export const exchangeV1Address = Address.fromString("0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06");

@@ -1,18 +1,13 @@
 import {
     Address,
     BigInt,
-    dataSource,
     log,
 } from "@graphprotocol/graph-ts";
 
 import {
-    AirAccount,
-    AirEntityCounter,
     AirNftTransaction,
     AirToken,
-    AirBlock,
     AirNftSaleRoyalty,
-    AirMeta
 } from "../../../generated/schema";
 
 import { AIR_NFT_SALE_ENTITY_ID } from "./utils";
