@@ -34,7 +34,7 @@ AIR_NETWORK_MAP.set("bsc", "bsc");
 AIR_NETWORK_MAP.set("celo", "celo");
 AIR_NETWORK_MAP.set("COSMOS", "cosmos");
 AIR_NETWORK_MAP.set("CRONOS", "cronos");
-AIR_NETWORK_MAP.set("mainnet", "ethereum_mainnet");
+AIR_NETWORK_MAP.set("mainnet", "ethereum");
 AIR_NETWORK_MAP.set("goerli", "ethereum_goerli");
 AIR_NETWORK_MAP.set("fantom", "fantom");
 AIR_NETWORK_MAP.set("fuse", "fuse");
@@ -45,7 +45,7 @@ AIR_NETWORK_MAP.set("moonriver", "moonriver");
 AIR_NETWORK_MAP.set("near-mainnet", "near_mainnet");
 AIR_NETWORK_MAP.set("optimism", "optimism");
 AIR_NETWORK_MAP.set("osmosis", "osmosis");
-AIR_NETWORK_MAP.set("matic", "matic_mainnet");
+AIR_NETWORK_MAP.set("matic", "matic");
 AIR_NETWORK_MAP.set("xdai", "xdai");
 
 const AIR_CHAIN_ID_MAP = new TypedMap<string, string>();
