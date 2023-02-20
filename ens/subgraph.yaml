@@ -29,6 +29,10 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtraData
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: EnsRegistry
           file: ./abis/EnsRegistry.json
@@ -69,6 +73,10 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtraData
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: EnsRegistry
           file: ./abis/EnsRegistry.json
@@ -110,6 +118,10 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtraData
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: BaseRegistrar
           file: ./abis/BaseRegistrar.json
@@ -145,6 +157,10 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtraData
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: Resolver
           file: ./abis/PublicResolver.json
@@ -181,6 +197,10 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtraData
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: ReverseRegistrar
           file: ./abis/ReverseRegistrar.json
@@ -215,6 +235,10 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtraData
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: EthRegistrarController
           file: ./abis/EthRegistrarController.json
@@ -251,6 +275,10 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtraData
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: EthRegistrarControllerOld
           file: ./abis/EthRegistrarControllerOld.json

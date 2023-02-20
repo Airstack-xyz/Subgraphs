@@ -22,30 +22,7 @@ export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
 export const SUBGRAPH_NAME = "ens";
 export const SUBGRAPH_VERSION = "v1";
-export const SUBGRAPH_SLUG = "ens-v1";
-
-const AIR_NETWORK_MAP = new TypedMap<string, string>();
-AIR_NETWORK_MAP.set("arbitrum-one", "ARBITRUM_ONE");
-AIR_NETWORK_MAP.set("arweave-mainnet", "ARWEAVE_MAINNET");
-AIR_NETWORK_MAP.set("aurora", "AURORA");
-AIR_NETWORK_MAP.set("avalanche", "AVALANCHE");
-AIR_NETWORK_MAP.set("boba", "BOBA");
-AIR_NETWORK_MAP.set("bsc", "BSC");
-AIR_NETWORK_MAP.set("celo", "CELO");
-AIR_NETWORK_MAP.set("COSMOS", "COSMOS");
-AIR_NETWORK_MAP.set("CRONOS", "CRONOS");
-AIR_NETWORK_MAP.set("mainnet", "MAINNET");
-AIR_NETWORK_MAP.set("fantom", "FANTOM");
-AIR_NETWORK_MAP.set("fuse", "FUSE");
-AIR_NETWORK_MAP.set("harmony", "HARMONY");
-AIR_NETWORK_MAP.set("juno", "JUNO");
-AIR_NETWORK_MAP.set("moonbeam", "MOONBEAM");
-AIR_NETWORK_MAP.set("moonriver", "MOONRIVER");
-AIR_NETWORK_MAP.set("near-mainnet", "NEAR_MAINNET");
-AIR_NETWORK_MAP.set("optimism", "OPTIMISM");
-AIR_NETWORK_MAP.set("osmosis", "OSMOSIS");
-AIR_NETWORK_MAP.set("matic", "MATIC");
-AIR_NETWORK_MAP.set("xdai", "XDAI");
+export const SUBGRAPH_SLUG = "ens_v1";
 
 const AIR_CHAIN_ID_MAP = new TypedMap<string, string>();
 AIR_CHAIN_ID_MAP.set("arbitrum-one", "42161");
@@ -58,6 +35,7 @@ AIR_CHAIN_ID_MAP.set("celo", "42220");
 AIR_CHAIN_ID_MAP.set("COSMOS", "cosmos");
 AIR_CHAIN_ID_MAP.set("CRONOS", "25");
 AIR_CHAIN_ID_MAP.set("mainnet", "1");
+AIR_CHAIN_ID_MAP.set("goerli", "5");
 AIR_CHAIN_ID_MAP.set("fantom", "250");
 AIR_CHAIN_ID_MAP.set("fuse", "122");
 AIR_CHAIN_ID_MAP.set("harmony", "1666600000");
@@ -70,20 +48,16 @@ AIR_CHAIN_ID_MAP.set("osmosis", "osmosis-1");
 AIR_CHAIN_ID_MAP.set("matic", "137");
 AIR_CHAIN_ID_MAP.set("xdai", "100");
 
-export function getNetwork(network: string): string {
-  const value = AIR_NETWORK_MAP.get(network);
-  const result: string = value !== null ? value : "unknown";
-  return result;
-}
-
 export function getChainId(): string {
-  let network = dataSource.network();
+  const network = dataSource.network();
   const value = AIR_CHAIN_ID_MAP.get(network);
-  const result: string = value !== null ? value : "unknown";
-  return result;
+  if (value != null) {
+    return value!;
+  }
+  throw new Error("Network not supported");
 }
 
-//air entity funcitons
+// common air entity functions
 
 /**
  * @dev this function updates air entity counter for a given entity id
@@ -123,7 +97,7 @@ export function createAirMeta(
   let meta = AirMeta.load(AIR_META_ID);
   if (meta == null) {
     meta = new AirMeta(AIR_META_ID);
-    meta.network = getNetwork(dataSource.network());
+    meta.network = dataSource.network();
     meta.schemaVersion = SUBGRAPH_SCHEMA_VERSION;
     meta.version = SUBGRAPH_VERSION;
     meta.slug = slug;
@@ -147,8 +121,7 @@ export function getOrCreateAirBlock(
   blockHash: string,
   blockTimestamp: BigInt
 ): AirBlock {
-  let id = chainId.concat("-").concat(blockHeight.toString());
-
+  const id = chainId.concat("-").concat(blockHeight.toString());
   let block = AirBlock.load(id);
   if (block == null) {
     block = new AirBlock(id);
@@ -168,7 +141,7 @@ export function getOrCreateAirBlock(
  * @returns AirAccount entity
  */
 export function getOrCreateAirAccount(chainId: string, address: string, block: AirBlock): AirAccount {
-  let id = chainId.concat("-").concat(address);
+  const id = chainId.concat("-").concat(address);
   let entity = AirAccount.load(id);
   if (entity == null) {
     entity = new AirAccount(id);
