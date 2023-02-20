@@ -97,7 +97,7 @@ export function createAirMeta(
   let meta = AirMeta.load(AIR_META_ID);
   if (meta == null) {
     meta = new AirMeta(AIR_META_ID);
-    meta.network = dataSource.network();
+    meta.network = dataSource.network().toString();
     meta.schemaVersion = SUBGRAPH_SCHEMA_VERSION;
     meta.version = SUBGRAPH_VERSION;
     meta.slug = slug;
