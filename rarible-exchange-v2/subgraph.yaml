@@ -14,30 +14,6 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirAccount
-        - AirToken
-        - AirNftTransaction
-        - AirTokenMetadata
-        - AirExtraData
-        - AirAccount,
-        - AirNftTransaction,
-        - AirToken,
-        - AirBlock,
-        - AirNftSaleRoyalty
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
-        - AirExtra
       abis:
         - name: ExchangeV2
           file: ./abis/ExchangeV2.json

@@ -14,15 +14,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - CounterIncremented
-        - OrderCancelled
-        - OrderFulfilled
-        - OrderValidated
-        - AirAccount,
-        - AirNftTransaction,
-        - AirToken,
-        - AirBlock,
-        - AirNftSaleRoyalty
+        - WrappedEtherTransaction
       abis:
         - name: Seaport
           file: ./abis/Seaport.json
