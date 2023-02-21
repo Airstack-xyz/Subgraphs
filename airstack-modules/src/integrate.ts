@@ -85,7 +85,7 @@ export async function integrate(
 
                 fs.writeFile(filePath, finalFileContent, (err) => {
                   if (err) {
-                    console.log(err);
+                    console.error(err);
                     rej();
                   } else {
                     res();
@@ -199,7 +199,7 @@ function writeSubgraphGraphql(
 
     const schemas = Utils.getAirstackSchemasForVertical(vertical);
     const sourceSchemas = fs.readFileSync(schemaGraphqlPath, "utf8");
-    const schemasComment = "# --Airstack Schemas--"
+    const schemasComment = "#--Airstack Schemas--"
     if (sourceSchemas.includes(schemasComment)) {
       // get line no of comment
       const indexOfComment = sourceSchemas.indexOf(schemasComment);
