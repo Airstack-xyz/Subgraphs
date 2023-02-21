@@ -31,10 +31,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -52,11 +52,20 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("ReverseRegistrar", reverseRegistrarId, "name", name);
     assert.fieldEquals("ReverseRegistrar", reverseRegistrarId, "domain", domainId);
     assert.fieldEquals("ReverseRegistrar", reverseRegistrarId, "createdAt", blockId);
+    // AirToken - ens token address
+    let airTokenEnsId = ETHEREUM_MAINNET_ID.concat("-").concat(TOKEN_ADDRESS_ENS);
+    assert.fieldEquals("AirToken", airTokenEnsId, "id", ETHEREUM_MAINNET_ID.concat("-").concat(TOKEN_ADDRESS_ENS));
+    assert.fieldEquals("AirToken", airTokenEnsId, "address", TOKEN_ADDRESS_ENS);
     // AirAccount
     let ownerAccountId = ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString());
     assert.fieldEquals("AirAccount", ownerAccountId, "id", ownerAccountId);
     assert.fieldEquals("AirAccount", ownerAccountId, "address", event.params.owner.toHexString());
     assert.fieldEquals("AirAccount", ownerAccountId, "createdAt", blockId);
+    // AirAccount
+    let previousAccountId = ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS);
+    assert.fieldEquals("AirAccount", previousAccountId, "id", previousAccountId);
+    assert.fieldEquals("AirAccount", previousAccountId, "address", ZERO_ADDRESS);
+    assert.fieldEquals("AirAccount", previousAccountId, "createdAt", blockId);
     // AirEntityCounter
     let airEntityCounterId = "AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER";
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "id", "AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER");
@@ -101,15 +110,19 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
     assert.fieldEquals("AirBlock", blockId, "hash", event.block.hash.toHexString());
     assert.fieldEquals("AirBlock", blockId, "timestamp", event.block.timestamp.toString());
+    // AirToken - ens token address
+    let airTokenEnsId = ETHEREUM_MAINNET_ID.concat("-").concat(TOKEN_ADDRESS_ENS);
+    assert.fieldEquals("AirToken", airTokenEnsId, "id", ETHEREUM_MAINNET_ID.concat("-").concat(TOKEN_ADDRESS_ENS));
+    assert.fieldEquals("AirToken", airTokenEnsId, "address", TOKEN_ADDRESS_ENS);
     // IsMigratedMapping
     assert.fieldEquals("DomainVsIsMigratedMapping", domainId, "id", domainId);
     assert.fieldEquals("DomainVsIsMigratedMapping", domainId, "isMigrated", "false");
@@ -167,10 +180,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -217,10 +230,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -268,10 +281,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -325,10 +338,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -381,10 +394,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -427,10 +440,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event1.block.number.toString());
@@ -478,10 +491,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
