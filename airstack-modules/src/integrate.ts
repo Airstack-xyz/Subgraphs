@@ -144,13 +144,16 @@ async function writeSubgraphYaml(
     const targetDataSources = targetSubgraphYaml.dataSources;
     targetDataSources.forEach((dataSrc: Record<string, any>) => {
       if (whiteListedDataSource!.includes(dataSrc.name)) {
-        const existingEntities = [...dataSrc.mapping.entities];
-        airstackYaml!.entities.forEach((airEntity: string) => {
-          if (!existingEntities.includes(airEntity)) {
-            dataSrc.mapping.entities.push(airEntity);
-          }
-        });
-
+        if (dataSrc.mapping.entities == null) {
+          dataSrc.mapping.entities = airstackYaml!.entities;
+        } else {
+          const existingEntities = [...dataSrc.mapping.entities];
+          airstackYaml!.entities.forEach((airEntity: string) => {
+            if (!existingEntities.includes(airEntity)) {
+              dataSrc.mapping.entities.push(airEntity);
+            }
+          });
+        }
         const existingAbiNames = dataSrc.mapping.abis.map((abiObj: Record<string, string>) => {
           return abiObj.name;
         });
@@ -173,7 +176,6 @@ async function writeSubgraphYaml(
         }
       });
     }
-
 
     Utils.backupFiles(subgraphYamlPath).then((isBackupSuccess: boolean) => {
       if (isBackupSuccess) {
