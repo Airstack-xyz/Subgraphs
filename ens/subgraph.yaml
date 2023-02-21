@@ -29,6 +29,7 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtra
       abis:
         - name: EnsRegistry
           file: ./abis/EnsRegistry.json
@@ -69,6 +70,7 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtra
       abis:
         - name: EnsRegistry
           file: ./abis/EnsRegistry.json
@@ -110,6 +112,7 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtra
       abis:
         - name: BaseRegistrar
           file: ./abis/BaseRegistrar.json
@@ -145,6 +148,7 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtra
       abis:
         - name: Resolver
           file: ./abis/PublicResolver.json
@@ -181,6 +185,7 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtra
       abis:
         - name: ReverseRegistrar
           file: ./abis/ReverseRegistrar.json
@@ -215,6 +220,7 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtra
       abis:
         - name: EthRegistrarController
           file: ./abis/EthRegistrarController.json
@@ -251,6 +257,7 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
+        - AirExtra
       abis:
         - name: EthRegistrarControllerOld
           file: ./abis/EthRegistrarControllerOld.json
