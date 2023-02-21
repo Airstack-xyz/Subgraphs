@@ -34,14 +34,16 @@ export namespace Utils {
     switch (verticalName) {
       case Vertical.Dex:
         yamlString = dexYamlString;
+        break;
       case Vertical.NftMarketplace:
         yamlString = nftMarketPlaceYamlString;
+        break;
       case Vertical.DomainName:
         yamlString = domainNameYamlString;
+        break;
       default:
         break;
     }
-
     if (yamlString !== null) {
       return yaml.load(yamlString) as Record<string, any>;
     } else {

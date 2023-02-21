@@ -8,6 +8,9 @@ entities:
   - AirNftTransaction
   - AirNftSaleRoyalty
   - AirExtra
+  - AirToken,
+  - AirBlock,
+  - AirNftSaleRoyalty
 `;
 
 export default yamlString;
