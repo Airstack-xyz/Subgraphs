@@ -27,9 +27,6 @@ dataSources:
         - AirToken,
         - AirBlock,
         - AirNftSaleRoyalty
-        - AirUser
-        - AirProfile
-        - AirUserRegisteredTransaction
       abis:
         - name: ExchangeV2
           file: ./abis/ExchangeV2.json

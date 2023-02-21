@@ -23,14 +23,8 @@ dataSources:
         - AirToken,
         - AirBlock,
         - AirNftSaleRoyalty
-        - AirBlock
         - AirMeta
         - AirEntityCounter
-        - AirAccount
-        - AirExtraData
-        - AirUser
-        - AirProfile
-        - AirUserRegisteredTransaction
       abis:
         - name: Seaport
           file: ./abis/Seaport.json

@@ -29,10 +29,7 @@ dataSources:
         - AirNameRegisteredTransaction
         - AirNameRenewedTransaction
         - AirPrimaryDomainTransaction
-        - AirExtraData
-        - AirUser
-        - AirProfile
-        - AirUserRegisteredTransaction
+        - AirExtra
       abis:
         - name: EnsRegistry
           file: ./abis/EnsRegistry.json

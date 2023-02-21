@@ -25,7 +25,6 @@ dataSources:
         - AirToken,
         - AirBlock,
         - AirNftSaleRoyalty
-        - AirBlock
         - AirMeta
         - AirEntityCounter
         - AirAccount
@@ -64,14 +63,8 @@ dataSources:
         - AirToken,
         - AirBlock,
         - AirNftSaleRoyalty
-        - AirBlock
         - AirMeta
         - AirEntityCounter
-        - AirAccount
-        - AirExtraData
-        - AirUser
-        - AirProfile
-        - AirUserRegisteredTransaction
       abis:
         - name: Contract
           file: ./abis/Contract.json
