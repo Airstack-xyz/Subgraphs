@@ -7,7 +7,7 @@ entities:
   - AirToken
   - AirNftTransaction
   - AirNftSaleRoyalty
-  - AirExtraData
+  - AirExtra
 `;
 
 export default yamlString;

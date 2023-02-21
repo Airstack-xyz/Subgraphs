@@ -1,22 +1,16 @@
 import {
     Address,
     BigInt,
-    dataSource,
     log,
 } from "@graphprotocol/graph-ts";
 
 import {
-    AirAccount,
-    AirEntityCounter,
     AirNftTransaction,
-    AirToken,
-    AirBlock,
     AirNftSaleRoyalty,
-    AirMeta
 } from "../../../generated/schema";
 
 import { AIR_NFT_SALE_ENTITY_ID } from "./utils";
-import { updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount } from "../common";
+import { updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount, getOrCreateAirToken } from "../common";
 
 export namespace nft {
     export function trackNFTSaleTransactions(
@@ -35,23 +29,24 @@ export namespace nft {
         }
 
         let block = getOrCreateAirBlock(chainID, blockHeight, blockHash, timestamp);
-
+        block.save();
         let transactionCount = NftSales.length;
         for (let i = 0; i < transactionCount; i++) {
             // Payment Token
             let paymentToken = getOrCreateAirToken(chainID, NftSales[i].paymentToken.toHexString());
-
+            paymentToken.save();
             // Account
             let buyerAccount = getOrCreateAirAccount(chainID, NftSales[i].buyer.toHexString(), block);
-            let sellerAccount = getOrCreateAirAccount(chainID, NftSales[i].seller.toHexString(), block);
-            let feeAccount = getOrCreateAirAccount(chainID, NftSales[i].protocolFeesBeneficiary.toHexString(), block);
             buyerAccount.save();
+            let sellerAccount = getOrCreateAirAccount(chainID, NftSales[i].seller.toHexString(), block);
             sellerAccount.save();
+            let feeAccount = getOrCreateAirAccount(chainID, NftSales[i].protocolFeesBeneficiary.toHexString(), block);
             feeAccount.save();
             // Sale Token
             let saleToken = getOrCreateAirToken(
                 chainID, NftSales[i].nft.collection.toHexString()
             );
+            saleToken.save();
 
             // Transaction
             let transactionId = getNFTSaleTransactionId(
@@ -132,16 +127,6 @@ export namespace nft {
             .concat(contractAddress)
             .concat("-")
             .concat(nftId.toString());
-    }
-
-    export function getOrCreateAirToken(chainID: string, address: string): AirToken {
-        let entity = AirToken.load(chainID + "-" + address);
-        if (entity == null) {
-            entity = new AirToken(chainID + "-" + address);
-            entity.address = address;
-            entity.save();
-        }
-        return entity as AirToken;
     }
 
     export function getOrCreateAirNftTransaction(
