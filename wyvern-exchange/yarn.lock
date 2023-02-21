@@ -5,7 +5,7 @@
 "@airstack/subgraph-generator@file:../airstack-modules/airstack-subgraph-generator-1.0.0-alpha.3.tgz":
   version "1.0.0-alpha.3"
   resolved "file:../airstack-modules/airstack-subgraph-generator-1.0.0-alpha.3.tgz"
-  integrity sha512-p8LqVwIX6T9S1HYkfAGY7BLnXOl0K6fSrhcBh0jZTMoF8d7KmX+kpp6Xqxhr9S3ftmznQv7MPWFksORvA5NnoQ==
+  integrity sha512-KEp95W2L1T2BxMtir1nUoJJkXtngFsCil9f4jJ8LFHZ5dDflsohmS7cAdQEkK08rxb0ghUr6obcenfIHWSi0sg==
   dependencies:
     "@graphprotocol/graph-cli" "0.33.0"
     "@graphprotocol/graph-ts" "0.27.0"
