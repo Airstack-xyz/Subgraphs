@@ -6,7 +6,7 @@ import {
 
 import { orders } from "./orders";
 
-import * as airstack from "../modules/airstack";
+import * as airstack from "../modules/airstack/nft-marketplace";
 import { abi } from "./abi";
 import { BIGINT_HUNDRED, EXCHANGE_MARKETPLACE_FEE, INVERSE_BASIS_POINT } from "./shared";
 import { ETHEREUM_MAINNET_ID, MARKET_PLACE_TYPE, PROTOCOL_SELL_ACTION_TYPE } from "./utils";
@@ -20,8 +20,8 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
 
   let saleTarget = call.inputs.addrs[11];
   let isBundleSale =
-    saleTarget.toHexString() === orders.constants.WYVERN_ATOMICIZER_ADDRESS; 
-  
+    saleTarget.toHexString() === orders.constants.WYVERN_ATOMICIZER_ADDRESS;
+
   let contractAddress = call.inputs.addrs[11];
 
   // buy Order
@@ -51,7 +51,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     call.inputs.uints[8] // salt:
   );
 
-  log.info("txHash {} buyOrder maker {} taker {} makerProtocolFee {} takerProtocolFee {} makerRelayerFee {} takerRelayerFee {} feeRecipient {} feeMethod {} side {} saleKind {} exchange {} target{}", 
+  log.info("txHash {} buyOrder maker {} taker {} makerProtocolFee {} takerProtocolFee {} makerRelayerFee {} takerRelayerFee {} feeRecipient {} feeMethod {} side {} saleKind {} exchange {} target{}",
     [
       txHash.toHexString(),
       buyOrder.maker,
@@ -95,7 +95,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     call.inputs.uints[17] //salt:
   );
 
-  log.info("txHash {} sellOrder maker {} taker {} makerProtocolFee {} takerProtocolFee {} makerRelayerFee {} takerRelayerFee {} feeRecipient {} feeMethod {} side {} saleKind {} exchange {} target{}", 
+  log.info("txHash {} sellOrder maker {} taker {} makerProtocolFee {} takerProtocolFee {} makerRelayerFee {} takerRelayerFee {} feeRecipient {} feeMethod {} side {} saleKind {} exchange {} target{}",
     [
       txHash.toHexString(),
       sellOrder.maker,
@@ -124,9 +124,9 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
   if (isBundleSale) {
     // log.info("txHash {} bundle sale", [txHash.toHexString()]);
     let decoded = abi.decodeBatchNftData(
-      buyOrder.callData!,
-      sellOrder.callData!,
-      buyOrder.replacementPattern!
+      buyOrder.callData,
+      sellOrder.callData,
+      buyOrder.replacementPattern
     );
 
     for (let i = 0; i < decoded.transfers.length; i++) {
@@ -135,10 +135,10 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
       // let feeAmount = BigInt.zero();
 
       let royaltyDetails = new royaltyResult();
-      if (sellOrder.feeRecipient!=Address.zero().toHexString()) {
-        royaltyDetails = calculateRoyality(sellOrder.makerRelayerFee, sellOrder.feeRecipient , matchPrice);
-      }else{
-        royaltyDetails = calculateRoyality(sellOrder.takerRelayerFee, sellOrder.feeRecipient , matchPrice);
+      if (sellOrder.feeRecipient != Address.zero().toHexString()) {
+        royaltyDetails = calculateRoyality(sellOrder.makerRelayerFee, sellOrder.feeRecipient, matchPrice);
+      } else {
+        royaltyDetails = calculateRoyality(sellOrder.takerRelayerFee, sellOrder.feeRecipient, matchPrice);
       }
       let marketplaceRevenueETH = royaltyDetails.marketplaceRevenueETH;
       let feeRecipient = royaltyDetails.feeRecipient;
@@ -149,11 +149,11 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
   } else {
     log.info("txHash {} not bundle sale", [txHash.toHexString()]);
     let decoded = abi.decodeSingleNftData(
-        txHash.toHexString(),
-        buyOrder.callData!,
-        sellOrder.callData!,
-        buyOrder.replacementPattern!,
-        call.block.number
+      txHash.toHexString(),
+      buyOrder.callData,
+      sellOrder.callData,
+      buyOrder.replacementPattern,
+      call.block.number
     )
 
     if (decoded == null) {
@@ -166,10 +166,10 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     log.info("txHash {} transfer method {}", [txHash.toHexString(), decoded.method]);
     let nft = new airstack.nft.NFT(contractAddress, decoded.method, decoded.token, decoded.amount);
     let royaltyDetails = new royaltyResult();
-    if (sellOrder.feeRecipient!=Address.zero().toHexString()) {
-      royaltyDetails = calculateRoyality(sellOrder.makerRelayerFee, sellOrder.feeRecipient , matchPrice);
-    }else{
-      royaltyDetails = calculateRoyality(sellOrder.takerRelayerFee, sellOrder.feeRecipient , matchPrice);
+    if (sellOrder.feeRecipient != Address.zero().toHexString()) {
+      royaltyDetails = calculateRoyality(sellOrder.makerRelayerFee, sellOrder.feeRecipient, matchPrice);
+    } else {
+      royaltyDetails = calculateRoyality(sellOrder.takerRelayerFee, sellOrder.feeRecipient, matchPrice);
     }
     let feeRecipient = royaltyDetails.feeRecipient;
     let totalRevenueETH = royaltyDetails.totalRevenueETH;
@@ -195,24 +195,24 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
 
 class royaltyResult {
   constructor(
-    public creatorRoyaltyFeePercentage: BigInt = BigInt.zero(), 
-    public totalRevenueETH: BigInt= BigInt.zero(), 
-    public marketplaceRevenueETH: BigInt= BigInt.zero(), 
-    public creatorRevenueETH: BigInt= BigInt.zero(), 
-    public feeRecipient: string = '') {}
+    public creatorRoyaltyFeePercentage: BigInt = BigInt.zero(),
+    public totalRevenueETH: BigInt = BigInt.zero(),
+    public marketplaceRevenueETH: BigInt = BigInt.zero(),
+    public creatorRevenueETH: BigInt = BigInt.zero(),
+    public feeRecipient: string = '') { }
 }
 
 // Calculate the royalty/revenue fees by using the known opensea marketplace fee of 2.5% on all trades
 // Here we calculate the royalty by taking fee payment and subtracting it from the marketplace fee.
 // https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/ExchangeCore.sol
-export function calculateRoyality(fee: BigInt, feeRecipient: string, matchPrice: BigInt): royaltyResult  {
+export function calculateRoyality(fee: BigInt, feeRecipient: string, matchPrice: BigInt): royaltyResult {
   let royaltyDetails = new royaltyResult();
   royaltyDetails.creatorRoyaltyFeePercentage = EXCHANGE_MARKETPLACE_FEE.le(
     fee
   )
     ? fee
-        .minus(EXCHANGE_MARKETPLACE_FEE)
-        .div(BIGINT_HUNDRED)
+      .minus(EXCHANGE_MARKETPLACE_FEE)
+      .div(BIGINT_HUNDRED)
     : BigInt.zero();
 
   royaltyDetails.totalRevenueETH = fee
@@ -221,11 +221,11 @@ export function calculateRoyality(fee: BigInt, feeRecipient: string, matchPrice:
 
   royaltyDetails.marketplaceRevenueETH = EXCHANGE_MARKETPLACE_FEE.le(fee)
     ? EXCHANGE_MARKETPLACE_FEE
-        .times(matchPrice)
-        .div(INVERSE_BASIS_POINT)
+      .times(matchPrice)
+      .div(INVERSE_BASIS_POINT)
     : BigInt.zero();
   royaltyDetails.creatorRevenueETH = royaltyDetails.totalRevenueETH.minus(royaltyDetails.marketplaceRevenueETH);
 
-  royaltyDetails.feeRecipient =feeRecipient;
+  royaltyDetails.feeRecipient = feeRecipient;
   return royaltyDetails;
 }
