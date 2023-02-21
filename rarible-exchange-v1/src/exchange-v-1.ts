@@ -1,6 +1,6 @@
 import { BigInt } from "@graphprotocol/graph-ts";
 import { ExchangeCall } from "../generated/ExchangeV1/ExchangeV1";
-import * as airstack from "../modules/airstack";
+import * as airstack from "../modules/airstack/nft-marketplace";
 import * as utils from "./utils";
 import { AirProtocolType, AirProtocolActionType, ETHEREUM_MAINNET_ID } from "./utils";
 
