@@ -15,6 +15,19 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - WrappedEtherTransaction
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtraData
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
+        - AirNftTransaction
+        - AirNftSaleRoyalty
+        - AirExtra
+        - AirToken,
+        - AirNftSaleRoyalty
       abis:
         - name: Seaport
           file: ./abis/Seaport.json
