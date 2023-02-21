@@ -20,7 +20,7 @@ import {
   generateOrderData,
   ETHEREUM_MAINNET_ID,
 } from "./utils";
-import * as airstack from "../modules/airstack";
+import * as airstack from "../modules/airstack/nft-marketplace";
 
 export function handleMatchOrders(call: MatchOrdersCall): void {
   let transactionHash = call.transaction.hash;
