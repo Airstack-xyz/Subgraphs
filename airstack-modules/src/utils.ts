@@ -100,6 +100,22 @@ export namespace Utils {
     });
   }
 
+  export function overwriteFile(
+    filePath: string,
+    content: string
+  ): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      fs.writeFile(filePath, content, (err) => {
+        if (err) {
+          console.log(err);
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
+  }
+
   export function createFile(
     filePath: string,
     content: string

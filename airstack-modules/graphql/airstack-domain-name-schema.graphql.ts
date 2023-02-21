@@ -1,5 +1,4 @@
 const schema = `
-#
 # --Airstack Schemas--
 
 type AirBlock @entity {
