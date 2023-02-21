@@ -973,6 +973,7 @@ export namespace domain {
       ownerAccount.save();
       entity.owner = ownerAccount.id;
       let airToken = getOrCreateAirToken(domain.chainId, domain.tokenAddress);
+      airToken.save();
       entity.tokenAddress = airToken.id;
       entity.isPrimary = false;
       entity.expiryTimestamp = BIG_INT_ZERO;
