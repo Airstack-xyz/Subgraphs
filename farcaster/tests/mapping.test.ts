@@ -98,7 +98,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "ethereum_mainnet")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirEntityCounter
     let airEntityCounterId = "AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER";
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "id", "AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER");
@@ -217,7 +217,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "ethereum_mainnet")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirEntityCounter
     let airEntityCounterId = "AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER";
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "id", "AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER");
