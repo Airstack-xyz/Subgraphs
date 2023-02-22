@@ -14,22 +14,6 @@ dataSources:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirAccount
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
-        - AirExtra
       abis:
         - name: EnsRegistry
           file: ./abis/EnsRegistry.json
@@ -55,22 +39,6 @@ dataSources:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirAccount
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
-        - AirExtra
       abis:
         - name: EnsRegistry
           file: ./abis/EnsRegistry.json
@@ -97,22 +65,6 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/eth-registrar.ts
       entities:
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirAccount
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
-        - AirExtra
       abis:
         - name: BaseRegistrar
           file: ./abis/BaseRegistrar.json
@@ -133,22 +85,6 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/resolver.ts
       entities:
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirAccount
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
-        - AirExtra
       abis:
         - name: Resolver
           file: ./abis/PublicResolver.json
@@ -170,22 +106,6 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/reverse-registrar.ts
       entities:
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirAccount
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
-        - AirExtra
       abis:
         - name: ReverseRegistrar
           file: ./abis/ReverseRegistrar.json
@@ -205,22 +125,6 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/eth-registrar.ts
       entities:
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirAccount
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
-        - AirExtra
       abis:
         - name: EthRegistrarController
           file: ./abis/EthRegistrarController.json
@@ -242,22 +146,6 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/eth-registrar.ts
       entities:
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirAccount
-        - AirToken
-        - AirDomain
-        - AirDomainTransferTransaction
-        - AirDomainOwnerChangedTransaction
-        - AirDomainNewResolverTransaction
-        - AirDomainNewTTLTransaction
-        - AirResolver
-        - AirAddrChanged
-        - AirNameRegisteredTransaction
-        - AirNameRenewedTransaction
-        - AirPrimaryDomainTransaction
-        - AirExtra
       abis:
         - name: EthRegistrarControllerOld
           file: ./abis/EthRegistrarControllerOld.json

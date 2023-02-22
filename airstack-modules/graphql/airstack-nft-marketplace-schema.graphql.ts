@@ -1,6 +1,4 @@
-const schema = `
-#
-# --Airstack Schemas--
+const schema = `#--Airstack Schemas--
 
 enum AirProtocolType {
   GENERIC
