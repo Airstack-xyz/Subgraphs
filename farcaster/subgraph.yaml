@@ -14,14 +14,6 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirAccount
-        - AirExtraData
-        - AirUser
-        - AirProfile
-        - AirUserRegisteredTransaction
       abis:
         - name: FarcasterNameRegistry
           file: ./abis/FarcasterNameRegistry.json
@@ -43,14 +35,6 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - AirBlock
-        - AirMeta
-        - AirEntityCounter
-        - AirAccount
-        - AirExtraData
-        - AirUser
-        - AirProfile
-        - AirUserRegisteredTransaction
       abis:
         - name: FarcasterIdRegistry
           file: ./abis/TokenIdRegistry.json
