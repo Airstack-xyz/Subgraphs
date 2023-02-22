@@ -23,6 +23,7 @@ rarible-exchange-v2/modules/airstack/*
 seaport-subgraph/modules/airstack/*
 wyvern-exchange/modules/airstack/*
 ens/modules/airstack/*
+farcaster/modules/airstack/*
 
 # Runtime data
 pids

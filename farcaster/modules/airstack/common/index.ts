@@ -24,30 +24,6 @@ export const SUBGRAPH_NAME = "farcaster";
 export const SUBGRAPH_VERSION = "v1";
 export const SUBGRAPH_SLUG = "farcaster_v1";
 
-const AIR_NETWORK_MAP = new TypedMap<string, string>();
-AIR_NETWORK_MAP.set("arbitrum-one", "arbitrum_one");
-AIR_NETWORK_MAP.set("arweave-mainnet", "arweave_mainnet");
-AIR_NETWORK_MAP.set("aurora", "aurora");
-AIR_NETWORK_MAP.set("avalanche", "avalanche");
-AIR_NETWORK_MAP.set("boba", "boba");
-AIR_NETWORK_MAP.set("bsc", "bsc");
-AIR_NETWORK_MAP.set("celo", "celo");
-AIR_NETWORK_MAP.set("COSMOS", "cosmos");
-AIR_NETWORK_MAP.set("CRONOS", "cronos");
-AIR_NETWORK_MAP.set("mainnet", "ethereum");
-AIR_NETWORK_MAP.set("goerli", "ethereum_goerli");
-AIR_NETWORK_MAP.set("fantom", "fantom");
-AIR_NETWORK_MAP.set("fuse", "fuse");
-AIR_NETWORK_MAP.set("harmony", "harmony");
-AIR_NETWORK_MAP.set("juno", "juno");
-AIR_NETWORK_MAP.set("moonbeam", "moonbeam");
-AIR_NETWORK_MAP.set("moonriver", "moonriver");
-AIR_NETWORK_MAP.set("near-mainnet", "near_mainnet");
-AIR_NETWORK_MAP.set("optimism", "optimism");
-AIR_NETWORK_MAP.set("osmosis", "osmosis");
-AIR_NETWORK_MAP.set("matic", "matic");
-AIR_NETWORK_MAP.set("xdai", "xdai");
-
 const AIR_CHAIN_ID_MAP = new TypedMap<string, string>();
 AIR_CHAIN_ID_MAP.set("arbitrum-one", "42161");
 AIR_CHAIN_ID_MAP.set("arweave-mainnet", "174");
@@ -71,14 +47,6 @@ AIR_CHAIN_ID_MAP.set("optimism", "10");
 AIR_CHAIN_ID_MAP.set("osmosis", "osmosis-1");
 AIR_CHAIN_ID_MAP.set("matic", "137");
 AIR_CHAIN_ID_MAP.set("xdai", "100");
-
-export function getNetwork(network: string): string {
-  const value = AIR_NETWORK_MAP.get(network);
-  if (value != null) {
-    return value!;
-  }
-  throw new Error("Network not supported");
-}
 
 export function getChainId(): string {
   const network = dataSource.network();
@@ -129,7 +97,7 @@ export function createAirMeta(
   let meta = AirMeta.load(AIR_META_ID);
   if (meta == null) {
     meta = new AirMeta(AIR_META_ID);
-    meta.network = getNetwork(dataSource.network());
+    meta.network = dataSource.network().toString();
     meta.schemaVersion = SUBGRAPH_SCHEMA_VERSION;
     meta.version = SUBGRAPH_VERSION;
     meta.slug = slug;
