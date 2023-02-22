@@ -47,11 +47,15 @@ export async function integrate(
               dataSourceName = templates[0];
             } else {
               const yamlSchemas = fs.readFileSync(yamlPath, "utf8");
-              const sourceSubgraphYaml = yaml.load(yamlSchemas) as Record<string, any>;
-              if (sourceSubgraphYaml.dataSources && sourceSubgraphYaml.dataSources.length > 0) {
-                dataSourceName = sourceSubgraphYaml.dataSources[0].name;
-              } else if (sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length > 0) {
-                dataSourceName = sourceSubgraphYaml.templates[0].name;
+              try {
+                const sourceSubgraphYaml = yaml.load(yamlSchemas) as Record<string, any>;
+                if (sourceSubgraphYaml.dataSources && sourceSubgraphYaml.dataSources.length > 0) {
+                  dataSourceName = sourceSubgraphYaml.dataSources[0].name;
+                } else if (sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length > 0) {
+                  dataSourceName = sourceSubgraphYaml.templates[0].name;
+                }
+              } catch {
+                console.error("Error while parsing subgraph.yaml file")
               }
             }
 
