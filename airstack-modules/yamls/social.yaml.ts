@@ -4,7 +4,7 @@ entities:
   - AirMeta
   - AirEntityCounter
   - AirAccount
-  - AirExtraData
+  - AirExtra
   - AirUser
   - AirProfile
   - AirUserRegisteredTransaction
