@@ -21,13 +21,13 @@ export const TOKEN_ADDRESS_ENS = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
  * @param isMigrated is migrated flag - only required when creating a new entity
  * @returns DomainVsIsMigratedMapping entity
 */
-export function getOrCreateIsMigratedMapping(domainId: string, chainId: string, blockId: string, isMigrated: boolean = false): DomainVsIsMigratedMapping {
+export function createIsMigratedMapping(domainId: string, chainId: string, blockId: string, isMigrated: boolean = false): DomainVsIsMigratedMapping {
   let entity = DomainVsIsMigratedMapping.load(domainId);
   if (entity == null) {
     entity = new DomainVsIsMigratedMapping(domainId);
-    entity.isMigrated = isMigrated;
-    entity.lastUpdatedAt = blockId;
   }
+  entity.isMigrated = isMigrated;
+  entity.lastUpdatedAt = blockId;
   return entity as DomainVsIsMigratedMapping;
 }
 
