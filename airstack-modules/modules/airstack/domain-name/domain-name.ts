@@ -314,7 +314,6 @@ export namespace domain {
       block.hash.toHexString(),
       block.timestamp,
       transactionHash,
-      logOrCallIndex,
       domain,
       cost,
       paymentToken,
@@ -770,7 +769,6 @@ export namespace domain {
    * @param blockHash block hash
    * @param blockTimestamp block timestamp
    * @param transactionHash transaction hash
-   * @param logOrCallIndex txn log or call index
    * @param domain air domain
    * @param cost cost of the transaction
    * @param paymentToken payment token - can be null
@@ -784,7 +782,6 @@ export namespace domain {
     blockHash: string,
     blockTimestamp: BigInt,
     transactionHash: string,
-    logOrCallIndex: BigInt,
     domain: AirDomain,
     cost: BigInt | null,
     paymentToken: string,
@@ -793,7 +790,7 @@ export namespace domain {
   ): AirNameRegisteredTransaction {
     let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
     block.save();
-    let id = createEntityId(transactionHash, block.number, logOrCallIndex);
+    let id = domain.id.concat("-").concat(transactionHash);
     let entity = AirNameRegisteredTransaction.load(id);
     if (entity == null) {
       entity = new AirNameRegisteredTransaction(id);

@@ -6,8 +6,8 @@ import {
   afterEach,
 } from "matchstick-as/assembly/index"
 import { ByteArray, crypto, Bytes } from "@graphprotocol/graph-ts"
-import { handleNameRenewedByController, handleNameRegistered, handleNameRenewed, handleNameRegisteredByControllerOld, handleNameRegisteredByController } from "../src/eth-registrar"
-import { getHandleNameRenewedByControllerEvent, getHandleNameRegisteredEvent, getHandleNameRenewedEvent, getHandleNameRegisteredByControllerOldEvent, getHandleNameRegisteredByControllerEvent } from "./eth-registrar-utils"
+import { handleNameTransferred, handleNameRenewedByController, handleNameRegistered, handleNameRenewed, handleNameRegisteredByControllerOld, handleNameRegisteredByController } from "../src/eth-registrar"
+import { getHandleNameTransferredEvent, getHandleNameRenewedByControllerEvent, getHandleNameRegisteredEvent, getHandleNameRenewedEvent, getHandleNameRegisteredByControllerOldEvent, getHandleNameRegisteredByControllerEvent } from "./eth-registrar-utils"
 import { ETHEREUM_MAINNET_ID, ZERO_ADDRESS } from "../modules/airstack/domain-name/utils"
 import { uint256ToByteArray, byteArrayFromHex } from "../src/utils"
 import { BIGINT_ONE } from "../modules/airstack/common"
@@ -58,7 +58,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     // AirNameRegisteredTransaction
-    let nameRegisteredId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
+    let nameRegisteredId = domainId.concat("-").concat(event.transaction.hash.toHexString());
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "paymentToken", airTokenId);
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "block", blockId);
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "transactionHash", event.transaction.hash.toHexString());
@@ -224,5 +224,45 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("ReverseRegistrar", reverseRegistrarId, "name", domain.name!);
     assert.fieldEquals("ReverseRegistrar", reverseRegistrarId, "domain", domainId);
     assert.fieldEquals("ReverseRegistrar", reverseRegistrarId, "createdAt", blockId);
+  })
+
+  test("Test handleNameTransferred", () => {
+    // create a name registration txn to test the transfer function
+    let nameRegisteredEvent = getHandleNameRegisteredEvent();
+    handleNameRegistered(nameRegisteredEvent)
+    // create event params for name transferred event
+    // call handleNameTransferred
+    // assert here
+    let event = getHandleNameTransferredEvent();
+    handleNameTransferred(event)
+    // assert here
+    let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
+    // NameRegisteredTransactionVsRegistrant
+    let label = uint256ToByteArray(event.params.tokenId);
+    let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
+    let nameRegisteredTransactionVsRegistrantId = domainId.concat("-").concat(event.transaction.hash.toHexString());
+    assert.fieldEquals("NameRegisteredTransactionVsRegistrant", nameRegisteredTransactionVsRegistrantId, "id", domainId.concat("-").concat(event.transaction.hash.toHexString()));
+    assert.fieldEquals("NameRegisteredTransactionVsRegistrant", nameRegisteredTransactionVsRegistrantId, "oldRegistrant", ETHEREUM_MAINNET_ID.concat("-").concat(nameRegisteredEvent.params.owner.toHexString()));
+    assert.fieldEquals("NameRegisteredTransactionVsRegistrant", nameRegisteredTransactionVsRegistrantId, "newRegistrant", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.to.toHexString()));
+    assert.fieldEquals("NameRegisteredTransactionVsRegistrant", nameRegisteredTransactionVsRegistrantId, "transactionHash", event.transaction.hash.toHexString());
+    assert.fieldEquals("NameRegisteredTransactionVsRegistrant", nameRegisteredTransactionVsRegistrantId, "tokenId", event.params.tokenId.toString());
+    assert.fieldEquals("NameRegisteredTransactionVsRegistrant", nameRegisteredTransactionVsRegistrantId, "createdAt", ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString()));
+    // AirBlock
+    assert.fieldEquals("AirBlock", blockId, "id", blockId);
+    assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
+    assert.fieldEquals("AirBlock", blockId, "hash", event.block.hash.toHexString());
+    assert.fieldEquals("AirBlock", blockId, "timestamp", event.block.timestamp.toString());
+    // AirAccount
+    let oldRegistrant = ETHEREUM_MAINNET_ID.concat("-").concat(nameRegisteredEvent.params.owner.toHexString());
+    assert.fieldEquals("AirAccount", oldRegistrant, "id", oldRegistrant);
+    assert.fieldEquals("AirAccount", oldRegistrant, "address", nameRegisteredEvent.params.owner.toHexString());
+    assert.fieldEquals("AirAccount", oldRegistrant, "createdAt", blockId);
+    let newRegistrant = ETHEREUM_MAINNET_ID.concat("-").concat(event.params.to.toHexString());
+    assert.fieldEquals("AirAccount", newRegistrant, "id", newRegistrant);
+    assert.fieldEquals("AirAccount", newRegistrant, "address", event.params.to.toHexString());
+    assert.fieldEquals("AirAccount", newRegistrant, "createdAt", blockId);
+    // AirNameRegisteredTransaction
+    let nameRegisteredId = domainId.concat("-").concat(event.transaction.hash.toHexString());
+    assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "registrant", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.to.toHexString()));
   })
 })

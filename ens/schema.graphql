@@ -17,4 +17,12 @@ type DomainVsIsMigratedMapping @entity {
   lastUpdatedAt: AirBlock!
 }
 
-##
+type NameRegisteredTransactionVsRegistrant @entity {
+  id: ID!
+  tokenId: String!
+  transactionHash: String!
+  oldRegistrant: AirAccount!
+  newRegistrant: AirAccount!
+  createdAt: AirBlock!
+}
+

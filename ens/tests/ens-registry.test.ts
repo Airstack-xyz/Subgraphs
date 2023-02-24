@@ -4,7 +4,6 @@ import {
   test,
   clearStore,
   afterEach,
-  logStore,
 } from "matchstick-as/assembly/index"
 import { crypto, ens, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 import { getHandleNewTTLEvent1, createParentDomain, getNameByLabelHashAndNode, getHandleNewTTLEvent, getHandleNewResolverEvent, getHandleTransferEvent, getHandleNewOwnerEvent } from "./ens-registry-utils"

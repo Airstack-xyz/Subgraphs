@@ -1,6 +1,8 @@
 import {
   DomainVsIsMigratedMapping,
   ReverseRegistrar,
+  NameRegisteredTransactionVsRegistrant,
+  AirBlock,
 } from "../generated/schema";
 import {
   Bytes,
@@ -64,6 +66,37 @@ export function createReverseRegistrar(
     entity.save();
   }
   return entity as ReverseRegistrar;
+}
+
+/**
+ * @dev this function creates a new NameRegisteredTransactionVsRegistrant entity
+ * @param transactionHash transaction hash
+ * @param block air block entity
+ * @param id domainId-transactionHash
+ * @param tokenId transferred token id
+ * @param oldRegistrantId name registered txn old registrant id
+ * @param newRegistrantId name registered txn new registrant id
+ * @returns NameRegisteredTransactionVsRegistrant entity
+ */
+export function createNameRegisteredTransactionVsRegistrant(
+  transactionHash: string,
+  block: AirBlock,
+  id: string,
+  tokenId: string,
+  oldRegistrantId: string,
+  newRegistrantId: string,
+): NameRegisteredTransactionVsRegistrant {
+  let entity = NameRegisteredTransactionVsRegistrant.load(id);
+  if (entity == null) {
+    entity = new NameRegisteredTransactionVsRegistrant(id);
+    entity.oldRegistrant = oldRegistrantId;
+    entity.newRegistrant = newRegistrantId;
+    entity.transactionHash = transactionHash;
+    entity.tokenId = tokenId;
+    entity.createdAt = block.id;
+    entity.save();
+  }
+  return entity as NameRegisteredTransactionVsRegistrant;
 }
 
 // specific to ens
