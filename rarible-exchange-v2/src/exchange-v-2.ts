@@ -346,7 +346,7 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
     decodedNFT.address,
     nftClass,
     decodedNFT.id,
-    direct.sellOrderNftAmount,
+    direct.buyOrderNftAmount,
   )
 
   let royalties: airstack.nft.CreatorRoyalty[] = [];
