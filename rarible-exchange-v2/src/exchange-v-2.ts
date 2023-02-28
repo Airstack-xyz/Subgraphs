@@ -34,7 +34,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     leftAssetType,
     transactionHash,
   );
-  // log.info("leftasset data {} type {} hash {}", [orderLeft.makeAsset.assetType.data.toHexString(), orderLeft.makeAsset.assetType.assetClass.toHexString(), transactionHash.toHexString()]);
+  log.info("leftasset data {} type {} hash {}", [orderLeft.makeAsset.assetType.data.toHexString(), orderLeft.makeAsset.assetType.assetClass.toHexString(), transactionHash.toHexString()]);
 
   let rightAsset = decodeAsset(
     orderRight.makeAsset.assetType.data,
@@ -45,7 +45,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 
   if (leftAssetType == ETH || leftAssetType == ERC20) {
     // rightAsset is NFT
-    // log.info("{} {} {} {} address id and data and hash leftasset is nft", [rightAsset.address.toHexString(), rightAsset.id.toString(), orderRight.makeAsset.assetType.data.toHexString(), transactionHash.toHexString()]);
+    log.info("{} {} {} {} address id and type and hash rightAsset is nft", [rightAsset.address.toHexString(), rightAsset.id.toString(), rightAssetType, transactionHash.toHexString()]);
 
     let nft = new airstack.nft.NFT(
       rightAsset.address,
@@ -57,7 +57,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     let orderData = generateOrderData(orderLeft, orderRight, true, transactionHash);
 
     let matchAndTransferResult = matchAndTransfer(orderData.paymentSide, orderData.nftSide, orderData.orderLeftInput, orderData.orderRightInput, call.from, dataSource.address(), transactionHash, true);
-    // log.info("{} {} match and transfer result for rightasset transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
+    log.info("{} {} match and transfer result for rightasset transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
 
     let royalties: airstack.nft.CreatorRoyalty[] = [];
 
@@ -93,19 +93,19 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     );
   } else {
     // leftAsset is NFT
-    // log.info("{} {} {} {} address id and data and hash leftasset is nft", [leftAsset.address.toHexString(), leftAsset.id.toString(), orderLeft.makeAsset.assetType.data.toHexString(), transactionHash.toHexString()]);
+    log.info("{} {} {} {} address id and type and hash leftasset is nft", [leftAsset.address.toHexString(), leftAsset.id.toString(), leftAssetType, transactionHash.toHexString()]);
 
     let nft = new airstack.nft.NFT(
       leftAsset.address,
       leftAssetType,
       leftAsset.id,
-      orderRight.takeAsset.value,
+      orderLeft.makeAsset.value,
     )
 
     let orderData = generateOrderData(orderLeft, orderRight, false, transactionHash);
 
-    let matchAndTransferResult = matchAndTransfer(orderData.paymentSide, orderData.nftSide, orderData.orderLeftInput, orderData.orderRightInput, call.from, dataSource.address(), transactionHash, true);
-    // log.info("{} {} match and transfer result for leftasset transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
+    let matchAndTransferResult = matchAndTransfer(orderData.nftSide, orderData.paymentSide, orderData.orderLeftInput, orderData.orderRightInput, call.from, dataSource.address(), transactionHash, true);
+    log.info("{} {} match and transfer result for leftasset transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
 
     let royalties: airstack.nft.CreatorRoyalty[] = [];
 
