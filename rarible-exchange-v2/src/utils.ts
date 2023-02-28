@@ -1464,31 +1464,31 @@ export function generateOrderData(
   transactionHash: Bytes
 ): generateOrderDataClass {
 
-  let orderLeftInput = new LibOrder(
-    orderLeft.maker,
-    convertAssetToLibAsset(orderLeft.makeAsset),
-    orderLeft.taker,
-    convertAssetToLibAsset(orderLeft.takeAsset),
-    orderLeft.salt,
-    orderLeft.start,
-    orderLeft.end,
-    orderLeft.dataType,
-    orderLeft.data,
-  );
-
-  let orderRightInput = new LibOrder(
-    orderRight.maker,
-    convertAssetToLibAsset(orderRight.makeAsset),
-    orderRight.taker,
-    convertAssetToLibAsset(orderRight.takeAsset),
-    orderRight.salt,
-    orderRight.start,
-    orderRight.end,
-    orderRight.dataType,
-    orderRight.data,
-  );
-
   if (isRightAssetNft) {
+    let orderLeftInput = new LibOrder(
+      orderLeft.maker,
+      convertAssetToLibAsset(orderLeft.makeAsset),
+      orderLeft.taker,
+      convertAssetToLibAsset(orderLeft.takeAsset),
+      orderLeft.salt,
+      orderLeft.start,
+      orderLeft.end,
+      orderLeft.dataType,
+      orderLeft.data,
+    );
+
+    let orderRightInput = new LibOrder(
+      orderRight.maker,
+      convertAssetToLibAsset(orderRight.makeAsset),
+      orderRight.taker,
+      convertAssetToLibAsset(orderRight.takeAsset),
+      orderRight.salt,
+      orderRight.start,
+      orderRight.end,
+      orderRight.dataType,
+      orderRight.data,
+    );
+
     let paymentSide = new LibDealSide(
       convertAssetToLibAsset(orderLeft.makeAsset),
       getOriginFeeArray(orderLeft.dataType, orderLeft.data, transactionHash).payoutFeeArray,
@@ -1511,6 +1511,31 @@ export function generateOrderData(
       orderRightInput,
     };
   } else {
+
+    let orderLeftInput = new LibOrder(
+      orderRight.maker,
+      convertAssetToLibAsset(orderLeft.takeAsset),
+      orderRight.taker,
+      convertAssetToLibAsset(orderRight.takeAsset),
+      orderRight.salt,
+      orderRight.start,
+      orderRight.end,
+      orderRight.dataType,
+      orderRight.data,
+    );
+
+    let orderRightInput = new LibOrder(
+      orderLeft.maker,
+      convertAssetToLibAsset(orderLeft.makeAsset),
+      orderLeft.taker,
+      convertAssetToLibAsset(orderLeft.takeAsset),
+      orderLeft.salt,
+      orderLeft.start,
+      orderLeft.end,
+      orderLeft.dataType,
+      orderLeft.data,
+    );
+
     let paymentSide = new LibDealSide(
       convertAssetToLibAsset(orderRight.takeAsset),
       getOriginFeeArray(orderRight.dataType, orderRight.data, transactionHash).payoutFeeArray,
