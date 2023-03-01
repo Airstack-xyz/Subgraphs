@@ -56,7 +56,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 
     let orderData = generateOrderData(orderLeft, orderRight, true, transactionHash);
 
-    let matchAndTransferResult = matchAndTransfer(orderData.paymentSide, orderData.nftSide, orderData.orderLeftInput, orderData.orderRightInput, call.from, dataSource.address(), transactionHash, true);
+    let matchAndTransferResult = matchAndTransfer(orderData.nftSide, orderData.paymentSide, orderData.orderRightInput, orderData.orderLeftInput, call.from, dataSource.address(), transactionHash, true);
     log.info("{} {} match and transfer result for rightasset transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
 
     let royalties: airstack.nft.CreatorRoyalty[] = [];

@@ -712,7 +712,8 @@ function transferRoyalties(
   exchangeV2: Address,
   transactionHash: Bytes,
 ): TransferRoyaltyResult {
-  let royalties = getRoyaltiesByAssetType(nftAssetType, exchangeV2);
+  // log.info("nft asset class is {} txhash {}", [nftAssetType.assetClass.toHexString(), transactionHash.toHexString()]);
+  let royalties = getRoyaltiesByAssetType(nftAssetType, exchangeV2, transactionHash);
   if (royalties.length === 1 && payouts.length === 1 && royalties[0].address == payouts[0].address) {
     return { rest, royalty: new Array<LibPart>() };
   }
@@ -727,11 +728,13 @@ function transferRoyalties(
  * @dev holds logic to calculate/retrieve royalty data by rpc call
  * @param nftAssetType nft asset type
  * @param exchangeV2 exchangeV2 contract address
+ * @param transactionHash transaction hash
  * @returns get royalty array with address and bps value
  */
 function getRoyaltiesByAssetType(
   nftAssetType: LibAssetType,
   exchangeV2: Address,
+  transactionHash: Bytes,
 ): Array<LibPart> {
   let royalties: Array<LibPart> = [];
   if (getClass(nftAssetType.assetClass) == ERC721_LAZY) {
@@ -796,6 +799,7 @@ function getRoyaltiesByAssetType(
             let royaltyItem = royaltiesDataResponse.value[i];
             let royaltyBeneficiary = royaltyItem[0].toAddress();
             let royaltyBps = royaltyItem[1].toBigInt();
+            // log.info("erc1155 royalty data on chain token {} tokenId {} beneficiary {} bps {} txhash {}", [token.toHexString(), tokenId.toString(), royaltyBeneficiary.toHexString(), royaltyBps.toString(), transactionHash.toHexString()]);
             royalties.push(new LibPart(
               royaltyBeneficiary,
               royaltyBps
@@ -885,7 +889,7 @@ function transferRoyaltyFees(
   let totalFee = BIGINT_ZERO;
   let newRest = rest;
   let transferResult = new Array<LibPart>();
-  // log.info("inside transferRoyaltyFees fees.length {}", [fees.length.toString()]);
+  // log.info("inside transferRoyaltyFees fees.length {} hash {}", [fees.length.toString(), transactionHash.toHexString()]);
   for (let i = 0; i < fees.length; i++) {
     totalFee = totalFee.plus(fees[i].value);
     let feeValue = BIGINT_ZERO;
@@ -1442,11 +1446,23 @@ export function getOtherOrderType(dataType: Bytes): Bytes {
   return dataType;
 }
 
-class generateOrderDataClass {
+export class generateOrderDataClass {
   paymentSide: LibDealSide;
   nftSide: LibDealSide;
   orderLeftInput: LibOrder;
   orderRightInput: LibOrder;
+
+  constructor(
+    paymentSide: LibDealSide,
+    nftSide: LibDealSide,
+    orderLeftInput: LibOrder,
+    orderRightInput: LibOrder
+  ) {
+    this.paymentSide = paymentSide;
+    this.nftSide = nftSide;
+    this.orderLeftInput = orderLeftInput;
+    this.orderRightInput = orderRightInput;
+  }
 }
 
 /**
@@ -1504,12 +1520,7 @@ export function generateOrderData(
       zeroAddress,
       orderRight.maker,
     );
-    return {
-      paymentSide,
-      nftSide,
-      orderLeftInput,
-      orderRightInput,
-    };
+    return new generateOrderDataClass(paymentSide, nftSide, orderLeftInput, orderRightInput);
   } else {
 
     let orderLeftInput = new LibOrder(
@@ -1551,11 +1562,6 @@ export function generateOrderData(
       zeroAddress,
       orderLeft.maker,
     );
-    return {
-      paymentSide,
-      nftSide,
-      orderLeftInput,
-      orderRightInput,
-    };
+    return new generateOrderDataClass(paymentSide, nftSide, orderLeftInput, orderRightInput);
   }
 }
