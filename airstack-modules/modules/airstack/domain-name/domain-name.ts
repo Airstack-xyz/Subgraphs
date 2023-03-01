@@ -499,19 +499,18 @@ export namespace domain {
       domain.resolvedAddress = addrAccount.id;
       domain.lastUpdatedBlock = airBlock.id;
       domain.save();
+      let txn = getOrCreateAirResolvedAddressChanged(
+        chainId,
+        logOrCallIndex,
+        resolver,
+        airBlock,
+        transactionHash,
+        previousResolvedAddressId,
+        resolvedAddress,
+        domain,
+      );
+      txn.save();
     }
-
-    let txn = getOrCreateAirResolvedAddressChanged(
-      chainId,
-      logOrCallIndex,
-      resolver,
-      airBlock,
-      transactionHash,
-      previousResolvedAddressId,
-      resolvedAddress,
-      domain,
-    );
-    txn.save();
   }
 
   /**
