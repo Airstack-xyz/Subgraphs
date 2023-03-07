@@ -254,7 +254,7 @@ export function getOriginFeeArray(exchangeType: Bytes, data: Bytes, transactionH
       data
     );
     if (!decoded) {
-      log.error("{} not decoded hash {}", [data.toHexString(), transactionHash.toHexString()]);
+      log.error("{} v1 not decoded hash {} data", [data.toHexString(), transactionHash.toHexString()]);
     } else {
       let dataV1 = decoded.toTuple();
       let payoutFeeArrayData = dataV1[0].toArray();
@@ -285,7 +285,7 @@ export function getOriginFeeArray(exchangeType: Bytes, data: Bytes, transactionH
       data
     );
     if (!decoded) {
-      log.error("{} not decoded hash {}", [data.toHexString(), transactionHash.toHexString()]);
+      log.error("{} v2 not decoded hash {}", [data.toHexString(), transactionHash.toHexString()]);
     } else {
       let dataV2 = decoded.toTuple();
       let payoutFeeArrayData = dataV2[0].toArray();
@@ -993,6 +993,7 @@ class MatchAndTransferClass {
   royalty: LibPart[];
   originFee: LibPart;
   payment: BigInt;
+  paymentSidePayouts: LibPart[];
 }
 
 /**
@@ -1017,6 +1018,7 @@ export function matchAndTransfer(
   transactionHash: Bytes,
   isMatchOrders: boolean
 ): MatchAndTransferClass {
+  let paymentSidePayouts = new Array<LibPart>();
   let matchAssetsResult = matchAssets(orderLeft, orderRight);
   log.info("txhash {} matchAssetsResult makeMatchAssetClass {} takeMatchAssetClass {}", [transactionHash.toHexString(), matchAssetsResult.makeMatch.assetClass.toHexString(), matchAssetsResult.takeMatch.assetClass.toHexString()]);
   log.info("txhash {} matchAssetsResult makeMatchAssetClassData {} takeMatchAssetClassData {}", [transactionHash.toHexString(), matchAssetsResult.makeMatch.data.toHexString(), matchAssetsResult.takeMatch.data.toHexString()]);
@@ -1089,6 +1091,7 @@ export function matchAndTransfer(
       decodedNftData.id,
       newFill.rightValue,
     );
+    paymentSidePayouts = leftOrderData.payouts;
   } else if (dealData.feeSide == FeeSide.RIGHT) {
     // matchAssetsResult.makeMatch is nft
     let decodedNftData = decodeAsset(
@@ -1103,6 +1106,7 @@ export function matchAndTransfer(
       decodedNftData.id,
       newFill.leftValue,
     );
+    paymentSidePayouts = rightOrderData.payouts;
   }
   log.info("txhash {} originfee address {} value {}", [transactionHash.toHexString(), doTransfersResult.originFee.address.toHexString(), doTransfersResult.originFee.value.toString()]);
   return {
@@ -1110,6 +1114,7 @@ export function matchAndTransfer(
     royalty: doTransfersResult.royalty,
     originFee: doTransfersResult.originFee,
     payment: doTransfersResult.payment,
+    paymentSidePayouts: paymentSidePayouts,
   };
 }
 
