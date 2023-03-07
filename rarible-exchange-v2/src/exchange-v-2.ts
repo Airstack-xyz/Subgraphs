@@ -34,14 +34,14 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 
   let leftAsset = decodeAsset(
     orderLeft.makeAsset.assetType.data,
-    leftAssetType,
+    orderLeft.makeAsset.assetType.assetClass,
     transactionHash,
   );
   log.info("leftasset data {} type {} hash {}", [orderLeft.makeAsset.assetType.data.toHexString(), orderLeft.makeAsset.assetType.assetClass.toHexString(), transactionHash.toHexString()]);
 
   let rightAsset = decodeAsset(
     orderRight.makeAsset.assetType.data,
-    rightAssetType,
+    orderRight.makeAsset.assetType.assetClass,
     transactionHash,
   );
   // log.info("rightasset data {} type {} hash {}", [orderRight.makeAsset.assetType.data.toHexString(), orderRight.makeAsset.assetType.assetClass.toHexString(), transactionHash.toHexString()]);
@@ -249,7 +249,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
   let transactionHash = call.transaction.hash;
   let direct = call.inputs.direct;
-  let nftClass = getClass(direct.nftAssetClass);
+  let nftClass = direct.nftAssetClass;
   let decodedNFT = decodeAsset(direct.nftData, nftClass, transactionHash);
 
   let paymentAssetType = getPaymentAssetType(direct.paymentToken, call.transaction.hash);
@@ -326,7 +326,7 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
 
   let nft = new airstack.nft.NFT(
     decodedNFT.address,
-    nftClass,
+    nftClass.toHexString(),
     decodedNFT.id,
     direct.sellOrderNftAmount,
   )
@@ -368,7 +368,7 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
 export function handleDirectPurchase(call: DirectPurchaseCall): void {
   let transactionHash = call.transaction.hash;
   let direct = call.inputs.direct;
-  let nftClass = getClass(direct.nftAssetClass);
+  let nftClass = direct.nftAssetClass;
   let decodedNFT = decodeAsset(direct.nftData, nftClass, transactionHash);
 
   // log.info("getpaymentassetype input token {} transaction hash {}", [direct.paymentToken.toHexString(), transactionHash.toHexString()]);
@@ -448,7 +448,7 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
 
   let nft = new airstack.nft.NFT(
     decodedNFT.address,
-    nftClass,
+    nftClass.toHexString(),
     decodedNFT.id,
     direct.buyOrderNftAmount,
   )
