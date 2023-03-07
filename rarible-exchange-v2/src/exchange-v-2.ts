@@ -334,7 +334,7 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
     zeroAddress,
     zeroAddress,
   );
-  // left, right,
+
   let matchAndTransferResult = matchAndTransfer(sellOrder, buyOrder, call.from, dataSource.address(), transactionHash, false);
   // log.info("{} {} match and transfer result for handleDirectAcceptBid transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
 

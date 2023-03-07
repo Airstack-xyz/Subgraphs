@@ -670,6 +670,7 @@ function doTransferWithFees(
     let transferFeesResult = transferFees(paymentSide.asset.assetType, rest, paymentSide.asset.value, origin, paymentSide.from, paymentSide.proxy, transactionHash);
     rest = transferFeesResult.newRest;
     originFee = transferFeesResult.transferResult;
+    originFee.address = nftSide.originFees[0].address;
     log.info("rest {} origin fee amount {} originfee address {} hash {} transferFeesResult if", [rest.toString(), originFee.value.toString(), originFee.address.toHexString(), transactionHash.toHexString()]);
   } else {
     log.info("{} assetclass {} assetdata {} rest {} paymentsidevalue {} paymetnsideoriginfeeslength {} paymentsidefrom {} hash transferfeesinput else", [
@@ -998,8 +999,6 @@ class MatchAndTransferClass {
 
 /**
  * @dev holds logic to match and transfer the assets
-//  * @param left left deal side
-//  * @param right right deal side
  * @param orderLeft left order
  * @param orderRight right order
  * @param msgSender msg sender
@@ -1009,8 +1008,6 @@ class MatchAndTransferClass {
  * @returns royalty, origin fee and payment amount 
  */
 export function matchAndTransfer(
-  // left: LibDealSide,
-  // right: LibDealSide,
   orderLeft: LibOrder,
   orderRight: LibOrder,
   msgSender: Address,
@@ -1027,6 +1024,19 @@ export function matchAndTransfer(
   let leftOrderData = parseOrdersSetFillEmitMatchResult.leftOrderData;
   let rightOrderData = parseOrdersSetFillEmitMatchResult.rightOrderData;
   let newFill = parseOrdersSetFillEmitMatchResult.newFill;
+
+  for (let i = 0; i < leftOrderData.originFees.length; i++) {
+    log.info("leftOrderData originFees index {} address {} value {} txhash {}", [i.toString(), leftOrderData.originFees[i].address.toHexString(), leftOrderData.originFees[i].value.toString(), transactionHash.toHexString()]);
+  }
+  for (let i = 0; i < leftOrderData.payouts.length; i++) {
+    log.info("leftOrderData payouts index {} address {} value {} txhash {}", [i.toString(), leftOrderData.payouts[i].address.toHexString(), leftOrderData.payouts[i].value.toString(), transactionHash.toHexString()]);
+  }
+  for (let i = 0; i < rightOrderData.originFees.length; i++) {
+    log.info("rightOrderData originFees index {} address {} value {} txhash {}", [i.toString(), rightOrderData.originFees[i].address.toHexString(), rightOrderData.originFees[i].value.toString(), transactionHash.toHexString()]);
+  }
+  for (let i = 0; i < rightOrderData.payouts.length; i++) {
+    log.info("rightOrderData payouts index {} address {} value {} txhash {}", [i.toString(), rightOrderData.payouts[i].address.toHexString(), rightOrderData.payouts[i].value.toString(), transactionHash.toHexString()]);
+  }
 
   let getDealDataParams: getDealDataClass = {
     makeMatchAssetClass: matchAssetsResult.makeMatch.assetClass,
@@ -1351,23 +1361,26 @@ export function LibOrderDataParse(
     let data = getOriginFeeArray(Bytes.fromHexString(V1), order.data, transactionHash);
     dataOrder.payouts = data.payoutFeeArray;
     dataOrder.originFees = data.originFeeArray;
-    log.info("txhash {} payouts.length {} originFees.length {} data {}", [transactionHash.toHexString(), dataOrder.payouts.length.toString(), dataOrder.originFees.length.toString(), order.data.toHexString()]);
+    log.info("txhash {} v1 payouts.length {} originFees.length {} data {}", [transactionHash.toHexString(), dataOrder.payouts.length.toString(), dataOrder.originFees.length.toString(), order.data.toHexString()]);
   } else if (order.dataType.toHexString() == V2) {
     let data = getOriginFeeArray(Bytes.fromHexString(V2), order.data, transactionHash);
     dataOrder.payouts = data.payoutFeeArray;
     dataOrder.originFees = data.originFeeArray;
     dataOrder.isMakeFill = data.isMakeFill;
+    log.info("txhash {} v2 payouts.length {} originFees.length {} data {}", [transactionHash.toHexString(), dataOrder.payouts.length.toString(), dataOrder.originFees.length.toString(), order.data.toHexString()]);
   } else if (order.dataType.toHexString() == V3_SELL) {
     let data = getFeeDataV3(Bytes.fromHexString(V3_SELL), order.data);
     dataOrder.payouts = parsePayouts(data.payouts);
     dataOrder.originFees = parseOriginFeeData(data.originFeeFirst, data.originFeeSecond);
     dataOrder.isMakeFill = true;
     dataOrder.maxFeesBasePoint = data.maxFeesBasePoint;
+    log.info("txhash {} V3_SELL payouts.length {} originFees.length {} data {}", [transactionHash.toHexString(), dataOrder.payouts.length.toString(), dataOrder.originFees.length.toString(), order.data.toHexString()]);
   } else if (order.dataType.toHexString() == V3_BUY) {
     let data = getFeeDataV3(Bytes.fromHexString(V3_SELL), order.data);
     dataOrder.payouts = parsePayouts(data.payouts);
     dataOrder.originFees = parseOriginFeeData(data.originFeeFirst, data.originFeeSecond);
     dataOrder.isMakeFill = false;
+    log.info("txhash {} V3_BUY payouts.length {} originFees.length {} data {}", [transactionHash.toHexString(), dataOrder.payouts.length.toString(), dataOrder.originFees.length.toString(), order.data.toHexString()]);
   }
   if (dataOrder.payouts.length == 0) {
     dataOrder.payouts = payoutSet(order.maker);
