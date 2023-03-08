@@ -1,6 +1,24 @@
-type WrappedEtherTransaction @entity {
+type PartialRoyalty @entity {
   id: ID!
+  amount: BigInt!
+  beneficiary: String!
+}
+type PartialNftTransaction @entity {
+  id: ID!
+  hash: String!
   from: String!
   to: String!
-  hash: String!
+  standard: String!
+  tokenId: BigInt!
+  tokenAmount: BigInt! #nft
+  transactionToken: String! #nft
+  paymentToken: String! #payment
+  offerAmount: BigInt! #payment
+  amountToSeller: BigInt! # amount to address actually sends to from
+  paymentAmount: BigInt!
+  feeAmount: BigInt!
+  feeBeneficiary: String!
+  isComplete: Boolean! # used to figure out whether we got all data or wait for the other corresponding event
+  totalRoyalty: BigInt!
+  royaltyCount: BigInt! # used to generate keys
 }
