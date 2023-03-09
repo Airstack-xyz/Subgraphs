@@ -10,7 +10,7 @@ import {
   getNFTStandard,
 } from "./utils"
 import * as airstack from "../modules/airstack/nft-marketplace"
-import { PartialRoyalty, PartialNftTransaction } from "../generated/schema"
+import { PartialRoyalty, PartialNftTransaction, PartialNft } from "../generated/schema"
 import { BIGINT_ONE, BIG_INT_ZERO } from "../modules/airstack/common"
 export function handleOrderFulfilled(event: OrderFulfilled): void {
   let isPartialEvent = event.params.recipient == Address.zero()
@@ -131,7 +131,6 @@ function handleCompleteEvent(event: OrderFulfilled): void {
   for (let i = 0; i < allSales.length; i++) {
     let sale = allSales[i]
     let royalties = sale.royalties
-    let nft = sale.nft
     log.debug(
       "buyer {}, seller {} paymentAmount {} paymentToken {} protocolFees {} protocolFeesBeneficiary {} ",
       [
@@ -173,32 +172,45 @@ function handlePartialEvent(event: OrderFulfilled): void {
     throw new Error("")
   }
   let partialRecord = getOrCreatePartialNftTransaction(txHash)
-  let allSales = new Array<airstack.nft.Sale>()
+  if (
+    partialRecord.from != Address.zero().toHexString() ||
+    partialRecord.to != Address.zero().toHexString()
+  ) {
+    partialRecord.isComplete = true
+  }
   for (let i = 0; i < event.params.offer.length; i++) {
     const offer = event.params.offer[i]
     let isNFT = isNFTEntity(offer.itemType)
     if (!isNFT) {
-      partialRecord.offerAmount = offer.amount
+      partialRecord.totalOfferAmount = offer.amount
       partialRecord.paymentToken = offer.token.toHexString()
       partialRecord.to = offerer.toHexString()
-      if (!partialRecord.isComplete) {
-        partialRecord.isComplete =
-          partialRecord.from != Address.zero().toHexString() &&
-          partialRecord.to != Address.zero().toHexString()
-      }
     } else {
-      partialRecord.tokenId = offer.identifier
-      partialRecord.tokenAmount = offer.amount
-      partialRecord.transactionToken = offer.token.toHexString()
-      partialRecord.from = offerer.toHexString()
-      if (!partialRecord.isComplete) {
-        partialRecord.isComplete =
-          partialRecord.from != Address.zero().toHexString() &&
-          partialRecord.to != Address.zero().toHexString()
+      let standard = getNFTStandard(offer.itemType)
+      let partialNft = getOrCreatePartialNft(
+        txHash,
+        offer.token.toHexString(),
+        offer.identifier,
+        offer.amount,
+        standard
+      )
+      partialNft.save()
+      let alreadyExists = false
+      let partialNftArr = partialRecord.partialNFT
+      for (let j = 0; j < partialNftArr.length; j++) {
+        const partialNftKey = partialNftArr[j]
+        if (partialNftKey == partialNft.id) {
+          alreadyExists = true
+          break
+        }
       }
+      if (!alreadyExists) {
+        partialNftArr.push(partialNft.id)
+        partialRecord.partialNFT = partialNftArr
+      }
+      partialRecord.from = offerer.toHexString()
     }
   }
-
   for (let i = 0; i < event.params.consideration.length; i++) {
     const consideration = event.params.consideration[i]
     let isNFT = isNFTEntity(consideration.itemType)
@@ -206,11 +218,11 @@ function handlePartialEvent(event: OrderFulfilled): void {
       partialRecord.paymentToken = consideration.token.toHexString()
 
       if (consideration.recipient.toHexString() == partialRecord.from) {
-        let amountToSeller = partialRecord.amountToSeller
-        partialRecord.amountToSeller = amountToSeller.plus(consideration.amount)
+        let amountToSeller = partialRecord.totalAmountToSeller
+        partialRecord.totalAmountToSeller = amountToSeller.plus(consideration.amount)
       } else if (isOpenSeaFeeAccount(consideration.recipient)) {
-        let feeAmount = partialRecord.feeAmount
-        partialRecord.feeAmount = feeAmount.plus(consideration.amount)
+        let feeAmount = partialRecord.totalFeeAmount
+        partialRecord.totalFeeAmount = feeAmount.plus(consideration.amount)
         partialRecord.feeBeneficiary = consideration.recipient.toHexString()
       } else if (consideration.recipient.toHexString() != partialRecord.to) {
         let royaltyCount = partialRecord.royaltyCount
@@ -222,102 +234,88 @@ function handlePartialEvent(event: OrderFulfilled): void {
         partialRecord.royaltyCount = royaltyCount.plus(BIGINT_ONE)
       }
     } else {
-      partialRecord.tokenId = consideration.identifier
-      partialRecord.tokenAmount = consideration.amount
-      partialRecord.transactionToken = consideration.token.toHexString()
+      let standard = getNFTStandard(consideration.itemType)
+      let partialNft = getOrCreatePartialNft(
+        txHash,
+        consideration.token.toHexString(),
+        consideration.identifier,
+        consideration.amount,
+        standard
+      )
+      partialNft.save()
+      let alreadyExists = false
+      let partialNftArr = partialRecord.partialNFT
+      for (let j = 0; j < partialNftArr.length; j++) {
+        const partialNftKey = partialNftArr[j]
+        if (partialNftKey == partialNft.id) {
+          alreadyExists = true
+          break
+        }
+      }
+      if (!alreadyExists) {
+        partialNftArr.push(partialNft.id)
+        partialRecord.partialNFT = partialNftArr
+      }
       partialRecord.to = consideration.recipient.toHexString()
-      partialRecord.standard = getNFTStandard(consideration.itemType)
     }
   }
   if (partialRecord.isComplete) {
-    if (partialRecord.amountToSeller != BIGINT_ZERO) {
-      partialRecord.paymentAmount = partialRecord.amountToSeller
-        .plus(partialRecord.feeAmount)
+    if (partialRecord.totalAmountToSeller != BIGINT_ZERO) {
+      partialRecord.totalPaymentAmount = partialRecord.totalAmountToSeller
+        .plus(partialRecord.totalFeeAmount)
         .plus(partialRecord.totalRoyalty)
     } else {
-      log.info("verify more, partialRecord txhash {} paymentAmount took as offerAmount", [
+      log.info("verify more, partialRecord txhash {} totalPaymentAmount took as offerAmount", [
         txHash.toHexString(),
       ])
-      partialRecord.paymentAmount = partialRecord.offerAmount
+      partialRecord.totalPaymentAmount = partialRecord.totalOfferAmount
     }
-    log.debug(
-      " isPartialEvent hash {} from {} to {} standard {} tokenId {} tokenAmount {} transactionToken {} paymentToken {} offerAmount {} amountToSeller {} paymentAmount {} feeAmount {} feeBeneficiary {} isComplete {} totalRoyalty {}",
-      [
-        partialRecord.hash,
-        partialRecord.from,
-        partialRecord.to,
-        partialRecord.standard,
-        partialRecord.tokenId.toString(),
-        partialRecord.tokenAmount.toString(),
-        partialRecord.transactionToken,
-        partialRecord.paymentToken,
-        partialRecord.offerAmount.toString(),
-        partialRecord.amountToSeller.toString(),
-        partialRecord.paymentAmount.toString(),
-        partialRecord.feeAmount.toString(),
-        partialRecord.feeBeneficiary,
-        partialRecord.isComplete.toString(),
-        partialRecord.totalRoyalty.toString(),
-      ]
-    )
   }
   partialRecord.save()
-  // log.debug(
-  //   " isPartialEvent hash {} from {} to {} standard {} tokenId {} tokenAmount {} transactionToken {} paymentToken {} offerAmount {} amountToSeller {} paymentAmount {} feeAmount {} feeBeneficiary {} isComplete {} totalRoyalty {}",
-  //   [
-  //     partialRecord.hash,
-  //     partialRecord.from,
-  //     partialRecord.to,
-  //     partialRecord.standard,
-  //     partialRecord.tokenId.toString(),
-  //     partialRecord.tokenAmount.toString(),
-  //     partialRecord.transactionToken,
-  //     partialRecord.paymentToken,
-  //     partialRecord.offerAmount.toString(),
-  //     partialRecord.amountToSeller.toString(),
-  //     partialRecord.paymentAmount.toString(),
-  //     partialRecord.feeAmount.toString(),
-  //     partialRecord.feeBeneficiary,
-  //     partialRecord.isComplete.toString(),
-  //     partialRecord.totalRoyalty.toString(),
-  //   ]
-  // )
   if (partialRecord.isComplete) {
-    let standard = partialRecord.standard
-    let nft = new airstack.nft.NFT(
-      Address.fromString(partialRecord.transactionToken),
-      standard,
-      partialRecord.tokenId,
-      partialRecord.tokenAmount
-    )
-    // preparing royalty arr
+    // logging
     let royaltyArr = new Array<airstack.nft.CreatorRoyalty>()
     for (let i = 0; i < partialRecord.royaltyCount.toI64(); i++) {
       let royaltyKey = getPartialRoyaltyKey(txHash, i)
       let royalty = PartialRoyalty.load(royaltyKey)
       if (royalty != null) {
         log.debug("isComplete pusing royalty amount {} beneficiary {}", [
-          royalty.amount.toString(),
+          royalty.amount.div(BigInt.fromI64(partialRecord.partialNFT.length)).toString(),
           royalty.beneficiary,
         ])
         let royaltyRec = new airstack.nft.CreatorRoyalty(
-          royalty.amount,
+          royalty.amount.div(BigInt.fromI64(partialRecord.partialNFT.length)),
           Address.fromString(royalty.beneficiary)
         )
         royaltyArr.push(royaltyRec)
       }
     }
-    let sale = new airstack.nft.Sale(
-      Address.fromString(partialRecord.to),
-      Address.fromString(partialRecord.from),
-      nft,
-      partialRecord.paymentAmount,
-      Address.fromString(partialRecord.paymentToken),
-      partialRecord.feeAmount,
-      Address.fromString(partialRecord.feeBeneficiary),
-      royaltyArr
-    )
-    allSales.push(sale)
+    let allSales = new Array<airstack.nft.Sale>()
+
+    for (let i = 0; i < partialRecord.partialNFT.length; i++) {
+      let partialNftKey = partialRecord.partialNFT[i]
+      let partialNft = PartialNft.load(partialNftKey)
+      if (partialNft != null) {
+        let nft = new airstack.nft.NFT(
+          Address.fromString(partialNft.transactionToken),
+          partialNft.standard,
+          partialNft.tokenId,
+          partialNft.tokenAmount
+        )
+        let sale = new airstack.nft.Sale(
+          Address.fromString(partialRecord.to),
+          Address.fromString(partialRecord.from),
+          nft,
+          partialRecord.totalPaymentAmount.div(BigInt.fromI64(partialRecord.partialNFT.length)),
+          Address.fromString(partialRecord.paymentToken),
+          partialRecord.totalFeeAmount.div(BigInt.fromI64(partialRecord.partialNFT.length)),
+          Address.fromString(partialRecord.feeBeneficiary),
+          royaltyArr
+        )
+        allSales.push(sale)
+      }
+    }
+
     airstack.nft.trackNFTSaleTransactions(
       ETHEREUM_MAINNET_ID,
       txHash.toHexString(),
@@ -339,25 +337,38 @@ function getOrCreatePartialNftTransaction(txHash: Bytes): PartialNftTransaction 
     partialRecord.hash = txHash.toHexString()
     partialRecord.from = Address.zero().toHexString()
     partialRecord.to = Address.zero().toHexString()
-    partialRecord.standard = ""
-    partialRecord.tokenId = BIG_INT_ZERO
-    partialRecord.tokenAmount = BIG_INT_ZERO
-    partialRecord.transactionToken = Address.zero().toHexString()
     partialRecord.paymentToken = Address.zero().toHexString()
-    partialRecord.offerAmount = BIG_INT_ZERO
-    partialRecord.amountToSeller = BIG_INT_ZERO
-    partialRecord.paymentAmount = BIG_INT_ZERO
-    partialRecord.feeAmount = BIG_INT_ZERO
+    partialRecord.totalOfferAmount = BIG_INT_ZERO
+    partialRecord.totalAmountToSeller = BIG_INT_ZERO
+    partialRecord.totalPaymentAmount = BIG_INT_ZERO
+    partialRecord.totalFeeAmount = BIG_INT_ZERO
     partialRecord.totalRoyalty = BIG_INT_ZERO
     partialRecord.feeBeneficiary = Address.zero().toHexString()
     partialRecord.isComplete = false
     partialRecord.royaltyCount = BIGINT_ZERO
+    partialRecord.partialNFT = []
   }
   return partialRecord
 }
 
 function getPartialRoyaltyKey(txHash: Bytes, index: i64): string {
   return txHash.toHexString() + "-" + index.toString()
+}
+function getPartialNftKey(
+  txHash: Bytes,
+  transactionToken: String,
+  tokenId: BigInt,
+  tokenAmount: BigInt
+): string {
+  return (
+    txHash.toHexString() +
+    "-" +
+    transactionToken +
+    "-" +
+    tokenId.toString() +
+    "-" +
+    tokenAmount.toString()
+  )
 }
 function getOrCreatePartialRoyalty(txHash: Bytes, index: i64): PartialRoyalty {
   let royaltyKey = getPartialRoyaltyKey(txHash, index)
@@ -366,4 +377,22 @@ function getOrCreatePartialRoyalty(txHash: Bytes, index: i64): PartialRoyalty {
     partialRoyalty = new PartialRoyalty(royaltyKey)
   }
   return partialRoyalty
+}
+function getOrCreatePartialNft(
+  txHash: Bytes,
+  transactionToken: string,
+  tokenId: BigInt,
+  tokenAmount: BigInt,
+  standard: string
+): PartialNft {
+  let nftKey = getPartialNftKey(txHash, transactionToken, tokenId, tokenAmount)
+  let partialNft = PartialNft.load(nftKey)
+  if (partialNft == null) {
+    partialNft = new PartialNft(nftKey)
+    partialNft.transactionToken = transactionToken
+    partialNft.tokenId = tokenId
+    partialNft.tokenAmount = tokenAmount
+    partialNft.standard = standard
+  }
+  return partialNft
 }

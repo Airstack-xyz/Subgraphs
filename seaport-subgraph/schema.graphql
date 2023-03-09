@@ -3,22 +3,26 @@ type PartialRoyalty @entity {
   amount: BigInt!
   beneficiary: String!
 }
+type PartialNft @entity {
+  id: ID! # hash+nftCount
+  standard: String!
+  tokenId: BigInt!
+  tokenAmount: BigInt! #nft
+  transactionToken: String! #nft
+}
 type PartialNftTransaction @entity {
   id: ID!
   hash: String!
   from: String!
   to: String!
-  standard: String!
-  tokenId: BigInt!
-  tokenAmount: BigInt! #nft
-  transactionToken: String! #nft
   paymentToken: String! #payment
-  offerAmount: BigInt! #payment
-  amountToSeller: BigInt! # amount to address actually sends to from
-  paymentAmount: BigInt!
-  feeAmount: BigInt!
+  totalOfferAmount: BigInt! #payment
+  totalAmountToSeller: BigInt! # amount to address actually sends to from
+  totalPaymentAmount: BigInt!
+  totalFeeAmount: BigInt!
   feeBeneficiary: String!
   isComplete: Boolean! # used to figure out whether we got all data or wait for the other corresponding event
   totalRoyalty: BigInt!
   royaltyCount: BigInt! # used to generate keys
+  partialNFT: [PartialNft!]!
 }

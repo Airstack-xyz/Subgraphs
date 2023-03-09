@@ -16,6 +16,7 @@ dataSources:
       entities:
         - PartialRoyalty
         - PartialNftTransaction
+        - PartialNft
       abis:
         - name: Seaport
           file: ./abis/Seaport.json

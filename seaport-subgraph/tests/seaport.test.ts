@@ -25,6 +25,8 @@ import {
   offersToken,
   offersNFTAndToken1,
   offersNFTAndToken2,
+  huge2,
+  huge1,
 } from "./example"
 import * as airstack from "../modules/airstack/nft-marketplace"
 
@@ -32,12 +34,7 @@ import * as airstack from "../modules/airstack/nft-marketplace"
 // https://thegraph.com/docs/en/developer/matchstick/#tests-structure-0-5-0
 
 describe("Describe entity assertions", () => {
-  // beforeAll(() => {
-  //   let newCounter = BigInt.fromI32(234)
-  //   let offerer = Address.fromString("0x0000000000000000000000000000000000000001")
-  //   let newCounterIncrementedEvent = createCounterIncrementedEvent(newCounter, offerer)
-  //   handleCounterIncremented(newCounterIncrementedEvent)
-  // })
+ 
 
   afterEach(() => {
     clearStore()
@@ -267,5 +264,28 @@ describe("Describe entity assertions", () => {
       "0",
       "0x0000000000000000000000000000000000000000"
     )
+  })
+  test("handling huge", () => {
+    let event1 = convertObjectToEvent(huge1)
+    handleOrderFulfilled(event1)
+    let event2 = convertObjectToEvent(huge2)
+    handleOrderFulfilled(event2)
+    let txHash = event2.transaction.hash.toHexString()
+    let txIndex = event2.transaction.index
+    for (let i = 0; i < huge1.offer.length; i++) {
+      assertAirNftTransactionExpectedResponse(
+        txIndex,
+        "0x9b6cd0ff5789748aa352a9257c13be99126f3fb2",
+        "0xc858598bed0b11098c917cbf9fd3e0f435bab303",
+        txHash,
+        huge1.offer[i].identifier,
+        "1",
+        huge1.offer[i].token,
+        "0x0000000000000000000000000000000000000000",
+        "0",
+        "0",
+        "0x0000000000000000000000000000000000000000"
+      )
+    }
   })
 })
