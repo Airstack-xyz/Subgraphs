@@ -7,10 +7,12 @@ import {
   TypedMap,
   crypto,
   ByteArray,
+  dataSource,
 } from "@graphprotocol/graph-ts";
 import { ExchangeV2, MatchOrdersCallOrderLeftStruct, MatchOrdersCallOrderRightStruct } from "../generated/ExchangeV2/ExchangeV2";
 import { RoyaltiesRegistry } from "../generated/ExchangeV2/RoyaltiesRegistry";
 import * as airstack from "../modules/airstack/nft-marketplace";
+import { BIGINT_ONE } from "../modules/airstack/common";
 
 export const zeroAddress = Address.fromString("0x0000000000000000000000000000000000000000");
 export const MINT_1155_DATA = "(address,(uint,string,uint,(address,uint96)[],(address,uint96)[],bytes[]))"
@@ -31,6 +33,7 @@ export const COLLECTION = "COLLECTION";
 export const CRYPTOPUNKS = "CRYPTOPUNKS";
 export const SPECIAL = "SPECIAL";
 export const ETH_ASSET_CLASS = "ETH_ASSET_CLASS";
+export const RANDOM_MINT_721 = "RANDOM_MINT_721";
 
 export const BIGINT_ZERO = BigInt.fromI32(0);
 
@@ -43,6 +46,7 @@ classMap.set("0xd8f960c1", ERC721_LAZY);
 classMap.set("0x1cdfaa40", ERC1155_LAZY);
 classMap.set("0xf63c2825", COLLECTION);
 classMap.set("0x3e6b89d4", CRYPTOPUNKS);
+classMap.set("0xa8c6716e", RANDOM_MINT_721);
 
 classMap.set(ETH, "0xaaaebeba");
 classMap.set(ERC20, "0x8ae85d84");
@@ -51,7 +55,9 @@ export const V1 = "0x4c234266";
 export const V2 = "0x23d235ef";
 export const V3_SELL = "0x2fa3cfd3";
 export const V3_BUY = "0x1b18cdf6";
+export const DEFAULT_ORDER_TYPE = "0xffffffff";
 export const ASSET_TYPE_TYPEHASH = Bytes.fromHexString("0x452a0dc408cb0d27ffc3b3caff933a5208040a53a9dbecd8d89cad2c0d40e00c");
+export const ASSET_TYPEHASH = Bytes.fromHexString("0xdb6f72e915676cfc289da13bc4ece054fd17b1df6d77ffc4a60510718c236b08");
 
 export namespace AirProtocolType {
   export const GENERIC = "GENERIC";
@@ -89,6 +95,17 @@ export namespace AirProtocolActionType {
   export const DELEGATE = "DELEGATE";
   export const CLAIM_REWARDS = "CLAIM_REWARDS";
 }
+
+// export function byteArrayFromHex(s: string): ByteArray {
+//   if (s.length % 2 !== 0) {
+//     throw new TypeError("Hex string must have an even number of characters")
+//   }
+//   let out = new Uint8Array(s.length / 2)
+//   for (var i = 0; i < s.length; i += 2) {
+//     out[i / 2] = parseInt(s.substring(i, i + 2), 16) as u32
+//   }
+//   return changetype<ByteArray>(out)
+// }
 
 class SubFeeResponse {
   newValue: BigInt;
@@ -206,6 +223,17 @@ export function decodeAsset(data: Bytes, type: Bytes, transactionHash: Bytes): A
       let id = decodedTuple[2].toBigInt();
       let asset = new Asset(address, id, type.toHexString());
       log.info("decodedasset ERC721_LAZY or ERC1155_LAZY address {} id {} class {} hash {}", [asset.address.toHexString(), asset.id.toString(), asset.assetClass, transactionHash.toHexString()]);
+      return asset;
+    }
+  } else if (getClass(type) == RANDOM_MINT_721) {
+    log.info("attempting to decode RANDOM_MINT_721 asset class {} hash {}", [type.toHexString(), transactionHash.toHexString()]);
+    let decoded = ethereum.decode("(address)", data);
+    if (decoded != null) {
+      let decodedTuple = decoded.toTuple();
+      let address = decodedTuple[0].toAddress();
+      let id = BIGINT_ONE; //this is incorrect, we need to get the actual tokenId, its being randomly created while minting
+      let asset = new Asset(address, id, type.toHexString());
+      log.info("decodedasset RANDOM_MINT_721 address {} id {} class {} hash {}", [asset.address.toHexString(), asset.id.toString(), asset.assetClass, transactionHash.toHexString()]);
       return asset;
     }
   }
@@ -420,6 +448,35 @@ export class LibAssetType {
     this.assetClass = assetClass;
     this.data = data;
   }
+  hash(): Bytes {
+    let assetType = this;
+
+    const assetTypeArray: Array<ethereum.Value> = [];
+
+    assetTypeArray.push(ethereum.Value.fromBytes(ASSET_TYPE_TYPEHASH));
+    assetTypeArray.push(ethereum.Value.fromBytes(assetType.assetClass));
+    assetTypeArray.push(
+      ethereum.Value.fromBytes(
+        Bytes.fromByteArray(
+          ByteArray.fromHexString(
+            crypto.keccak256(assetType.data).toHexString()
+          )
+        )
+      )
+    );
+
+    const assetTypeTuple = changetype<ethereum.Tuple>(assetTypeArray);
+
+    return Bytes.fromByteArray(
+      crypto.keccak256(
+        ByteArray.fromHexString(
+          ethereum.encode(
+            ethereum.Value.fromTuple(assetTypeTuple)
+          )!.toHexString()
+        )
+      )
+    );
+  }
 }
 
 export class matchAssetsClass {
@@ -433,6 +490,25 @@ export class LibAsset {
   constructor(assetType: LibAssetType, value: BigInt) {
     this.assetType = assetType;
     this.value = value;
+  }
+
+  hash(): Bytes {
+    let asset = this;
+
+    let assetAray: Array<ethereum.Value> = [];
+    assetAray.push(ethereum.Value.fromBytes(ASSET_TYPEHASH));
+    assetAray.push(ethereum.Value.fromBytes(asset.assetType.hash()));
+    assetAray.push(ethereum.Value.fromUnsignedBigInt(asset.value));
+
+    let assetTuple = changetype<ethereum.Tuple>(assetAray);
+
+    return Bytes.fromByteArray(
+      crypto.keccak256(
+        ethereum.encode(
+          ethereum.Value.fromTuple(assetTuple)
+        )!
+      )
+    );
   }
 }
 
@@ -487,6 +563,53 @@ export class LibOrder {
     this.end = end;
     this.dataType = dataType;
     this.data = data;
+  }
+
+  hashKey(): Bytes {
+    const order = this;
+
+    if (order.dataType.toHexString() == V1 || order.dataType.toHexString() == DEFAULT_ORDER_TYPE) {
+
+      const orderArray: Array<ethereum.Value> = [];
+      orderArray.push(ethereum.Value.fromAddress(order.maker));
+      orderArray.push(ethereum.Value.fromBytes(order.makeAsset.assetType.hash()));
+      orderArray.push(ethereum.Value.fromBytes(order.takeAsset.assetType.hash()));
+      orderArray.push(ethereum.Value.fromUnsignedBigInt(order.salt));
+
+      const orderTuple = changetype<ethereum.Tuple>(orderArray);
+
+      return Bytes.fromByteArray(
+        crypto.keccak256(
+          ByteArray.fromHexString(
+            ethereum.encode(
+              ethereum.Value.fromTuple(orderTuple)
+            )!.toHexString()
+          )
+        )
+      );
+    } else {
+      //order.data is in hash for V2, V3 and all new order
+      const orderArray: Array<ethereum.Value> = [];
+      orderArray.push(ethereum.Value.fromAddress(order.maker));
+      orderArray.push(ethereum.Value.fromBytes(order.makeAsset.assetType.hash()));
+      orderArray.push(ethereum.Value.fromBytes(order.takeAsset.assetType.hash()));
+      orderArray.push(ethereum.Value.fromUnsignedBigInt(order.salt));
+      orderArray.push(ethereum.Value.fromBytes(order.data));
+
+      const orderTuple = changetype<ethereum.Tuple>(orderArray);
+
+      return Bytes.fromByteArray(
+        crypto.keccak256(
+          ByteArray.fromHexString(
+            ethereum.encode(
+              ethereum.Value.fromTuple(
+                orderTuple
+              )
+            )!.toHexString()
+          )
+        )
+      );
+    }
   }
 }
 
@@ -1118,6 +1241,7 @@ export function matchAndTransfer(
     );
     paymentSidePayouts = rightOrderData.payouts;
   }
+  // decode nft for fee side none also
   log.info("txhash {} originfee address {} value {}", [transactionHash.toHexString(), doTransfersResult.originFee.address.toHexString(), doTransfersResult.originFee.value.toString()]);
   return {
     nftData: nftData,
@@ -1207,8 +1331,8 @@ function parseOrdersSetFillEmitMatch(
   msgSender: Address,
   transactionHash: Bytes,
 ): ParseOrdersSetFillEmitMatchClass {
-  // let leftOrderHashKey = LibOrderHashKey(orderLeft);
-  // let rightOrderHashKey = LibOrderHashKey(orderRight);
+  let leftOrderHashKey = orderLeft.hashKey();
+  let rightOrderHashKey = orderRight.hashKey();
 
   if (orderLeft.maker == zeroAddress) {
     orderLeft.maker = msgSender;
@@ -1223,8 +1347,8 @@ function parseOrdersSetFillEmitMatch(
   let newFill = setFillEmitMatch(
     orderLeft,
     orderRight,
-    // leftOrderHashKey,
-    // rightOrderHashKey,
+    leftOrderHashKey,
+    rightOrderHashKey,
     leftOrderData.isMakeFill,
     rightOrderData.isMakeFill,
     transactionHash,
@@ -1240,17 +1364,17 @@ function parseOrdersSetFillEmitMatch(
 function setFillEmitMatch(
   orderLeft: LibOrder,
   orderRight: LibOrder,
-  // leftOrderHashKey: Bytes,
-  // rightOrderHashKey: Bytes,
-  leftMakeFill: bool,
-  rightMakeFill: bool,
+  leftOrderHashKey: Bytes,
+  rightOrderHashKey: Bytes,
+  leftIsMakeFill: bool,
+  rightIsMakeFill: bool,
   transactionHash: Bytes,
 ): LibFillResult {
-  let leftOrderFill = getOrderFill(orderLeft.salt);
-  let rightOrderFill = getOrderFill(orderRight.salt);
+  let leftOrderFill = getOrderFill(orderLeft.salt, leftOrderHashKey);
+  let rightOrderFill = getOrderFill(orderRight.salt, rightOrderHashKey);
 
-  let newFill = fillOrder(orderLeft, orderRight, leftOrderFill, rightOrderFill, leftMakeFill, rightMakeFill, transactionHash);
-  log.info("txhash {} expectedFillOrderOutput leftValue {} rightValue {}", [transactionHash.toHexString(), newFill.leftValue.toString(), newFill.rightValue.toString()]);
+  let newFill = fillOrder(orderLeft, orderRight, leftOrderFill, rightOrderFill, leftIsMakeFill, rightIsMakeFill, transactionHash);
+  log.info("expectedFillOrderOutput leftValue {} rightValue {} txhash {} ", [newFill.leftValue.toString(), newFill.rightValue.toString(), transactionHash.toHexString()]);
   return newFill;
 }
 
@@ -1337,14 +1461,24 @@ function safeGetPartialAmountFloor(
   return numerator.times(target).div(denominator);
 }
 
-function getOrderFill(salt: BigInt): BigInt {
+function getOrderFill(salt: BigInt, hash: Bytes): BigInt {
   let fill = BIGINT_ZERO;
   if (salt == BIGINT_ZERO) {
     fill = BIGINT_ZERO;
   } else {
-    fill = BigInt.fromI32(1);
+    fill = getFillsMapValue(hash);
   }
   return fill;
+}
+
+function getFillsMapValue(hash: Bytes): BigInt {
+  const exchangeV2Address = dataSource.address();
+  const exchangev2Instance = ExchangeV2.bind(exchangeV2Address);
+  const fillsMapResponse = exchangev2Instance.try_fills(hash);
+  if (!fillsMapResponse.reverted) {
+    return fillsMapResponse.value;
+  }
+  return BIGINT_ONE;
 }
 
 export function LibOrderDataParse(
