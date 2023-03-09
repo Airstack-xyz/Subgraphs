@@ -246,3 +246,48 @@ export const offersToken: OrderFulfilledEventType = {
     },
   ],
 }
+// hash: 0x804b2bd3c0e019acb70c91ed7724e8dd28aa9346ed0d7746ef5987fbd3b58440
+export const offersNFTAndToken1: OrderFulfilledEventType = {
+  orderHash: "0xf6a8f7c4cd428f4d060208b82514e5f5b8989631160fa14586618477db78f88f",
+  offerer: "0xc515af393e0eb6bc05c0071361cb027fd89bfa33",
+  zone: "0x004c00500000ad104d7dbd00e3ae0a5c00560c00",
+  recipient: "0x0000000000000000000000000000000000000000",
+  offer: [
+    {
+      itemType: 2,
+      token: "0xc99c679c50033bbc5321eb88752e89a93e9e83c5",
+      identifier: "1429",
+      amount: "1",
+    },
+    {
+      itemType: 1,
+      token: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      identifier: "0",
+      amount: "40457500000000000",
+    },
+  ],
+  consideration: [
+    {
+      itemType: 2,
+      token: "0xc99c679c50033bbc5321eb88752e89a93e9e83c5",
+      identifier: "1429",
+      amount: "1",
+      recipient: "0x7c8af8638248586d3ba775c8a4178f59ef993d05",
+    },
+    {
+      itemType: 1,
+      token: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      identifier: "0",
+      amount: "40457500000000000",
+      recipient: "0x7c8af8638248586d3ba775c8a4178f59ef993d05",
+    },
+  ],
+}
+export const offersNFTAndToken2: OrderFulfilledEventType = {
+  orderHash: "0xba1a878c1e009a0c68efe93ad42aa96dfeba0c72897bcc1aa9e0d13fc3afcc0f",
+  offerer: "0xfd7bd3578b01cfafeefde581d8a3ac2cf6e02c11",
+  zone: "0x004c00500000ad104d7dbd00e3ae0a5c00560c00",
+  recipient: "0x0000000000000000000000000000000000000000",
+  offer: [],
+  consideration: [],
+}

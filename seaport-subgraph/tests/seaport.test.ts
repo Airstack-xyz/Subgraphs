@@ -23,6 +23,8 @@ import {
   multipleRoyalties1,
   multipleRoyalties2,
   offersToken,
+  offersNFTAndToken1,
+  offersNFTAndToken2,
 } from "./example"
 import * as airstack from "../modules/airstack/nft-marketplace"
 
@@ -243,6 +245,27 @@ describe("Describe entity assertions", () => {
       "100000",
       "2500",
       "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073"
+    )
+  })
+  test("handling case where offer has nft and token & triggered by someone else", () => {
+    let event1 = convertObjectToEvent(offersNFTAndToken1)
+    handleOrderFulfilled(event1)
+    let event2 = convertObjectToEvent(offersNFTAndToken2)
+    handleOrderFulfilled(event2)
+    let txHash = event2.transaction.hash.toHexString()
+    let txIndex = event2.transaction.index
+    assertAirNftTransactionExpectedResponse(
+      txIndex,
+      "0xc515af393e0eb6bc05c0071361cb027fd89bfa33",
+      "0x7c8af8638248586d3ba775c8a4178f59ef993d05",
+      txHash,
+      "1429",
+      "1",
+      "0xc99c679c50033bbc5321eb88752e89a93e9e83c5",
+      "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "40457500000000000",
+      "0",
+      "0x0000000000000000000000000000000000000000"
     )
   })
 })
