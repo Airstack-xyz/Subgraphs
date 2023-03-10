@@ -310,11 +310,8 @@ export namespace domain {
     // create name registered transaction
     let txn = getOrCreateAirNameRegisteredTransaction(
       chainId,
-      block.number,
-      block.hash.toHexString(),
-      block.timestamp,
+      airBlock,
       transactionHash,
-      logOrCallIndex,
       domain,
       cost,
       paymentToken,
@@ -378,10 +375,10 @@ export namespace domain {
    * @param domainId air domain id
    * @param name domain name
    * @param labelHash label hash
-   * @param cost cost - still needs to be recorded
+   * @param cost cost of registration or renewal
    * @param paymentToken payment token address
-   * @param renewer renewer address - can be null
-   * @param expiryTimestamp expiry date - can be null
+   * @param renewerOrRegistrant renewer or registrant address
+   * @param expiryTimestamp expiry timestamp
    * @param fromRegistrationEvent true if called from a registration event
    * @param tokenAddress contract address of nft token
    */
@@ -393,8 +390,8 @@ export namespace domain {
     labelHash: Bytes,
     cost: BigInt,
     paymentToken: string,
-    renewer: string | null,
-    expiryTimestamp: BigInt | null,
+    renewerOrRegistrant: string,
+    expiryTimestamp: BigInt,
     fromRegistrationEvent: boolean,
     tokenAddress: string,
   ): void {
@@ -427,10 +424,21 @@ export namespace domain {
       let airToken = getOrCreateAirToken(chainId, paymentToken);
       airToken.save();
       domain.paymentToken = airToken.id;
+      let txn = getOrCreateAirNameRegisteredTransaction(
+        chainId,
+        airBlock,
+        transactionHash,
+        domain,
+        cost,
+        paymentToken,
+        renewerOrRegistrant,
+        expiryTimestamp,
+      );
+      txn.save();
     } else {
       // name renewal event
       // updating renewal cost in name renewed transaction entity
-      domain.expiryTimestamp = expiryTimestamp!;
+      domain.expiryTimestamp = expiryTimestamp;
       let txn = getOrCreateAirNameRenewedTransaction(
         transactionHash,
         chainId,
@@ -438,8 +446,8 @@ export namespace domain {
         domain,
         cost,
         paymentToken,
-        renewer!,
-        expiryTimestamp!,
+        renewerOrRegistrant,
+        expiryTimestamp,
       );
       txn.save();
     }
@@ -491,19 +499,18 @@ export namespace domain {
       domain.resolvedAddress = addrAccount.id;
       domain.lastUpdatedBlock = airBlock.id;
       domain.save();
+      let txn = getOrCreateAirResolvedAddressChanged(
+        chainId,
+        logOrCallIndex,
+        resolver,
+        airBlock,
+        transactionHash,
+        previousResolvedAddressId,
+        resolvedAddress,
+        domain,
+      );
+      txn.save();
     }
-
-    let txn = getOrCreateAirResolvedAddressChanged(
-      chainId,
-      logOrCallIndex,
-      resolver,
-      airBlock,
-      transactionHash,
-      previousResolvedAddressId,
-      resolvedAddress,
-      domain,
-    );
-    txn.save();
   }
 
   /**
@@ -766,11 +773,8 @@ export namespace domain {
    * @dev this function does not save the returned entity
    * @dev this function gets or creates an AirNameRegisteredTransaction entity
    * @param chainId chain id
-   * @param blockHeight block height
-   * @param blockHash block hash
-   * @param blockTimestamp block timestamp
+   * @param block air block entity
    * @param transactionHash transaction hash
-   * @param logOrCallIndex txn log or call index
    * @param domain air domain
    * @param cost cost of the transaction
    * @param paymentToken payment token - can be null
@@ -780,20 +784,15 @@ export namespace domain {
    */
   function getOrCreateAirNameRegisteredTransaction(
     chainId: string,
-    blockHeight: BigInt,
-    blockHash: string,
-    blockTimestamp: BigInt,
+    block: AirBlock,
     transactionHash: string,
-    logOrCallIndex: BigInt,
     domain: AirDomain,
     cost: BigInt | null,
     paymentToken: string,
     registrant: string,
     expiryTimestamp: BigInt,
   ): AirNameRegisteredTransaction {
-    let block = getOrCreateAirBlock(chainId, blockHeight, blockHash, blockTimestamp);
-    block.save();
-    let id = createEntityId(transactionHash, block.number, logOrCallIndex);
+    let id = domain.id.concat("-").concat(transactionHash);
     let entity = AirNameRegisteredTransaction.load(id);
     if (entity == null) {
       entity = new AirNameRegisteredTransaction(id);
@@ -802,15 +801,15 @@ export namespace domain {
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, block);
-      entity.cost = cost;
       let airToken = getOrCreateAirToken(chainId, paymentToken);
       airToken.save();
       entity.paymentToken = airToken.id;
-      let registrantAccount = getOrCreateAirAccount(chainId, registrant, block);
-      registrantAccount.save();
-      entity.registrant = registrantAccount.id;
       entity.expiryTimestamp = expiryTimestamp;
     }
+    let registrantAccount = getOrCreateAirAccount(chainId, registrant, block);
+    registrantAccount.save();
+    entity.registrant = registrantAccount.id;
+    entity.cost = cost;
     return entity as AirNameRegisteredTransaction;
   }
 

@@ -62,12 +62,13 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
       seller = recipient;
 
       log.info(
-        "txHash offer log tx {} logindex {} paymentToken {} paymentAmount {} buyer {} seller {} index {}",
+        "txHash offer log tx {} logindex {} paymentToken {} paymentAmount {} offerAmount {} buyer {} seller {} index {}",
         [
           txHash.toHexString(),
           event.logIndex.toString(),
           paymentToken.toHexString(),
           paymentAmount.toString(),
+          offer.amount.toString(),
           buyer.toHexString(),
           seller.toHexString(),
           i.toString(),
@@ -118,7 +119,13 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
     );
     if (!isNFT) {
       paymentToken = consideration.token;
-      paymentAmount = paymentAmount.plus(consideration.amount);
+      if (event.params.offer.length == 1) {
+        paymentAmount = event.params.offer[0].amount;
+        log.debug("not nft and offer length is 1, so paymentAmount is set as offer[0].amount", [event.params.offer[0].amount.toString()]);
+      } else {
+        paymentAmount = paymentAmount.plus(consideration.amount);
+        log.debug("not nft and offer length is {}, so oldPaymentAmount {} newPaymentAmout {}", [event.params.offer.length.toString(), paymentAmount.minus(consideration.amount).toString(), paymentAmount.toString()]);
+      }
       if (isOpenSeaFeeAccount(consideration.recipient)) {
         protocolFees = protocolFees.plus(consideration.amount)
         protocolBeneficiary = consideration.recipient
@@ -128,12 +135,13 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
         royaltyBeneficiary = consideration.recipient
       }
       log.info(
-        "txHash consideration log tx {} logindex {} paymentToken {} paymentAmount {} recipient {} buyer {} seller {} index {}",
+        "txHash consideration log tx {} logindex {} paymentToken {} paymentAmount {} considerationAmount {} recipient {} buyer {} seller {} index {}",
         [
           txHash.toHexString(),
           event.logIndex.toString(),
           paymentToken.toHexString(),
           paymentAmount.toString(),
+          consideration.amount.toString(),
           consideration.recipient.toHexString(),
           buyer.toHexString(),
           seller.toHexString(),
@@ -178,7 +186,7 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
         txHash.toHexString(),
       ])
     }
-    
+
     let royalty = new airstack.nft.CreatorRoyalty(royaltyFees.div(BigInt.fromI64(allSales.length)), royaltyBeneficiary);
     allSales[i].royalties.push(royalty);
 
