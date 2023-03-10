@@ -872,7 +872,7 @@ export function getRoyaltiesByAssetType(
 ): Array<LibPart> {
   let royalties: Array<LibPart> = [];
   log.info("getRoyaltiesByAssetType nft asset class is {} data {} txhash {}", [nftAssetType.assetClass.toHexString(), nftAssetType.data.toHexString(), transactionHash.toHexString()]);
-  if (getClass(nftAssetType.assetClass) == ERC721_LAZY) {
+  if (getClass(nftAssetType.assetClass) == ERC721_LAZY || getClass(nftAssetType.assetClass) == RANDOM_MINT_721) {
     let functionInput = nftAssetType.data.toHexString().replace('0x', '0x0000000000000000000000000000000000000000000000000000000000000020');
     const decodeThisData = Bytes.fromHexString(functionInput);
     let decoded = ethereum.decode(
@@ -1139,7 +1139,7 @@ export function matchAndTransfer(
   isMatchOrders: boolean
 ): MatchAndTransferClass {
   let paymentSidePayouts = new Array<LibPart>();
-  let matchAssetsResult = matchAssets(orderLeft, orderRight);
+  let matchAssetsResult = matchAssets(orderLeft, orderRight, transactionHash);
   log.info("txhash {} matchAssetsResult makeMatchAssetClass {} takeMatchAssetClass {}", [transactionHash.toHexString(), matchAssetsResult.makeMatch.assetClass.toHexString(), matchAssetsResult.takeMatch.assetClass.toHexString()]);
   log.info("txhash {} matchAssetsResult makeMatchAssetClassData {} takeMatchAssetClassData {}", [transactionHash.toHexString(), matchAssetsResult.makeMatch.data.toHexString(), matchAssetsResult.takeMatch.data.toHexString()]);
 
@@ -1256,58 +1256,82 @@ export function matchAndTransfer(
 function matchAssets(
   orderLeft: LibOrder,
   orderRight: LibOrder,
+  transactionHash: Bytes
 ): matchAssetsClass {
-  let makeMatch = assetMatcherMatchAssets(orderLeft.makeAsset.assetType, orderRight.takeAsset.assetType);
-  let takeMatch = assetMatcherMatchAssets(orderLeft.takeAsset.assetType, orderRight.makeAsset.assetType);
+  let makeMatch = assetMatcherMatchAssets(orderLeft.makeAsset.assetType, orderRight.takeAsset.assetType, transactionHash);
+  log.info("makeMatch asset class is {} txhash {}", [makeMatch.assetClass.toHexString(), transactionHash.toHexString()]);
+  let takeMatch = assetMatcherMatchAssets(orderLeft.takeAsset.assetType, orderRight.makeAsset.assetType, transactionHash);
+  log.info("takeMatch asset class is {} txhash {}", [takeMatch.assetClass.toHexString(), transactionHash.toHexString()]);
   return {
     makeMatch,
     takeMatch,
   };
 }
 
-function assetMatcherMatchAssets(leftAssetType: LibAssetType, rightAssetType: LibAssetType): LibAssetType {
-  let result = matchAssetOneSide(leftAssetType, rightAssetType);
+function assetMatcherMatchAssets(leftAssetType: LibAssetType, rightAssetType: LibAssetType, transactionHash: Bytes): LibAssetType {
+  let result = matchAssetOneSide(leftAssetType, rightAssetType, transactionHash);
   if (result.assetClass == BYTES_ZERO) {
-    return matchAssetOneSide(rightAssetType, leftAssetType);
+    log.info("result asset class is {} txhash {} if", [result.assetClass.toHexString(), transactionHash.toHexString()]);
+    return matchAssetOneSide(rightAssetType, leftAssetType, transactionHash);
   } else {
+    log.info("result asset class is {} txhash {} else", [result.assetClass.toHexString(), transactionHash.toHexString()]);
     return result;
   }
 }
 
 function matchAssetOneSide(
   leftAssetType: LibAssetType,
-  rightAssetType: LibAssetType
+  rightAssetType: LibAssetType,
+  transactionHash: Bytes
 ): LibAssetType {
   let classLeft = leftAssetType.assetClass;
   let classRight = rightAssetType.assetClass;
   if (getClass(classLeft) == ETH) {
     if (getClass(classRight) == ETH) {
+      log.info("left asset is ETH and right asset is ETH txhash {}", [transactionHash.toHexString()]);
       return leftAssetType;
     }
+    log.info("left asset is ETH but right asset is not ETH txhash {}", [transactionHash.toHexString()]);
     return new LibAssetType(BYTES_ZERO, EMPTY_BYTES);
   }
   if (getClass(classLeft) == ERC20) {
     if (getClass(classRight) == ERC20) {
+      log.info("left asset is ERC20 and right asset is ERC20 txhash {}", [transactionHash.toHexString()]);
       return simpleMatch(leftAssetType, rightAssetType);
     }
+    log.info("left asset is ERC20 but right asset is not ERC20 txhash {}", [transactionHash.toHexString()]);
     return new LibAssetType(BYTES_ZERO, EMPTY_BYTES);
   }
   if (getClass(classLeft) == ERC721) {
     if (getClass(classRight) == ERC721) {
+      log.info("left asset is ERC721 and right asset is ERC721 txhash {}", [transactionHash.toHexString()]);
       return simpleMatch(leftAssetType, rightAssetType);
     }
+    log.info("left asset is ERC721 but right asset is not ERC721 txhash {}", [transactionHash.toHexString()]);
     return new LibAssetType(BYTES_ZERO, EMPTY_BYTES);
   }
   if (getClass(classLeft) == ERC1155) {
     if (getClass(classRight) == ERC1155) {
+      log.info("left asset is ERC1155 and right asset is ERC1155 txhash {}", [transactionHash.toHexString()]);
       return simpleMatch(leftAssetType, rightAssetType);
     }
+    log.info("left asset is ERC1155 but right asset is not ERC1155 txhash {}", [transactionHash.toHexString()]);
+    return new LibAssetType(BYTES_ZERO, EMPTY_BYTES);
+  }
+  // using below code coz of being unable to access matcher internal mapping
+  if (getClass(classLeft) == COLLECTION) {
+    if (getClass(classRight) == ERC721 || getClass(classRight) == ERC721_LAZY) {
+      log.info("left asset is COLLECTION and right asset is ERC721 or ERC721_LAZY txhash {}", [transactionHash.toHexString()]);
+      return rightAssetType;
+    }
+    log.info("left asset is COLLECTION but right asset is not ERC721 txhash {}", [transactionHash.toHexString()]);
     return new LibAssetType(BYTES_ZERO, EMPTY_BYTES);
   }
   if (getClass(classLeft) == getClass(classRight)) {
+    log.info("left asset is {} and right asset is {} same txhash {}", [getClass(classLeft), getClass(classRight), transactionHash.toHexString()]);
     return simpleMatch(leftAssetType, rightAssetType);
   }
-  return assetMatcherMatchAssets(leftAssetType, rightAssetType);
+  return assetMatcherMatchAssets(leftAssetType, rightAssetType, transactionHash);
 }
 
 function simpleMatch(leftAssetType: LibAssetType, rightAssetType: LibAssetType): LibAssetType {

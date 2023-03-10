@@ -32,6 +32,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
   let leftAssetType = getClass(orderLeft.makeAsset.assetType.assetClass);
   let rightAssetType = getClass(orderRight.makeAsset.assetType.assetClass);
 
+  log.info("blockno {} blocktimestamp {} blockdifficulty {} txhash {}", [call.block.number.toString(), call.block.timestamp.toString(), call.block.difficulty.toString(), transactionHash.toHexString()]);
   let leftAsset = decodeAsset(
     orderLeft.makeAsset.assetType.data,
     orderLeft.makeAsset.assetType.assetClass,
