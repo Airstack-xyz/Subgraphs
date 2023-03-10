@@ -6,8 +6,8 @@ import {
   AirBlock,
   AirUserRegisteredTransaction,
 } from '../../../generated/schema';
-import { getOrCreateAirAccount, getOrCreateAirBlock, getChainId, updateAirEntityCounter, getOrCreateAirToken, createAirExtra } from '../common/index';
-import { AirProtocolType, AirProtocolActionType, AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID, createUserEntityId } from './utils';
+import { getOrCreateAirAccount, getOrCreateAirBlock, getChainId, updateAirEntityCounter, getOrCreateAirToken } from '../common/index';
+import { AirProtocolType, AirProtocolActionType, AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID, createUserEntityId, createAirExtra } from './utils';
 
 export namespace social {
 
