@@ -15,8 +15,8 @@ import * as airstack from "../modules/airstack/nft-marketplace";
 import { BIGINT_ONE } from "../modules/airstack/common";
 
 export const zeroAddress = Address.fromString("0x0000000000000000000000000000000000000000");
-export const MINT_1155_DATA = "(address,(uint,string,uint,(address,uint96)[],(address,uint96)[],bytes[]))"
-export const MINT_721_DATA = "(address,(uint,string,(address,uint96)[],(address,uint96)[],bytes[]))";
+export const MINT_1155_DATA = "(uint256,string,uint256,(address,uint96)[],(address,uint96)[],bytes[])"
+export const MINT_721_DATA = "(uint256,string,(address,uint96)[],(address,uint96)[],bytes[])";
 export const DATA_1155_OR_721 = "(address,uint256)";
 export const EMPTY_BYTES = Bytes.fromHexString("");
 export const BYTES_ZERO = Bytes.fromI32(0);
@@ -826,14 +826,14 @@ export function getRoyaltiesByAssetType(
   log.info("getRoyaltiesByAssetType nft asset class is {} data {} txhash {}", [nftAssetType.assetClass.toHexString(), nftAssetType.data.toHexString(), transactionHash.toHexString()]);
   if (getClass(nftAssetType.assetClass) == ERC721_LAZY || getClass(nftAssetType.assetClass) == RANDOM_MINT_721) {
     // this code is a wip
-    let functionInput = nftAssetType.data.toHexString().replace('0x', '0x0000000000000000000000000000000000000000000000000000000000000020');
-    const decodeThisData = Bytes.fromHexString(functionInput);
+    const PREFIX = "0x000000000000000000000000000000000000000000000000000000000000002";
+    let addressRemoved = PREFIX + nftAssetType.data.toHexString().substring(129);
     let decoded = ethereum.decode(
       MINT_721_DATA,
-      decodeThisData,
+      Bytes.fromHexString(addressRemoved)
     );
     if (!decoded) {
-      log.error("{} ERC721_LAZY not decoded hash {}", [decodeThisData.toHexString(), transactionHash.toHexString()]);
+      log.error("{} ERC721_LAZY not decoded hash {}", [addressRemoved, transactionHash.toHexString()]);
     } else {
       let decodedData = decoded.toTuple();
       let royaltyDataArray = decodedData[3].toArray();
@@ -851,9 +851,11 @@ export function getRoyaltiesByAssetType(
       return royalties;
     }
   } else if (getClass(nftAssetType.assetClass) == ERC1155_LAZY) {
+    const PREFIX = "0x000000000000000000000000000000000000000000000000000000000000002";
+    let addressRemoved = PREFIX + nftAssetType.data.toHexString().substring(129);
     let decoded = ethereum.decode(
       MINT_1155_DATA,
-      nftAssetType.data
+      Bytes.fromHexString(addressRemoved)
     );
     if (!decoded) {
       log.error("{} ERC1155_LAZY not decoded hash {}", [nftAssetType.data.toHexString(), transactionHash.toHexString()]);
