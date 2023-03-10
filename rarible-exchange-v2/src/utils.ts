@@ -761,7 +761,9 @@ function doTransferWithFees(
     transferFeesResult = transferFees(nftSide.asset.assetType, rest, paymentSide.asset.value, nftSide.originFees, paymentSide.from, paymentSide.proxy, transactionHash);
     rest = transferFeesResult.newRest;
     originFee.value = originFee.value.plus(transferFeesResult.transferResult.value);
-    originFee.address = transferFeesResult.transferResult.address;
+    if (transferFeesResult.transferResult.address != zeroAddress) {
+      originFee.address = transferFeesResult.transferResult.address;
+    }
     log.info("rest {} origin fee amount {} originfee address {} hash {} transferFeesResult else", [rest.toString(), originFee.value.toString(), originFee.address.toHexString(), transactionHash.toHexString()]);
   }
   return { rest, royalty, originFee, payment };
