@@ -128,10 +128,6 @@ function bp(value1: BigInt, value2: BigInt): BigInt {
   return value1.times(value2).div(BigInt.fromI32(10000));
 }
 
-// exchangev2
-
-
-
 /**
  * @dev map bytes asset hash type to string
  * @param assetClass asset class of payment/nft asset
@@ -1172,7 +1168,7 @@ export function matchAndTransfer(
       matchAssetsResult.takeMatch.assetClass,
       transactionHash,
     );
-    log.info("decoded right asset to nft data {} address {} id {} type {} hash {}", [matchAssetsResult.makeMatch.data.toHexString(), decodedNftData.address.toHexString(), decodedNftData.id.toString(), decodedNftData.assetClass, transactionHash.toHexString()])
+    log.info("decoded right asset to nft data {} address {} id {} type {} hash {}", [matchAssetsResult.takeMatch.data.toHexString(), decodedNftData.address.toHexString(), decodedNftData.id.toString(), decodedNftData.assetClass, transactionHash.toHexString()])
     nftData = new NftDataClass(
       decodedNftData.address,
       decodedNftData.assetClass,
@@ -1187,7 +1183,7 @@ export function matchAndTransfer(
       matchAssetsResult.makeMatch.assetClass,
       transactionHash,
     );
-    log.info("decoded left asset to nft data {} address {} id {} type {} hash {}", [matchAssetsResult.takeMatch.data.toHexString(), decodedNftData.address.toHexString(), decodedNftData.id.toString(), decodedNftData.assetClass, transactionHash.toHexString()])
+    log.info("decoded left asset to nft data {} address {} id {} type {} hash {}", [matchAssetsResult.makeMatch.data.toHexString(), decodedNftData.address.toHexString(), decodedNftData.id.toString(), decodedNftData.assetClass, transactionHash.toHexString()])
     nftData = new NftDataClass(
       decodedNftData.address,
       decodedNftData.assetClass,
@@ -1196,9 +1192,22 @@ export function matchAndTransfer(
     );
     paymentSidePayouts = rightOrderData.payouts;
   } else if (dealData.feeSide == FeeSide.NONE) {
-
+    // getting nft asset from matchAssetsResult
+    const nftAsset = getNftAsset(matchAssetsResult.makeMatch, matchAssetsResult.takeMatch, transactionHash);
+    let decodedNftData = decodeAsset(
+      nftAsset.data,
+      nftAsset.assetClass,
+      transactionHash,
+    );
+    log.info("decoded nftAsset to nft data {} address {} id {} type {} hash {}", [nftAsset.data.toHexString(), decodedNftData.address.toHexString(), decodedNftData.id.toString(), decodedNftData.assetClass, transactionHash.toHexString()])
+    nftData = new NftDataClass(
+      decodedNftData.address,
+      decodedNftData.assetClass,
+      decodedNftData.id,
+      newFill.leftValue,
+    );
+    // there will not be any payment side payouts
   }
-  // decode nft for fee side none also
   log.info("txhash {} originfee address {} value {}", [transactionHash.toHexString(), doTransfersResult.originFee.address.toHexString(), doTransfersResult.originFee.value.toString()]);
   return {
     nftData: nftData,
@@ -1210,6 +1219,24 @@ export function matchAndTransfer(
 }
 
 //helper functions for getDealData - start
+function getNftAsset(makeMatch: LibAssetType, takeMatch: LibAssetType, transactionHash: Bytes): LibAssetType {
+  const makeMatchAssetClass = getClass(makeMatch.assetClass);
+  if (
+    makeMatchAssetClass == ERC721 ||
+    makeMatchAssetClass == ERC1155 ||
+    makeMatchAssetClass == ERC1155_LAZY ||
+    makeMatchAssetClass == ERC1155_LAZY ||
+    makeMatchAssetClass == COLLECTION ||
+    makeMatchAssetClass == CRYPTOPUNKS ||
+    makeMatchAssetClass == RANDOM_MINT_721
+  ) {
+    log.info("makeMatch asset is Nft {} txhash {}", [makeMatch.assetClass.toHexString(), transactionHash.toHexString()]);
+    return makeMatch;
+  }
+  log.info("takeMatch asset is Nft {} txhash {}", [takeMatch.assetClass.toHexString(), transactionHash.toHexString()]);
+  return takeMatch;
+}
+
 function matchAssets(
   orderLeft: LibOrder,
   orderRight: LibOrder,

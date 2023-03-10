@@ -70,7 +70,6 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       royalties.push(royalty);
     }
 
-
     let toAddress = orderLeft.maker;
 
     if (toAddress.toHexString() == zeroAddress.toHexString()) {
@@ -82,7 +81,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     }
 
     let nftSales = new airstack.nft.Sale(
-      orderLeft.maker,  //to
+      toAddress,  //to
       orderRight.maker, //from
       nft, //nft
       matchAndTransferResult.payment, //payment amount
@@ -214,31 +213,6 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
     direct.sellOrderData,
   );
 
-  let right = new LibDealSide(
-    new LibAsset(
-      new LibAssetType(
-        direct.nftAssetClass,
-        direct.nftData,
-      ),
-      direct.sellOrderNftAmount,
-    ),
-    getOriginFeeArray(direct.bidDataType, direct.sellOrderData, transactionHash).payoutFeeArray,
-    getOriginFeeArray(direct.bidDataType, direct.sellOrderData, transactionHash).originFeeArray,
-    zeroAddress,
-    zeroAddress,
-  );
-
-  let left = new LibDealSide(
-    new LibAsset(
-      paymentAssetType,
-      direct.bidPaymentAmount,
-    ),
-    getOriginFeeArray(getOtherOrderType(direct.bidDataType), direct.bidData, transactionHash).payoutFeeArray,
-    getOriginFeeArray(getOtherOrderType(direct.bidDataType), direct.bidData, transactionHash).originFeeArray,
-    zeroAddress,
-    zeroAddress,
-  );
-
   let matchAndTransferResult = matchAndTransfer(sellOrder, buyOrder, call.from, dataSource.address(), transactionHash, false);
   // log.info("{} {} match and transfer result for handleDirectAcceptBid transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
 
@@ -334,31 +308,6 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
     BIGINT_ZERO,
     getOtherOrderType(direct.sellOrderDataType),
     direct.buyOrderData
-  );
-
-  let right = new LibDealSide(
-    new LibAsset(
-      new LibAssetType(
-        direct.nftAssetClass,
-        direct.nftData,
-      ),
-      direct.sellOrderNftAmount,
-    ),
-    getOriginFeeArray(direct.sellOrderDataType, direct.sellOrderData, transactionHash).payoutFeeArray,
-    getOriginFeeArray(direct.sellOrderDataType, direct.sellOrderData, transactionHash).originFeeArray,
-    zeroAddress,
-    zeroAddress,
-  );
-
-  let left = new LibDealSide(
-    new LibAsset(
-      paymentAssetType,
-      direct.buyOrderPaymentAmount,
-    ),
-    getOriginFeeArray(getOtherOrderType(direct.sellOrderDataType), direct.buyOrderData, transactionHash).payoutFeeArray,
-    getOriginFeeArray(getOtherOrderType(direct.sellOrderDataType), direct.buyOrderData, transactionHash).originFeeArray,
-    zeroAddress,
-    zeroAddress,
   );
 
   let matchAndTransferResult = matchAndTransfer(sellOrder, buyOrder, call.from, dataSource.address(), transactionHash, false);
