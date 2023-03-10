@@ -801,7 +801,10 @@ function transferRoyalties(
   log.info("nft asset class is {} data {} rest {} amount {} txhash {} ", [nftAssetType.assetClass.toHexString(), nftAssetType.data.toHexString(), rest.toString(), amount.toString(), from.toHexString(), transactionHash.toHexString()]);
   let royalties = getRoyaltiesByAssetType(nftAssetType, exchangeV2, transactionHash);
   if (royalties.length === 1 && payouts.length === 1 && royalties[0].address == payouts[0].address) {
-    return { rest, royalty: new Array<LibPart>() };
+    let royalty = new Array<LibPart>();
+    royalty.push(new LibPart(royalties[0].address, royalties[0].value));
+    let royaltyResult = transferRoyaltyFees(paymentAssetType, rest, amount, royalties, from, proxy, transactionHash);
+    return { rest, royalty: royaltyResult.transferResult };
   }
   let transferRoyaltiesResult = transferRoyaltyFees(paymentAssetType, rest, amount, royalties, from, proxy, transactionHash);
   return {
@@ -826,11 +829,18 @@ export function getRoyaltiesByAssetType(
   log.info("getRoyaltiesByAssetType nft asset class is {} data {} txhash {}", [nftAssetType.assetClass.toHexString(), nftAssetType.data.toHexString(), transactionHash.toHexString()]);
   if (getClass(nftAssetType.assetClass) == ERC721_LAZY || getClass(nftAssetType.assetClass) == RANDOM_MINT_721) {
     // this code is a wip
+    let decodeThis: Bytes;
+    let addressRemoved: string;
     const PREFIX = "0x000000000000000000000000000000000000000000000000000000000000002";
-    let addressRemoved = PREFIX + nftAssetType.data.toHexString().substring(129);
+    addressRemoved = PREFIX + nftAssetType.data.toHexString().substring(129);
+    if (addressRemoved.length % 2 != 0) {
+      const PREFIX = "0x0000000000000000000000000000000000000000000000000000000000000002";
+      addressRemoved = PREFIX + nftAssetType.data.toHexString().substring(129);
+    }
+    decodeThis = Bytes.fromHexString(addressRemoved);
     let decoded = ethereum.decode(
       MINT_721_DATA,
-      Bytes.fromHexString(addressRemoved)
+      decodeThis
     );
     if (!decoded) {
       log.error("{} ERC721_LAZY not decoded hash {}", [addressRemoved, transactionHash.toHexString()]);
