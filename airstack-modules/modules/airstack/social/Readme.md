@@ -8,14 +8,14 @@
     block: BigInt,                              #ethereum block of the user registration transaction
     transactionHash: string,                    #transaction hash of the user registration transaction
     logOrCallIndex: BigInt,                     #log or call index - used to differentiate between multiple logs or calls in a single transaction
-    fromAddress: string,                        #address from which the profile token is transferred
-    toAddress: string,                          #address to which the profile token is transferred
+    from: string,                        #address from which the profile token is transferred
+    to: string,                          #address to which the profile token is transferred
     tokenId: string,                            #token id of the profile token - ERC721
     tokenAddress: string,                       #token address of the profile token - ERC721
     dappUserId: string,                         #dapp user id of the air user who registered (eg: farcasterId)
+    userExtras: AirExtraData[],                 #extra data of the profile transferred (eg: recoveryAddress and homeUrl in farcaster)
     profileName: string,                        #name of the profile (eg: farcasterProfileName)
     profileExtras: AirExtraData[],              #extra data of the profile transferred (eg: tokenUri in farcaster)
-    userExtras: AirExtraData[],                 #extra data of the profile transferred (eg: recoveryAddress and homeUrl in farcaster)
   )
 ```
 
@@ -24,28 +24,5 @@
 class AirExtraData {
   name: string,                                 #name of the extra data (eg: "tokenUri","recoveryAddress","homeUrl" in farcaster)
   value: string,                                #value of the extra data (eg: values of tokenUri,recoveryAddress,homeUrl in farcaster)
-}
-```
-
-```
-class AirTransferData {
-  from: string,                                 #sender address of ERC721 token
-  to: string,                                   #receiver address of ERC721 token
-  tokenId: string,                              #token id of ERC721 token
-  tokenAddress: string,                         #token address of ERC721 token
-}
-```
-
-```
-class AirUserData {
-  dappUserId: string,                           #dapp user id of air user (eg: farcasterId)
-  userExtras: AirExtraData[],                   #extras data for air user (eg: recoveryAddress and homeUrl in farcaster)
-}
-```
-
-```
-class AirProfileData {
-  profileName: string,                          #name of the profile (eg: farcasterProfileName)
-  profileExtras: AirExtraData[],                #extra data of air profile (eg: tokenUri in farcaster)
 }
 ```

@@ -16,29 +16,39 @@ export namespace social {
    * @param block ethereum block
    * @param transactionHash transaction hash
    * @param logOrCallIndex log or call index
-   * @param airTransferData air transfer data class
-   * @param airUserData air user data class
-   * @param airProfileData air profile data class
+   * @param from erc721 token sender addres
+   * @param to erc721 token receiver address
+   * @param tokenId erc721 token id
+   * @param tokenAddress erc721 token address
+   * @param dappUserId dapp user id (eg: farcasterId)
+   * @param userExtras air extra data array (eg: farcaster homeUrl and recoveryAddress)
+   * @param profileName air profile name (eg: farcaster profile name)
+   * @param profileExtras air extra data array (eg: farcaster profile tokenUri)
    */
   export function trackUserAndProfileRegisteredTransaction(
     block: ethereum.Block,
     transactionHash: string,
     logOrCallIndex: BigInt,
-    airTransferData: AirTransferData,
-    airUserData: AirUserData,
-    airProfileData: AirProfileData,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    dappUserId: string,
+    userExtras: AirExtraData[],
+    profileName: string,
+    profileExtras: AirExtraData[],
   ): void {
     const chainId = getChainId();
     // creating air block
     const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     airBlock.save();
     // creating air user
-    const userId = createUserEntityId(chainId, airUserData.dappUserId);
+    const userId = createUserEntityId(chainId, dappUserId);
     // create air user extras
     let airUserExtras = new Array<AirExtra>();
     let airUserExtraIds = new Array<string>();
-    for (let i = 0; i < airUserData.userExtras.length; i++) {
-      const extra = airUserData.userExtras[i];
+    for (let i = 0; i < userExtras.length; i++) {
+      const extra = userExtras[i];
       const extraId = userId.concat("-").concat(extra.name);
       const airUserExtraData = createAirExtra(
         extra.name,
@@ -52,8 +62,8 @@ export namespace social {
     // create air profile extras
     let airProfileExtras = new Array<AirExtra>();
     let airProfileExtraIds = new Array<string>();
-    for (let i = 0; i < airProfileData.profileExtras.length; i++) {
-      const extra = airProfileData.profileExtras[i];
+    for (let i = 0; i < profileExtras.length; i++) {
+      const extra = profileExtras[i];
       const extraId = userId.concat("-").concat(extra.name);
       const airProfileExtraData = createAirExtra(
         extra.name,
@@ -65,10 +75,10 @@ export namespace social {
       airProfileExtras.push(airProfileExtraData);
     }
     // create air user
-    const airUser = getOrCreateAirUser(chainId, airBlock, airUserData.dappUserId, airTransferData.to, airUserExtraIds);
+    const airUser = getOrCreateAirUser(chainId, airBlock, dappUserId, to, airUserExtraIds);
     airUser.save();
     // create air profile
-    const airProfile = getOrCreateAirProfile(airBlock, chainId, airUser.id, airProfileData.profileName, airTransferData.tokenId, airTransferData.tokenAddress, airProfileExtraIds);
+    const airProfile = getOrCreateAirProfile(airBlock, chainId, airUser.id, profileName, tokenId, tokenAddress, airProfileExtraIds);
     airProfile.save();
     // create air user registered transaction
     createAirUserRegisteredTransaction(
@@ -76,14 +86,14 @@ export namespace social {
       airBlock,
       transactionHash,
       logOrCallIndex,
-      airTransferData.to,
+      to,
       airUser.id,
       airProfile.id,
-      airProfileData.profileName,
-      airTransferData.from,
-      airTransferData.to,
-      airTransferData.tokenId,
-      airTransferData.tokenAddress,
+      profileName,
+      from,
+      to,
+      tokenId,
+      tokenAddress,
       airUserExtraIds,
       airProfileExtraIds,
     );
@@ -237,46 +247,6 @@ export namespace social {
     constructor(
       public name: string,
       public value: string,
-    ) { }
-  }
-
-  /**
-   * @dev this class is used to create air transfer data
-   * @param from sender address of ERC721 token
-   * @param to receiver address of ERC721 token
-   * @param tokenId tokenId of the profile token that was transferred - ERC721
-   * @param tokenAddress token address of the profile token that was transferred - ERC721
-   */
-  export class AirTransferData {
-    constructor(
-      public from: string,
-      public to: string,
-      public tokenId: string,
-      public tokenAddress: string,
-    ) { }
-  }
-
-  /**
-   * @dev this class is used to create air user data
-   * @param dappUserId dappUserId (eg: farcasterId)
-   * @param userExtras extra data (eg: farcaster homeUrl and recoveryAddress)
-   */
-  export class AirUserData {
-    constructor(
-      public dappUserId: string,
-      public userExtras: AirExtraData[],
-    ) { }
-  }
-
-  /**
-   * @dev this class is used to create air profile data
-   * @param profileName profile name (eg: farcaster profile name)
-   * @param profileExtras extra data (eg: farcaster profile tokenUri)
-   */
-  export class AirProfileData {
-    constructor(
-      public profileName: string,
-      public profileExtras: AirExtraData[],
     ) { }
   }
 }
