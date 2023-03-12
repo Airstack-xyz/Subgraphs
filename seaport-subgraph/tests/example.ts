@@ -1714,3 +1714,37 @@ export const huge2: OrderFulfilledEventType = {
   offer: [],
   consideration: [],
 }
+
+// hash: 0xb5892d5bdec28c091efa683ae4d178251db587a2295d49e7ae77c0adc235c43d (transfering WETH only)
+// https://etherscan.io/tx/0xb5892d5bdec28c091efa683ae4d178251db587a2295d49e7ae77c0adc235c43d
+export const transferingWETHOnly1: OrderFulfilledEventType = {
+  orderHash: "0x028b227bb21dea69ee26615f25defd3a56c996fbc89a6890de32b90d27c92ba2",
+  offerer: "0xb4f6c6f8243d3d3c57a8e9f1b08f1f21ecfb53bc",
+  zone: "0x004c00500000ad104d7dbd00e3ae0a5c00560c00",
+  recipient: "0x0000000000000000000000000000000000000000",
+  offer: [
+    {
+      itemType: 1,
+      token: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      identifier: "0",
+      amount: "10000000000000000",
+    },
+  ],
+  consideration: [
+    {
+      itemType: 1,
+      token: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      identifier: "0",
+      amount: "10000000000000000",
+      recipient: "0x7c8af8638248586d3ba775c8a4178f59ef993d05",
+    },
+  ],
+}
+export const transferingWETHOnly2: OrderFulfilledEventType = {
+  orderHash: "0xf37f2b7f7b297add31f0c26157bbe3ec261fcd8b244692f556d98570bb32f288",
+  offerer: "0xfd7bd3578b01cfafeefde581d8a3ac2cf6e02c11",
+  zone: "0x004c00500000ad104d7dbd00e3ae0a5c00560c00",
+  recipient: "0x0000000000000000000000000000000000000000",
+  offer: [],
+  consideration: [],
+}

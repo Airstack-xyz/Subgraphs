@@ -279,15 +279,15 @@ function handlePartialEvent(event: OrderFulfilled): void {
       let royaltyKey = getPartialRoyaltyKey(txHash, i)
       let royalty = PartialRoyalty.load(royaltyKey)
       if (royalty != null) {
-        log.debug("isComplete pusing royalty amount {} beneficiary {}", [
-          royalty.amount.div(BigInt.fromI64(partialRecord.partialNFT.length)).toString(),
-          royalty.beneficiary,
-        ])
-        let royaltyRec = new airstack.nft.CreatorRoyalty(
-          royalty.amount.div(BigInt.fromI64(partialRecord.partialNFT.length)),
-          Address.fromString(royalty.beneficiary)
-        )
-        royaltyArr.push(royaltyRec)
+        if (partialRecord.partialNFT.length == 0) {
+          log.error(" txHash {} partialRecord.partialNFT.length is zero", [txHash.toHexString()])
+        } else {
+          let royaltyRec = new airstack.nft.CreatorRoyalty(
+            royalty.amount.div(BigInt.fromI64(partialRecord.partialNFT.length)),
+            Address.fromString(royalty.beneficiary)
+          )
+          royaltyArr.push(royaltyRec)
+        }
       }
     }
     let allSales = new Array<airstack.nft.Sale>()
@@ -315,18 +315,21 @@ function handlePartialEvent(event: OrderFulfilled): void {
         allSales.push(sale)
       }
     }
-
-    airstack.nft.trackNFTSaleTransactions(
-      ETHEREUM_MAINNET_ID,
-      txHash.toHexString(),
-      event.transaction.index,
-      allSales,
-      MARKET_PLACE_TYPE,
-      PROTOCOL_SELL_ACTION_TYPE,
-      event.block.timestamp,
-      event.block.number,
-      event.block.hash.toHexString()
-    )
+    if (allSales.length > 0) {
+      airstack.nft.trackNFTSaleTransactions(
+        ETHEREUM_MAINNET_ID,
+        txHash.toHexString(),
+        event.transaction.index,
+        allSales,
+        MARKET_PLACE_TYPE,
+        PROTOCOL_SELL_ACTION_TYPE,
+        event.block.timestamp,
+        event.block.number,
+        event.block.hash.toHexString()
+      )
+    } else {
+      log.error("txHash {} not valid since no nft sales involved", [txHash.toHexString()])
+    }
   }
 }
 

@@ -27,6 +27,8 @@ import {
   offersNFTAndToken2,
   huge2,
   huge1,
+  transferingWETHOnly1,
+  transferingWETHOnly2,
 } from "./example"
 import * as airstack from "../modules/airstack/nft-marketplace"
 
@@ -34,8 +36,6 @@ import * as airstack from "../modules/airstack/nft-marketplace"
 // https://thegraph.com/docs/en/developer/matchstick/#tests-structure-0-5-0
 
 describe("Describe entity assertions", () => {
- 
-
   afterEach(() => {
     clearStore()
   })
@@ -265,7 +265,7 @@ describe("Describe entity assertions", () => {
       "0x0000000000000000000000000000000000000000"
     )
   })
-  test("handling huge", () => {
+  test("handling huge numeber of nft transactions in a txn", () => {
     let event1 = convertObjectToEvent(huge1)
     handleOrderFulfilled(event1)
     let event2 = convertObjectToEvent(huge2)
@@ -287,5 +287,11 @@ describe("Describe entity assertions", () => {
         "0x0000000000000000000000000000000000000000"
       )
     }
+  })
+  test("handling transaction without NFT", () => {
+    let event1 = convertObjectToEvent(transferingWETHOnly1)
+    handleOrderFulfilled(event1)
+    let event2 = convertObjectToEvent(transferingWETHOnly2)
+    handleOrderFulfilled(event2)
   })
 })
