@@ -169,7 +169,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     if (sellOrder.feeRecipient != Address.zero().toHexString()) {
       royaltyDetails = calculateRoyality(sellOrder.makerRelayerFee, sellOrder.feeRecipient, matchPrice);
     } else {
-      royaltyDetails = calculateRoyality(sellOrder.takerRelayerFee, sellOrder.feeRecipient, matchPrice);
+      royaltyDetails = calculateRoyality(sellOrder.takerRelayerFee, buyOrder.feeRecipient, matchPrice);
     }
     let feeRecipient = royaltyDetails.feeRecipient;
     let totalRevenueETH = royaltyDetails.totalRevenueETH;
