@@ -20,7 +20,7 @@ describe("Mapping unit tests", () => {
   test("Test handleFarcasterNameTransfer, hard passing validation", () => {
     let event = getHandleFarcasterNameTransferEvent();
     // creating this mapping to test the event handler for passing validation
-    let UserRegAndProfileFarcasterMappingId = "1234".concat("-").concat(event.params.to.toHexString());
+    let UserRegAndProfileFarcasterMappingId = "1234".concat("-").concat(event.params.to.toHexString()).concat("-").concat(event.transaction.hash.toHexString());
     createOrUpdateUserRegAndProfileFarcasterMapping(
       UserRegAndProfileFarcasterMappingId,
       "1234",
@@ -45,7 +45,7 @@ describe("Mapping unit tests", () => {
     handleFarcasterNameTransfer(event)
     // assert here
     // UserRegAndProfileFarcasterMapping
-    assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "id", "1234-0x084b1c3c81545d370f3634392de611caabff8148");
+    assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "id", "1234-0x084b1c3c81545d370f3634392de611caabff8148-0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "farcasterId", "1234");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "tokenId", "52188151743400395627052985077509996575321231749758347050596502733779185434624");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "farcasterProfileName", "sarvesh");
@@ -147,7 +147,7 @@ describe("Mapping unit tests", () => {
     // call event handler
     let event = getHandleRegisterEvent()
     // creating this mapping to test the event handler for passing validation
-    let UserRegAndProfileFarcasterMappingId = event.params.id.toString().concat("-").concat(event.params.to.toHexString());
+    let UserRegAndProfileFarcasterMappingId = event.params.id.toString().concat("-").concat(event.params.to.toHexString().concat("-").concat(event.transaction.hash.toHexString()));
     createOrUpdateUserRegAndProfileFarcasterMapping(
       UserRegAndProfileFarcasterMappingId,
       event.params.id.toString(),
@@ -164,7 +164,7 @@ describe("Mapping unit tests", () => {
     handleRegister(event)
     // assert here
     // UserRegAndProfileFarcasterMapping
-    assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "id", "1234-0x084b1c3c81545d370f3634392de611caabff8148");
+    assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "id", "1234-0x084b1c3c81545d370f3634392de611caabff8148-0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "farcasterId", "1234");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "tokenId", "234567890876543234567890987654");
     assert.fieldEquals("UserRegAndProfileFarcasterMapping", UserRegAndProfileFarcasterMappingId, "farcasterProfileName", "bard");

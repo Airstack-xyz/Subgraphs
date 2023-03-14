@@ -3,6 +3,7 @@ import { UserRegAndProfileFarcasterMapping, } from '../generated/schema';
 
 export const FARCASTER_ID_REGISTRY_CONTRACT = Address.fromString('0xda107a1caf36d198b12c16c7b6a1d1c795978c42');
 export const FARCASTER_NAME_REGISTRY_CONTRACT = Address.fromString('0xe3be01d99baa8db9905b33a3ca391238234b79d1');
+export const zeroAddress = Address.fromString("0x0000000000000000000000000000000000000000");
 
 /**
  * @dev this function is used to temporarily store farcaster user registration and profile token transfer data before sending to airstack

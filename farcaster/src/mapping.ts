@@ -5,9 +5,9 @@ import {
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
 import { Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress } from "../generated/FarcasterNameRegistry/FarcasterIdRegistry";
 import * as airstack from "../modules/airstack/social/social";
-import { FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping } from "./utils";
-import { AirExtra } from "../generated/schema";
-import { getChainId } from "../modules/airstack/common";
+import { zeroAddress, FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping } from "./utils";
+import { AirExtra, AirProfile, AirUser } from "../generated/schema";
+import { getChainId, getOrCreateAirAccount, getOrCreateAirBlock } from "../modules/airstack/common";
 
 /**
  * @dev this function is called when a farcaster name is transfered
@@ -22,11 +22,41 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
   const farcasterId = farcasterTokenIdRegistry.try_idOf(toAdress);
   const farcasterName = Bytes.fromHexString(event.params.tokenId.toHexString()).toString();
 
+  // check if event is a transfer txn, then update the user for the profile
+  if (fromAdress.toHexString() != zeroAddress.toHexString()) {
+    // get profile entity
+    const chainId = getChainId();
+    const airBlock = getOrCreateAirBlock(chainId, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+    airBlock.save();
+    const userId = chainId.concat("-").concat(farcasterId.value.toString());
+    const profileId = userId.concat("-").concat(FARCASTER_NAME_REGISTRY_CONTRACT.toHexString()).concat("-").concat(tokenId.toString());
+    let profile = AirProfile.load(profileId);
+    // create AirUser with toAddress (ideally use module function to create user)
+    let airUser = AirUser.load(userId);
+    if (airUser == null) {
+      airUser = new AirUser(userId);
+      const toAccount = getOrCreateAirAccount(chainId, toAdress.toHexString(), airBlock);
+      toAccount.save();
+      airUser.address = toAccount.id;
+      airUser.dappUserId = farcasterId.value.toString();
+      airUser.createdAt = airBlock.id;
+      airUser.lastUpdatedAt = airBlock.id;
+      airUser.save();
+    }
+    // update air user id in profile entity
+    if (profile != null) {
+      profile.user = userId;
+      profile.lastUpdatedAt = airBlock.id;
+      profile.save();
+    }
+    return;
+  }
+
   // get token uri from name registry
   const nameRegistry = FarcasterNameRegistry.bind(event.address);
   const tokenURI = nameRegistry.try_tokenURI(tokenId);
   // store all data in UserRegAndProfileFarcasterMapping
-  let mappingId = farcasterId.value.toString().concat("-").concat(toAdress.toHexString());
+  let mappingId = farcasterId.value.toString().concat("-").concat(toAdress.toHexString()).concat("-").concat(event.transaction.hash.toHexString());
   let mapping = createOrUpdateUserRegAndProfileFarcasterMapping(
     mappingId,
     farcasterId.value.toString(),
@@ -91,7 +121,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
 export function handleRegister(event: Register): void {
   log.info("handleRegister to {} id {} contractAddress {} recovery {} url {}", [event.params.to.toHexString(), event.params.id.toString(), event.address.toHexString(), event.params.recovery.toHexString(), event.params.url]);
   // store all data in UserRegAndProfileFarcasterMapping
-  let mappingId = event.params.id.toString().concat("-").concat(event.params.to.toHexString());
+  let mappingId = event.params.id.toString().concat("-").concat(event.params.to.toHexString()).concat("-").concat(event.transaction.hash.toHexString());
   let mapping = createOrUpdateUserRegAndProfileFarcasterMapping(
     mappingId,
     event.params.id.toString(),
