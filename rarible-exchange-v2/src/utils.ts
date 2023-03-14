@@ -171,7 +171,7 @@ export class Asset {
 }
 
 /**
- * @dev this is a temp mapping for txn hash and transactionId
+ * @dev this is a temp mapping for txn hash and tokenId
  * @param transactionHash transaction hash
  * @param tokenId nft token id
  */

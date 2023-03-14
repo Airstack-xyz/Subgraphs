@@ -24,7 +24,6 @@ import {
   createTxnHashVsTokenIdMapping,
 } from "./utils";
 import * as airstack from "../modules/airstack/nft-marketplace";
-import { getChainId } from "../modules/airstack/common";
 import { TxnHashVsTokenIdMapping } from "../generated/schema";
 
 export function handleMatchOrders(call: MatchOrdersCall): void {
