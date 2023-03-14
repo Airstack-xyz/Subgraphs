@@ -1,1 +1,14 @@
-##
+type GenArtMintEvent @entity {
+ id: ID!
+ tokenId: String!
+ contractAddress: String!
+ transactionHash: String!
+ createdAtBlock: BigInt!
+}
+
+type TxnHashVsTokenIdMapping @entity {
+  id: ID!
+  transactionHash: String!
+  tokenId: BigInt!
+}
+
