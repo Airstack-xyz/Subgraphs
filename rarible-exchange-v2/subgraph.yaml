@@ -14,6 +14,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - TxnHashVsTokenIdMapping
       abis:
         - name: ExchangeV2
           file: ./abis/ExchangeV2.json
@@ -39,6 +40,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - TxnHashVsTokenIdMapping
       abis:
         - name: ERC721Gen
           file: ./abis/ERC721Gen.json

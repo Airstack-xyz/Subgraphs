@@ -6,3 +6,9 @@ type GenArtMintEvent @entity {
  createdAtBlock: BigInt!
 }
 
+type TxnHashVsTokenIdMapping @entity {
+  id: ID!
+  transactionHash: String!
+  tokenId: BigInt!
+}
+
