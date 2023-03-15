@@ -16,6 +16,7 @@ export function handleGenArtMint(event: GenArtMint): void {
   // create the txn hash vs token id mapping
   createTxnHashVsTokenIdMapping(
     event.transaction.hash,
-    event.params.tokenId
+    event.params.tokenId,
+    event.block,
   )
 }

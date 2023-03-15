@@ -175,11 +175,23 @@ export class Asset {
  * @param transactionHash transaction hash
  * @param tokenId nft token id
  */
-export function createTxnHashVsTokenIdMapping(transactionHash: Bytes, tokenId: BigInt): void {
-  let txnHashVsTxnId = new TxnHashVsTokenIdMapping(transactionHash.toHexString());
-  txnHashVsTxnId.transactionHash = transactionHash.toHexString();
-  txnHashVsTxnId.tokenId = tokenId;
-  txnHashVsTxnId.save();
+export function createTxnHashVsTokenIdMapping(transactionHash: Bytes, tokenId: BigInt, block: ethereum.Block): void {
+  let txnHashVsTokenId = TxnHashVsTokenIdMapping.load(transactionHash.toHexString());
+  if (txnHashVsTokenId == null) {
+    txnHashVsTokenId = new TxnHashVsTokenIdMapping(transactionHash.toHexString());
+    txnHashVsTokenId.transactionHash = transactionHash.toHexString();
+    let tokenIds = new Array<BigInt>();
+    tokenIds.push(tokenId);
+    txnHashVsTokenId.tokenIds = tokenIds;
+    txnHashVsTokenId.createdAtBlock = block.number;
+    txnHashVsTokenId.updatedAtBlock = block.number;
+  } else {
+    let temp = txnHashVsTokenId.tokenIds!;
+    temp.push(tokenId);
+    txnHashVsTokenId.tokenIds = temp;
+    txnHashVsTokenId.updatedAtBlock = block.number;
+  }
+  txnHashVsTokenId.save();
 }
 
 /**
