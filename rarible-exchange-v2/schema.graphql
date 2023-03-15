@@ -6,6 +6,13 @@ type GenArtMintEvent @entity {
  createdAtBlock: BigInt!
 }
 
+type Erc721GenCollection @entity {
+  id: ID!
+  contractAddress: String!
+  transactionHash: String!
+  createdAtBlock: BigInt!
+}
+
 type TxnHashVsTokenIdMapping @entity {
   id: ID!
   transactionHash: String!
