@@ -20,7 +20,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
 
   let saleTarget = call.inputs.addrs[11];
   let isBundleSale =
-    saleTarget.toHexString() === orders.constants.WYVERN_ATOMICIZER_ADDRESS;
+    saleTarget.toHexString() == orders.constants.WYVERN_ATOMICIZER_ADDRESS;
 
   let contractAddress = call.inputs.addrs[11];
 
@@ -142,8 +142,20 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
       }
       let marketplaceRevenueETH = royaltyDetails.marketplaceRevenueETH;
       let feeRecipient = royaltyDetails.feeRecipient;
-      log.info("txHash bundleSale {} feeRecipient {}", [txHash.toHexString(), feeRecipient]);
-      let sale = new airstack.nft.Sale(decoded.transfers[i].to, decoded.transfers[i].from, nft, matchPrice, paymentToken, marketplaceRevenueETH, Address.fromString(feeRecipient), new Array<airstack.nft.CreatorRoyalty>());
+      log.info("txHash bundleSale {} matchPrice {}", [
+        txHash.toHexString(),
+        matchPrice.toString(),
+      ])
+      let sale = new airstack.nft.Sale(
+        decoded.transfers[i].to,
+        decoded.transfers[i].from,
+        nft,
+        matchPrice.div(BigInt.fromI64(decoded.transfers.length)),
+        paymentToken,
+        marketplaceRevenueETH,
+        Address.fromString(feeRecipient),
+        new Array<airstack.nft.CreatorRoyalty>()
+      )
       allSales.push(sale);
     }
   } else {
@@ -157,7 +169,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     )
 
     if (decoded == null) {
-      return;
+      throw new Error("")
     }
 
     contractAddress =

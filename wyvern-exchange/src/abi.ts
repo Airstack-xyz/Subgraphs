@@ -1,5 +1,6 @@
 import { Address, BigInt, ByteArray, Bytes, ethereum } from "@graphprotocol/graph-ts";
 import { log } from "matchstick-as";
+import { BIGINT_ONE } from "../modules/airstack/common";
 
 export namespace abi {
 
@@ -61,7 +62,13 @@ export namespace abi {
 	export function checkFunctionSelector(functionSelector: string): boolean {
 		log.info("@@checkFunctionSelector\n selector ( {} ) \n", [functionSelector])
 
-		return functionSelector == "0x23b872dd" || functionSelector == "0x23b872dd" || functionSelector == "0x42842e0e" || functionSelector == "0xf242432a"
+		return (
+			functionSelector == "0x23b872dd" ||
+			functionSelector == "0x23b872dd" ||
+			functionSelector == "0x42842e0e" ||
+			functionSelector == "0xf242432a" ||
+			functionSelector == "0x00f24243" // 	safeTransferFrom(address from,address to,uint256 tokenId,bytes memory data)
+		)
 	}
    /*
 
@@ -80,6 +87,9 @@ export namespace abi {
 		log.info("@@functionCheckMatchERC1155UsingCriteria\n selector ( {} ) \n", [functionSelector])
 		return functionSelector == "0x96809f90" || functionSelector == "0x0096809f";
 	}
+	export function checkMatchERC721UsingCriteria(functionSelector: string): boolean {
+    	return functionSelector == "0xfb16a595" || functionSelector == "0x00fb16a5"  // matchERC721UsingCriteria(address,address,address,uint256,bytes32,bytes32[])
+    }
 
 	export function checkCallDataFunctionSelector(callData: Bytes): boolean {
 		let functionSelector = changetype<Bytes>(callData.subarray(0, 4)).toHexString()
@@ -280,7 +290,7 @@ export namespace abi {
 			let senderAddress = decoded[0].toAddress()
 			let recieverAddress = decoded[1].toAddress()
 			let tokenId = decoded[2].toBigInt()
-			log.info("decoded data txHash {} {} {} {}", [txHash ,senderAddress.toHexString(), recieverAddress.toHexString(), tokenId.toString()]);
+			log.info("functionSelector {} decoded data txHash {} {} {} {}", [functionSelector, txHash,senderAddress.toHexString(), recieverAddress.toHexString(), tokenId.toString()])
 			return new Decoded_TransferFrom_Result(
 				functionSelector,
 				senderAddress,
@@ -303,9 +313,6 @@ export namespace abi {
 			*/
 
 			let dataWithoutFunctionSelector = Bytes.fromUint8Array(callData.subarray(5))
-
-			log.info("in special case data {} {}", [txHash, dataWithoutFunctionSelector.toHexString()]);
-			log.info("decodng...",[])
 			let decoded = ethereum.decode(
 				"(address,address,address,uint256,uint256)", dataWithoutFunctionSelector
 			)!.toTuple()
@@ -317,16 +324,18 @@ export namespace abi {
 			let tokenId = decoded[3].toBigInt();
 			let amount = decoded[4].toBigInt();
             log.info(
-                    "ERC1155 blockNo {} txHash {} \n senderAddress {} \n recieverAddress {} \n tokenId {} \n contract {} amount {}",
-                    [	blockNo.toString(),
-                        txHash,
-                        senderAddress.toHexString(),
-                        recieverAddress.toHexString(),
-                        tokenId.toString(),
-                        contract.toHexString(),
-                        amount.toString(),
-                    ]
-            )
+				"ERC1155 blockNo {} txHash {} \n senderAddress {} \n recieverAddress {} \n tokenId {} \n contract {} amount {} functionSelector {}",
+				[
+					blockNo.toString(),
+					txHash,
+					senderAddress.toHexString(),
+					recieverAddress.toHexString(),
+					tokenId.toString(),
+					contract.toHexString(),
+					amount.toString(),
+					functionSelector,
+				]
+			)
 			
 			return new Decoded_TransferFrom_Result(
 				functionSelector,
@@ -337,10 +346,54 @@ export namespace abi {
 				contract
 			)
 
-		} else {
-			log.warning(`We dont understanding decoding {} `,[txHash]);
-			return null;
-		}
+		} else if (checkMatchERC721UsingCriteria(functionSelector)) {
+			// address from,
+			// address to,
+			// IERC721 token,
+			// uint256 tokenId,
+			// bytes32 root,
+			// bytes32[] calldata proof
+			let dataWithoutFunctionSelector = Bytes.fromUint8Array(callData.subarray(5))
+			let decoded = ethereum
+				.decode("(address,address,address,uint256)", dataWithoutFunctionSelector)!
+				.toTuple()
+
+			let functionSelector = Bytes.fromUint8Array(callData.subarray(0, 4))
+				.toHex()
+				.slice(2)
+			let senderAddress = decoded[0].toAddress()
+			let recieverAddress = decoded[1].toAddress()
+			let contract = decoded[2].toAddress()
+			let tokenId = decoded[3].toBigInt()
+			log.info(
+				"ERC721 blockNo {} txHash {} \n senderAddress {} \n recieverAddress {} \n tokenId {} \n contract {} functionSelector {}",
+				[
+				blockNo.toString(),
+				txHash,
+				senderAddress.toHexString(),
+				recieverAddress.toHexString(),
+				tokenId.toString(),
+				contract.toHexString(),
+				functionSelector,
+				]
+			)
+
+			return new Decoded_TransferFrom_Result(
+				functionSelector,
+				senderAddress,
+				recieverAddress,
+				tokenId,
+				BIGINT_ONE,
+				contract
+			)
+        }else {
+            log.error(
+              `We dont understanding decoding {} functionSelector {} dataWithoutFunctionSelector {} callData {}`,
+              [txHash, functionSelector, dataWithoutFunctionSelector.toHex(), callData.toHex()]
+            )
+			return null
+            // throw new Error("");
+        }
 	
 	}
 
