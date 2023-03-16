@@ -11,7 +11,7 @@ import {
 } from "@graphprotocol/graph-ts";
 import { ExchangeV2, MatchOrdersCallOrderLeftStruct, MatchOrdersCallOrderRightStruct } from "../generated/ExchangeV2/ExchangeV2";
 import { RoyaltiesRegistry } from "../generated/ExchangeV2/RoyaltiesRegistry";
-import * as airstack from "../modules/airstack/nft-marketplace";
+import { TxnHashVsTokenIdMapping } from "../generated/schema";
 import { BIGINT_ONE } from "../modules/airstack/common";
 
 export const zeroAddress = Address.fromString("0x0000000000000000000000000000000000000000");
@@ -20,6 +20,7 @@ export const MINT_721_DATA = "(uint256,string,(address,uint96)[],(address,uint96
 export const DATA_1155_OR_721 = "(address,uint256)";
 export const EMPTY_BYTES = Bytes.fromHexString("");
 export const BYTES_ZERO = Bytes.fromI32(0);
+export const BIGINT_MINUS_ONE = BigInt.fromI32(-1);
 export const ETHEREUM_MAINNET_ID = "1";
 
 export const ERC20 = "ERC20";
@@ -170,6 +171,30 @@ export class Asset {
 }
 
 /**
+ * @dev this is a temp mapping for txn hash and tokenId
+ * @param transactionHash transaction hash
+ * @param tokenId nft token id
+ */
+export function createTxnHashVsTokenIdMapping(transactionHash: Bytes, tokenId: BigInt, block: ethereum.Block): void {
+  let txnHashVsTokenId = TxnHashVsTokenIdMapping.load(transactionHash.toHexString());
+  if (txnHashVsTokenId == null) {
+    txnHashVsTokenId = new TxnHashVsTokenIdMapping(transactionHash.toHexString());
+    txnHashVsTokenId.transactionHash = transactionHash.toHexString();
+    let tokenIds = new Array<BigInt>();
+    tokenIds.push(tokenId);
+    txnHashVsTokenId.tokenIds = tokenIds;
+    txnHashVsTokenId.createdAtBlock = block.number;
+    txnHashVsTokenId.updatedAtBlock = block.number;
+  } else {
+    let temp = txnHashVsTokenId.tokenIds!;
+    temp.push(tokenId);
+    txnHashVsTokenId.tokenIds = temp;
+    txnHashVsTokenId.updatedAtBlock = block.number;
+  }
+  txnHashVsTokenId.save();
+}
+
+/**
  * @dev decodes asset data
  * @param data encoded asset data
  * @param type asset type
@@ -215,7 +240,7 @@ export function decodeAsset(data: Bytes, type: Bytes, transactionHash: Bytes): A
     if (decoded != null) {
       let decodedTuple = decoded.toTuple();
       let address = decodedTuple[0].toAddress();
-      let id = BIGINT_ONE; //this is incorrect, we need to get the actual tokenId, its being randomly created while minting
+      let id = BIGINT_MINUS_ONE; //this is asigned so that we can get the exact txn id later on and assign correct tokenid to it
       let asset = new Asset(address, id, type.toHexString());
       log.info("decodedasset RANDOM_MINT_721 address {} id {} class {} hash {}", [asset.address.toHexString(), asset.id.toString(), asset.assetClass, transactionHash.toHexString()]);
       return asset;

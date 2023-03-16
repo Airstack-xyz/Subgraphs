@@ -14,6 +14,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - TxnHashVsTokenIdMapping
       abis:
         - name: ExchangeV2
           file: ./abis/ExchangeV2.json
@@ -27,3 +28,42 @@ dataSources:
         - function: directPurchase((address,uint256,bytes4,bytes,uint256,address,uint256,uint256,uint256,bytes4,bytes,bytes,uint256,uint256,bytes))
           handler: handleDirectPurchase
       file: ./src/exchange-v-2.ts
+  - kind: ethereum
+    name: ERC721GenFactory
+    network: mainnet
+    source:
+      address: '0xB19E3E12854CE643f29B551c7F40cf0FA87341De'
+      abi: ERC721GenFactory
+      startBlock: 13360525
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Erc721GenFactory
+      abis:
+        - name: ERC721GenFactory
+          file: ./abis/ERC721GenFactory.json
+      eventHandlers:
+        - event: CollectionCreated(address,address,address)
+          handler: handleCollectionCreated
+      file: ./src/erc-721-gen.ts
+templates:
+  - kind: ethereum
+    name: ERC721Gen
+    network: mainnet
+    source:
+      abi: ERC721Gen
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - TxnHashVsTokenIdMapping
+      abis:
+        - name: ERC721Gen
+          file: ./abis/ERC721Gen.json
+      eventHandlers:
+        - event: GenArtMint(indexed uint256,uint256)
+          handler: handleGenArtMint
+      file: ./src/erc-721-gen.ts

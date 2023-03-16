@@ -534,8 +534,8 @@ export namespace domain {
     if (domain && domain.resolver == resolver.id) {
       domain.resolvedAddress = null
       domain.lastUpdatedBlock = airBlock.id;
+      domain.save();
     }
-    domain.save();
   }
 
   /**

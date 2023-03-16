@@ -83,11 +83,17 @@ export function handleExchange(call: ExchangeCall): void {
       call.inputs.amount,
     );
 
+    let nftAmount = call.inputs.order.buying
+
+    if (call.inputs.amount == utils.BIGINT_ZERO) {
+      nftAmount = call.inputs.amount;
+    }
+
     let nft = new airstack.nft.NFT(
       buyAsset.token,
       buyAsset.assetType == 2 ? "ERC1155" : sellAsset.assetType == 3 ? "ERC721" : "UNKNOWN",
       buyAsset.tokenId,
-      call.inputs.order.buying,
+      nftAmount,
     )
 
     let nftSales = new airstack.nft.Sale(

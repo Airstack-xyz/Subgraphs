@@ -54,6 +54,11 @@ export async function integrate(
                 } else if (sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length > 0) {
                   dataSourceName = sourceSubgraphYaml.templates[0].name;
                 }
+                if (sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length > 0) {
+                  dataSourceName = sourceSubgraphYaml.templates[0].name;
+                } else if (sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length > 0) {
+                  dataSourceName = sourceSubgraphYaml.templates[0].name;
+                }
               } catch {
                 console.error("Error while parsing subgraph.yaml file")
               }

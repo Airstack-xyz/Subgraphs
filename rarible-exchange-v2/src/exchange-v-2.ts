@@ -1,4 +1,4 @@
-import { BigInt, dataSource, log } from "@graphprotocol/graph-ts";
+import { Bytes, BigInt, dataSource, log } from "@graphprotocol/graph-ts";
 import { DirectAcceptBidCall, DirectPurchaseCall, MatchOrdersCall } from "../generated/ExchangeV2/ExchangeV2";
 import {
   ETH,
@@ -19,8 +19,12 @@ import {
   getOtherOrderType,
   generateOrderData,
   ETHEREUM_MAINNET_ID,
+  BIGINT_MINUS_ONE,
+  RANDOM_MINT_721,
+  createTxnHashVsTokenIdMapping,
 } from "./utils";
 import * as airstack from "../modules/airstack/nft-marketplace";
+import { TxnHashVsTokenIdMapping } from "../generated/schema";
 
 export function handleMatchOrders(call: MatchOrdersCall): void {
   let transactionHash = call.transaction.hash;
@@ -48,17 +52,28 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     // rightAsset is NFT
     log.info("{} {} {} {} address id and type and hash rightAsset is nft", [rightAsset.address.toHexString(), rightAsset.id.toString(), rightAssetType, transactionHash.toHexString()]);
 
-    let nft = new airstack.nft.NFT(
-      rightAsset.address,
-      rightAssetType,
-      rightAsset.id,
-      orderRight.makeAsset.value,
-    )
-
     let orderData = generateOrderData(orderLeft, orderRight, transactionHash);
 
     let matchAndTransferResult = matchAndTransfer(orderData.orderLeftInput, orderData.orderRightInput, call.from, dataSource.address(), transactionHash, true);
     log.info("{} {} match and transfer result for rightasset is nft transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
+
+    let nftTokenId = matchAndTransferResult.nftData.tokenId;
+
+    if (nftTokenId == BIGINT_MINUS_ONE && getClass(Bytes.fromHexString(matchAndTransferResult.nftData.standard)) == RANDOM_MINT_721) {
+      // assign tokenId from mapping
+      const txnHashVsTokenIdMapping = TxnHashVsTokenIdMapping.load(call.transaction.hash.toHexString());
+      if (txnHashVsTokenIdMapping != null && txnHashVsTokenIdMapping.tokenIds != null) {
+        nftTokenId = txnHashVsTokenIdMapping.tokenIds![0];
+        log.info("assigning tokenId from mapping {} txnhash {} nftcollection {}", [nftTokenId.toString(), call.transaction.hash.toHexString(), leftAsset.address.toHexString()]);
+      }
+    }
+
+    let nft = new airstack.nft.NFT(
+      rightAsset.address,
+      matchAndTransferResult.nftData.standard,
+      nftTokenId,
+      matchAndTransferResult.nftData.amount,
+    )
 
     let royalties: airstack.nft.CreatorRoyalty[] = [];
 
@@ -111,23 +126,6 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     let matchAndTransferResult = matchAndTransfer(orderData.orderLeftInput, orderData.orderRightInput, call.from, dataSource.address(), transactionHash, true);
     log.info("{} {} match and transfer result for leftasset is nft transaction hash {}", [matchAndTransferResult.originFee.value.toString(), matchAndTransferResult.payment.toString(), transactionHash.toHexString()]);
 
-    let nft = new airstack.nft.NFT(
-      leftAsset.address,
-      matchAndTransferResult.nftData.standard,
-      matchAndTransferResult.nftData.tokenId,
-      matchAndTransferResult.nftData.amount,
-    );
-
-    let royalties: airstack.nft.CreatorRoyalty[] = [];
-
-    for (let i = 0; i < matchAndTransferResult.royalty.length; i++) {
-      let royalty = new airstack.nft.CreatorRoyalty(
-        matchAndTransferResult.royalty[i].value,
-        matchAndTransferResult.royalty[i].address,
-      );
-      royalties.push(royalty);
-    }
-
     let toAddress = orderRight.maker;
 
     if (toAddress.toHexString() == zeroAddress.toHexString()) {
@@ -138,22 +136,79 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       }
     }
 
-    let nftSales = new airstack.nft.Sale(
-      toAddress, //to
-      orderLeft.maker,  //from
-      nft,
-      matchAndTransferResult.payment, //payment amount
-      rightAsset.address, //payment token
-      matchAndTransferResult.originFee.value,  //protocol fees
-      matchAndTransferResult.originFee.address, //protocol beneficiary
-      royalties, //royalties
-    )
+    let nftTokenId = matchAndTransferResult.nftData.tokenId;
+
+    let allSales = new Array<airstack.nft.Sale>();
+    // handling random 721 mint case
+    if (nftTokenId == BIGINT_MINUS_ONE && getClass(Bytes.fromHexString(matchAndTransferResult.nftData.standard)) == RANDOM_MINT_721) {
+      log.info("its a random721 mint case txhash {}", [transactionHash.toHexString()]);
+      // get tokenIds from mapping
+      const txnHashVsTokenIdMapping = TxnHashVsTokenIdMapping.load(call.transaction.hash.toHexString());
+      if (txnHashVsTokenIdMapping && txnHashVsTokenIdMapping.tokenIds) {
+        for (var i = 0; i < txnHashVsTokenIdMapping.tokenIds!.length; i++) {
+          nftTokenId = txnHashVsTokenIdMapping.tokenIds![i];
+          log.info("txnHashVsTokenIdMapping tokenId {} txnhash {} nftcollection {}", [nftTokenId.toString(), call.transaction.hash.toHexString(), leftAsset.address.toHexString()]);
+          let nft = new airstack.nft.NFT(
+            leftAsset.address,
+            matchAndTransferResult.nftData.standard,
+            nftTokenId,
+            matchAndTransferResult.nftData.amount.div(BigInt.fromI32(txnHashVsTokenIdMapping.tokenIds!.length)),
+          )
+          let royalties: airstack.nft.CreatorRoyalty[] = [];
+
+          for (let i = 0; i < matchAndTransferResult.royalty.length; i++) {
+            let royalty = new airstack.nft.CreatorRoyalty(
+              matchAndTransferResult.royalty[i].value.div(BigInt.fromI32(txnHashVsTokenIdMapping.tokenIds!.length)),
+              matchAndTransferResult.royalty[i].address,
+            );
+            royalties.push(royalty);
+          }
+          let nftSale = new airstack.nft.Sale(
+            toAddress, //to
+            orderLeft.maker,  //from
+            nft,
+            matchAndTransferResult.payment.div(BigInt.fromI32(txnHashVsTokenIdMapping.tokenIds!.length)), //payment amount
+            rightAsset.address, //payment token
+            matchAndTransferResult.originFee.value.div(BigInt.fromI32(txnHashVsTokenIdMapping.tokenIds!.length)),  //protocol fees
+            matchAndTransferResult.originFee.address, //protocol beneficiary
+            royalties, //royalties
+          )
+          allSales.push(nftSale);
+        }
+      }
+    } else { //handling other normal cases
+      let nft = new airstack.nft.NFT(
+        leftAsset.address,
+        matchAndTransferResult.nftData.standard,
+        nftTokenId,
+        matchAndTransferResult.nftData.amount,
+      );
+      let royalties: airstack.nft.CreatorRoyalty[] = [];
+      for (let i = 0; i < matchAndTransferResult.royalty.length; i++) {
+        let royalty = new airstack.nft.CreatorRoyalty(
+          matchAndTransferResult.royalty[i].value,
+          matchAndTransferResult.royalty[i].address,
+        );
+        royalties.push(royalty);
+      }
+      let nftSale = new airstack.nft.Sale(
+        toAddress, //to
+        orderLeft.maker,  //from
+        nft,
+        matchAndTransferResult.payment, //payment amount
+        rightAsset.address, //payment token
+        matchAndTransferResult.originFee.value,  //protocol fees
+        matchAndTransferResult.originFee.address, //protocol beneficiary
+        royalties, //royalties
+      )
+      allSales.push(nftSale);
+    }
 
     airstack.nft.trackNFTSaleTransactions(
       ETHEREUM_MAINNET_ID,
       transactionHash.toHexString(),
       call.transaction.index,
-      [nftSales],
+      allSales,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
       call.block.timestamp,
