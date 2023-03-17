@@ -23,7 +23,7 @@ dataSources:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleFarcasterNameTransfer
         - event: ChangeRecoveryAddress(indexed uint256,indexed address)
-          handler: handleRecoveryAddressFname
+          handler: handleChangeRecoveryAddressFname
         - event: Renew(indexed uint256,uint256)
           handler: handleRenewFname
       # callHandlers: #we are not using this, keeping for future reference

@@ -1,6 +1,7 @@
 import { newMockEvent } from "matchstick-as"
 import {
-  Transfer
+  Transfer,
+  ChangeRecoveryAddress as ChangeRecoveryAddressFname
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
 import { Register, ChangeHome, ChangeRecoveryAddress } from "../generated/FarcasterIdRegistry/FarcasterIdRegistry";
 import { ethereum, Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
@@ -20,6 +21,10 @@ export function getHandleChangeHomeEvent(): ChangeHome {
 
 export function getHandleChangeRecoveryAddressEvent(): ChangeRecoveryAddress {
   return createHandleChangeRecoveryAddressEvent()
+}
+
+export function getHandleChangeRecoveryAddressEventFname(): ChangeRecoveryAddressFname {
+  return createHandleChangeRecoveryAddressEventFname()
 }
 
 function createHandleRegisterEvent(): Register {
@@ -102,6 +107,24 @@ function createHandleChangeRecoveryAddressEvent(): ChangeRecoveryAddress {
     new ethereum.EventParam("recovery", ethereum.Value.fromAddress(Address.fromString("0xda107a1caf36d198b12c16c7c7a1d1c795978c42") as Address))
   )
   return event as ChangeRecoveryAddress
+}
+
+function createHandleChangeRecoveryAddressEventFname(): ChangeRecoveryAddressFname {
+  let event = changetype<ChangeRecoveryAddressFname>(newMockEvent())
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  event.transaction.hash = getTransactionHash()
+  event.logIndex = BigInt.fromI32(76)
+
+  event.parameters = new Array()
+  event.parameters.push(
+    new ethereum.EventParam("tokenId", ethereum.Value.fromUnsignedBigInt(BigInt.fromString("51735769851106138132655535136624048777650501777323249040829743839027683917824")))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("recovery", ethereum.Value.fromAddress(Address.fromString("0xda107a1caf36d198b12c16c7c7a1d1c795978c42") as Address))
+  )
+  return event as ChangeRecoveryAddressFname
 }
 
 function getTransactionHash(): Bytes {

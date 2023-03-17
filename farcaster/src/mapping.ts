@@ -238,7 +238,7 @@ export function handleFarcasterIdTransfer(event: FidTransfer): void {
  * @dev this function is called when a farcaster name recovery address is changed
  * @param event ChangeRecoveryAddress event from farcaster name registry
  */
-export function handleRecoveryAddressFname(event: FnameChangeRecoveryAddress): void {
+export function handleChangeRecoveryAddressFname(event: FnameChangeRecoveryAddress): void {
   log.info("handleRecoveryAddressFname id {} contractAddress {} recovery {}", [event.params.tokenId.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
   airstack.social.trackAirSocialProfileRecoveryAddressChangeTransaction(
     event.block,
