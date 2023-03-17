@@ -1,7 +1,8 @@
 import { newMockEvent } from "matchstick-as"
 import {
   Transfer,
-  ChangeRecoveryAddress as ChangeRecoveryAddressFname
+  ChangeRecoveryAddress as ChangeRecoveryAddressFname,
+  Renew
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
 import { Register, ChangeHome, ChangeRecoveryAddress, Transfer as FidTransfer } from "../generated/FarcasterIdRegistry/FarcasterIdRegistry";
 import { ethereum, Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
@@ -28,6 +29,31 @@ export function getHandleChangeRecoveryAddressEventFname(): ChangeRecoveryAddres
 }
 export function getHandleFarcasterIdTransferEvent(): FidTransfer {
   return createHandleFarcasterIdTransferEvent()
+}
+
+export function getHandleRenewFnameEvent(): Renew {
+  return createHandleRenewFnameEvent()
+}
+
+export function createHandleRenewFnameEvent(): Renew {
+  let event = changetype<Renew>(newMockEvent())
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  event.transaction.hash = getTransactionHash()
+  event.transaction.from = Address.fromString("0x084b1c3c81545d370f3634392de611cbbcee9999")
+  event.transaction.value = BigInt.fromString("354678908765")
+  event.address = Address.fromString("0xa16081f360e3847006db660bae1c6d1b2e17ec2a")
+  event.logIndex = BigInt.fromI32(76)
+
+  event.parameters = new Array()
+  event.parameters.push(
+    new ethereum.EventParam("tokenId", ethereum.Value.fromUnsignedBigInt(BigInt.fromString("51735769851106138132655535136624048777650501777323249040829743839027683917824")))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("expiry", ethereum.Value.fromUnsignedBigInt(BigInt.fromString("1620000000")))
+  )
+  return event as Renew
 }
 
 function createHandleFarcasterIdTransferEvent(): FidTransfer {

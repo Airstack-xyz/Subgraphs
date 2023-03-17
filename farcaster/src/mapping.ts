@@ -252,6 +252,17 @@ export function handleFarcasterIdTransfer(event: FidTransfer): void {
   }
 }
 
-// export function handleRenewFname(event: Renew): void {
-//   createRenewFname(event);
-// }
+export function handleRenewFname(event: Renew): void {
+  log.info("handleRenewFname tokenId {} renewalCost {} expiryTs {} contractAddress {} txhash {}", [event.params.tokenId.toString(), event.transaction.value.toString(), event.params.expiry.toString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
+  airstack.social.trackAirSocialProfileRenewalTransaction(
+    event.block,
+    event.transaction.hash.toHexString(),
+    event.logIndex,
+    event.transaction.from.toHexString(),
+    event.address.toHexString(),
+    event.params.tokenId.toString(),
+    event.address.toHexString(),
+    event.params.expiry,
+    event.transaction.value,
+  );
+}

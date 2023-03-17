@@ -7,8 +7,8 @@ import {
   createMockedFunction,
 } from "matchstick-as/assembly/index"
 import { Address, BigInt, ethereum, Bytes } from "@graphprotocol/graph-ts"
-import { FARCASTER_ID_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, getHandleFarcasterNameTransferEvent, getHandleRegisterEvent, getHandleChangeHomeEvent, getHandleChangeRecoveryAddressEvent, getHandleChangeRecoveryAddressEventFname, getHandleFarcasterIdTransferEvent } from "./mapping-utils"
-import { handleFarcasterNameTransfer, handleRegister, handleChangeHomeUrlFid, handleChangeRecoveryAddressFid, handleChangeRecoveryAddressFname, handleFarcasterIdTransfer } from "../src/mapping"
+import { FARCASTER_ID_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, getHandleFarcasterNameTransferEvent, getHandleRegisterEvent, getHandleChangeHomeEvent, getHandleChangeRecoveryAddressEvent, getHandleChangeRecoveryAddressEventFname, getHandleFarcasterIdTransferEvent, getHandleRenewFnameEvent } from "./mapping-utils"
+import { handleFarcasterNameTransfer, handleRegister, handleChangeHomeUrlFid, handleChangeRecoveryAddressFid, handleChangeRecoveryAddressFname, handleFarcasterIdTransfer, handleRenewFname } from "../src/mapping"
 import { AirExtra, AirSocialProfile, AirSocialUser } from "../generated/schema"
 
 describe("Mapping unit tests", () => {
@@ -544,6 +544,92 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "index", "1")
     assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "protocolType", "SOCIAL")
     assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "protocolActionType", "SOCIAL_USER_OWNERSHIP_CHANGE")
+  })
+
+  test("Test handleRenewFname", () => {
+    // create air social user
+    let airSocialProfile = new AirSocialProfile("1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    const farcasterName = Bytes.fromHexString(BigInt.fromString("51735769851106138132655535136624048777650501777323249040829743839027683917824").toHexString()).toString();
+    airSocialProfile.name = farcasterName;
+    airSocialProfile.tokenId = "51735769851106138132655535136624048777650501777323249040829743839027683917824";
+    airSocialProfile.tokenAddress = "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a";
+    airSocialProfile.expiryTimestamp = BigInt.fromString("234567898322");
+    airSocialProfile.user = "1-9397"
+    airSocialProfile.extras = ["1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress"];
+    airSocialProfile.createdAt = "1-10098200";
+    airSocialProfile.lastUpdatedAt = "1-10098200";
+    airSocialProfile.save();
+    // assert here for air social user
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenId", "51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "name", "rahul7668gupta");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenAddress", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "expiryTimestamp", "234567898322");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "user", "1-9397");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "createdAt", "1-10098200");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200");
+    // call event handler
+    let event = getHandleRenewFnameEvent();
+    handleRenewFname(event);
+    // AirBlock
+    assert.fieldEquals("AirBlock", "1-10098239", "id", "1-10098239");
+    assert.fieldEquals("AirBlock", "1-10098239", "number", "10098239");
+    assert.fieldEquals("AirBlock", "1-10098239", "hash", "0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5");
+    assert.fieldEquals("AirBlock", "1-10098239", "timestamp", "2879823");
+    // AirAccount
+    let toAccountId = "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a";
+    assert.fieldEquals("AirAccount", toAccountId, "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
+    assert.fieldEquals("AirAccount", toAccountId, "address", "0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
+    assert.fieldEquals("AirAccount", toAccountId, "createdAt", "1-10098239");
+    let fromAccountId = "1-0x084b1c3c81545d370f3634392de611cbbcee9999";
+    assert.fieldEquals("AirAccount", fromAccountId, "id", "1-0x084b1c3c81545d370f3634392de611cbbcee9999");
+    assert.fieldEquals("AirAccount", fromAccountId, "address", "0x084b1c3c81545d370f3634392de611cbbcee9999");
+    assert.fieldEquals("AirAccount", fromAccountId, "createdAt", "1-10098239");
+    // AirMeta
+    assert.fieldEquals("AirMeta", "AIR_META", "id", "AIR_META")
+    assert.fieldEquals("AirMeta", "AIR_META", "name", "farcaster")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
+    // AirEntityCounter
+    let airEntityCounterId = "AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER";
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "id", "AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "count", "1");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "createdAt", "1-10098239");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", "1-10098239");
+    // AirToken
+    let airTokenId = "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a";
+    assert.fieldEquals("AirToken", airTokenId, "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
+    assert.fieldEquals("AirToken", airTokenId, "address", "0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
+    // updated AirSocialProfile
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenId", "51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "name", "rahul7668gupta");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenAddress", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "expiryTimestamp", "1620000000");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "renewalCost", "354678908765");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "user", "1-9397");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "createdAt", "1-10098200");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098239");
+    // AirSocialProfileRenewalTransaction
+    let airSocialProfileRenewalTransactionId = "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467-76-51735769851106138132655535136624048777650501777323249040829743839027683917824";
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "id", "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467-76-51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "expiryTimestamp", "1620000000");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "renewalCost", "354678908765");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "profile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "tokenId", "51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "tokenAddress", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "from", "1-0x084b1c3c81545d370f3634392de611cbbcee9999");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "to", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "transactionHash", "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "logOrCallIndex", "76");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "block", "1-10098239");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "index", "1");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "protocolType", "SOCIAL");
+    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "protocolActionType", "SOCIAL_PROFILE_NAME_RENEWAL");
   })
 
 })
