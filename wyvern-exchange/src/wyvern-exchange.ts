@@ -169,7 +169,8 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     )
 
     if (decoded == null) {
-      throw new Error("")
+      log.debug("missing record {} ",[txHash.toHexString()])
+      return
     }
 
     contractAddress =
