@@ -7,8 +7,8 @@ import {
   createMockedFunction,
 } from "matchstick-as/assembly/index"
 import { Address, BigInt, ethereum, Bytes } from "@graphprotocol/graph-ts"
-import { FARCASTER_ID_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, getHandleFarcasterNameTransferEvent, getHandleRegisterEvent, getHandleChangeHomeEvent, getHandleChangeRecoveryAddressEvent, getHandleChangeRecoveryAddressEventFname, FARCASTER_NAME_REGISTRY_CONTRACT } from "./mapping-utils"
-import { handleFarcasterNameTransfer, handleRegister, handleChangeHomeUrlFid, handleChangeRecoveryAddressFid, handleChangeRecoveryAddressFname } from "../src/mapping"
+import { FARCASTER_ID_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, getHandleFarcasterNameTransferEvent, getHandleRegisterEvent, getHandleChangeHomeEvent, getHandleChangeRecoveryAddressEvent, getHandleChangeRecoveryAddressEventFname, getHandleFarcasterIdTransferEvent } from "./mapping-utils"
+import { handleFarcasterNameTransfer, handleRegister, handleChangeHomeUrlFid, handleChangeRecoveryAddressFid, handleChangeRecoveryAddressFname, handleFarcasterIdTransfer } from "../src/mapping"
 import { AirExtra, AirSocialProfile, AirSocialUser } from "../generated/schema"
 
 describe("Mapping unit tests", () => {
@@ -419,11 +419,11 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirExtra", id, "name", "profileRecoveryAddress");
     assert.fieldEquals("AirExtra", id, "value", "0xca207a1caf36d198b12c16c7c7a1d1c795978c42");
     // create air social user
-    let airSocialProfile = new AirSocialProfile("1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    let airSocialProfile = new AirSocialProfile("1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
     const farcasterName = Bytes.fromHexString(BigInt.fromString("51735769851106138132655535136624048777650501777323249040829743839027683917824").toHexString()).toString();
     airSocialProfile.name = farcasterName;
     airSocialProfile.tokenId = "51735769851106138132655535136624048777650501777323249040829743839027683917824";
-    airSocialProfile.tokenAddress = "1-".concat(FARCASTER_NAME_REGISTRY_CONTRACT.toHexString());
+    airSocialProfile.tokenAddress = "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a";
     airSocialProfile.expiryTimestamp = BigInt.fromString("234567898322");
     airSocialProfile.user = "1-9397"
     airSocialProfile.extras = [id];
@@ -431,20 +431,20 @@ describe("Mapping unit tests", () => {
     airSocialProfile.lastUpdatedAt = "1-10098200";
     airSocialProfile.save();
     // assert here for air social user
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenId", "51735769851106138132655535136624048777650501777323249040829743839027683917824");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenAddress", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "expiryTimestamp", "234567898322");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "user", "1-9397");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "createdAt", "1-10098200");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenId", "51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenAddress", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "expiryTimestamp", "234567898322");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "user", "1-9397");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "createdAt", "1-10098200");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200");
     // call event handler for if condition
     let event = getHandleChangeRecoveryAddressEventFname()
     handleChangeRecoveryAddressFname(event);
     // assert extra ids and lastUpdatedAt for social user
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200"); // if extra entity exists
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200"); // if extra entity exists
     // assert air extra
     assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "id", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress");
     assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "name", "profileRecoveryAddress");
@@ -455,11 +455,11 @@ describe("Mapping unit tests", () => {
     // prepare - keeping chanid 1 for unit tests
     let id = "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress";
     // create air social user
-    let airSocialProfile = new AirSocialProfile("1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    let airSocialProfile = new AirSocialProfile("1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
     const farcasterName = Bytes.fromHexString(BigInt.fromString("51735769851106138132655535136624048777650501777323249040829743839027683917824").toHexString()).toString();
     airSocialProfile.name = farcasterName;
     airSocialProfile.tokenId = "51735769851106138132655535136624048777650501777323249040829743839027683917824";
-    airSocialProfile.tokenAddress = "1-".concat(FARCASTER_NAME_REGISTRY_CONTRACT.toHexString());
+    airSocialProfile.tokenAddress = "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a";
     airSocialProfile.expiryTimestamp = BigInt.fromString("234567898322");
     airSocialProfile.user = "1-9397"
     airSocialProfile.extras = null;
@@ -467,23 +467,83 @@ describe("Mapping unit tests", () => {
     airSocialProfile.lastUpdatedAt = "1-10098200";
     airSocialProfile.save();
     // assert here for air social user
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenId", "51735769851106138132655535136624048777650501777323249040829743839027683917824");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenAddress", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "expiryTimestamp", "234567898322");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "user", "1-9397");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "null");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "createdAt", "1-10098200");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenId", "51735769851106138132655535136624048777650501777323249040829743839027683917824");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenAddress", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "expiryTimestamp", "234567898322");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "user", "1-9397");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "null");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "createdAt", "1-10098200");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200");
     // call event handler for else condition
     let event = getHandleChangeRecoveryAddressEventFname()
     handleChangeRecoveryAddressFname(event);
     // assert extra ids and lastUpdatedAt for social user
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
-    assert.fieldEquals("AirSocialProfile", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098239"); // if extra entity doesnt exists
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098239"); // if extra entity doesnt exists
     // assert air extra
     assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "id", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress");
     assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "name", "profileRecoveryAddress");
     assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "value", "0xda107a1caf36d198b12c16c7c7a1d1c795978c42");
   })
+
+  test("Test handleFarcasterIdTransfer", () => {
+    let event = getHandleFarcasterIdTransferEvent()
+    handleFarcasterIdTransfer(event);
+    // AirBlock
+    assert.fieldEquals("AirBlock", "1-10098239", "id", "1-10098239");
+    assert.fieldEquals("AirBlock", "1-10098239", "number", "10098239");
+    assert.fieldEquals("AirBlock", "1-10098239", "hash", "0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5");
+    assert.fieldEquals("AirBlock", "1-10098239", "timestamp", "2879823");
+    // AirAccount
+    let toAccountId = "1-0x084b1c3c81545d370f3634392de611caabff8148";
+    assert.fieldEquals("AirAccount", toAccountId, "id", "1-0x084b1c3c81545d370f3634392de611caabff8148");
+    assert.fieldEquals("AirAccount", toAccountId, "address", "0x084b1c3c81545d370f3634392de611caabff8148");
+    assert.fieldEquals("AirAccount", toAccountId, "createdAt", "1-10098239");
+    let fromAccountId = "1-0x084b1c3c81545d370f3634392de611caabff8888";
+    assert.fieldEquals("AirAccount", fromAccountId, "id", "1-0x084b1c3c81545d370f3634392de611caabff8888");
+    assert.fieldEquals("AirAccount", fromAccountId, "address", "0x084b1c3c81545d370f3634392de611caabff8888");
+    assert.fieldEquals("AirAccount", fromAccountId, "createdAt", "1-10098239");
+    // AirMeta
+    assert.fieldEquals("AirMeta", "AIR_META", "id", "AIR_META")
+    assert.fieldEquals("AirMeta", "AIR_META", "name", "farcaster")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
+    // AirEntityCounter
+    let airEntityCounterId = "AIR_USER_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER";
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "id", "AIR_USER_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "count", "1");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "createdAt", "1-10098239");
+    assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", "1-10098239");
+    // AirToken
+    let airTokenId = "1-0x084b1c3c81545d370f3634392de611cbbcee9258";
+    assert.fieldEquals("AirToken", airTokenId, "id", "1-0x084b1c3c81545d370f3634392de611cbbcee9258");
+    assert.fieldEquals("AirToken", airTokenId, "address", "0x084b1c3c81545d370f3634392de611cbbcee9258");
+    // AirSocialUser
+    let AirSocialUserId = "1-9397";
+    assert.fieldEquals("AirSocialUser", AirSocialUserId, "id", "1-9397");
+    assert.fieldEquals("AirSocialUser", AirSocialUserId, "socialUserId", "9397");
+    assert.fieldEquals("AirSocialUser", AirSocialUserId, "address", "1-0x084b1c3c81545d370f3634392de611caabff8148");
+    // extras does not exist if the user is created in this txn
+    assert.fieldEquals("AirSocialUser", AirSocialUserId, "createdAt", "1-10098239");
+    assert.fieldEquals("AirSocialUser", AirSocialUserId, "lastUpdatedAt", "1-10098239");
+    // AirSocialUserOwnershipChangeTransaction
+    let airSocialUserOwnershipChangeTransactionId = "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467-76-9397";
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "id", "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467-76-9397")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "socialUserId", "9397")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "tokenId", "9397")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "tokenAddress", "1-0x084b1c3c81545d370f3634392de611cbbcee9258")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "user", "1-9397")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "from", "1-0x084b1c3c81545d370f3634392de611caabff8888")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "to", "1-0x084b1c3c81545d370f3634392de611caabff8148")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "transactionHash", "0xafb6d7ac92f6beb3f3df6a9bbfaeb2f99b9db020ee69199af95f2e8ea5253467")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "logOrCallIndex", "76")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "block", "1-10098239")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "index", "1")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "protocolType", "SOCIAL")
+    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "protocolActionType", "SOCIAL_USER_OWNERSHIP_CHANGE")
+  })
+
 })

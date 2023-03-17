@@ -214,6 +214,24 @@ export function handleChangeRecoveryAddressFid(event: FidChangeRecoveryAddress):
 }
 
 /**
+ * @dev this function is called when a farcaster name recovery address is changed
+ * @param event ChangeRecoveryAddress event from farcaster name registry
+*/
+export function handleChangeRecoveryAddressFname(event: FnameChangeRecoveryAddress): void {
+  log.info("handleRecoveryAddressFname id {} contractAddress {} recovery {}", [event.params.tokenId.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
+  airstack.social.trackAirSocialProfileRecoveryAddressChangeTransaction(
+    event.block,
+    event.transaction.hash.toHexString(),
+    event.logIndex,
+    event.transaction.from.toHexString(),
+    event.address.toHexString(),
+    event.params.tokenId.toString(),
+    event.address.toHexString(),
+    event.params.recovery.toHexString(),
+  )
+}
+
+/**
  * @dev this function is called when a farcaster id is transferred
  * @param event Transfer event from farcaster id registry
  */
@@ -228,28 +246,10 @@ export function handleFarcasterIdTransfer(event: FidTransfer): void {
       event.params.from.toHexString(),
       event.params.to.toHexString(),
       event.params.id.toString(),
-      FARCASTER_ID_REGISTRY_CONTRACT.toHexString(),
+      event.address.toHexString(),
       event.params.id.toString(),
     );
   }
-}
-
-/**
- * @dev this function is called when a farcaster name recovery address is changed
- * @param event ChangeRecoveryAddress event from farcaster name registry
- */
-export function handleChangeRecoveryAddressFname(event: FnameChangeRecoveryAddress): void {
-  log.info("handleRecoveryAddressFname id {} contractAddress {} recovery {}", [event.params.tokenId.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
-  airstack.social.trackAirSocialProfileRecoveryAddressChangeTransaction(
-    event.block,
-    event.transaction.hash.toHexString(),
-    event.logIndex,
-    event.transaction.from.toHexString(),
-    event.address.toHexString(),
-    event.params.tokenId.toString(),
-    FARCASTER_NAME_REGISTRY_CONTRACT.toHexString(),
-    event.params.recovery.toHexString(),
-  )
 }
 
 // export function handleRenewFname(event: Renew): void {

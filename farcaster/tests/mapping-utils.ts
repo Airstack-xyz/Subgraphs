@@ -3,7 +3,7 @@ import {
   Transfer,
   ChangeRecoveryAddress as ChangeRecoveryAddressFname
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
-import { Register, ChangeHome, ChangeRecoveryAddress } from "../generated/FarcasterIdRegistry/FarcasterIdRegistry";
+import { Register, ChangeHome, ChangeRecoveryAddress, Transfer as FidTransfer } from "../generated/FarcasterIdRegistry/FarcasterIdRegistry";
 import { ethereum, Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
 import { UserRegAndProfileFarcasterMapping } from "../generated/schema";
 
@@ -25,6 +25,31 @@ export function getHandleChangeRecoveryAddressEvent(): ChangeRecoveryAddress {
 
 export function getHandleChangeRecoveryAddressEventFname(): ChangeRecoveryAddressFname {
   return createHandleChangeRecoveryAddressEventFname()
+}
+export function getHandleFarcasterIdTransferEvent(): FidTransfer {
+  return createHandleFarcasterIdTransferEvent()
+}
+
+function createHandleFarcasterIdTransferEvent(): FidTransfer {
+  let event = changetype<FidTransfer>(newMockEvent())
+  event.block.number = BigInt.fromI32(10098239);
+  event.block.timestamp = BigInt.fromI32(2879823);
+  event.block.hash = Bytes.fromHexString("0x701633854b23364112e8528a85254a039abf8d1d81d629f88426196819e0b0b5")
+  event.transaction.hash = getTransactionHash()
+  event.address = Address.fromString("0x084b1c3c81545d370f3634392de611cbbcee9258")
+  event.logIndex = BigInt.fromI32(76)
+
+  event.parameters = new Array()
+  event.parameters.push(
+    new ethereum.EventParam("from", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabff8888") as Address))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("to", ethereum.Value.fromAddress(Address.fromString("0x084b1c3c81545d370f3634392de611caabff8148") as Address))
+  )
+  event.parameters.push(
+    new ethereum.EventParam("id", ethereum.Value.fromUnsignedBigInt(BigInt.fromString("9397")))
+  )
+  return event as FidTransfer;
 }
 
 function createHandleRegisterEvent(): Register {
