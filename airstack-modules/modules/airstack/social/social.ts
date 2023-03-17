@@ -19,6 +19,7 @@ import { zeroAddress } from '../../../src/utils';
 export namespace social {
 
   // start of track functions
+
   /**
    * @dev this function tracks a air social user and profile registered transaction
    * @param block ethereum block
@@ -66,7 +67,6 @@ export namespace social {
         extraId,
       );
       AirSocialUserExtraIds.push(extraId);
-      AirSocialUserExtraData.save();
       AirSocialUserExtras.push(AirSocialUserExtraData);
     }
     // create air social profile extras
@@ -81,7 +81,6 @@ export namespace social {
         extraId,
       );
       AirSocialProfileExtraIds.push(extraId);
-      AirSocialProfileExtraData.save();
       AirSocialProfileExtras.push(AirSocialProfileExtraData);
     }
     // create air social user
@@ -477,7 +476,6 @@ export namespace social {
       airSocialProfile,
     );
   }
-
   //end of track functions
 
   /**
@@ -655,6 +653,18 @@ export namespace social {
     }
   }
 
+  /**
+   * @dev this function creates a AirSocialProfileOnwershipChangeTransaction entity
+   * @param chainId chain id
+   * @param block air block entity
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from erc721 token sender address
+   * @param to erc721 token receiver address
+   * @param tokenId erc721 token id
+   * @param tokenAddress erc721 token address
+   * @param airSocialProfile air social profile entity
+   */
   function createAirSocialProfileOnwershipChangeTransaction(
     chainId: string,
     block: AirBlock,
@@ -692,6 +702,18 @@ export namespace social {
     }
   }
 
+  /**
+   * @dev this function creates a AirSocialUserOnwershipChangeTransaction entity
+   * @param chainId chain id
+   * @param block air block entity
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from erc721 token sender address
+   * @param to erc721 token receiver address
+   * @param tokenId erc721 token id
+   * @param tokenAddress erc721 token address
+   * @param airSocialUser air social user entity
+   */
   function createAirSocialUserOnwershipChangeTransaction(
     chainId: string,
     block: AirBlock,
@@ -728,6 +750,20 @@ export namespace social {
     }
   }
 
+  /**
+   * @dev this function creates a AirSocialProfileRecoveryAddressChangeTransaction entity
+   * @param chainId chain id
+   * @param block air block entity
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from erc721 token sender address
+   * @param to erc721 token receiver address
+   * @param tokenId erc721 token id
+   * @param tokenAddress erc721 token address
+   * @param oldRecoveryAddress old recovery address
+   * @param newRecoveryAddress new recovery address
+   * @param airSocialProfile air social profile entity
+   */
   function createAirSocialProfileRecoveryAddressChangeTransaction(
     chainId: string,
     block: AirBlock,
@@ -774,6 +810,20 @@ export namespace social {
     }
   }
 
+  /**
+   * @dev this function creates a AirSocialUserRecoveryAddressChangeTransaction entity
+   * @param chainId chain id
+   * @param block air block entity
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from erc721 token sender address
+   * @param to erc721 token receiver address
+   * @param tokenId erc721 token id
+   * @param tokenAddress erc721 token address
+   * @param oldRecoveryAddress old recovery address
+   * @param newRecoveryAddress new recovery address
+   * @param airSocialUser air social user entity
+   */
   function createAirSocialUserRecoveryAddressChangeTransaction(
     chainId: string,
     block: AirBlock,
@@ -820,6 +870,20 @@ export namespace social {
     }
   }
 
+  /**
+   * @dev this function creates a AirSocialUserHomeUrlChangeTransaction entity
+   * @param chainId chain id
+   * @param block air block entity
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from erc721 token sender address
+   * @param to erc721 token receiver address
+   * @param tokenId erc721 token id
+   * @param tokenAddress erc721 token address
+   * @param oldHomeUrl old home url
+   * @param newHomeUrl new home url
+   * @param airSocialUser air social user entity
+   */
   function createAirSocialUserHomeUrlChangeTransaction(
     chainId: string,
     block: AirBlock,
@@ -860,6 +924,20 @@ export namespace social {
     }
   }
 
+  /**
+   * @dev this function creates a AirSocialUserHomeUrlChangeTransaction entity
+   * @param chainId chain id
+   * @param block air block entity
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from erc721 token sender address
+   * @param to erc721 token receiver address
+   * @param tokenId erc721 token id
+   * @param tokenAddress erc721 token address
+   * @param expiryTimestamp profile expiry timestamp
+   * @param renewalCost profile renewal cost
+   * @param airSocialProfile air social profile entity
+   */
   function createAirSocialProfileRenewalTransaction(
     chainId: string,
     block: AirBlock,
