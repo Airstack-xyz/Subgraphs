@@ -2,7 +2,7 @@ import { newMockEvent } from "matchstick-as"
 import {
   Transfer
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
-import { Register, ChangeHome, ChangeRecoveryAddress } from "../generated/FarcasterNameRegistry/FarcasterIdRegistry";
+import { Register, ChangeHome, ChangeRecoveryAddress } from "../generated/FarcasterIdRegistry/FarcasterIdRegistry";
 import { ethereum, Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
 import { UserRegAndProfileFarcasterMapping } from "../generated/schema";
 

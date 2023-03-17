@@ -1,12 +1,16 @@
-import { Bytes, log } from "@graphprotocol/graph-ts"
+import { BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 import {
   FarcasterNameRegistry,
-  Transfer
+  Transfer,
+  ChangeRecoveryAddress as FnameChangeRecoveryAddress,
+  Renew,
+  Invite,
+  BidCall
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
-import { Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress } from "../generated/FarcasterNameRegistry/FarcasterIdRegistry";
+import { Transfer as FidTransfer, Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress as FidChangeRecoveryAddress } from "../generated/FarcasterIdRegistry/FarcasterIdRegistry";
 import * as airstack from "../modules/airstack/social/social";
-import { zeroAddress, FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping } from "./utils";
-import { AirExtra, AirProfile, AirUser } from "../generated/schema";
+import { zeroAddress, FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping, getExpiryTimestampFromFnameRegistry } from "./utils";
+import { AirExtra, AirSocialProfile, AirSocialUser } from "../generated/schema";
 import { getChainId, getOrCreateAirAccount, getOrCreateAirBlock } from "../modules/airstack/common";
 
 /**
@@ -30,18 +34,18 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
     airBlock.save();
     const userId = chainId.concat("-").concat(farcasterId.value.toString());
     const profileId = userId.concat("-").concat(FARCASTER_NAME_REGISTRY_CONTRACT.toHexString()).concat("-").concat(tokenId.toString());
-    let profile = AirProfile.load(profileId);
-    // create AirUser with toAddress (ideally use module function to create user)
-    let airUser = AirUser.load(userId);
-    if (airUser == null) {
-      airUser = new AirUser(userId);
+    let profile = AirSocialProfile.load(profileId);
+    // create AirSocialUser with toAddress (ideally use module function to create user)
+    let airSocialUser = AirSocialUser.load(userId);
+    if (airSocialUser == null) {
+      airSocialUser = new AirSocialUser(userId);
       const toAccount = getOrCreateAirAccount(chainId, toAdress.toHexString(), airBlock);
       toAccount.save();
-      airUser.address = toAccount.id;
-      airUser.dappUserId = farcasterId.value.toString();
-      airUser.createdAt = airBlock.id;
-      airUser.lastUpdatedAt = airBlock.id;
-      airUser.save();
+      airSocialUser.address = toAccount.id;
+      airSocialUser.socialUserId = farcasterId.value.toString();
+      airSocialUser.createdAt = airBlock.id;
+      airSocialUser.lastUpdatedAt = airBlock.id;
+      airSocialUser.save();
     }
     // update air user id in profile entity
     if (profile != null) {
@@ -97,6 +101,8 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
         mapping.homeUrl!,
       )
     );
+    // get expiry timestamp of profile name from farcaster name registry
+    const expiryTimestamp = getExpiryTimestampFromFnameRegistry(BigInt.fromString(mapping.tokenId!));
     // send transaction to airstack
     airstack.social.trackUserAndProfileRegisteredTransaction(
       event.block,
@@ -110,6 +116,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
       userExtras,
       mapping.farcasterProfileName!,
       profileExtras,
+      expiryTimestamp
     );
   }
 }
@@ -161,6 +168,8 @@ export function handleRegister(event: Register): void {
         mapping.homeUrl!,
       )
     );
+    // get expiry timestamp of profile name from farcaster name registry
+    const expiryTimestamp = getExpiryTimestampFromFnameRegistry(BigInt.fromString(mapping.tokenId!));
     // send transaction to airstack
     airstack.social.trackUserAndProfileRegisteredTransaction(
       event.block,
@@ -174,6 +183,7 @@ export function handleRegister(event: Register): void {
       userExtras,
       mapping.farcasterProfileName!,
       profileExtras,
+      expiryTimestamp
     );
   }
 }
@@ -199,7 +209,7 @@ export function handleChangeHome(event: ChangeHome): void {
  * @dev this function is called when a farcaster id recovery address is changed
  * @param event ChangeRecoveryAddress event from farcaster id registry
  */
-export function handleChangeRecoveryAddress(event: ChangeRecoveryAddress): void {
+export function handleChangeRecoveryAddress(event: FidChangeRecoveryAddress): void {
   log.info("handleChangeRecoveryAddress id {} contractAddress {} recovery {}", [event.params.id.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
   // load extra data for farcaster id
   let chainId = getChainId();
@@ -210,3 +220,36 @@ export function handleChangeRecoveryAddress(event: ChangeRecoveryAddress): void 
     extraEntity.save();
   }
 }
+
+// debug handlers
+// export function handleFarcasterIdTransfer(event: FidTransfer): void {
+//   log.info("handleFarcasterIdTransfer from {} to {} id {} contractAddress {} txhash {}", [event.params.from.toHexString(), event.params.to.toHexString(), event.params.id.toString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
+//   if (event.params.from != zeroAddress) {
+//     log.info("handleFarcasterIdTransfer from is not zero address hash {}", [event.transaction.hash.toHexString()]);
+//     createUserTokenTransfer(
+//       event.params.id,
+//       event.transaction.hash.toHexString(),
+//       event.logIndex,
+//       event.params.from.toHexString(),
+//       event.params.to.toHexString(),
+//       FARCASTER_ID_REGISTRY_CONTRACT,
+//       event.block
+//     );
+//   }
+// }
+
+// export function handleRecoveryAddressFname(event: FnameChangeRecoveryAddress): void {
+//   createRecoveryAddressFname(event);
+// }
+
+// export function handleRenewFname(event: Renew): void {
+//   createRenewFname(event);
+// }
+
+// export function handleFnameInvite(event: Invite): void {
+//   createFnameInvite(event);
+// }
+
+// export function handlerFnameBid(call: BidCall): void {
+//   createFnameBid(call);
+// }
