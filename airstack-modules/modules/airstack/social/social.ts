@@ -131,9 +131,8 @@ export namespace social {
     const chainId = getChainId();
     const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     airBlock.save();
-    const userId = createSocialUserEntityId(chainId, socialUserId);
     const airSocialProfile = getAirSocialProfile(
-      userId,
+      chainId,
       tokenAddress,
       tokenId,
     );
@@ -463,6 +462,10 @@ export namespace social {
     if (airSocialProfile == null) {
       throw new Error("air social profile not found");
     }
+    airSocialProfile.expiryTimestamp = expiryTimestamp;
+    airSocialProfile.renewalCost = renewalCost;
+    airSocialProfile.lastUpdatedAt = airBlock.id;
+    airSocialProfile.save();
     createAirSocialProfileRenewalTransaction(
       chainId,
       airBlock,
@@ -557,17 +560,17 @@ export namespace social {
 
   /**
    * @dev this functions gets an air social profile entity
-   * @param userId air social user entity id
+   * @param chainid chain id
    * @param tokenAddress air social profile token address
    * @param tokenId air social profile token id
    * @returns air social profile entity | null
    */
   function getAirSocialProfile(
-    userId: string,
+    chainId: string,
     tokenAddress: string,
     tokenId: string,
   ): AirSocialProfile | null {
-    const id = userId.concat("-").concat(tokenAddress).concat("-").concat(tokenId);
+    const id = chainId.concat("-").concat(tokenAddress).concat("-").concat(tokenId);
     return AirSocialProfile.load(id);
   }
 

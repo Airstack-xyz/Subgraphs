@@ -5,7 +5,13 @@ enum AirProtocolType {
 }
 
 enum AirProtocolActionType {
-  REGISTRATION
+  SOCIAL_REGISTRATION
+  SOCIAL_PROFILE_OWNERSHIP_CHANGE
+  SOCIAL_USER_OWNERSHIP_CHANGE
+  SOCIAL_PROFILE_NAME_RENEWAL
+  SOCIAL_PROFILE_RECOVERY_ADDRESS_CHANGE
+  SOCIAL_USER_HOME_URL_CHANGE
+  SOCIAL_USER_RECOVERY_ADDRESS_CHANGE
 }
 
 type AirBlock @entity {
@@ -63,6 +69,7 @@ type AirSocialProfile @entity {
   name: String!
   tokenId: String!
   expiryTimestamp: BigInt!
+  renewalCost: BigInt
   tokenAddress: AirToken!
   user: AirSocialUser!
   extras: [AirExtra!] #Store tokenUri
