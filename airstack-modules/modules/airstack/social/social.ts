@@ -138,6 +138,7 @@ export namespace social {
       tokenId,
     );
     if (airSocialProfile == null) {
+      throw new Error("air social profile not found");
       return;
     }
     const airSocialUser = createAirSocialUser(
@@ -734,6 +735,7 @@ export namespace social {
       const airToken = getOrCreateAirToken(chainId, tokenAddress);
       airToken.save();
       entity.tokenAddress = airToken.id;
+      entity.user = airSocialUser.id;
       const airAccountFrom = getOrCreateAirAccount(chainId, from, block);
       airAccountFrom.save();
       const airAccountTo = getOrCreateAirAccount(chainId, to, block);
