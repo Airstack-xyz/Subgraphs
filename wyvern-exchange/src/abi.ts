@@ -113,6 +113,11 @@ export namespace abi {
         // transferFrom(address,address,uint256,uint256)
         return functionSelector == "0x00fe9904" || functionSelector == "0xfe99049a"
     }
+
+    export function checkSharedStorefront(functionSelector: string): boolean {
+        // mintFrom(address,address,uint256)
+        return functionSelector == "0x6d5cb2f5"
+    }
     export function checkCallDataFunctionSelector(callData: Bytes): boolean {
         let functionSelector = changetype<Bytes>(callData.subarray(0, 4)).toHexString()
         log.info("@@checkCallDataFunctionSelector\n selector ( {} ) \n data ( {} )", [
@@ -439,6 +444,27 @@ export namespace abi {
                 tokenId,
                 BIGINT_ONE,
                 Address.fromString("0xfac7bea255a6990f749363002136af6556b31e04") //TODO: verify with future txns
+            )
+        } else if (checkSharedStorefront(functionSelector)) {
+            let decoded = ethereum
+                .decode("(address,address,uint256)", dataWithoutFunctionSelector)!
+                .toTuple()
+            let from = decoded[0].toAddress()
+            let to = decoded[1].toAddress()
+            let tokenId = decoded[2].toBigInt()
+            log.debug("checkSharedStorefront txHash {} from {} to {} tokenId", [
+                txHash,
+                from.toHexString(),
+                to.toHexString(),
+                tokenId.toString(),
+            ])
+            return new Decoded_TransferFrom_Result(
+                functionSelector,
+                from,
+                to,
+                tokenId,
+                BIGINT_ONE,
+                Address.fromString("0x5fbEf9FCb449D56154980e52E165d9650B9f6EC2") //TODO: verify with future txns
             )
         } else if (checkNonNFTCase(functionSelector)) {
             let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().split("fe99049a")[1]
