@@ -10,8 +10,9 @@ import {
 import { Transfer as FidTransfer, Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress as FidChangeRecoveryAddress } from "../generated/FarcasterIdRegistry/FarcasterIdRegistry";
 import * as airstack from "../modules/airstack/social/social";
 import { zeroAddress, FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping, getExpiryTimestampFromFnameRegistry } from "./utils";
-import { AirExtra, AirSocialProfile, AirSocialUser } from "../generated/schema";
-import { getChainId, getOrCreateAirAccount, getOrCreateAirBlock } from "../modules/airstack/common";
+import { AirExtra } from "../generated/schema";
+import { getChainId } from "../modules/airstack/common";
+import { userRecoveryAddress, userHomeUrl } from "../modules/airstack/social/utils";
 
 /**
  * @dev this function is called when a farcaster name is transfered
@@ -28,31 +29,17 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
 
   // check if event is a transfer txn, then update the user for the profile
   if (fromAdress.toHexString() != zeroAddress.toHexString()) {
-    // get profile entity
-    const chainId = getChainId();
-    const airBlock = getOrCreateAirBlock(chainId, event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-    airBlock.save();
-    const userId = chainId.concat("-").concat(farcasterId.value.toString());
-    const profileId = userId.concat("-").concat(FARCASTER_NAME_REGISTRY_CONTRACT.toHexString()).concat("-").concat(tokenId.toString());
-    let profile = AirSocialProfile.load(profileId);
-    // create AirSocialUser with toAddress (ideally use module function to create user)
-    let airSocialUser = AirSocialUser.load(userId);
-    if (airSocialUser == null) {
-      airSocialUser = new AirSocialUser(userId);
-      const toAccount = getOrCreateAirAccount(chainId, toAdress.toHexString(), airBlock);
-      toAccount.save();
-      airSocialUser.address = toAccount.id;
-      airSocialUser.socialUserId = farcasterId.value.toString();
-      airSocialUser.createdAt = airBlock.id;
-      airSocialUser.lastUpdatedAt = airBlock.id;
-      airSocialUser.save();
-    }
-    // update air user id in profile entity
-    if (profile != null) {
-      profile.user = userId;
-      profile.lastUpdatedAt = airBlock.id;
-      profile.save();
-    }
+    // track profile ownership change, not user registration
+    airstack.social.trackSocialProfileOnwershipChangeTransaction(
+      event.block,
+      event.transaction.hash.toHexString(),
+      event.transaction.index,
+      event.params.from.toHexString(),
+      event.params.to.toHexString(),
+      event.params.tokenId.toString(),
+      FARCASTER_NAME_REGISTRY_CONTRACT.toHexString(),
+      farcasterId.value.toString(),
+    )
     return;
   }
 
@@ -91,13 +78,13 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
     let userExtras = new Array<airstack.social.AirExtraData>();
     userExtras.push(
       new airstack.social.AirExtraData(
-        "recoveryAddress",
+        userRecoveryAddress,
         mapping.recoveryAddress!,
       )
     );
     userExtras.push(
       new airstack.social.AirExtraData(
-        "homeUrl",
+        userHomeUrl,
         mapping.homeUrl!,
       )
     );
@@ -158,13 +145,13 @@ export function handleRegister(event: Register): void {
     let userExtras = new Array<airstack.social.AirExtraData>();
     userExtras.push(
       new airstack.social.AirExtraData(
-        "recoveryAddress",
+        userRecoveryAddress,
         mapping.recoveryAddress!,
       )
     );
     userExtras.push(
       new airstack.social.AirExtraData(
-        "homeUrl",
+        userHomeUrl,
         mapping.homeUrl!,
       )
     );
@@ -192,64 +179,79 @@ export function handleRegister(event: Register): void {
  * @dev this function is called when a farcaster id home url is changed
  * @param event ChangeHome event from farcaster id registry
  */
-export function handleChangeHome(event: ChangeHome): void {
+export function handleChangeHomeUrlFid(event: ChangeHome): void {
   log.info("handleChangeHome id {} contractAddress {} url {}", [event.params.id.toString(), event.address.toHexString(), event.params.url]);
-  // load extra data for farcaster id
-  let chainId = getChainId();
-  let id = chainId.concat("-").concat(event.params.id.toString()).concat("-").concat("homeUrl");
-  let extraEntity = AirExtra.load(id);
-  if (extraEntity != null) {
-    log.info("handleChangeHome extraDataId {} name {} value {}", [extraEntity.id, extraEntity.name, extraEntity.value])
-    extraEntity.value = event.params.url;
-    extraEntity.save();
-  }
+  airstack.social.trackAirSocialUserHomeUrlChangeTransaction(
+    event.block,
+    event.transaction.hash.toHexString(),
+    event.logIndex,
+    event.transaction.from.toHexString(),
+    event.address.toHexString(),
+    event.params.id.toString(),
+    FARCASTER_ID_REGISTRY_CONTRACT.toHexString(),
+    event.params.id.toString(),
+    event.params.url,
+  );
 }
 
 /**
  * @dev this function is called when a farcaster id recovery address is changed
  * @param event ChangeRecoveryAddress event from farcaster id registry
  */
-export function handleChangeRecoveryAddress(event: FidChangeRecoveryAddress): void {
+export function handleChangeRecoveryAddressFid(event: FidChangeRecoveryAddress): void {
   log.info("handleChangeRecoveryAddress id {} contractAddress {} recovery {}", [event.params.id.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
-  // load extra data for farcaster id
-  let chainId = getChainId();
-  let id = chainId.concat("-").concat(event.params.id.toString()).concat("-").concat("recoveryAddress");
-  let extraEntity = AirExtra.load(id);
-  if (extraEntity != null) {
-    extraEntity.value = event.params.recovery.toHexString();
-    extraEntity.save();
+  airstack.social.trackAirSocialUserRecoveryAddressChangeTransaction(
+    event.block,
+    event.transaction.hash.toHexString(),
+    event.logIndex,
+    event.transaction.from.toHexString(),
+    event.address.toHexString(),
+    event.params.id.toString(),
+    FARCASTER_ID_REGISTRY_CONTRACT.toHexString(),
+    event.params.id.toString(),
+    event.params.recovery.toHexString(),
+  )
+}
+
+/**
+ * @dev this function is called when a farcaster id is transferred
+ * @param event Transfer event from farcaster id registry
+ */
+export function handleFarcasterIdTransfer(event: FidTransfer): void {
+  log.info("handleFarcasterIdTransfer from {} to {} id {} contractAddress {} txhash {}", [event.params.from.toHexString(), event.params.to.toHexString(), event.params.id.toString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
+  if (event.params.from != zeroAddress) {
+    log.info("handleFarcasterIdTransfer from is not zero address hash {}", [event.transaction.hash.toHexString()]);
+    airstack.social.trackSocialUserOwnershipChangeTransaction(
+      event.block,
+      event.transaction.hash.toHexString(),
+      event.logIndex,
+      event.params.from.toHexString(),
+      event.params.to.toHexString(),
+      event.params.id.toString(),
+      FARCASTER_ID_REGISTRY_CONTRACT.toHexString(),
+      event.params.id.toString(),
+    );
   }
 }
 
-// debug handlers
-// export function handleFarcasterIdTransfer(event: FidTransfer): void {
-//   log.info("handleFarcasterIdTransfer from {} to {} id {} contractAddress {} txhash {}", [event.params.from.toHexString(), event.params.to.toHexString(), event.params.id.toString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
-//   if (event.params.from != zeroAddress) {
-//     log.info("handleFarcasterIdTransfer from is not zero address hash {}", [event.transaction.hash.toHexString()]);
-//     createUserTokenTransfer(
-//       event.params.id,
-//       event.transaction.hash.toHexString(),
-//       event.logIndex,
-//       event.params.from.toHexString(),
-//       event.params.to.toHexString(),
-//       FARCASTER_ID_REGISTRY_CONTRACT,
-//       event.block
-//     );
-//   }
-// }
-
-// export function handleRecoveryAddressFname(event: FnameChangeRecoveryAddress): void {
-//   createRecoveryAddressFname(event);
-// }
+/**
+ * @dev this function is called when a farcaster name recovery address is changed
+ * @param event ChangeRecoveryAddress event from farcaster name registry
+ */
+export function handleRecoveryAddressFname(event: FnameChangeRecoveryAddress): void {
+  log.info("handleRecoveryAddressFname id {} contractAddress {} recovery {}", [event.params.tokenId.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
+  airstack.social.trackAirSocialProfileRecoveryAddressChangeTransaction(
+    event.block,
+    event.transaction.hash.toHexString(),
+    event.logIndex,
+    event.transaction.from.toHexString(),
+    event.address.toHexString(),
+    event.params.tokenId.toString(),
+    FARCASTER_NAME_REGISTRY_CONTRACT.toHexString(),
+    event.params.recovery.toHexString(),
+  )
+}
 
 // export function handleRenewFname(event: Renew): void {
 //   createRenewFname(event);
-// }
-
-// export function handleFnameInvite(event: Invite): void {
-//   createFnameInvite(event);
-// }
-
-// export function handlerFnameBid(call: BidCall): void {
-//   createFnameBid(call);
 // }

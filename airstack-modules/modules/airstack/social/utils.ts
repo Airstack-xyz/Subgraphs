@@ -7,18 +7,32 @@ export namespace AirProtocolType {
 }
 
 export namespace AirProtocolActionType {
-  export const REGISTRATION = "REGISTRATION";
+  export const SOCIAL_REGISTRATION = "SOCIAL_REGISTRATION";
+  export const SOCIAL_PROFILE_OWNERSHIP_CHANGE = "SOCIAL_PROFILE_OWNERSHIP_CHANGE";
+  export const SOCIAL_USER_OWNERSHIP_CHANGE = "SOCIAL_USER_OWNERSHIP_CHANGE";
+  export const SOCIAL_PROFILE_NAME_RENEWAL = "SOCIAL_PROFILE_NAME_RENEWAL";
+  export const SOCIAL_PROFILE_RECOVERY_ADDRESS_CHANGE = "SOCIAL_PROFILE_RECOVERY_ADDRESS_CHANGE";
+  export const SOCIAL_USER_HOME_URL_CHANGE = "SOCIAL_USER_HOME_URL_CHANGE";
+  export const SOCIAL_USER_RECOVERY_ADDRESS_CHANGE = "SOCIAL_USER_RECOVERY_ADDRESS_CHANGE";
 }
 
 export const AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID = "AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER";
+export const AIR_PROFILE_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID = "AIR_PROFILE_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER";
+export const AIR_USER_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID = "AIR_USER_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER";
+export const AIR_PROFILE_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID = "AIR_PROFILE_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER";
+export const AIR_USER_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID = "AIR_USER_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER";
+export const AIR_USER_HOME_URL_CHANGE_TRANSACTION_ENTITY_COUNTER_ID = "AIR_USER_HOME_URL_CHANGE_TRANSACTION_ENTITY_COUNTER";
+export const AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER_ID = "AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER";
 
-export function createUserEntityId(chainId: string, dappUserId: string): string {
-  return chainId.concat("-").concat(dappUserId);
+export const profileRecoveryAddress = "profileRecoveryAddress";
+export const userRecoveryAddress = "userRecoveryAddress";
+export const userHomeUrl = "userHomeUrl";
+
+export function createSocialUserEntityId(chainId: string, socialUserId: string): string {
+  return chainId.concat("-").concat(socialUserId);
 }
 
-
 /**
- * @dev this function does not save the returned entity
  * @dev this function creates an air extra entity
  * @param name air extra name
  * @param value air extra value
@@ -36,5 +50,6 @@ export function createAirExtra(
     entity.name = name;
     entity.value = value;
   }
+  entity.save();
   return entity as AirExtra;
 }

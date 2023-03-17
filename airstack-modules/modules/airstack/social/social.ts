@@ -1,18 +1,26 @@
 import { BigInt, ethereum } from '@graphprotocol/graph-ts';
 import {
   AirExtra,
-  AirUser,
-  AirProfile,
+  AirSocialUser,
+  AirSocialProfile,
   AirBlock,
-  AirUserRegisteredTransaction,
+  AirSocialUserRegisteredTransaction,
+  AirSocialProfileOwnershipChangeTransaction,
+  AirSocialUserOwnershipChangeTransaction,
+  AirSocialProfileRecoveryAddressChangeTransaction,
+  AirSocialUserRecoveryAddressChangeTransaction,
+  AirSocialUserHomeUrlChangeTransaction,
+  AirSocialProfileRenewalTransaction,
 } from '../../../generated/schema';
-import { getOrCreateAirAccount, getOrCreateAirBlock, getChainId, updateAirEntityCounter, getOrCreateAirToken } from '../common/index';
-import { AirProtocolType, AirProtocolActionType, AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID, createUserEntityId, createAirExtra } from './utils';
+import { getOrCreateAirAccount, getOrCreateAirBlock, getChainId, updateAirEntityCounter, getOrCreateAirToken, EMPTY_STRING } from '../common/index';
+import { AirProtocolType, AirProtocolActionType, AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID, createSocialUserEntityId, createAirExtra, AIR_PROFILE_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_PROFILE_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, profileRecoveryAddress, userRecoveryAddress, AIR_USER_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_HOME_URL_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, userHomeUrl, AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER_ID } from './utils';
+import { zeroAddress } from '../../../src/utils';
 
 export namespace social {
 
+  // start of track functions
   /**
-   * @dev this function tracks a air user and profile registered transaction
+   * @dev this function tracks a air social user and profile registered transaction
    * @param block ethereum block
    * @param transactionHash transaction hash
    * @param logOrCallIndex log or call index
@@ -20,10 +28,11 @@ export namespace social {
    * @param to erc721 token receiver address
    * @param tokenId erc721 token id
    * @param tokenAddress erc721 token address
-   * @param dappUserId dapp user id (eg: farcasterId)
+   * @param socialUserId dapp user id (eg: farcasterId)
    * @param userExtras air extra data array (eg: farcaster homeUrl and recoveryAddress)
-   * @param profileName air profile name (eg: farcaster profile name)
+   * @param profileName air social profile name (eg: farcaster profile name)
    * @param profileExtras air extra data array (eg: farcaster profile tokenUri)
+   * @param profileExpiryTimestamp air social profile expiry timestamp
    */
   export function trackUserAndProfileRegisteredTransaction(
     block: ethereum.Block,
@@ -33,118 +42,490 @@ export namespace social {
     to: string,
     tokenId: string,
     tokenAddress: string,
-    dappUserId: string,
+    socialUserId: string,
     userExtras: AirExtraData[],
     profileName: string,
     profileExtras: AirExtraData[],
+    profileExpiryTimestamp: BigInt,
   ): void {
     const chainId = getChainId();
     // creating air block
     const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     airBlock.save();
-    // creating air user
-    const userId = createUserEntityId(chainId, dappUserId);
-    // create air user extras
-    let airUserExtras = new Array<AirExtra>();
-    let airUserExtraIds = new Array<string>();
+    // creating air social user
+    const userId = createSocialUserEntityId(chainId, socialUserId);
+    // create air social user extras
+    let AirSocialUserExtras = new Array<AirExtra>();
+    let AirSocialUserExtraIds = new Array<string>();
     for (let i = 0; i < userExtras.length; i++) {
       const extra = userExtras[i];
       const extraId = userId.concat("-").concat(extra.name);
-      const airUserExtraData = createAirExtra(
+      const AirSocialUserExtraData = createAirExtra(
         extra.name,
         extra.value,
         extraId,
       );
-      airUserExtraIds.push(extraId);
-      airUserExtraData.save();
-      airUserExtras.push(airUserExtraData);
+      AirSocialUserExtraIds.push(extraId);
+      AirSocialUserExtraData.save();
+      AirSocialUserExtras.push(AirSocialUserExtraData);
     }
-    // create air profile extras
-    let airProfileExtras = new Array<AirExtra>();
-    let airProfileExtraIds = new Array<string>();
+    // create air social profile extras
+    let AirSocialProfileExtras = new Array<AirExtra>();
+    let AirSocialProfileExtraIds = new Array<string>();
     for (let i = 0; i < profileExtras.length; i++) {
       const extra = profileExtras[i];
       const extraId = userId.concat("-").concat(extra.name);
-      const airProfileExtraData = createAirExtra(
+      const AirSocialProfileExtraData = createAirExtra(
         extra.name,
         extra.value,
         extraId,
       );
-      airProfileExtraIds.push(extraId);
-      airProfileExtraData.save();
-      airProfileExtras.push(airProfileExtraData);
+      AirSocialProfileExtraIds.push(extraId);
+      AirSocialProfileExtraData.save();
+      AirSocialProfileExtras.push(AirSocialProfileExtraData);
     }
-    // create air user
-    const airUser = getOrCreateAirUser(chainId, airBlock, dappUserId, to, airUserExtraIds);
-    airUser.save();
-    // create air profile
-    const airProfile = getOrCreateAirProfile(airBlock, chainId, airUser.id, profileName, tokenId, tokenAddress, airProfileExtraIds);
-    airProfile.save();
-    // create air user registered transaction
-    createAirUserRegisteredTransaction(
+    // create air social user
+    const airSocialUser = createAirSocialUser(chainId, airBlock, socialUserId, to, AirSocialUserExtraIds);
+    // create air social profile
+    const airSocialProfile = createAirSocialProfile(airBlock, chainId, airSocialUser.id, profileName, tokenId, tokenAddress, AirSocialProfileExtraIds, profileExpiryTimestamp);
+    // create air social user registered transaction
+    createAirSocialUserRegisteredTransaction(
       chainId,
       airBlock,
       transactionHash,
       logOrCallIndex,
       to,
-      airUser.id,
-      airProfile.id,
+      airSocialUser.id,
+      airSocialProfile.id,
       profileName,
       from,
       to,
       tokenId,
       tokenAddress,
-      airUserExtraIds,
-      airProfileExtraIds,
+      AirSocialUserExtraIds,
+      AirSocialProfileExtraIds,
+      profileExpiryTimestamp,
     );
   }
 
   /**
-   * @dev this function does not save the returned entity
-   * @dev this function gets or creates a AirUser entity
-   * @param chainId chain id
-   * @param block air block entity
-   * @param dappUserId dapp user id
-   * @param address air user address (owner of the dappUserId)
-   * @param extrasIds air extra data entity ids
+   * @dev this function tracks a air social profile ownership change transaction
+   * @param block ethereum block
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from erc721 token sender addres
+   * @param to erc721 token receiver address
+   * @param tokenId erc721 token id
+   * @param tokenAddress erc721 token address
+   * @param socialUserId social user id (eg: farcasterId)
   */
-  function getOrCreateAirUser(
-    chainId: string,
-    block: AirBlock,
-    dappUserId: string,
-    address: string,
-    extrasIds: string[]
-  ): AirUser {
-    const id = createUserEntityId(chainId, dappUserId);
-    let entity = AirUser.load(id);
-    if (entity == null) {
-      entity = new AirUser(id);
-      const airAccount = getOrCreateAirAccount(chainId, address, block);
-      airAccount.save();
-      entity.dappUserId = dappUserId;
-      entity.address = airAccount.id;
-      entity.createdAt = block.id;
-      if (extrasIds.length > 0) {
-        entity.extras = extrasIds
-      };
-      entity.lastUpdatedAt = block.id;
+  export function trackSocialProfileOnwershipChangeTransaction(
+    block: ethereum.Block,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    socialUserId: string,
+  ): void {
+    const chainId = getChainId();
+    const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
+    const userId = createSocialUserEntityId(chainId, socialUserId);
+    const airSocialProfile = getAirSocialProfile(
+      userId,
+      tokenAddress,
+      tokenId,
+    );
+    if (airSocialProfile == null) {
+      return;
     }
-    return entity as AirUser;
+    const airSocialUser = createAirSocialUser(
+      chainId,
+      airBlock,
+      socialUserId,
+      to,
+      new Array<string>(),
+    );
+    createAirSocialProfileOnwershipChangeTransaction(
+      chainId,
+      airBlock,
+      transactionHash,
+      logOrCallIndex,
+      from,
+      to,
+      tokenId,
+      tokenAddress,
+      airSocialProfile,
+    )
   }
 
   /**
-   * @dev this function does not save the returned entity
-   * @dev this function creates a AirProfile entity
+   * @dev this function tracks a air social user ownership change transaction
+   * @param block ethereum block
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from erc721 token sender addres
+   * @param to erc721 token receiver address
+   * @param tokenId erc721 token id
+   * @param tokenAddress erc721 token address
+   * @param socialUserId social user id (eg: farcasterId)
+   */
+  export function trackSocialUserOwnershipChangeTransaction(
+    block: ethereum.Block,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    socialUserId: string,
+  ): void {
+    const chainId = getChainId();
+    const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
+    const airSocialUser = createAirSocialUser(
+      chainId,
+      airBlock,
+      socialUserId,
+      to,
+      new Array<string>(),
+    );
+    createAirSocialUserOnwershipChangeTransaction(
+      chainId,
+      airBlock,
+      transactionHash,
+      logOrCallIndex,
+      from,
+      to,
+      tokenId,
+      tokenAddress,
+      airSocialUser,
+    )
+  }
+
+  /**
+   * @dev this function tracks a air social profile recovery address change transaction
+   * @param block ethereum block
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from call sender
+   * @param to call receiver
+   * @param tokenId air social profile token id (eg: uint256 representation of farcasterName)
+   * @param tokenAddress air social profile token address
+   * @param recoveryAddress air social profile new recovery address
+   */
+  export function trackAirSocialProfileRecoveryAddressChangeTransaction(
+    block: ethereum.Block,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    recoveryAddress: string,
+  ): void {
+    let oldRecoveryAddress: string;
+    const chainId = getChainId();
+    const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
+    const airSocialProfile = getAirSocialProfile(
+      chainId,
+      tokenAddress,
+      tokenId,
+    );
+    if (airSocialProfile == null) {
+      throw new Error("air social profile not found");
+    }
+    // updating air social profile recovery address in extra entity
+    let profileRecoveryAddressExtraId = chainId.concat("-").concat(tokenId).concat("-").concat(profileRecoveryAddress);
+    let extraEntity = AirExtra.load(profileRecoveryAddressExtraId);
+    if (extraEntity != null) {
+      // of extra entity exists, update value
+      oldRecoveryAddress = extraEntity.value;
+      extraEntity.value = recoveryAddress;
+      extraEntity.save();
+    } else {
+      // if extra entity does not exist, create new one and update air social profile extras
+      oldRecoveryAddress = zeroAddress.toHexString();
+      const extraEntity = createAirExtra(
+        profileRecoveryAddress,
+        recoveryAddress,
+        profileRecoveryAddressExtraId,
+      );
+      let airExtras = airSocialProfile.extras;
+      if (airExtras == null) {
+        airExtras = [extraEntity.id];
+      } else {
+        airExtras.push(extraEntity.id);
+      }
+      airSocialProfile.extras = airExtras;
+      airSocialProfile.lastUpdatedAt = airBlock.id;
+      airSocialProfile.save();
+    }
+    createAirSocialProfileRecoveryAddressChangeTransaction(
+      chainId,
+      airBlock,
+      transactionHash,
+      logOrCallIndex,
+      from,
+      to,
+      tokenId,
+      tokenAddress,
+      oldRecoveryAddress,
+      recoveryAddress,
+      airSocialProfile,
+    );
+  }
+
+  /**
+   * @dev this function tracks a air social user recovery address change transaction
+   * @param block ethereum block
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from call sender
+   * @param to call receiver
+   * @param tokenId air social user token id (eg: farcasterId)
+   * @param tokenAddress air social user token address
+   * @param socialUserId air social user id (eg: farcasterId)
+   * @param recoveryAddress air social user new recovery address
+  */
+  export function trackAirSocialUserRecoveryAddressChangeTransaction(
+    block: ethereum.Block,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    socialUserId: string,
+    recoveryAddress: string,
+  ): void {
+    let oldRecoveryAddress: string;
+    const chainId = getChainId();
+    const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
+    const airSocialUser = getAirSocialUser(
+      chainId,
+      socialUserId,
+    );
+    if (airSocialUser == null) {
+      throw new Error("air social user not found");
+    }
+    // updating air social profile recovery address in extra entity
+    let userRecoveryAddressExtraId = chainId.concat("-").concat(socialUserId).concat("-").concat(userRecoveryAddress);
+    let extraEntity = AirExtra.load(userRecoveryAddressExtraId);
+    if (extraEntity != null) {
+      // of extra entity exists, update value
+      oldRecoveryAddress = extraEntity.value;
+      extraEntity.value = recoveryAddress;
+      extraEntity.save();
+    } else {
+      // if extra entity does not exist, create new one and update air social profile extras
+      oldRecoveryAddress = zeroAddress.toHexString();
+      const extraEntity = createAirExtra(
+        userRecoveryAddress,
+        recoveryAddress,
+        userRecoveryAddressExtraId,
+      );
+      let airExtras = airSocialUser.extras;
+      if (airExtras == null) {
+        airExtras = [extraEntity.id];
+      } else {
+        airExtras.push(extraEntity.id);
+      }
+      airSocialUser.extras = airExtras;
+      airSocialUser.lastUpdatedAt = airBlock.id;
+      airSocialUser.save();
+    }
+    createAirSocialUserRecoveryAddressChangeTransaction(
+      chainId,
+      airBlock,
+      transactionHash,
+      logOrCallIndex,
+      from,
+      to,
+      tokenId,
+      tokenAddress,
+      oldRecoveryAddress,
+      recoveryAddress,
+      airSocialUser,
+    );
+  }
+
+  /**
+ * @dev this function tracks a air social user recovery address change transaction
+ * @param block ethereum block
+ * @param transactionHash transaction hash
+ * @param logOrCallIndex log or call index
+ * @param from call sender
+ * @param to call receiver
+ * @param tokenId air social user token id (eg: farcasterId)
+ * @param tokenAddress air social user token address
+ * @param socialUserId air social user id (eg: farcasterId)
+ * @param homeUrl air social user new home url
+*/
+  export function trackAirSocialUserHomeUrlChangeTransaction(
+    block: ethereum.Block,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    socialUserId: string,
+    homeUrl: string,
+  ): void {
+    let oldHomeUrl: string;
+    const chainId = getChainId();
+    const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
+    const airSocialUser = getAirSocialUser(
+      chainId,
+      socialUserId,
+    );
+    if (airSocialUser == null) {
+      throw new Error("air social user not found");
+    }
+    // updating air social profile recovery address in extra entity
+    let userHomeUrlExtraId = chainId.concat("-").concat(socialUserId).concat("-").concat(userHomeUrl);
+    let extraEntity = AirExtra.load(userHomeUrlExtraId);
+    if (extraEntity != null) {
+      // of extra entity exists, update value
+      oldHomeUrl = extraEntity.value;
+      extraEntity.value = homeUrl;
+      extraEntity.save();
+    } else {
+      // if extra entity does not exist, create new one and update air social profile extras
+      oldHomeUrl = EMPTY_STRING;
+      const extraEntity = createAirExtra(
+        userHomeUrl,
+        homeUrl,
+        userHomeUrlExtraId,
+      );
+      let airExtras = airSocialUser.extras;
+      if (airExtras == null) {
+        airExtras = [extraEntity.id];
+      } else {
+        airExtras.push(extraEntity.id);
+      }
+      airSocialUser.extras = airExtras;
+      airSocialUser.lastUpdatedAt = airBlock.id;
+      airSocialUser.save();
+    }
+    createAirSocialUserHomeUrlChangeTransaction(
+      chainId,
+      airBlock,
+      transactionHash,
+      logOrCallIndex,
+      from,
+      to,
+      tokenId,
+      tokenAddress,
+      oldHomeUrl,
+      homeUrl,
+      airSocialUser,
+    );
+  }
+
+  /**
+   * @dev this function tracks a air social user profile renewal transaction
+   * @param block ethereum block
+   * @param transactionHash transaction hash
+   * @param logOrCallIndex log or call index
+   * @param from profile renewer address
+   * @param to call receiver address
+   * @param tokenId air social profile token id (eg: uint256 representation of farcasterName)
+   * @param tokenAddress air social profile token address
+   * @param expiryTimestamp air social profile new expiry timestamp
+   * @param renewalCost air social profile renewal cost
+  */
+  export function trackAirSocialProfileRenewalTransaction(
+    block: ethereum.Block,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    expiryTimestamp: BigInt,
+    renewalCost: BigInt,
+  ): void {
+    const chainId = getChainId();
+    const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
+    airBlock.save();
+    const airSocialProfile = getAirSocialProfile(
+      chainId,
+      tokenAddress,
+      tokenId,
+    );
+    if (airSocialProfile == null) {
+      throw new Error("air social profile not found");
+    }
+    createAirSocialProfileRenewalTransaction(
+      chainId,
+      airBlock,
+      transactionHash,
+      logOrCallIndex,
+      from,
+      to,
+      tokenId,
+      tokenAddress,
+      expiryTimestamp,
+      renewalCost,
+      airSocialProfile,
+    );
+  }
+
+  //end of track functions
+
+  /**
+   * @dev this function gets or creates a AirSocialUser entity
+   * @param chainId chain id
+   * @param block air block entity
+   * @param socialUserId social user id (eg: farcasterId)
+   * @param address air social user owner address (custody address of farcasterId)
+   * @param extrasIds air extra data entity ids
+   * @returns air social user entity
+  */
+  function createAirSocialUser(
+    chainId: string,
+    block: AirBlock,
+    socialUserId: string,
+    address: string,
+    extrasIds: string[]
+  ): AirSocialUser {
+    const id = createSocialUserEntityId(chainId, socialUserId);
+    let entity = AirSocialUser.load(id);
+    if (entity == null) {
+      entity = new AirSocialUser(id);
+    }
+    const airAccount = getOrCreateAirAccount(chainId, address, block);
+    airAccount.save();
+    entity.socialUserId = socialUserId;
+    entity.address = airAccount.id;
+    entity.createdAt = block.id;
+    if (extrasIds.length > 0) {
+      entity.extras = extrasIds
+    };
+    entity.lastUpdatedAt = block.id;
+    entity.save();
+    return entity as AirSocialUser;
+  }
+
+  /**
+   * @dev this function creates a AirSocialProfile entity
    * @param block ethereum block
    * @param chainId chain id
-   * @param userId air user id
-   * @param name air profile name
-   * @param tokenId air profile token id
-   * @param tokenAddress air profile token address
+   * @param name air social profile name
+   * @param tokenId air social profile token id
+   * @param tokenAddress air social profile token address
    * @param extraIds air extra data entity ids
-   * @returns air profile entity
+   * @param profileExpiryTimestamp timestamp when the profile expires
+   * @returns air social profile entity
    */
-  function getOrCreateAirProfile(
+  function createAirSocialProfile(
     block: AirBlock,
     chainId: string,
     userId: string,
@@ -152,14 +533,16 @@ export namespace social {
     tokenId: string,
     tokenAddress: string,
     extraIds: string[],
-  ): AirProfile {
-    const id = userId.concat("-").concat(tokenAddress).concat("-").concat(tokenId);
-    let entity = AirProfile.load(id);
+    profileExpiryTimestamp: BigInt
+  ): AirSocialProfile {
+    const id = chainId.concat("-").concat(tokenAddress).concat("-").concat(tokenId);
+    let entity = AirSocialProfile.load(id);
     if (entity == null) {
-      entity = new AirProfile(id);
+      entity = new AirSocialProfile(id);
       entity.name = name;
       entity.user = userId;
       entity.tokenId = tokenId;
+      entity.expiryTimestamp = profileExpiryTimestamp;
       const airToken = getOrCreateAirToken(chainId, tokenAddress);
       airToken.save();
       entity.tokenAddress = airToken.id;
@@ -169,27 +552,59 @@ export namespace social {
       entity.createdAt = block.id;
       entity.lastUpdatedAt = block.id;
     }
-    return entity as AirProfile;
+    entity.save();
+    return entity as AirSocialProfile;
   }
 
   /**
-   * @dev this function creates a AirUserRegisteredTransaction entity
+   * @dev this functions gets an air social profile entity
+   * @param userId air social user entity id
+   * @param tokenAddress air social profile token address
+   * @param tokenId air social profile token id
+   * @returns air social profile entity | null
+   */
+  function getAirSocialProfile(
+    userId: string,
+    tokenAddress: string,
+    tokenId: string,
+  ): AirSocialProfile | null {
+    const id = userId.concat("-").concat(tokenAddress).concat("-").concat(tokenId);
+    return AirSocialProfile.load(id);
+  }
+
+  /**
+   * @dev this function gets an AirSocialUser entity
+   * @param chainId chain id
+   * @param socialUserId social user id (eg: farcasterId)
+   * @returns air social user entity | null
+   */
+  function getAirSocialUser(
+    chainId: string,
+    socialUserId: string,
+  ): AirSocialUser | null {
+    const id = createSocialUserEntityId(chainId, socialUserId);
+    return AirSocialUser.load(id);
+  }
+
+  /**
+   * @dev this function creates a AirSocialUserRegisteredTransaction entity
    * @param chainId chain id
    * @param block air block entity
    * @param transactionHash transaction hash
    * @param logOrCallIndex log or call index
-   * @param address user address (owner of the dappUserId)
-   * @param userId air user entity id
-   * @param profileId air profile entity id
-   * @param name air profile name
+   * @param address user address (owner of the socialUserId)
+   * @param userId air social user entity id
+   * @param profileId air social profile entity id
+   * @param name air social profile name
    * @param from address from which user token was sent
    * @param to address to which user token was sent
    * @param tokenId token id of the user token
    * @param tokenAddress token address of the user token
-   * @param userExtrasIds air user extra data entity ids
-   * @param profileExtraIds air profile extra data entity ids
+   * @param userExtrasIds air social user extra data entity ids
+   * @param profileExtraIds air social profile extra data entity ids
+   * @param profileExpiryTimestamp timestamp when the profile expires
    */
-  function createAirUserRegisteredTransaction(
+  function createAirSocialUserRegisteredTransaction(
     chainId: string,
     block: AirBlock,
     transactionHash: string,
@@ -204,23 +619,25 @@ export namespace social {
     tokenAddress: string,
     userExtrasIds: string[],
     profileExtraIds: string[],
+    profileExpiryTimestamp: BigInt
   ): void {
     const id = userId.concat('-').concat(transactionHash).concat('-').concat(tokenAddress).concat('-').concat(tokenId);
-    let entity = AirUserRegisteredTransaction.load(id);
+    let entity = AirSocialUserRegisteredTransaction.load(id);
     if (entity == null) {
-      entity = new AirUserRegisteredTransaction(id);
+      entity = new AirSocialUserRegisteredTransaction(id);
       const airAccount = getOrCreateAirAccount(chainId, address, block);
       airAccount.save();
       const airAccountFrom = getOrCreateAirAccount(chainId, from, block);
       airAccountFrom.save();
       const airAccountTo = getOrCreateAirAccount(chainId, to, block);
       airAccountTo.save();
-      entity.address = airAccount.id; //dappUserId owner address
+      entity.address = airAccount.id; //socialUserId owner address
       entity.user = userId;
       entity.profile = profileId;
       entity.name = name;
+      entity.profileExpiryTimestamp = profileExpiryTimestamp;
       if (userExtrasIds.length > 0 || profileExtraIds.length > 0) {
-        entity.extras = userExtrasIds.concat(profileExtraIds); //air user extra data entity ids
+        entity.extras = userExtrasIds.concat(profileExtraIds); //air social user extra data entity ids
       }
       entity.from = airAccountFrom.id;
       entity.to = airAccountTo.id;
@@ -233,14 +650,259 @@ export namespace social {
       entity.block = block.id;
       entity.index = updateAirEntityCounter(AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID, block);
       entity.protocolType = AirProtocolType.SOCIAL;
-      entity.protocolActionType = AirProtocolActionType.REGISTRATION;
+      entity.protocolActionType = AirProtocolActionType.SOCIAL_REGISTRATION;
+      entity.save();
+    }
+  }
+
+  function createAirSocialProfileOnwershipChangeTransaction(
+    chainId: string,
+    block: AirBlock,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    airSocialProfile: AirSocialProfile
+  ): void {
+    const id = transactionHash.concat('-').concat(logOrCallIndex.toString()).concat('-').concat(tokenId);
+    let entity = AirSocialProfileOwnershipChangeTransaction.load(id);
+    if (entity == null) {
+      entity = new AirSocialProfileOwnershipChangeTransaction(id);
+      entity.profileName = airSocialProfile.name;
+      entity.profile = airSocialProfile.id;
+      entity.tokenId = tokenId;
+      const airToken = getOrCreateAirToken(chainId, tokenAddress);
+      airToken.save();
+      entity.tokenAddress = airToken.id;
+      const airAccountFrom = getOrCreateAirAccount(chainId, from, block);
+      airAccountFrom.save();
+      const airAccountTo = getOrCreateAirAccount(chainId, to, block);
+      airAccountTo.save();
+      entity.from = airAccountFrom.id;
+      entity.to = airAccountTo.id;
+      entity.transactionHash = transactionHash;
+      entity.logOrCallIndex = logOrCallIndex;
+      entity.block = block.id;
+      entity.index = updateAirEntityCounter(AIR_PROFILE_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, block);
+      entity.protocolType = AirProtocolType.SOCIAL;
+      entity.protocolActionType = AirProtocolActionType.SOCIAL_PROFILE_OWNERSHIP_CHANGE;
+      entity.save();
+    }
+  }
+
+  function createAirSocialUserOnwershipChangeTransaction(
+    chainId: string,
+    block: AirBlock,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    airSocialUser: AirSocialUser
+  ): void {
+    const id = transactionHash.concat('-').concat(logOrCallIndex.toString()).concat('-').concat(tokenId);
+    let entity = AirSocialUserOwnershipChangeTransaction.load(id);
+    if (entity == null) {
+      entity = new AirSocialUserOwnershipChangeTransaction(id);
+      entity.socialUserId = airSocialUser.socialUserId;
+      entity.tokenId = tokenId;
+      const airToken = getOrCreateAirToken(chainId, tokenAddress);
+      airToken.save();
+      entity.tokenAddress = airToken.id;
+      const airAccountFrom = getOrCreateAirAccount(chainId, from, block);
+      airAccountFrom.save();
+      const airAccountTo = getOrCreateAirAccount(chainId, to, block);
+      airAccountTo.save();
+      entity.from = airAccountFrom.id;
+      entity.to = airAccountTo.id;
+      entity.transactionHash = transactionHash;
+      entity.logOrCallIndex = logOrCallIndex;
+      entity.block = block.id;
+      entity.index = updateAirEntityCounter(AIR_USER_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, block);
+      entity.protocolType = AirProtocolType.SOCIAL;
+      entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_OWNERSHIP_CHANGE;
+      entity.save();
+    }
+  }
+
+  function createAirSocialProfileRecoveryAddressChangeTransaction(
+    chainId: string,
+    block: AirBlock,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    oldRecoveryAddress: string | null,
+    newRecoveryAddress: string,
+    airSocialProfile: AirSocialProfile
+  ): void {
+    const id = transactionHash.concat('-').concat(logOrCallIndex.toString()).concat('-').concat(tokenId);
+    let entity = AirSocialProfileRecoveryAddressChangeTransaction.load(id);
+    if (entity == null) {
+      entity = new AirSocialProfileRecoveryAddressChangeTransaction(id);
+      if (oldRecoveryAddress) {
+        const airAccountOldRecoveryAddress = getOrCreateAirAccount(chainId, oldRecoveryAddress, block);
+        airAccountOldRecoveryAddress.save();
+        entity.oldRecoveryAddress = airAccountOldRecoveryAddress.id;
+      }
+      const airAccountNewRecoveryAddress = getOrCreateAirAccount(chainId, newRecoveryAddress, block);
+      airAccountNewRecoveryAddress.save();
+      entity.newRecoveryAddress = airAccountNewRecoveryAddress.id;
+      entity.profile = airSocialProfile.id;
+      entity.tokenId = tokenId;
+      const airToken = getOrCreateAirToken(chainId, tokenAddress);
+      airToken.save();
+      entity.tokenAddress = airToken.id;
+      const airAccountFrom = getOrCreateAirAccount(chainId, from, block);
+      airAccountFrom.save();
+      entity.from = airAccountFrom.id;
+      const airAccountTo = getOrCreateAirAccount(chainId, to, block);
+      airAccountTo.save();
+      entity.to = airAccountTo.id;
+      entity.transactionHash = transactionHash;
+      entity.logOrCallIndex = logOrCallIndex;
+      entity.block = block.id;
+      entity.index = updateAirEntityCounter(AIR_PROFILE_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, block);
+      entity.protocolType = AirProtocolType.SOCIAL;
+      entity.protocolActionType = AirProtocolActionType.SOCIAL_PROFILE_RECOVERY_ADDRESS_CHANGE;
+      entity.save();
+    }
+  }
+
+  function createAirSocialUserRecoveryAddressChangeTransaction(
+    chainId: string,
+    block: AirBlock,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    oldRecoveryAddress: string | null,
+    newRecoveryAddress: string,
+    airSocialUser: AirSocialUser
+  ): void {
+    const id = transactionHash.concat('-').concat(logOrCallIndex.toString()).concat('-').concat(tokenId);
+    let entity = AirSocialUserRecoveryAddressChangeTransaction.load(id);
+    if (entity == null) {
+      entity = new AirSocialUserRecoveryAddressChangeTransaction(id);
+      if (oldRecoveryAddress) {
+        const airAccountOldRecoveryAddress = getOrCreateAirAccount(chainId, oldRecoveryAddress, block);
+        airAccountOldRecoveryAddress.save();
+        entity.oldRecoveryAddress = airAccountOldRecoveryAddress.id;
+      }
+      const airAccountNewRecoveryAddress = getOrCreateAirAccount(chainId, newRecoveryAddress, block);
+      airAccountNewRecoveryAddress.save();
+      entity.newRecoveryAddress = airAccountNewRecoveryAddress.id;
+      entity.user = airSocialUser.id;
+      entity.tokenId = tokenId;
+      const airToken = getOrCreateAirToken(chainId, tokenAddress);
+      airToken.save();
+      entity.tokenAddress = airToken.id;
+      const airAccountFrom = getOrCreateAirAccount(chainId, from, block);
+      airAccountFrom.save();
+      entity.from = airAccountFrom.id;
+      const airAccountTo = getOrCreateAirAccount(chainId, to, block);
+      airAccountTo.save();
+      entity.to = airAccountTo.id;
+      entity.transactionHash = transactionHash;
+      entity.logOrCallIndex = logOrCallIndex;
+      entity.block = block.id;
+      entity.index = updateAirEntityCounter(AIR_USER_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, block);
+      entity.protocolType = AirProtocolType.SOCIAL;
+      entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_RECOVERY_ADDRESS_CHANGE;
+      entity.save();
+    }
+  }
+
+  function createAirSocialUserHomeUrlChangeTransaction(
+    chainId: string,
+    block: AirBlock,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    oldHomeUrl: string | null,
+    newHomeUrl: string,
+    airSocialUser: AirSocialUser
+  ): void {
+    const id = transactionHash.concat('-').concat(logOrCallIndex.toString()).concat('-').concat(tokenId);
+    let entity = AirSocialUserHomeUrlChangeTransaction.load(id);
+    if (entity == null) {
+      entity = new AirSocialUserHomeUrlChangeTransaction(id);
+      entity.oldHomeUrl = oldHomeUrl;
+      entity.newHomeUrl = newHomeUrl;
+      entity.user = airSocialUser.id;
+      entity.tokenId = tokenId;
+      const airToken = getOrCreateAirToken(chainId, tokenAddress);
+      airToken.save();
+      entity.tokenAddress = airToken.id;
+      const airAccountFrom = getOrCreateAirAccount(chainId, from, block);
+      airAccountFrom.save();
+      entity.from = airAccountFrom.id;
+      const airAccountTo = getOrCreateAirAccount(chainId, to, block);
+      airAccountTo.save();
+      entity.to = airAccountTo.id;
+      entity.transactionHash = transactionHash;
+      entity.logOrCallIndex = logOrCallIndex;
+      entity.block = block.id;
+      entity.index = updateAirEntityCounter(AIR_USER_HOME_URL_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, block);
+      entity.protocolType = AirProtocolType.SOCIAL;
+      entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_HOME_URL_CHANGE;
+      entity.save();
+    }
+  }
+
+  function createAirSocialProfileRenewalTransaction(
+    chainId: string,
+    block: AirBlock,
+    transactionHash: string,
+    logOrCallIndex: BigInt,
+    from: string,
+    to: string,
+    tokenId: string,
+    tokenAddress: string,
+    expiryTimestamp: BigInt,
+    renewalCost: BigInt,
+    airSocialProfile: AirSocialProfile
+  ): void {
+    const id = transactionHash.concat('-').concat(logOrCallIndex.toString()).concat('-').concat(tokenId);
+    let entity = AirSocialProfileRenewalTransaction.load(id);
+    if (entity == null) {
+      entity = new AirSocialProfileRenewalTransaction(id);
+      entity.expiryTimestamp = expiryTimestamp;
+      entity.renewalCost = renewalCost;
+      entity.profile = airSocialProfile.id;
+      entity.tokenId = tokenId;
+      const airToken = getOrCreateAirToken(chainId, tokenAddress);
+      airToken.save();
+      entity.tokenAddress = airToken.id;
+      const airAccountFrom = getOrCreateAirAccount(chainId, from, block);
+      airAccountFrom.save();
+      entity.from = airAccountFrom.id;
+      const airAccountTo = getOrCreateAirAccount(chainId, to, block);
+      airAccountTo.save();
+      entity.to = airAccountTo.id;
+      entity.transactionHash = transactionHash;
+      entity.logOrCallIndex = logOrCallIndex;
+      entity.block = block.id;
+      entity.index = updateAirEntityCounter(AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER_ID, block);
+      entity.protocolType = AirProtocolType.SOCIAL;
+      entity.protocolActionType = AirProtocolActionType.SOCIAL_PROFILE_NAME_RENEWAL;
       entity.save();
     }
   }
 
   /**
    * @dev this class is used to create air extra data
-   * @param name name of the extra data (eg: tokenUri,homeUrl,recoveryAddress)
+   * @param name name of the extra data (eg: tokenUri,userHomeUrl,userRecoveryAddress,profileRecoveryAddress)
    * @param value value of the extra data
    */
   export class AirExtraData {
