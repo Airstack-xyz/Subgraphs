@@ -109,7 +109,7 @@ export namespace abi {
     export function checkMatchERC721UsingCriteria(functionSelector: string): boolean {
         return functionSelector == "0xfb16a595" || functionSelector == "0x00fb16a5" // matchERC721UsingCriteria(address,address,address,uint256,bytes32,bytes32[])
     }
-    export function checkNonNFTCase(functionSelector: string): boolean {
+    export function checkEnjinCase(functionSelector: string): boolean {
         // transferFrom(address,address,uint256,uint256)
         return functionSelector == "0x00fe9904" || functionSelector == "0xfe99049a"
     }
@@ -452,7 +452,7 @@ export namespace abi {
             let from = decoded[0].toAddress()
             let to = decoded[1].toAddress()
             let tokenId = decoded[2].toBigInt()
-            log.debug("checkSharedStorefront txHash {} from {} to {} tokenId", [
+            log.debug("checkSharedStorefront txHash {} from {} to {} tokenId {}", [
                 txHash,
                 from.toHexString(),
                 to.toHexString(),
@@ -466,7 +466,8 @@ export namespace abi {
                 BIGINT_ONE,
                 Address.fromString("0x5fbEf9FCb449D56154980e52E165d9650B9f6EC2") //TODO: verify with future txns
             )
-        } else if (checkNonNFTCase(functionSelector)) {
+        } else if (checkEnjinCase(functionSelector)) {
+            let contract = Address.fromString("0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab") //TODO: verify with future txns
             let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().split("fe99049a")[1]
             let decoded = ethereum
                 .decode(
@@ -476,16 +477,29 @@ export namespace abi {
                 .toTuple()
             let from = decoded[0].toAddress()
             let to = decoded[1].toAddress()
-            let amt1 = decoded[2].toBigInt()
-            let amt2 = decoded[3].toBigInt()
-            log.debug("we are not handling txHash {} from {} to {} amt1 {} amt2 {}", [
+            let tokenId = decoded[2].toBigInt()
+            let openseaAmt = decoded[3].toBigInt()
+            if (openseaAmt.gt(BigInt.fromI64(1))) {
+                log.debug("nonNftcase txHash {} has some issue with openseaAmt {} ", [
+                    txHash,
+                    openseaAmt.toString(),
+                ])
+                throw new Error("")
+            }
+            log.debug("checkEnjinCase txHash {} from {} to {} tokenId {}", [
                 txHash,
                 from.toHexString(),
                 to.toHexString(),
-                amt1.toString(),
-                amt2.toString(),
+                tokenId.toString(),
             ])
-            return null
+            return new Decoded_TransferFrom_Result(
+                functionSelector,
+                from,
+                to,
+                tokenId,
+                BIGINT_ONE,
+                contract
+            )
         } else {
             log.error(
                 `We dont understanding decoding {} functionSelector {} dataWithoutFunctionSelector {} callData {}`,
