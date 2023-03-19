@@ -87,6 +87,9 @@ export namespace abi {
     export function checkENSFunctionSelector(functionSelector: string): boolean {
         return functionSelector == "0x1e59c529" //   register(string,address)
     }
+    export function checkSafeTransferFrom(functionSelector: string): boolean {
+        return functionSelector == "0x00b88d4f" || functionSelector == "0xb88d4fde" //   safeTransferFrom(address,address,uint256,bytes)
+    }
     /*
 
 // `matchERC1155UsingCriteria(
@@ -499,6 +502,31 @@ export namespace abi {
                 tokenId,
                 BIGINT_ONE,
                 contract
+            )
+        } else if (checkSafeTransferFrom(functionSelector)) {
+            let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().split("b88d4fde")[1]
+            let decoded = ethereum
+                .decode(
+                    "(address,address,uint256)",
+                    Bytes.fromHexString(dataWithoutFunctionSelectorStr)
+                )!
+                .toTuple()
+            let from = decoded[0].toAddress()
+            let to = decoded[1].toAddress()
+            let tokenId = decoded[2].toBigInt()
+            log.debug("new decoding txhash {} from {} to {} tokenId {} ", [
+                txHash,
+                from.toHexString(),
+                to.toHexString(),
+                tokenId.toString(),
+            ])
+            return new Decoded_TransferFrom_Result(
+                functionSelector,
+                from,
+                to,
+                tokenId,
+                BIGINT_ONE,
+                Address.zero()
             )
         } else {
             log.error(
