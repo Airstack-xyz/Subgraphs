@@ -196,6 +196,12 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
                 sellOrder.target,
                 contractAddress.toHexString(),
             ])
+        } else if (decoded.method == "0x00d6d2b6" || decoded.method == "0xd6d2b6ba") {
+            log.debug("DelegateCall txHash {} target {} contractAddress {}", [
+                txHash.toHexString(),
+                sellOrder.target,
+                contractAddress.toHexString(),
+            ])
         } else {
             if (contractAddress != Address.fromString(sellOrder.target)) {
                 // adding one more level of validation

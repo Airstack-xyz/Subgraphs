@@ -83,26 +83,27 @@ export namespace abi {
     export function checkERC1155FunctionSelector(functionSelector: string): boolean {
         return functionSelector == "0xfe99049a" || functionSelector == "0x00fe9904"
     }
-
+    /*
+    `matchERC1155UsingCriteria(
+       address from,
+       address to,
+       address token,
+       uint256 tokenId,
+       uint256 amount,
+       bytes32 root,
+       bytes32[] calldata proof
+     )`
+   */
     export function checkENSFunctionSelector(functionSelector: string): boolean {
         return functionSelector == "0x1e59c529" //   register(string,address)
     }
     export function checkSafeTransferFrom(functionSelector: string): boolean {
         return functionSelector == "0x00b88d4f" || functionSelector == "0xb88d4fde" //   safeTransferFrom(address,address,uint256,bytes)
     }
-    /*
+    export function checkDelegateCall(functionSelector: string): boolean {
+        return functionSelector == "0x00d6d2b6" || functionSelector == "0xd6d2b6ba" // delegate(address,bytes)
+    }
 
-// `matchERC1155UsingCriteria(
-//    address from,
-//    address to,
-//    address token,
-//    uint256 tokenId,
-//    uint256 amount,
-//    bytes32 root,
-//    bytes32[] calldata proof
-//  )`
-
-   */
     export function checkMatchERC1155UsingCriteria(functionSelector: string): boolean {
         log.info("@@functionCheckMatchERC1155UsingCriteria\n selector ( {} ) \n", [
             functionSelector,
@@ -514,7 +515,7 @@ export namespace abi {
             let from = decoded[0].toAddress()
             let to = decoded[1].toAddress()
             let tokenId = decoded[2].toBigInt()
-            log.debug("new decoding txhash {} from {} to {} tokenId {} ", [
+            log.debug("checkSafeTransferFrom txhash {} from {} to {} tokenId {} ", [
                 txHash,
                 from.toHexString(),
                 to.toHexString(),
@@ -527,6 +528,39 @@ export namespace abi {
                 tokenId,
                 BIGINT_ONE,
                 Address.zero()
+            )
+        } else if (checkDelegateCall(functionSelector)) {
+            let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().substring(212)
+            log.error("checkDelegateCall txhash {} dataWithoutFunctionSelectorStr {} ", [
+                txHash,
+                dataWithoutFunctionSelectorStr,
+            ])
+            let decoded = ethereum
+                .decode(
+                    "(address,address,address,address,address,address,address,uint256)",
+                    Bytes.fromHexString(dataWithoutFunctionSelectorStr)
+                )!
+                .toTuple()
+
+            let from = decoded[0].toAddress()
+            let to = decoded[1].toAddress()
+            let contract = decoded[5].toAddress()
+            let tokenId = decoded[7].toBigInt()
+
+            log.error("checkDelegateCall txhash {} from {} to {} contract {} tokenId {} ", [
+                txHash,
+                from.toHexString(),
+                to.toHexString(),
+                contract.toHexString(),
+                tokenId.toString(),
+            ])
+            return new Decoded_TransferFrom_Result(
+                functionSelector,
+                from,
+                to,
+                tokenId,
+                BIGINT_ONE,
+                contract
             )
         } else {
             log.error(
