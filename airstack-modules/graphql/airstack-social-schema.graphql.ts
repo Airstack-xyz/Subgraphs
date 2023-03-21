@@ -15,10 +15,10 @@ enum AirProtocolActionType {
 }
 
 type AirBlock @entity {
- id: ID! #chainId-number
- hash: String!
- number: BigInt!
- timestamp: BigInt!
+  id: ID! #chainId-number
+  hash: String!
+  number: BigInt!
+  timestamp: BigInt!
 }
 
 type AirMeta @entity {
@@ -27,20 +27,20 @@ type AirMeta @entity {
   schemaVersion: String!
   slug: String! #Farcaster
   name: String! # Farcaster V1
-	version: String!
+  version: String!
 }
 
 type AirEntityCounter @entity {
-	id: ID! #AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER
-	count: BigInt!
-	createdAt: AirBlock! 
-	lastUpdatedAt: AirBlock!
+  id: ID! #AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER
+  count: BigInt!
+  createdAt: AirBlock! 
+  lastUpdatedAt: AirBlock!
 }
 
 type AirAccount @entity {
   id: ID!
   address: String!
-	createdAt: AirBlock!
+  createdAt: AirBlock!
 }
 
 type AirToken @entity {
@@ -78,7 +78,7 @@ type AirSocialProfile @entity {
 }
 
 interface AirTransaction {
-	id: ID! 
+  id: ID! 
   from: AirAccount!
   logOrCallIndex: BigInt!
   to: AirAccount!
