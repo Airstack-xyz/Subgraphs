@@ -1,6 +1,4 @@
-const schema = `
-#
-# --Airstack Schemas--
+const schema = `#--Airstack Schemas--
 
 type AirBlock @entity {
  id: ID! #chain-number
@@ -19,7 +17,7 @@ type AirMeta @entity {
 }
 
 type AirEntityCounter @entity {
-	id: ID! #AIR_DAILY_STATS_ACCOUNT
+	id: ID!
 	count: BigInt!
 	createdAt: AirBlock! 
 	lastUpdatedAt: AirBlock!

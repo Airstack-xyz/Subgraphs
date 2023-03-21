@@ -34,14 +34,16 @@ export namespace Utils {
     switch (verticalName) {
       case Vertical.Dex:
         yamlString = dexYamlString;
+        break;
       case Vertical.NftMarketplace:
         yamlString = nftMarketPlaceYamlString;
+        break;
       case Vertical.DomainName:
         yamlString = domainNameYamlString;
+        break;
       default:
         break;
     }
-
     if (yamlString !== null) {
       return yaml.load(yamlString) as Record<string, any>;
     } else {
@@ -88,6 +90,22 @@ export namespace Utils {
   ): Promise<boolean> {
     return new Promise((resolve, reject) => {
       fs.appendFile(filePath, content, (err) => {
+        if (err) {
+          console.log(err);
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
+  }
+
+  export function overwriteFile(
+    filePath: string,
+    content: string
+  ): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      fs.writeFile(filePath, content, (err) => {
         if (err) {
           console.log(err);
           resolve(false);
