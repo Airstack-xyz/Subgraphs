@@ -112,15 +112,22 @@ import * as airstack from "../modules/airstack/nft-marketplace"
 2. Creation of NFT object
 
 ```ts
-let nft = new airstack.nft.NFT(collectionAddress, standard, tokenId, amount)
-// standard: ERC721 or ERC1155
+let nft = new airstack.nft.NFT(
+    collectionAddress, // Address
+    standard, // string "ERC721" or "ERC1155"
+    tokenId, // BigInt
+    amount // BigInt 1 for "ERC721" , n for "ERC1155"
+)
 ```
 
 3. Creation of royalties array
 
 ```ts
 let royalties = new Array<airstack.nft.CreatorRoyalty>()
-let royalty = new airstack.nft.CreatorRoyalty(fee, beneficiary)
+let royalty = new airstack.nft.CreatorRoyalty(
+    fee, // BigInt
+    beneficiary // Address
+)
 royalties.push(royalty)
 ```
 
@@ -129,14 +136,14 @@ royalties.push(royalty)
 ```ts
 let allSales = new Array<airstack.nft.Sale>()
 let sale = new airstack.nft.Sale(
-    buyer,
-    seller,
-    nft,
-    paymentAmount,
-    paymentToken,
-    protocolFees,
-    protocolFeesBeneficiary,
-    royalties
+    buyer, // Address
+    seller, // Address
+    nft, // airstack.nft.NFT
+    paymentAmount, // BigInt
+    paymentToken, // Address
+    protocolFees, // BigInt
+    protocolFeesBeneficiary, // Address
+    royalties // airstack.nft.CreatorRoyalty[]
 )
 allSales.push(sale)
 ```
@@ -157,7 +164,7 @@ airstack.nft.trackNFTSaleTransactions(
 )
 ```
 
-##  Development status of each vertical
+## Development status of each vertical
 
 ⌛ = Prioritized<br/>
 💬 = In discussion<br/>
