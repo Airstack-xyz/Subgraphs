@@ -91,7 +91,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
     // get expiry timestamp of profile name from farcaster name registry
     const expiryTimestamp = getExpiryTimestampFromFnameRegistry(BigInt.fromString(mapping.tokenId!));
     // send transaction to airstack
-    airstack.social.trackUserAndProfileRegisteredTransaction(
+    airstack.social.trackSocialUserAndProfileRegisteredTransaction(
       event.block,
       mapping.transactionHash!,
       mapping.logOrCallIndex!,
@@ -158,7 +158,7 @@ export function handleRegister(event: Register): void {
     // get expiry timestamp of profile name from farcaster name registry
     const expiryTimestamp = getExpiryTimestampFromFnameRegistry(BigInt.fromString(mapping.tokenId!));
     // send transaction to airstack
-    airstack.social.trackUserAndProfileRegisteredTransaction(
+    airstack.social.trackSocialUserAndProfileRegisteredTransaction(
       event.block,
       mapping.transactionHash!,
       mapping.logOrCallIndex!,
@@ -181,7 +181,7 @@ export function handleRegister(event: Register): void {
  */
 export function handleChangeHomeUrlFid(event: ChangeHome): void {
   log.info("handleChangeHome id {} contractAddress {} url {}", [event.params.id.toString(), event.address.toHexString(), event.params.url]);
-  airstack.social.trackAirSocialUserHomeUrlChangeTransaction(
+  airstack.social.trackSocialUserHomeUrlChangeTransaction(
     event.block,
     event.transaction.hash.toHexString(),
     event.logIndex,
@@ -200,7 +200,7 @@ export function handleChangeHomeUrlFid(event: ChangeHome): void {
  */
 export function handleChangeRecoveryAddressFid(event: FidChangeRecoveryAddress): void {
   log.info("handleChangeRecoveryAddress id {} contractAddress {} recovery {}", [event.params.id.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
-  airstack.social.trackAirSocialUserRecoveryAddressChangeTransaction(
+  airstack.social.trackSocialUserRecoveryAddressChangeTransaction(
     event.block,
     event.transaction.hash.toHexString(),
     event.logIndex,
@@ -219,7 +219,7 @@ export function handleChangeRecoveryAddressFid(event: FidChangeRecoveryAddress):
 */
 export function handleChangeRecoveryAddressFname(event: FnameChangeRecoveryAddress): void {
   log.info("handleRecoveryAddressFname id {} contractAddress {} recovery {}", [event.params.tokenId.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
-  airstack.social.trackAirSocialProfileRecoveryAddressChangeTransaction(
+  airstack.social.trackSocialProfileRecoveryAddressChangeTransaction(
     event.block,
     event.transaction.hash.toHexString(),
     event.logIndex,
@@ -254,7 +254,7 @@ export function handleFarcasterIdTransfer(event: FidTransfer): void {
 
 export function handleRenewFname(event: Renew): void {
   log.info("handleRenewFname tokenId {} renewalCost {} expiryTs {} contractAddress {} txhash {}", [event.params.tokenId.toString(), event.transaction.value.toString(), event.params.expiry.toString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
-  airstack.social.trackAirSocialProfileRenewalTransaction(
+  airstack.social.trackSocialProfileRenewalTransaction(
     event.block,
     event.transaction.hash.toHexString(),
     event.logIndex,
