@@ -39,22 +39,31 @@ The 8 verticals defined for Airstack schemas are:
 You already have a subgraph for Dapp/Protocol. And you intend to integrate Airstack schemas into the project.
 
 ### 2. Install Airstack package:
+
 ```npm
-npm install  @airstack/subgraph-generator
+npm install @airstack/subgraph-generator
 ```
 
 ### 3. Identify the vertical for the Dapp/Protocol:
 
-Currently, we support eight verticals. Identify your project's vertical
+We support
 
-Use the following command to add Airstack Schemas and ABIs in your project's `subgraph.yaml`
+-   NFT Marketplace: `nft-marketplace`
+-   Domain Name: `domain-name`
+-   DEX: `dex`
+-   Bridges: `TBD`
+-   DAO: `TBD`
+-   Defi: `TBD`
+-   Games: `TBD`
+
+Use the following command to add Airstack Schemas and Modules in your project
 
 ```npm
-npx  @airstack/subgraph-generator <vertical>  --yaml <subgraph.yaml file path> --graphql <schema.graphql file path> --dataSourceNames <"name1, name2, ..."> --templates <"name1, name2"> 
+npx  @airstack/subgraph-generator <vertical>  --yaml <subgraph.yaml file path> --graphql <schema.graphql file path> --dataSourceNames <"name1, name2, ..."> --templates <"name1, name2">
 ```
 
 `npx airstack <vertical>`
-will add the required Airstack entities and the ABI files in your **subgraph.yaml** file
+will add the required Airstack entities and the module files in your **subgraph.yaml** file
 
 `--yaml <subgraph.yaml file path>`
 provide the location of your project's **subgraph.yaml** file. This is an optional parameter.
@@ -80,131 +89,75 @@ b. DEX
 npx @airstack/subgraph-generator dex --yaml "./subgraph.yaml" --dataSourceNames "Factory, Pair"
 ```
 
-Following are the vertical Ids
+#### Terminal will prompt these questions
 
-NFT Marketplace: `nft-marketplace`<br/> NFT: `nft`Swap:`dex`<br/> Bridges: `bridge`<br/> DAO: `TBD`<br/> Defi: `TBD`<br/> Games: `TBD`<br/>
+```sh
+Enter the name of the subgraph:
+Enter the version of the subgraph:
+Enter the slug of the subgraph:
+```
 
 Integration of the Airstack schemas is done. Now, move to the vertical-specific section for further integration.
 
 ### 3. Code integration
 
-#### a. NFT Marketplace
+#### Example: NFT Marketplace
 
-Track actions for NFT Marketplace.
-Call the following functions from your subgraph mapping. An example implementation is [Here](https://github.com/Airstack-xyz).
+1. Import `airstack` modules
 
-1. NFT sale transactions
+```ts
+import * as airstack from "../modules/airstack/nft-marketplace"
+```
 
-   ```ts
-   function trackNFTSaleTransactions(
-    chainID: string,
-    txHash: string,
-    txIndex: BigInt,
-    NftSales: Sale[],
-    protocolType: string,
-    protocolActionType: string,
-    timestamp: BigInt,
-    blockHeight: BigInt,
-    blockHash: string
-   ): void;
-   ```
-   
-   **chainID**: ID of the chain on which contract of the subgraph is deployed<br/>
-   **txHash**: Transaction hash of the NFT transaction<br/>
-   **txIndex**: Transaction Index of the NFT transaction<br/>
-   **NFTSales**: Array of the Sale objects containing details of NFT sales<br/>
-   **ProtocolType**: Protocol type<br/>
-   **ProtocolActionType**: Protocol Action Type<br/>
-   **Timestamp**: Timestamp of the block in which transaction happened<br/>
-   **blockHeight**: Block height<br/>
-   **blockHash**: Block hash<br/>
+2. Creation of NFT object
 
-Supported protocol types are :-
-  GENERIC
-  EXCHANGE
-  LENDING
-  YIELD
-  BRIDGE
-  DAO
-  NFT_MARKET_PLACE
-  STAKING
-  P2E #play to earn
-  LAUNCHPAD
+```ts
+let nft = new airstack.nft.NFT(collectionAddress, standard, tokenId, amount)
+// standard: ERC721 or ERC1155
+```
 
-Supported protocol action types are :-
-  ALL ##to track all action stats of a dapp
-  ### NFT Marketplace/Tokens ###
-  BUY
-  SELL
-  MINT
-  BURN # TODO check this later
-  ### NFT (ex: Poap) ###
-  ATTEND
-  ### P2E (NFT + Utility) ###
-  EARN
-  ### DEX ###
-  SWAP
-  ADD_LIQUIDITY
-  REMOVE_LIQUIDITY
-  ADD_TO_FARM
-  REMOVE_FROM_FARM
-  CLAIM_FARM_REWARD
-  ### Lending ###
-  LEND
-  BORROW
-  FLASH_LOAN
-  ### Staking / Delegating ###
-  STAKE
-  RESTAKE
-  UNSTAKE
-  DELEGATE
-  CLAIM_REWARDS
+3. Creation of royalties array
 
-#### b. NFT Marketplace
+```ts
+let royalties = new Array<airstack.nft.CreatorRoyalty>()
+let royalty = new airstack.nft.CreatorRoyalty(fee, beneficiary)
+royalties.push(royalty)
+```
 
-Track actions for NFT Marketplaces.
-Call the following function from your subgraph mapping. An example implementation is [Here](https://github.com/Airstack-xyz/Subgraphs)
+4. Creation of NFT Sales array
 
-1. Creation of NFT object
-   ```ts
-   NFT(
-    Collection Address : Address,
-    Standard: string, //ERC1155 or ERC721
-    tokenId: BigInt,
-    amount: BigInt
-   )
-   ```
-2. Creation of NFT Sale object
-   ```ts
-   Sale(
-    buyer: Address,
-    seller: Address,
-    nft: NFT,
-    paymentAmount: BigInt,
-    paymentToken: Address,
-    protocolFees: BigInt,
-    protocolFeesBeneficiary: Address,
-    royaltyFees: BigInt,
-    royaltyFeesBeneficiary: Address
-   )
-   ```
+```ts
+let allSales = new Array<airstack.nft.Sale>()
+let sale = new airstack.nft.Sale(
+    buyer,
+    seller,
+    nft,
+    paymentAmount,
+    paymentToken,
+    protocolFees,
+    protocolFeesBeneficiary,
+    royalties
+)
+allSales.push(sale)
+```
 
-3. Use the trackNFTSaleTransactions function to process the data and store in Airstack schema
-   ```ts
-    trackNFTSaleTransactions(
-        chainID: string,
-        txHash: string,
-        txIndex: BigInt,
-        NftSales: Sale[],
-        protocolType: string,
-        protocolActionType: string,
-        timestamp: BigInt,
-        blockHeight: BigInt,
-        blockHash: string
-      ): void;
-   ```
+5. Use the trackNFTSaleTransactions function to process the data and store in Airstack schema
 
-### 4. Development status of each vertical
+```ts
+airstack.nft.trackNFTSaleTransactions(
+    chainId, //  string eg: for mainnet: 1
+    txHash, // string eg: event.transaction.hash.toHexString()
+    txIndex, //string eg: event.transaction.index
+    allSales, // airstack.nft.Sale[]
+    protocolType, // string eg: "NFT_MARKET_PLACE"
+    protocolActionType, //string eg: "SELL"
+    timestamp, // BigInt eg: event.block.timestamp
+    blockHeight, // BigInt eg: event.block.number
+    blockHash // string eg: event.block.hash.toHexString()
+)
+```
+
+##  Development status of each vertical
 
 ⌛ = Prioritized<br/>
 💬 = In discussion<br/>
@@ -221,13 +174,10 @@ Call the following function from your subgraph mapping. An example implementatio
 | Defi            |   ⌛   |
 | Games           |   ⌛   |
 
-
 ## To build the module
 
 If you want to build the module yourself, please follow there steps.
 
 1. Clone the repo
 2. Run the command
-   npm run build
-
-   It will run all the necessary scripts.
+   `npm run build`
