@@ -10,8 +10,6 @@ import {
 import { Transfer as FidTransfer, Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress as FidChangeRecoveryAddress } from "../generated/FarcasterIdRegistry/FarcasterIdRegistry";
 import * as airstack from "../modules/airstack/social/social";
 import { zeroAddress, FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping, getExpiryTimestampFromFnameRegistry } from "./utils";
-import { AirExtra } from "../generated/schema";
-import { getChainId } from "../modules/airstack/common";
 import { userRecoveryAddress, userHomeUrl } from "../modules/airstack/social/utils";
 
 /**
