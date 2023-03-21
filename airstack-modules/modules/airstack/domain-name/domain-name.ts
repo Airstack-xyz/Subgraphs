@@ -373,7 +373,6 @@ export namespace domain {
    * @param transactionHash transaction hash
    * @param domainId air domain id
    * @param name domain name
-   * @param labelHash label hash
    * @param cost cost of registration or renewal
    * @param paymentToken payment token address
    * @param renewerOrRegistrant renewer or registrant address
@@ -386,7 +385,6 @@ export namespace domain {
     transactionHash: string,
     domainId: string,
     name: string,
-    labelHash: Bytes,
     cost: BigInt,
     paymentToken: string,
     renewerOrRegistrant: string,
@@ -395,19 +393,6 @@ export namespace domain {
     tokenAddress: string,
   ): void {
     let chainId = getChainId();
-    const calculatedLabelHash = crypto.keccak256(ByteArray.fromUTF8(name));
-    if (!calculatedLabelHash.equals(labelHash)) {
-      log.warning(
-        "Expected '{}' to hash to {}, but got {} instead. Skipping.",
-        [name, calculatedLabelHash.toHex(), labelHash.toHex()]
-      );
-      return;
-    }
-
-    if (name.indexOf(".") !== -1) {
-      log.warning("Invalid label '{}'. Skipping.", [name]);
-      return;
-    }
     let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     airBlock.save();
     let domain = getOrCreateAirDomain(new Domain(
@@ -416,7 +401,6 @@ export namespace domain {
       airBlock,
       tokenAddress,
     ));
-
     // tracking registration cost in domain entity  - renewal cost is not being tracked yet
     if (fromRegistrationEvent) {
       domain.registrationCost = cost;

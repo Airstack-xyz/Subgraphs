@@ -5,7 +5,7 @@ import {
   ens,
   crypto,
 } from '@graphprotocol/graph-ts'
-import { TOKEN_ADDRESS_ENS } from "./utils";
+import { TOKEN_ADDRESS_ENS, checkValidLabel } from "./utils";
 import { ZERO_ADDRESS } from '../modules/airstack/domain-name/utils';
 import * as airstack from "../modules/airstack/domain-name";
 // Import event types from the registry contract ABI
@@ -77,12 +77,14 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
 export function handleNameRegisteredByControllerOld(event: ControllerNameRegisteredEventOld): void {
   log.info("handleNameRegisteredByControllerOld: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
+  if (!checkValidLabel(event.params.name, event.transaction.hash.toHexString())) {
+    return;
+  }
   airstack.domain.trackNameRenewedOrRegistrationByController(
     event.block,
     event.transaction.hash.toHexString(),
     domainId,
     event.params.name,
-    event.params.label,
     event.params.cost,
     ZERO_ADDRESS,
     event.params.owner.toHexString(),
@@ -99,12 +101,14 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
 export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
   log.info("handleNameRegisteredByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
+  if (!checkValidLabel(event.params.name, event.transaction.hash.toHexString())) {
+    return;
+  }
   airstack.domain.trackNameRenewedOrRegistrationByController(
     event.block,
     event.transaction.hash.toHexString(),
     domainId,
     event.params.name,
-    event.params.label,
     event.params.cost,
     ZERO_ADDRESS,
     event.params.owner.toHexString(),
@@ -121,12 +125,14 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
 export function handleNameRenewedByController(event: ControllerNameRenewedEvent): void {
   log.info("handleNameRenewedByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
+  if (!checkValidLabel(event.params.name, event.transaction.hash.toHexString())) {
+    return;
+  }
   airstack.domain.trackNameRenewedOrRegistrationByController(
     event.block,
     event.transaction.hash.toHexString(),
     domainId,
     event.params.name,
-    event.params.label,
     event.params.cost,
     ZERO_ADDRESS,
     event.transaction.from.toHexString(),
