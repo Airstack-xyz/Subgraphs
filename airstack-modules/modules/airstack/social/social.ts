@@ -35,7 +35,7 @@ export namespace social {
    * @param profileExtras air extra data array (eg: farcaster profile tokenUri)
    * @param profileExpiryTimestamp air social profile expiry timestamp
    */
-  export function trackUserAndProfileRegisteredTransaction(
+  export function trackSocialUserAndProfileRegisteredTransaction(
     block: ethereum.Block,
     transactionHash: string,
     logOrCallIndex: BigInt,
@@ -215,7 +215,7 @@ export namespace social {
    * @param tokenAddress air social profile token address
    * @param recoveryAddress air social profile new recovery address
    */
-  export function trackAirSocialProfileRecoveryAddressChangeTransaction(
+  export function trackSocialProfileRecoveryAddressChangeTransaction(
     block: ethereum.Block,
     transactionHash: string,
     logOrCallIndex: BigInt,
@@ -290,7 +290,7 @@ export namespace social {
    * @param socialUserId air social user id (eg: farcasterId)
    * @param recoveryAddress air social user new recovery address
   */
-  export function trackAirSocialUserRecoveryAddressChangeTransaction(
+  export function trackSocialUserRecoveryAddressChangeTransaction(
     block: ethereum.Block,
     transactionHash: string,
     logOrCallIndex: BigInt,
@@ -365,7 +365,7 @@ export namespace social {
  * @param socialUserId air social user id (eg: farcasterId)
  * @param homeUrl air social user new home url
 */
-  export function trackAirSocialUserHomeUrlChangeTransaction(
+  export function trackSocialUserHomeUrlChangeTransaction(
     block: ethereum.Block,
     transactionHash: string,
     logOrCallIndex: BigInt,
@@ -440,7 +440,7 @@ export namespace social {
    * @param expiryTimestamp air social profile new expiry timestamp
    * @param renewalCost air social profile renewal cost
   */
-  export function trackAirSocialProfileRenewalTransaction(
+  export function trackSocialProfileRenewalTransaction(
     block: ethereum.Block,
     transactionHash: string,
     logOrCallIndex: BigInt,
