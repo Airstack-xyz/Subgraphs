@@ -13,6 +13,8 @@ import {
     MARKET_PLACE_TYPE,
     PROTOCOL_SELL_ACTION_TYPE,
 } from "./utils"
+import { ContractAddressIssue, ContractTracker } from "../generated/schema"
+import { BIGINT_ONE, BIG_INT_ZERO } from "../modules/airstack/common"
 
 export function handleAtomicMatch_(call: AtomicMatch_Call): void {
     log.info("txHash {}", [call.transaction.hash.toHexString()])
@@ -190,29 +192,15 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
         }
 
         contractAddress = decoded.contract != Address.zero() ? decoded.contract : contractAddress
-        if (sellOrder.target == ENS_WALLET) {
-            log.debug("ENS_CASE txHash {} target{} contractAddress {}", [
+        if (contractAddress != Address.fromString(sellOrder.target)) {
+            createAddressIssue(
                 txHash.toHexString(),
                 sellOrder.target,
                 contractAddress.toHexString(),
-            ])
-        } else if (decoded.method == "0x00d6d2b6" || decoded.method == "0xd6d2b6ba") {
-            log.debug("DelegateCall txHash {} target {} contractAddress {}", [
-                txHash.toHexString(),
-                sellOrder.target,
-                contractAddress.toHexString(),
-            ])
-        } else {
-            if (contractAddress != Address.fromString(sellOrder.target)) {
-                // adding one more level of validation
-                log.error("txHash {} contract {} not equal to target {}", [
-                    txHash.toHexString(),
-                    contractAddress.toHexString(),
-                    sellOrder.target,
-                ])
-                throw new Error("")
-            }
+                decoded.method
+            )
         }
+
         let nft = new airstack.nft.NFT(
             contractAddress,
             decoded.method,
@@ -306,4 +294,35 @@ export function calculateRoyality(
 
     royaltyDetails.feeRecipient = feeRecipient
     return royaltyDetails
+}
+
+export function createAddressIssue(
+    txHash: string,
+    target: string,
+    contract: string,
+    method: string
+): void {
+    // added for later verification
+    log.error("txHash {} contract {} not equal to target {}", [txHash, contract, target])
+    let contractissue = ContractAddressIssue.load(txHash)
+    if (contractissue == null) {
+        contractissue = new ContractAddressIssue(txHash)
+        contractissue.txCount = BIG_INT_ZERO
+    }
+    contractissue.txCount = contractissue.txCount.plus(BIGINT_ONE)
+    let contractTracker = ContractTracker.load(txHash + "-" + contractissue.txCount.toString())
+    if (contractTracker == null) {
+        contractTracker = new ContractTracker(txHash + "-" + contractissue.txCount.toString())
+    }
+    contractTracker.hash = contractissue.id
+    contractTracker.target = target
+    contractTracker.decodedAddress = contract
+    if (target == ENS_WALLET) {
+        contractTracker.label = "ENS"
+    }
+    if (method == "0x00d6d2b6" || method == "0xd6d2b6ba") {
+        contractTracker.label = "DelegateCall"
+    }
+    contractissue.save()
+    contractTracker.save()
 }

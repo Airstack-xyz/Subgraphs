@@ -567,8 +567,7 @@ export namespace abi {
                 `We dont understanding decoding {} functionSelector {} dataWithoutFunctionSelector {} callData {}`,
                 [txHash, functionSelector, dataWithoutFunctionSelector.toHex(), callData.toHex()]
             )
-
-            throw new Error("")
+            return null
         }
     }
 
