@@ -1,6 +1,6 @@
 import {
-  BigInt,
-  TypedMap
+    BigInt,
+    TypedMap
 } from "@graphprotocol/graph-ts";
 
 export const AIR_NFT_SALE_ENTITY_ID = "AIR_NFT_SALE_TRANSACTION_COUNTER";
@@ -36,9 +36,9 @@ AIR_NETWORK_MAP.set("matic", "MATIC");
 AIR_NETWORK_MAP.set("xdai", "XDAI");
 
 export function processNetwork(network: string): string {
-  const value = AIR_NETWORK_MAP.get(network);
-  const result: string = value !== null ? value : "unknown";
-  return result;
+    const value = AIR_NETWORK_MAP.get(network);
+    const result: string = value !== null ? value : "unknown";
+    return result;
 }
 export const SUBGRAPH_NAME = "Rarible";
 export const SUBGRAPH_VERSION = "Exchange V1";
