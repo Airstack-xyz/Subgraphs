@@ -5,7 +5,7 @@ import {
 } from "../generated/Seaport/Seaport"
 import { isERC1155, isERC721, isOpenSeaFeeAccount, NftStandard, ETHEREUM_MAINNET_ID, TRANSACTION_TYPE_SALE, MARKET_PLACE_TYPE, PROTOCOL_SELL_ACTION_TYPE } from "./utils";
 
-import * as airstack from "../modules/airstack/nft-marketplace";
+import * as airstack from "../modules/airstack";
 import { WrappedEtherTransaction } from "../generated/schema";
 
 export enum ItemType {
@@ -62,13 +62,12 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
       seller = recipient;
 
       log.info(
-        "txHash offer log tx {} logindex {} paymentToken {} paymentAmount {} offerAmount {} buyer {} seller {} index {}",
+        "txHash offer log tx {} logindex {} paymentToken {} paymentAmount {} buyer {} seller {} index {}",
         [
           txHash.toHexString(),
           event.logIndex.toString(),
           paymentToken.toHexString(),
           paymentAmount.toString(),
-          offer.amount.toString(),
           buyer.toHexString(),
           seller.toHexString(),
           i.toString(),
@@ -119,13 +118,7 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
     );
     if (!isNFT) {
       paymentToken = consideration.token;
-      if (event.params.offer.length == 1) {
-        paymentAmount = event.params.offer[0].amount;
-        log.debug("not nft and offer length is 1, so paymentAmount is set as offer[0].amount", [event.params.offer[0].amount.toString()]);
-      } else {
-        paymentAmount = paymentAmount.plus(consideration.amount);
-        log.debug("not nft and offer length is {}, so oldPaymentAmount {} newPaymentAmout {}", [event.params.offer.length.toString(), paymentAmount.minus(consideration.amount).toString(), paymentAmount.toString()]);
-      }
+      paymentAmount = paymentAmount.plus(consideration.amount);
       if (isOpenSeaFeeAccount(consideration.recipient)) {
         protocolFees = protocolFees.plus(consideration.amount)
         protocolBeneficiary = consideration.recipient
@@ -135,13 +128,12 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
         royaltyBeneficiary = consideration.recipient
       }
       log.info(
-        "txHash consideration log tx {} logindex {} paymentToken {} paymentAmount {} considerationAmount {} recipient {} buyer {} seller {} index {}",
+        "txHash consideration log tx {} logindex {} paymentToken {} paymentAmount {} recipient {} buyer {} seller {} index {}",
         [
           txHash.toHexString(),
           event.logIndex.toString(),
           paymentToken.toHexString(),
           paymentAmount.toString(),
-          consideration.amount.toString(),
           consideration.recipient.toHexString(),
           buyer.toHexString(),
           seller.toHexString(),
@@ -179,17 +171,18 @@ export function handleOrderFulfilled(event: OrderFulfilled): void {
   }
 
   for (let i = 0; i < allSales.length; i++) {
-    if (royaltyBeneficiary == Address.zero() && royaltyFees == BIGINT_ZERO) {
-      log.warning("non-zero amount on royaltyBeneficiary {} amount {} txhash {}", [
+    if (royaltyBeneficiary == Address.zero() && royaltyFees != BIGINT_ZERO) {
+      log.error("non-zero amount on royaltyBeneficiary {} amount {} txhash {}", [
         royaltyBeneficiary.toHexString(),
         royaltyFees.div(BigInt.fromI64(allSales.length)).toString(),
         txHash.toHexString(),
       ])
+      throw "non-zero amount on royaltyBeneficiary"
     }
-
-    let royalty = new airstack.nft.CreatorRoyalty(royaltyFees.div(BigInt.fromI64(allSales.length)), royaltyBeneficiary);
-    allSales[i].royalties.push(royalty);
-
+    if (royaltyBeneficiary != Address.zero()) {
+      let royalty = new airstack.nft.CreatorRoyalty(royaltyFees.div(BigInt.fromI64(allSales.length)), royaltyBeneficiary);
+      allSales[i].royalties.push(royalty);
+    }
     allSales[i].protocolFees = protocolFees.div(BigInt.fromI64(allSales.length));
     allSales[i].protocolFeesBeneficiary = protocolBeneficiary;
     allSales[i].paymentAmount = paymentAmount.div(

@@ -15,7 +15,6 @@ entities:
   - AirNameRegisteredTransaction
   - AirNameRenewedTransaction
   - AirPrimaryDomainTransaction
-  - AirExtra
 `;
 
 export default yamlString;

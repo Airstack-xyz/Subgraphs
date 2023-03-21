@@ -1,5 +1,30 @@
-const schema = `#--Airstack Schemas--
+const schema = `
+#
+# --Airstack Schemas--
 
+enum AirNetwork {
+  ARBITRUM_ONE
+  ARWEAVE_MAINNET
+  AURORA
+  AVALANCHE
+  BOBA
+  BSC # aka BNB Chain
+  CELO
+  COSMOS
+  CRONOS
+  MAINNET # Ethereum Mainnet
+  FANTOM
+  FUSE
+  HARMONY
+  JUNO
+  MOONBEAM
+  MOONRIVER
+  NEAR_MAINNET
+  OPTIMISM
+  OSMOSIS
+  MATIC # aka Polygon
+  XDAI # aka Gnosis Chain
+}
 enum AirProtocolType {
   GENERIC
   EXCHANGE
@@ -53,7 +78,7 @@ type AirBlock @entity {
 
 type AirMeta @entity {
   id: ID! # air_meta 
-  network: String!
+  network: AirNetwork!
   schemaVersion: String!
   slug: String! #Opensea_V1
   name: String! # Opeasea/Rarible

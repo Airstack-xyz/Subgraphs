@@ -17,12 +17,6 @@ lerna-debug.log*
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# all subgraphs modules/airstack folders
-rarible-exchange-v1/modules/airstack/*
-rarible-exchange-v2/modules/airstack/*
-seaport-subgraph/modules/airstack/*
-wyvern-exchange/modules/airstack/*
-ens/modules/airstack/*
 farcaster/modules/airstack/*
 
 # Runtime data

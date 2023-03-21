@@ -1,8 +1,6 @@
 import {
   DomainVsIsMigratedMapping,
   ReverseRegistrar,
-  NameRegisteredTransactionVsRegistrant,
-  AirBlock,
 } from "../generated/schema";
 import {
   Bytes,
@@ -23,13 +21,13 @@ export const TOKEN_ADDRESS_ENS = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
  * @param isMigrated is migrated flag - only required when creating a new entity
  * @returns DomainVsIsMigratedMapping entity
 */
-export function createIsMigratedMapping(domainId: string, chainId: string, blockId: string, isMigrated: boolean = false): DomainVsIsMigratedMapping {
+export function getOrCreateIsMigratedMapping(domainId: string, chainId: string, blockId: string, isMigrated: boolean = false): DomainVsIsMigratedMapping {
   let entity = DomainVsIsMigratedMapping.load(domainId);
   if (entity == null) {
     entity = new DomainVsIsMigratedMapping(domainId);
+    entity.isMigrated = isMigrated;
+    entity.lastUpdatedAt = blockId;
   }
-  entity.isMigrated = isMigrated;
-  entity.lastUpdatedAt = blockId;
   return entity as DomainVsIsMigratedMapping;
 }
 
@@ -66,37 +64,6 @@ export function createReverseRegistrar(
     entity.save();
   }
   return entity as ReverseRegistrar;
-}
-
-/**
- * @dev this function creates a new NameRegisteredTransactionVsRegistrant entity
- * @param transactionHash transaction hash
- * @param block air block entity
- * @param id domainId-transactionHash
- * @param tokenId transferred token id
- * @param oldRegistrantId name registered txn old registrant id
- * @param newRegistrantId name registered txn new registrant id
- * @returns NameRegisteredTransactionVsRegistrant entity
- */
-export function createNameRegisteredTransactionVsRegistrant(
-  transactionHash: string,
-  block: AirBlock,
-  id: string,
-  tokenId: string,
-  oldRegistrantId: string,
-  newRegistrantId: string,
-): NameRegisteredTransactionVsRegistrant {
-  let entity = NameRegisteredTransactionVsRegistrant.load(id);
-  if (entity == null) {
-    entity = new NameRegisteredTransactionVsRegistrant(id);
-    entity.oldRegistrant = oldRegistrantId;
-    entity.newRegistrant = newRegistrantId;
-    entity.transactionHash = transactionHash;
-    entity.tokenId = tokenId;
-    entity.createdAt = block.id;
-    entity.save();
-  }
-  return entity as NameRegisteredTransactionVsRegistrant;
 }
 
 // specific to ens

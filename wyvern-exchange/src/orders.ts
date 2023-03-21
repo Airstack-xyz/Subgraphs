@@ -149,16 +149,16 @@ export namespace orders {
 		export function calculateMatchPrice(buy: Order, sell: Order, now: BigInt): BigInt {
 			/* Calculate sell price. */
 			let sellPrice = calculateFinalPrice(
-				sell.side, sell.saleKind, sell.basePrice,
-				sell.extra, sell.listingTime, sell.expirationTIme, now)
+				sell.side!, sell.saleKind!, sell.basePrice!,
+				sell.extra!, sell.listingTime!, sell.expirationTIme!, now)
 
 			/* Calculate buy price. */
 			let buyPrice = calculateFinalPrice(
-				buy.side, buy.saleKind, buy.basePrice,
-				buy.extra, buy.listingTime, buy.expirationTIme, now)
+				buy.side!, buy.saleKind!, buy.basePrice!,
+				buy.extra!, buy.listingTime!, buy.expirationTIme!, now)
 
 			/* Maker/taker priority. */
-			let isMissingSellFeeRecipient = (address.isZeroAddress(Address.fromString(sell.feeRecipient)))
+			let isMissingSellFeeRecipient = (address.isZeroAddress(Address.fromString(sell.feeRecipient!)))
 			return isMissingSellFeeRecipient ? buyPrice : sellPrice
 
 		}

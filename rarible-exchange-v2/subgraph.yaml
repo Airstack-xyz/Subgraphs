@@ -14,7 +14,19 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - TxnHashVsTokenIdMapping
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirToken
+        - AirNftTransaction
+        - AirTokenMetadata
+        - AirExtraData
+        - AirAccount,
+        - AirNftTransaction,
+        - AirToken,
+        - AirBlock,
+        - AirNftSaleRoyalty
       abis:
         - name: ExchangeV2
           file: ./abis/ExchangeV2.json
@@ -28,23 +40,3 @@ dataSources:
         - function: directPurchase((address,uint256,bytes4,bytes,uint256,address,uint256,uint256,uint256,bytes4,bytes,bytes,uint256,uint256,bytes))
           handler: handleDirectPurchase
       file: ./src/exchange-v-2.ts
-  - kind: ethereum
-    name: ERC721GenProxy
-    network: mainnet
-    source:
-      address: '0x021779E0124ddFdC7B0215071B50c174d6E4376F'
-      abi: ERC721Gen
-      startBlock: 14660613
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - TxnHashVsTokenIdMapping
-      abis:
-        - name: ERC721Gen
-          file: ./abis/ERC721Gen.json
-      eventHandlers:
-        - event: GenArtMint(indexed uint256,uint256)
-          handler: handleGenArtMint
-      file: ./src/gen-art-mint.ts

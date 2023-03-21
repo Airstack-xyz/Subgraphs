@@ -211,10 +211,9 @@ Call the following function from your subgraph mapping. An example implementatio
 🔨 = In progress implementation<br/>
 ✅ = Completed<br/>
 
-| Vertical        | Status |
+| Vertical         | Status |
 | --------------- | :----: |
-| NFT Marketplace |   ✅   |
-| Domain Name     |   ✅   |
+| NFT Marketplace |   🔨   |
 | DEX             |   🔨   |
 | Bridges         |   💬   |
 | DAO             |   ⌛   |

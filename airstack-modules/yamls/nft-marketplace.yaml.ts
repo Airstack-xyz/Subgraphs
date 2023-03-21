@@ -4,11 +4,10 @@ entities:
   - AirMeta
   - AirEntityCounter
   - AirAccount
+  - AirToken
   - AirNftTransaction
   - AirNftSaleRoyalty
-  - AirExtra
-  - AirToken,
-  - AirNftSaleRoyalty
+  - AirExtraData
 `;
 
 export default yamlString;
