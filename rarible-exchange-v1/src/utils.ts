@@ -191,7 +191,7 @@ export function getTokenOwnerErc721(
  * @param sellerFee seller fee in basis point
  * @returns protocol beneficiary fee details
  */
-export function getProtocolFeeDetailsErc721(
+export function getProtocolFeeDetails(
   exchangeAddress: Address,
   total: BigInt,
   sellerFee: BigInt,

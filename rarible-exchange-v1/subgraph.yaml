@@ -105,6 +105,8 @@ dataSources:
       abis:
         - name: ERC1155Sale2
           file: ./abis/ERC1155Sale2.json
+        - name: ERC721Sale
+          file: ./abis/ERC721Sale.json
         - name: SecondarySaleFees
           file: ./abis/SecondarySaleFees.json
       callHandlers:
