@@ -83,12 +83,6 @@ a. NFT Marketplace
 npx @airstack/subgraph-generator nft-marketplace
 ```
 
-b. DEX
-
-```
-npx @airstack/subgraph-generator dex --yaml "./subgraph.yaml" --dataSourceNames "Factory, Pair"
-```
-
 #### Terminal will prompt these questions
 
 ```sh
