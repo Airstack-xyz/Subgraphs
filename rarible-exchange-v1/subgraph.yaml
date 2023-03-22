@@ -86,8 +86,8 @@ dataSources:
           file: ./abis/ERC1155Sale1.json
         - name: SecondarySaleFees
           file: ./abis/SecondarySaleFees.json
-      eventHandlers:
-        - event: Buy(indexed address,indexed uint256,address,uint256,address,uint256)
+      callHandlers:
+        - function: buy(address,uint256,address,uint256,uint256,uint8,bytes32,bytes32)
           handler: handleBuyErc1155Sale1
       file: ./src/exchange-v-1.ts
   - kind: ethereum
@@ -96,7 +96,7 @@ dataSources:
     source:
       address: '0x93f2a75d771628856f37f256da95e99ea28aafbe'
       abi: ERC1155Sale2
-      startBlock: 10147909
+      startBlock: 10786886
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -107,8 +107,8 @@ dataSources:
           file: ./abis/ERC1155Sale2.json
         - name: SecondarySaleFees
           file: ./abis/SecondarySaleFees.json
-      eventHandlers:
-        - event: Buy(indexed address,indexed uint256,address,uint256,address,uint256)
+      callHandlers:
+        - function: buy(address,uint256,address,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))
           handler: handleBuyErc1155Sale2
       file: ./src/exchange-v-1.ts
   - kind: ethereum
