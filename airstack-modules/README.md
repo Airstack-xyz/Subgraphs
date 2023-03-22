@@ -73,7 +73,7 @@ provide the location of your project's **schema.graphql** file. This is an optio
 
 `--dataSourceNames <name1, name2, ...>` provide the **dataSource** name where Airstack entities will be added. This is an optional parameter. By default, the entities will be added in all the **dataSource** provided in the **subgraph.yaml**.
 
-`--templates <name1, name2, ...>` provide the **teamplate** name where Airstack entities will be added. This is an optional parameter. By default, the entities will be added in all the **teamplate** provided in the **subgraph.yaml**.
+`--templates <name1, name2, ...>` provide the **template** name where Airstack entities will be added. This is an optional parameter. By default, the entities will be added in all the **template** provided in the **subgraph.yaml**.
 
 Examples:
 
