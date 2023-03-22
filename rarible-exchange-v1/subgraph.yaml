@@ -23,3 +23,110 @@ dataSources:
         - function: exchange(((address,uint256,(address,uint256,uint8),(address,uint256,uint8)),uint256,uint256,uint256),(uint8,bytes32,bytes32),uint256,(uint8,bytes32,bytes32),uint256,address)
           handler: handleExchange
       file: ./src/exchange-v-1.ts
+  - kind: ethereum
+    name: ERC721Sale1
+    network: mainnet
+    source:
+      address: '0x131aebbfe55bca0c9eaad4ea24d386c5c082dd58'
+      abi: ERC721Sale
+      startBlock: 10786971
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+      abis:
+        - name: ERC721Sale
+          file: ./abis/ERC721Sale.json
+        - name: ERC721
+          file: ./abis/ERC721.json
+        - name: SecondarySaleFees
+          file: ./abis/SecondarySaleFees.json
+      callHandlers:
+        - function: buy(address,uint256,uint256,uint256,(uint8,bytes32,bytes32))
+          handler: handleBuyErc721
+      file: ./src/exchange-v-1.ts
+  - kind: ethereum
+    name: ERC721Sale2
+    network: mainnet
+    source:
+      address: '0xa5af48b105ddf2fa73cbaac61d420ea31b3c2a07'
+      abi: ERC721Sale
+      startBlock: 10147841
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+      abis:
+        - name: ERC721Sale
+          file: ./abis/ERC721Sale.json
+        - name: ERC721
+          file: ./abis/ERC721.json
+        - name: SecondarySaleFees
+          file: ./abis/SecondarySaleFees.json
+      callHandlers:
+        - function: buy(address,uint256,uint256,uint256,(uint8,bytes32,bytes32))
+          handler: handleBuyErc721
+      file: ./src/exchange-v-1.ts
+  - kind: ethereum
+    name: ERC1155Sale1
+    network: mainnet
+    source:
+      address: '0x8c530a698b6e83d562db09079bc458d4dad4e6c5'
+      abi: ERC1155Sale1
+      startBlock: 10147909
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+      abis:
+        - name: ERC1155Sale1
+          file: ./abis/ERC1155Sale1.json
+        - name: SecondarySaleFees
+          file: ./abis/SecondarySaleFees.json
+      eventHandlers:
+        - event: Buy(indexed address,indexed uint256,address,uint256,address,uint256)
+          handler: handleBuyErc1155Sale1
+      file: ./src/exchange-v-1.ts
+  - kind: ethereum
+    name: ERC1155Sale2
+    network: mainnet
+    source:
+      address: '0x93f2a75d771628856f37f256da95e99ea28aafbe'
+      abi: ERC1155Sale2
+      startBlock: 10147909
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+      abis:
+        - name: ERC1155Sale2
+          file: ./abis/ERC1155Sale2.json
+        - name: SecondarySaleFees
+          file: ./abis/SecondarySaleFees.json
+      eventHandlers:
+        - event: Buy(indexed address,indexed uint256,address,uint256,address,uint256)
+          handler: handleBuyErc1155Sale2
+      file: ./src/exchange-v-1.ts
+  - kind: ethereum
+    name: TokenSaleErc721
+    network: mainnet
+    source:
+      address: '0xf2ee97405593bc7b6275682b0331169a48fedec7'
+      abi: TokenSale
+      startBlock: 8803300
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+      abis:
+        - name: TokenSale
+          file: ./abis/TokenSale.json
+      eventHandlers:
+        - event: Buy(indexed address,indexed uint256,address,address,uint256,uint256)
+          handler: handleBuyTokenSaleErc721
+      file: ./src/exchange-v-1.ts
