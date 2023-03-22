@@ -9,6 +9,7 @@
     txHash: string,                     #transaction hash
     txIndex: BigInt,                    #transaction index - call or log index
     NftSales: Sale[],                   #array of Sale objects
+    isBundle: boolean                   #indicates if it's a bundle sale or not
     protocolType: string,               #protocol type - SALE
     protocolActionType: string,         #protocol action type - ["BUY", "SELL"]
     timestamp: BigInt,                  #timestamp of the transaction block
