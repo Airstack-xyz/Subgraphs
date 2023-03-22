@@ -252,6 +252,7 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
         txHash.toHexString(),
         call.transaction.index,
         allSales,
+        isBundleSale,
         MARKET_PLACE_TYPE,
         PROTOCOL_SELL_ACTION_TYPE,
         timestamp,
