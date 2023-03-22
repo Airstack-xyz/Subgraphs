@@ -150,6 +150,7 @@ airstack.nft.trackNFTSaleTransactions(
     txHash, // string eg: event.transaction.hash.toHexString()
     txIndex, //string eg: event.transaction.index
     allSales, // airstack.nft.Sale[]
+    isBundle, // boolean 
     protocolType, // string eg: "NFT_MARKET_PLACE"
     protocolActionType, //string eg: "SELL"
     timestamp, // BigInt eg: event.block.timestamp
