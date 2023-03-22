@@ -35,6 +35,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - Erc721saleTempMapping
       abis:
         - name: ERC721Sale
           file: ./abis/ERC721Sale.json
@@ -42,8 +43,8 @@ dataSources:
           file: ./abis/ERC721.json
         - name: SecondarySaleFees
           file: ./abis/SecondarySaleFees.json
-      callHandlers:
-        - function: buy(address,uint256,uint256,uint256,(uint8,bytes32,bytes32))
+      eventHandlers:
+        - event: Buy(indexed address,indexed uint256,address,address,uint256,uint256)
           handler: handleBuyErc721
       file: ./src/exchange-v-1.ts
   - kind: ethereum
@@ -58,6 +59,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - Erc721saleTempMapping
       abis:
         - name: ERC721Sale
           file: ./abis/ERC721Sale.json
@@ -65,8 +67,8 @@ dataSources:
           file: ./abis/ERC721.json
         - name: SecondarySaleFees
           file: ./abis/SecondarySaleFees.json
-      callHandlers:
-        - function: buy(address,uint256,uint256,uint256,(uint8,bytes32,bytes32))
+      eventHandlers:
+        - event: Buy(indexed address,indexed uint256,address,address,uint256,uint256)
           handler: handleBuyErc721
       file: ./src/exchange-v-1.ts
   - kind: ethereum

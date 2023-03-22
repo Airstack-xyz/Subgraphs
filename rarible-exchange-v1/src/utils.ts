@@ -8,6 +8,8 @@ import { ERC721 } from "../generated/ERC721Sale1/ERC721";
 import { ERC721Sale } from "../generated/ERC721Sale1/ERC721Sale";
 import { SecondarySaleFees } from "../generated/ExchangeV1/SecondarySaleFees";
 import { nft } from "../modules/airstack/nft-marketplace";
+import { Erc721SaleTempMapping, Royalty } from "../generated/schema";
+import * as airstack from "../modules/airstack/nft-marketplace";
 
 export const INTERFACE_ID_FEES = Bytes.fromHexString("0xb7799584");
 export const exchangeV1Address = Address.fromString("0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06");
@@ -280,4 +282,72 @@ export function getRoyaltyDetailsErc1155Sale1(
     }
   };
   return creatorRoyalties;
+}
+
+export function createErc721SaleTempMapping(
+  from: string,
+  to: string,
+  tokenId: BigInt,
+  tokenAddress: string,
+  tokenAmount: BigInt,
+  tokenStandard: string,
+  paymentToken: string,
+  paymentAmount: BigInt,
+  protocolFee: BigInt,
+  protocolFeeBeneficiary: string,
+  royalties: airstack.nft.CreatorRoyalty[],
+  transactionHash: string,
+  transactionIndex: BigInt,
+  blockNumber: BigInt,
+  blockHash: string,
+  blockTimestamp: BigInt
+): Erc721SaleTempMapping {
+  const id = transactionHash.concat('-').concat(tokenId.toString());
+  let entity = Erc721SaleTempMapping.load(id);
+  if (entity == null) {
+    entity = new Erc721SaleTempMapping(id);
+    const royaltyIds = createRoyaltyEntities(
+      royalties,
+      transactionHash,
+      tokenId
+    );
+    entity.from = from;
+    entity.to = to;
+    entity.tokenId = tokenId;
+    entity.tokenAddress = tokenAddress;
+    entity.tokenAmount = tokenAmount;
+    entity.tokenStandard = tokenStandard;
+    entity.paymentToken = paymentToken;
+    entity.paymentAmount = paymentAmount;
+    entity.protocolFee = protocolFee;
+    entity.protocolFeeBeneficiary = protocolFeeBeneficiary;
+    entity.royalties = royaltyIds;
+    entity.transactionHash = transactionHash;
+    entity.transactionIndex = transactionIndex;
+    entity.blockNumber = blockNumber;
+    entity.blockHash = blockHash;
+    entity.blockTimestamp = blockTimestamp;
+    entity.save();
+  };
+  return entity as Erc721SaleTempMapping;
+}
+
+function createRoyaltyEntities(
+  royalties: airstack.nft.CreatorRoyalty[],
+  transactionHash: string,
+  tokenId: BigInt,
+): string[] {
+  let royaltyIds: string[] = [];
+  for (let i = 0; i < royalties.length; i++) {
+    const royaltyId = transactionHash.concat('-').concat(tokenId.toString()).concat('-').concat(i.toString());
+    let royaltyEntity = Royalty.load(royaltyId);
+    if (royaltyEntity == null) {
+      royaltyEntity = new Royalty(royaltyId);
+      royaltyEntity.value = royalties[i].fee;
+      royaltyEntity.recipient = royalties[i].beneficiary.toHexString();
+      royaltyEntity.save();
+    };
+    royaltyIds.push(royaltyId);
+  }
+  return royaltyIds;
 }
