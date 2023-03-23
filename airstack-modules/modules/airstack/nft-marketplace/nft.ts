@@ -18,6 +18,7 @@ export namespace nft {
         txHash: string,
         txIndex: BigInt,
         NftSales: Sale[],
+        isBundle: boolean,
         protocolType: string,
         protocolActionType: string,
         timestamp: BigInt,
@@ -80,7 +81,7 @@ export namespace nft {
             transaction.transactionToken = saleToken.id;
             transaction.hash = txHash;
             transaction.block = block.id;
-
+            transaction.isBundle = isBundle
             // Creator Royalty
             for (let j = 0; j < NftSales[i].royalties.length; j++) {
                 let royaltyAccount = getOrCreateAirAccount(
