@@ -105,7 +105,8 @@ export function createAirNftTransactionExpectedResponse(
   paymentToken: string,
   paymentAmount: string,
   feeAmount: string,
-  feeBeneficiary: string
+  feeBeneficiary: string,
+  isBundle:boolean
 ): AirNftTransactionExpectedResponse {
   let prefix = "1-"
   return new AirNftTransactionExpectedResponse(
@@ -118,7 +119,8 @@ export function createAirNftTransactionExpectedResponse(
     prefix + paymentToken,
     paymentAmount,
     feeAmount,
-    prefix + feeBeneficiary
+    prefix + feeBeneficiary,
+    isBundle
   )
 }
 export function assertAirNftSaleRoyaltyExpectedResponse(
@@ -152,7 +154,8 @@ export function assertAirNftTransactionExpectedResponse(
   paymentToken: string,
   paymentAmount: string,
   feeAmount: string,
-  feeBeneficiary: string
+  feeBeneficiary: string,
+  isBundle: boolean
 ): void {
   let expectedResponse = createAirNftTransactionExpectedResponse(
     from,
@@ -164,7 +167,8 @@ export function assertAirNftTransactionExpectedResponse(
     paymentToken,
     paymentAmount,
     feeAmount,
-    feeBeneficiary
+    feeBeneficiary,
+    isBundle
   )
   let entityId = airstack.nft.getNFTSaleTransactionId(
     "1",
@@ -178,6 +182,7 @@ export function assertAirNftTransactionExpectedResponse(
   assert.fieldEquals("AirNftTransaction", entityId, "hash", expectedResponse.hash)
   assert.fieldEquals("AirNftTransaction", entityId, "tokenId", expectedResponse.tokenId)
   assert.fieldEquals("AirNftTransaction", entityId, "tokenAmount", expectedResponse.tokenAmount)
+  assert.fieldEquals("AirNftTransaction", entityId, "isBundle", expectedResponse.isBundle.toString())
   assert.fieldEquals(
     "AirNftTransaction",
     entityId,

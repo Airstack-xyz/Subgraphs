@@ -31,7 +31,8 @@ export class AirNftTransactionExpectedResponse {
     public paymentToken: string,
     public paymentAmount: string,
     public feeAmount: string,
-    public feeBeneficiary: string
+    public feeBeneficiary: string,
+    public isBundle:boolean
   ) {}
 }
 export class AirNftSaleRoyaltyExpectedResponse {

@@ -154,6 +154,7 @@ function handleCompleteEvent(event: OrderFulfilled): void {
       txHash.toHexString(),
       event.transaction.index,
       allSales,
+      allSales.length>1,
       MARKET_PLACE_TYPE,
       PROTOCOL_SELL_ACTION_TYPE,
       event.block.timestamp,
@@ -317,15 +318,16 @@ function handlePartialEvent(event: OrderFulfilled): void {
     }
     if (allSales.length > 0) {
       airstack.nft.trackNFTSaleTransactions(
-        ETHEREUM_MAINNET_ID,
-        txHash.toHexString(),
-        event.transaction.index,
-        allSales,
-        MARKET_PLACE_TYPE,
-        PROTOCOL_SELL_ACTION_TYPE,
-        event.block.timestamp,
-        event.block.number,
-        event.block.hash.toHexString()
+          ETHEREUM_MAINNET_ID,
+          txHash.toHexString(),
+          event.transaction.index,
+          allSales,
+          allSales.length > 1,
+          MARKET_PLACE_TYPE,
+          PROTOCOL_SELL_ACTION_TYPE,
+          event.block.timestamp,
+          event.block.number,
+          event.block.hash.toHexString()
       )
     } else {
       log.error("txHash {} not valid since no nft sales involved", [txHash.toHexString()])

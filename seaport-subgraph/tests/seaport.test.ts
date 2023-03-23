@@ -59,7 +59,7 @@ describe("Describe entity assertions", () => {
       "0x0000000000000000000000000000000000000000",
       "2500000000000",
       "62500000000",
-      "0x8de9c5a032463c561423387a9648c5c7bcc5bc90"
+      "0x8de9c5a032463c561423387a9648c5c7bcc5bc90",true
     )
     assertAirNftSaleRoyaltyExpectedResponse(
       txIndex,
@@ -80,7 +80,7 @@ describe("Describe entity assertions", () => {
       "0x0000000000000000000000000000000000000000",
       "2500000000000",
       "62500000000",
-      "0x8de9c5a032463c561423387a9648c5c7bcc5bc90"
+      "0x8de9c5a032463c561423387a9648c5c7bcc5bc90",true
     )
     assertAirNftSaleRoyaltyExpectedResponse(
       txIndex,
@@ -91,17 +91,18 @@ describe("Describe entity assertions", () => {
       "125000000000"
     )
     assertAirNftTransactionExpectedResponse(
-      txIndex,
-      "0x05fb51ae421bdd4a8d8d8357b16bc8db8c059f9f",
-      "0x66f59e9a3329a9100fe59b487f71644f1849e480",
-      txHash.toString(),
-      "8974",
-      "1",
-      "0xb9d9455ea8ba8e244b3ea9d46ba106642cb99b97",
-      "0x0000000000000000000000000000000000000000",
-      "2500000000000",
-      "62500000000",
-      "0x8de9c5a032463c561423387a9648c5c7bcc5bc90"
+        txIndex,
+        "0x05fb51ae421bdd4a8d8d8357b16bc8db8c059f9f",
+        "0x66f59e9a3329a9100fe59b487f71644f1849e480",
+        txHash.toString(),
+        "8974",
+        "1",
+        "0xb9d9455ea8ba8e244b3ea9d46ba106642cb99b97",
+        "0x0000000000000000000000000000000000000000",
+        "2500000000000",
+        "62500000000",
+        "0x8de9c5a032463c561423387a9648c5c7bcc5bc90",
+        true
     )
     assertAirNftSaleRoyaltyExpectedResponse(
       txIndex,
@@ -112,17 +113,18 @@ describe("Describe entity assertions", () => {
       "125000000000"
     )
     assertAirNftTransactionExpectedResponse(
-      txIndex,
-      "0x05fb51ae421bdd4a8d8d8357b16bc8db8c059f9f",
-      "0x66f59e9a3329a9100fe59b487f71644f1849e480",
-      txHash.toString(),
-      "8975",
-      "1",
-      "0xb9d9455ea8ba8e244b3ea9d46ba106642cb99b97",
-      "0x0000000000000000000000000000000000000000",
-      "2500000000000",
-      "62500000000",
-      "0x8de9c5a032463c561423387a9648c5c7bcc5bc90"
+        txIndex,
+        "0x05fb51ae421bdd4a8d8d8357b16bc8db8c059f9f",
+        "0x66f59e9a3329a9100fe59b487f71644f1849e480",
+        txHash.toString(),
+        "8975",
+        "1",
+        "0xb9d9455ea8ba8e244b3ea9d46ba106642cb99b97",
+        "0x0000000000000000000000000000000000000000",
+        "2500000000000",
+        "62500000000",
+        "0x8de9c5a032463c561423387a9648c5c7bcc5bc90",
+        true
     )
     assertAirNftSaleRoyaltyExpectedResponse(
       txIndex,
@@ -151,7 +153,8 @@ describe("Describe entity assertions", () => {
       "0x0000000000000000000000000000000000000000",
       "10000000000000000",
       "250000000000000",
-      "0x0000a26b00c1f0df003000390027140000faa719"
+      "0x0000a26b00c1f0df003000390027140000faa719",
+      false
     )
   })
   test("handling multiEvent1 & multiEvent2", () => {
@@ -172,7 +175,8 @@ describe("Describe entity assertions", () => {
       "0x6b175474e89094c44da98b954eedeac495271d0f",
       "5250000000000000000",
       "375000000000000000",
-      "0x8de9c5a032463c561423387a9648c5c7bcc5bc90"
+      "0x8de9c5a032463c561423387a9648c5c7bcc5bc90",
+      false
     )
   })
   test("handling multiEvent2 & multiEvent1", () => {
@@ -193,7 +197,8 @@ describe("Describe entity assertions", () => {
       "0x6b175474e89094c44da98b954eedeac495271d0f",
       "5250000000000000000",
       "375000000000000000",
-      "0x8de9c5a032463c561423387a9648c5c7bcc5bc90"
+      "0x8de9c5a032463c561423387a9648c5c7bcc5bc90",
+      false
     )
   })
   test("handling multipleRoyalties1 & multipleRoyalties1", () => {
@@ -214,7 +219,8 @@ describe("Describe entity assertions", () => {
       "0x0000000000000000000000000000000000000000",
       "82000000000000000",
       "2050000000000000",
-      "0x0000a26b00c1f0df003000390027140000faa719"
+      "0x0000a26b00c1f0df003000390027140000faa719",
+      false
     )
     assertAirNftSaleRoyaltyExpectedResponse(
       txIndex,
@@ -241,7 +247,8 @@ describe("Describe entity assertions", () => {
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
       "100000",
       "2500",
-      "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073"
+      "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073",
+      false
     )
   })
   test("handling case where offer has nft and token & triggered by someone else", () => {
@@ -262,7 +269,8 @@ describe("Describe entity assertions", () => {
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
       "40457500000000000",
       "0",
-      "0x0000000000000000000000000000000000000000"
+      "0x0000000000000000000000000000000000000000",
+      false
     )
   })
   test("handling huge numeber of nft transactions in a txn", () => {
@@ -284,7 +292,8 @@ describe("Describe entity assertions", () => {
         "0x0000000000000000000000000000000000000000",
         "0",
         "0",
-        "0x0000000000000000000000000000000000000000"
+        "0x0000000000000000000000000000000000000000",
+        true
       )
     }
   })
