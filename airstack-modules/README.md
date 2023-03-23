@@ -195,6 +195,7 @@ Call the following function from your subgraph mapping. An example implementatio
         chainID: string,
         txHash: string,
         txIndex: BigInt,
+        isBundle, // boolean
         NftSales: Sale[],
         protocolType: string,
         protocolActionType: string,
