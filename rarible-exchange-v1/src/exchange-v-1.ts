@@ -6,7 +6,7 @@ import { BuyCall as BuyCall1155Sale2 } from "../generated/ERC1155Sale2/ERC1155Sa
 import { Buy as BuyTokenSale721 } from "../generated/TokenSaleErc721/TokenSale";
 import * as airstack from "../modules/airstack/nft-marketplace";
 import * as utils from "./utils";
-import { AirProtocolType, AirProtocolActionType, ETHEREUM_MAINNET_ID, getProtocolFeeDetails, createErc721SaleTempMapping } from "./utils";
+import { AirProtocolType, AirProtocolActionType, ETHEREUM_MAINNET_ID, getProtocolFeeDetails } from "./utils";
 import { BIGINT_ONE } from "../modules/airstack/common";
 
 export function handleExchange(call: ExchangeCall): void {
@@ -59,6 +59,7 @@ export function handleExchange(call: ExchangeCall): void {
       call.transaction.hash.toHexString(),
       call.transaction.index,
       [nftSales],
+      false,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
       call.block.timestamp,
@@ -117,6 +118,7 @@ export function handleExchange(call: ExchangeCall): void {
       call.transaction.hash.toHexString(),
       call.transaction.index,
       [nftSales],
+      false,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.SELL,
       call.block.timestamp,
@@ -147,6 +149,7 @@ export function handleBuyTokenSaleErc721(event: BuyTokenSale721): void {
     event.transaction.hash.toHexString(),
     event.transaction.index,
     [nftSales],
+    false,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
     event.block.timestamp,
@@ -190,6 +193,7 @@ export function handleBuyErc1155Sale1(call: BuyCall1155Sale1): void {
     call.transaction.hash.toHexString(),
     call.transaction.index,
     [nftSales],
+    false,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
     call.block.timestamp,
@@ -241,6 +245,7 @@ export function handleBuyErc1155Sale2(call: BuyCall1155Sale2): void {
     call.transaction.hash.toHexString(),
     call.transaction.index,
     [nftSales],
+    false,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
     call.block.timestamp,
@@ -294,6 +299,7 @@ export function handleBuyErc721(event: Buy721Sale): void {
     event.transaction.hash.toHexString(),
     event.transaction.index,
     [nftSales],
+    false,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
     event.block.timestamp,
