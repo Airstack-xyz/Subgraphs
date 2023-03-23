@@ -138,7 +138,6 @@ export namespace social {
     );
     if (airSocialProfile == null) {
       throw new Error("air social profile not found");
-      return;
     }
     const airSocialUser = createAirSocialUser(
       chainId,
@@ -147,6 +146,8 @@ export namespace social {
       to,
       new Array<string>(),
     );
+    airSocialProfile.user = airSocialUser.id;
+    airSocialProfile.save();
     createAirSocialProfileOnwershipChangeTransaction(
       chainId,
       airBlock,
