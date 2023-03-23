@@ -62,18 +62,24 @@ Use the following command to add Airstack Schemas and Modules in your project
 npx  @airstack/subgraph-generator <vertical>  --yaml <subgraph.yaml file path> --graphql <schema.graphql file path> --dataSourceNames <"name1, name2, ..."> --templates <"name1, name2">
 ```
 
-`npx airstack <vertical>`
-will add the required Airstack entities and the module files in your **subgraph.yaml** file
+<ul>
+<li> <b><i>npx airstack <vertical></i></b> will add the required Airstack entities and the module files in your <b>subgraph.yaml</b> file</li>
+<li> <b><i>--yaml <subgraph.yaml file path></i></b> provide the location of your project's <b>subgraph.yaml</b> file. This is an optional parameter.</li>
+<li> <b><i>--graphql <subgraph.graphql file path></i></b>provide the location of your project's <b>schema.graphql</b> file. This is an optional parameter.</li>
+<li> <b><i>--dataSourceNames <name1, name2, ...></i></b> provide the <b>dataSource</b> name where Airstack entities will be added. This is an optional parameter. By default, the entities will be added in all the <b>dataSource</b> provided in the <b>subgraph.yaml</b>.
+</li>
+<li> <b><i>--templates <name1, name2, ...></i></b> provide the <b>template</b> name where Airstack entities will be added. This is an optional parameter. By default, the entities will be added in all the <b>template</b> provided in the <b>subgraph.yaml</b>.
+</li>
+</ul>
 
-`--yaml <subgraph.yaml file path>`
-provide the location of your project's **subgraph.yaml** file. This is an optional parameter.
 
-`--graphql <subgraph.graphql file path>`
-provide the location of your project's **schema.graphql** file. This is an optional parameter.
 
-`--dataSourceNames <name1, name2, ...>` provide the **dataSource** name where Airstack entities will be added. This is an optional parameter. By default, the entities will be added in all the **dataSource** provided in the **subgraph.yaml**.
 
-`--templates <name1, name2, ...>` provide the **template** name where Airstack entities will be added. This is an optional parameter. By default, the entities will be added in all the **template** provided in the **subgraph.yaml**.
+
+
+
+
+
 
 Examples:
 
