@@ -418,7 +418,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirExtra", id, "id", id);
     assert.fieldEquals("AirExtra", id, "name", "profileRecoveryAddress");
     assert.fieldEquals("AirExtra", id, "value", "0xca207a1caf36d198b12c16c7c7a1d1c795978c42");
-    // create air social user
+    // create air social profile
     let airSocialProfile = new AirSocialProfile("1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
     const farcasterName = Bytes.fromHexString(BigInt.fromString("51735769851106138132655535136624048777650501777323249040829743839027683917824").toHexString()).toString();
     airSocialProfile.name = farcasterName;
@@ -430,7 +430,7 @@ describe("Mapping unit tests", () => {
     airSocialProfile.createdAt = "1-10098200";
     airSocialProfile.lastUpdatedAt = "1-10098200";
     airSocialProfile.save();
-    // assert here for air social user
+    // assert here for air social profile
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenId", "51735769851106138132655535136624048777650501777323249040829743839027683917824");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenAddress", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
@@ -454,7 +454,7 @@ describe("Mapping unit tests", () => {
   test("Test handleChangeRecoveryAddressFname else", () => {
     // prepare - keeping chanid 1 for unit tests
     let id = "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress";
-    // create air social user
+    // create air social profile
     let airSocialProfile = new AirSocialProfile("1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
     const farcasterName = Bytes.fromHexString(BigInt.fromString("51735769851106138132655535136624048777650501777323249040829743839027683917824").toHexString()).toString();
     airSocialProfile.name = farcasterName;
@@ -466,7 +466,7 @@ describe("Mapping unit tests", () => {
     airSocialProfile.createdAt = "1-10098200";
     airSocialProfile.lastUpdatedAt = "1-10098200";
     airSocialProfile.save();
-    // assert here for air social user
+    // assert here for air social profile
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenId", "51735769851106138132655535136624048777650501777323249040829743839027683917824");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenAddress", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
@@ -488,6 +488,14 @@ describe("Mapping unit tests", () => {
   })
 
   test("Test handleFarcasterIdTransfer", () => {
+    // create air social user
+    let airSocialUser = new AirSocialUser("1-9397");
+    airSocialUser.socialUserId = "9397";
+    airSocialUser.address = "1-0xda317a1caf36d198b12c16c7c7a1d1c795979d72";
+    airSocialUser.extras = null;
+    airSocialUser.createdAt = "1-10098239";
+    airSocialUser.lastUpdatedAt = "1-10098200";
+    airSocialUser.save();
     let event = getHandleFarcasterIdTransferEvent()
     handleFarcasterIdTransfer(event);
     // AirBlock

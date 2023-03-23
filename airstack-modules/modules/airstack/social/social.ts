@@ -147,6 +147,7 @@ export namespace social {
       new Array<string>(),
     );
     airSocialProfile.user = airSocialUser.id;
+    airSocialProfile.lastUpdatedAt = airBlock.id;
     airSocialProfile.save();
     createAirSocialProfileOnwershipChangeTransaction(
       chainId,
@@ -185,13 +186,18 @@ export namespace social {
     const chainId = getChainId();
     const airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
     airBlock.save();
-    const airSocialUser = createAirSocialUser(
+    const airSocialUser = getAirSocialUser(
       chainId,
-      airBlock,
       socialUserId,
-      to,
-      new Array<string>(),
     );
+    if (airSocialUser == null) {
+      throw new Error("air social user not found");
+    }
+    const airAccountTo = getOrCreateAirAccount(chainId, to, airBlock);
+    airAccountTo.save();
+    airSocialUser.address = airAccountTo.id;
+    airSocialUser.lastUpdatedAt = airBlock.id;
+    airSocialUser.save();
     createAirSocialUserOnwershipChangeTransaction(
       chainId,
       airBlock,
