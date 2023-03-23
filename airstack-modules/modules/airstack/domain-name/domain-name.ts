@@ -372,7 +372,7 @@ export namespace domain {
    * @param block ethereum block
    * @param transactionHash transaction hash
    * @param domainId air domain id
-   * @param name domain name
+   * @param labelName domain labelName
    * @param cost cost of registration or renewal
    * @param paymentToken payment token address
    * @param renewerOrRegistrant renewer or registrant address
@@ -384,7 +384,7 @@ export namespace domain {
     block: ethereum.Block,
     transactionHash: string,
     domainId: string,
-    name: string,
+    labelName: string,
     cost: BigInt,
     paymentToken: string,
     renewerOrRegistrant: string,
@@ -434,9 +434,9 @@ export namespace domain {
       );
       txn.save();
     }
-    if (domain.labelName !== name) {
-      domain.labelName = name
-      domain.name = name + '.eth'
+    if (domain.labelName !== labelName) {
+      domain.labelName = labelName
+      domain.name = labelName + '.eth'
       // creating reverse registrar to get domainId when setting primary domain
       if (domain.name) {
         let reverseRegistrar = createReverseRegistrar(domain.name!, domain.id, airBlock);

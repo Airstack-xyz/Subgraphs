@@ -17,6 +17,7 @@ import {
   createIsMigratedMapping,
   createAirDomainEntityId,
   createReverseRegistrar,
+  checkValidLabel,
 } from "./utils";
 import { AirDomain, DomainVsIsMigratedMapping } from "../generated/schema";
 /**
@@ -39,6 +40,8 @@ export function handleNewOwner(event: NewOwnerEvent): void {
   // creating labelName from label
   let labelName = ens.nameByHash(event.params.label.toHexString());
   if (labelName === null) {
+    labelName = '[' + event.params.label.toHexString().slice(2) + ']';
+  } else if (labelName && !checkValidLabel(labelName, event.transaction.hash.toHexString())) {
     labelName = '[' + event.params.label.toHexString().slice(2) + ']';
   }
   // creating name from labelName and parentName
@@ -183,6 +186,8 @@ export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
   // creating labelName from label
   let labelName = ens.nameByHash(event.params.label.toHexString());
   if (labelName === null) {
+    labelName = '[' + event.params.label.toHexString().slice(2) + ']';
+  } else if (labelName && !checkValidLabel(labelName, event.transaction.hash.toHexString())) {
     labelName = '[' + event.params.label.toHexString().slice(2) + ']';
   }
   // creating name from labelName and parentName
