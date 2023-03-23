@@ -98,6 +98,7 @@ type AirNftTransaction implements AirTransaction @entity {
   index: BigInt!
   protocolType: AirProtocolType!
   protocolActionType: AirProtocolActionType!
+  isBundle: Boolean!
 	tokenId: BigInt! #nft
   tokenAmount:BigInt!   #nft 
 	transactionToken: AirToken!   #nft
