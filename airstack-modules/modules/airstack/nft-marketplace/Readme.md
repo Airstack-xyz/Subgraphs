@@ -1,5 +1,6 @@
 # NFT_MARKET_PLACE vertical integration
-### After module integration for NFT_MARKET_PLACE vertical is done. Please call the below functions to track the transactions of the domain name vertical.
+
+### After module integration for NFT_MARKET_PLACE vertical is done. Please call the below functions to track transactions of the nft sales.
 
 ```
 1. Track NFT trade transaction
@@ -8,6 +9,7 @@
     txHash: string,                     #transaction hash
     txIndex: BigInt,                    #transaction index - call or log index
     NftSales: Sale[],                   #array of Sale objects
+    isBundle: boolean                   #indicates if it's a bundle sale or not
     protocolType: string,               #protocol type - SALE
     protocolActionType: string,         #protocol action type - ["BUY", "SELL"]
     timestamp: BigInt,                  #timestamp of the transaction block
@@ -37,6 +39,7 @@ class CreatorRoyalty {
   beneficiary: Address                   #royalty beneficiary address
 }
 ```
+
 ```
 class NFT {
   collection: Address,                  #nft collection address

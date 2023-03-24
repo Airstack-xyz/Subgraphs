@@ -6,11 +6,7 @@ import {
 } from "@graphprotocol/graph-ts";
 
 import {
-    AirAccount,
-    AirEntityCounter,
     AirNftTransaction,
-    AirToken,
-    AirBlock,
     AirNftSaleRoyalty,
     AirNFT,
 } from "../../../generated/schema";

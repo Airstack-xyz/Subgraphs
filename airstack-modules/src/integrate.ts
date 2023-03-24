@@ -35,28 +35,32 @@ export async function integrate(
         writeSubgraphGraphql(vertical as Vertical, graphql)
           .then(() => {
             const { targetDir, commontTargetDir } = copyAirstackModules(vertical as Vertical);
-
             getAirMetaDetails(vertical as Vertical);
-
             const arrayOfFiles: Array<string> = []
             const arrayOfCommonFiles: Array<string> = []
             getAllFiles(targetDir, arrayOfFiles)
             getAllFiles(commontTargetDir, arrayOfCommonFiles)
-
             let dataSourceName = "";
             if (dataSources && dataSources.length > 0) {
               dataSourceName = dataSources[0];
-
             } else if (templates && templates.length > 0) {
               dataSourceName = templates[0];
-
             } else {
               const yamlSchemas = fs.readFileSync(yamlPath, "utf8");
-              const sourceSubgraphYaml = yaml.load(yamlSchemas) as Record<string, any>;
-              if (sourceSubgraphYaml.dataSources && sourceSubgraphYaml.dataSources.length > 0) {
-                dataSourceName = sourceSubgraphYaml.dataSources[0].name;
-              } else if (sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length > 0) {
-                dataSourceName = sourceSubgraphYaml.templates[0].name;
+              try {
+                const sourceSubgraphYaml = yaml.load(yamlSchemas) as Record<string, any>;
+                if (sourceSubgraphYaml.dataSources && sourceSubgraphYaml.dataSources.length > 0) {
+                  dataSourceName = sourceSubgraphYaml.dataSources[0].name;
+                } else if (sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length > 0) {
+                  dataSourceName = sourceSubgraphYaml.templates[0].name;
+                }
+                if (sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length > 0) {
+                  dataSourceName = sourceSubgraphYaml.templates[0].name;
+                } else if (sourceSubgraphYaml.templates && sourceSubgraphYaml.templates.length > 0) {
+                  dataSourceName = sourceSubgraphYaml.templates[0].name;
+                }
+              } catch {
+                console.error("Error while parsing subgraph.yaml file")
               }
             }
 
@@ -68,7 +72,7 @@ export async function integrate(
 
                 fs.writeFile(filePath, finalFileContent, (err) => {
                   if (err) {
-                    console.log(err);
+                    console.error(err);
                     rej();
                   } else {
                     res();
@@ -79,6 +83,7 @@ export async function integrate(
             Promise.all(writeFilePromise).then(() => {
               resolve();
             }).catch(() => {
+              console.error("Error while writing files")
               reject();
             })
             const writeCommonFilesPromise: Array<Promise<void>> = [];
@@ -89,7 +94,7 @@ export async function integrate(
 
                 fs.writeFile(filePath, finalFileContent, (err) => {
                   if (err) {
-                    console.log(err);
+                    console.error(err);
                     rej();
                   } else {
                     res();
@@ -105,10 +110,12 @@ export async function integrate(
             })
           })
           .catch(() => {
+            console.error("Error while writing graphql file");
             reject();
           });
       })
       .catch(() => {
+        console.error("Error while writing yaml file");
         reject();
       });
   });
@@ -122,41 +129,39 @@ async function writeSubgraphYaml(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const airstackYaml = Utils.getAirstackYamlForVertical(vertical);
-
     const sourceSchemas = fs.readFileSync(subgraphYamlPath, "utf8");
     const sourceSubgraphYaml = yaml.load(sourceSchemas) as Record<string, any>;
-
     let whiteListedDataSource = dataSource;
     if (!whiteListedDataSource) {
       whiteListedDataSource = sourceSubgraphYaml.dataSources.map(
         (dSrc: Record<string, any>) => dSrc.name
       );
     }
-
     let whiteListedTemplates = templates;
     if (sourceSubgraphYaml.templates && !whiteListedTemplates) {
       whiteListedTemplates = sourceSubgraphYaml.templates.map(
         (dSrc: Record<string, any>) => dSrc.name
       );
     }
-
     const targetSubgraphYaml = { ...sourceSubgraphYaml };
     const targetDataSources = targetSubgraphYaml.dataSources;
     targetDataSources.forEach((dataSrc: Record<string, any>) => {
       if (whiteListedDataSource!.includes(dataSrc.name)) {
-        const existingEntities = [...dataSrc.mapping.entities];
-        airstackYaml!.entities.forEach((airEntity: string) => {
-          if (!existingEntities.includes(airEntity)) {
-            dataSrc.mapping.entities.push(airEntity);
-          }
-        });
-
+        if (dataSrc.mapping.entities == null) {
+          dataSrc.mapping.entities = airstackYaml!.entities;
+        } else {
+          const existingEntities = [...dataSrc.mapping.entities];
+          airstackYaml!.entities.forEach((airEntity: string) => {
+            if (!existingEntities.includes(airEntity)) {
+              dataSrc.mapping.entities.push(airEntity);
+            }
+          });
+        }
         const existingAbiNames = dataSrc.mapping.abis.map((abiObj: Record<string, string>) => {
           return abiObj.name;
         });
       }
     });
-
     if (targetSubgraphYaml.templates) {
       const targetTemplates = targetSubgraphYaml.templates;
       targetTemplates.forEach((dataSrc: Record<string, any>) => {
@@ -174,7 +179,6 @@ async function writeSubgraphYaml(
       });
     }
 
-
     Utils.backupFiles(subgraphYamlPath).then((isBackupSuccess: boolean) => {
       if (isBackupSuccess) {
         Utils.createFile(
@@ -184,10 +188,12 @@ async function writeSubgraphYaml(
           if (isWriteSuccess) {
             resolve();
           } else {
+            console.error("Error while writing yaml file entities");
             reject();
           }
         });
       } else {
+        console.error("Error while writing yaml file backup");
         reject();
       }
     });
@@ -200,19 +206,38 @@ function writeSubgraphGraphql(
 ): Promise<void> {
   return new Promise(async (resolve, reject) => {
 
+    const schemas = Utils.getAirstackSchemasForVertical(vertical);
     const sourceSchemas = fs.readFileSync(schemaGraphqlPath, "utf8");
-    if (sourceSchemas.includes("--Airstack Schemas--")) {
+    const schemasComment = "#--Airstack Schemas--"
+    if (sourceSchemas.includes(schemasComment)) {
+      // get line no of comment
+      const indexOfComment = sourceSchemas.indexOf(schemasComment);
+      // read all the schema above the comment
+      const sourceSchemasAboveComment = sourceSchemas.substring(0, indexOfComment);
+      // overwrite the file with the schema above the comment
+      const isNonAirstackSchemaWriteSuccess = Utils.overwriteFile(schemaGraphqlPath, sourceSchemasAboveComment);
+      if (!isNonAirstackSchemaWriteSuccess) {
+        console.error("Failed to overwite the schema.graphql file");
+        reject();
+      }
+      // append the airstack schemas
+      const isAppendSuccess = await Utils.appendFiles(schemaGraphqlPath, schemas);
+      if (!isAppendSuccess) {
+        console.error("Failed to append airstack schemas to schema.graphql file after removing the existing airstack schemas")
+        reject();
+      }
       return resolve();
     }
 
     const isBackupSuccess = await Utils.backupFiles(schemaGraphqlPath);
     if (!isBackupSuccess) {
+      console.error("Failed to backup schema.graphql file to schema.graphql.bck file")
       reject();
     }
 
-    const schemas = Utils.getAirstackSchemasForVertical(vertical);
     const isAppendSuccess = await Utils.appendFiles(schemaGraphqlPath, schemas);
     if (!isAppendSuccess) {
+      console.error("Failed to append airstack schemas to schema.graphql file")
       reject();
     }
     resolve();
