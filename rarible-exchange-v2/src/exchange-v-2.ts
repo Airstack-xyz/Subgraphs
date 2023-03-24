@@ -95,10 +95,10 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       }
     }
 
-    let nftSales = new airstack.nft.Sale(
+    let sale = new airstack.nft.Sale(
       toAddress,  //to
       orderRight.maker, //from
-      nft, //nft
+      [nft], //nft
       matchAndTransferResult.payment, //payment amount
       leftAsset.address, //payment token
       matchAndTransferResult.originFee.value,  //protocol fees
@@ -107,16 +107,12 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     )
 
     airstack.nft.trackNFTSaleTransactions(
-      ETHEREUM_MAINNET_ID,
+      call.block,
       transactionHash.toHexString(),
       call.transaction.index,
-      [nftSales],
-      false,
+      sale,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.SELL,
-      call.block.timestamp,
-      call.block.number,
-      call.block.hash.toHexString()
     );
   } else {
     // leftAsset is NFT
@@ -139,7 +135,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
 
     let nftTokenId = matchAndTransferResult.nftData.tokenId;
 
-    let allSales = new Array<airstack.nft.Sale>();
+    let nfts = new Array<airstack.nft.NFT>();
     // handling random 721 mint case with mutiple tokenIds
     if (nftTokenId == BIGINT_MINUS_ONE && getClass(Bytes.fromHexString(matchAndTransferResult.nftData.standard)) == RANDOM_MINT_721) {
       log.info("its a random721 mint case txhash {}", [transactionHash.toHexString()]);
@@ -155,67 +151,43 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
             nftTokenId,
             matchAndTransferResult.nftData.amount.div(BigInt.fromI32(txnHashVsTokenIdMapping.tokenIds!.length)),
           )
-          let royalties: airstack.nft.CreatorRoyalty[] = [];
-
-          for (let i = 0; i < matchAndTransferResult.royalty.length; i++) {
-            let royalty = new airstack.nft.CreatorRoyalty(
-              matchAndTransferResult.royalty[i].value.div(BigInt.fromI32(txnHashVsTokenIdMapping.tokenIds!.length)),
-              matchAndTransferResult.royalty[i].address,
-            );
-            royalties.push(royalty);
-          }
-          let nftSale = new airstack.nft.Sale(
-            toAddress, //to
-            orderLeft.maker,  //from
-            nft,
-            matchAndTransferResult.payment.div(BigInt.fromI32(txnHashVsTokenIdMapping.tokenIds!.length)), //payment amount
-            rightAsset.address, //payment token
-            matchAndTransferResult.originFee.value.div(BigInt.fromI32(txnHashVsTokenIdMapping.tokenIds!.length)),  //protocol fees
-            matchAndTransferResult.originFee.address, //protocol beneficiary
-            royalties, //royalties
-          )
-          allSales.push(nftSale);
+          nfts.push(nft);
         }
       }
     } else { //handling other normal cases
-      let nft = new airstack.nft.NFT(
+      nfts = [new airstack.nft.NFT(
         leftAsset.address,
         matchAndTransferResult.nftData.standard,
         nftTokenId,
         matchAndTransferResult.nftData.amount,
-      );
-      let royalties: airstack.nft.CreatorRoyalty[] = [];
-      for (let i = 0; i < matchAndTransferResult.royalty.length; i++) {
-        let royalty = new airstack.nft.CreatorRoyalty(
-          matchAndTransferResult.royalty[i].value,
-          matchAndTransferResult.royalty[i].address,
-        );
-        royalties.push(royalty);
-      }
-      let nftSale = new airstack.nft.Sale(
-        toAddress, //to
-        orderLeft.maker,  //from
-        nft,
-        matchAndTransferResult.payment, //payment amount
-        rightAsset.address, //payment token
-        matchAndTransferResult.originFee.value,  //protocol fees
-        matchAndTransferResult.originFee.address, //protocol beneficiary
-        royalties, //royalties
-      )
-      allSales.push(nftSale);
+      )];
     }
-    const isBundle = allSales.length > 1;
+    let royalties: airstack.nft.CreatorRoyalty[] = [];
+    for (let i = 0; i < matchAndTransferResult.royalty.length; i++) {
+      let royalty = new airstack.nft.CreatorRoyalty(
+        matchAndTransferResult.royalty[i].value,
+        matchAndTransferResult.royalty[i].address,
+      );
+      royalties.push(royalty);
+    }
+    let sale = new airstack.nft.Sale(
+      toAddress, //to
+      orderLeft.maker,  //from
+      nfts,
+      matchAndTransferResult.payment, //payment amount
+      rightAsset.address, //payment token
+      matchAndTransferResult.originFee.value,  //protocol fees
+      matchAndTransferResult.originFee.address, //protocol beneficiary
+      royalties, //royalties
+    )
+
     airstack.nft.trackNFTSaleTransactions(
-      ETHEREUM_MAINNET_ID,
+      call.block,
       transactionHash.toHexString(),
       call.transaction.index,
-      allSales,
-      isBundle,
+      sale,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
-      call.block.timestamp,
-      call.block.number,
-      call.block.hash.toHexString()
     );
   }
 }
@@ -290,10 +262,10 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
     royalties.push(royalty);
   }
 
-  let nftSales = new airstack.nft.Sale(
+  let sale = new airstack.nft.Sale(
     direct.bidMaker, //to
     call.from,  //from
-    nft,
+    [nft],
     matchAndTransferResult.payment, //payment amount
     direct.paymentToken, //payment token
     matchAndTransferResult.originFee.value,  //protocol fees
@@ -302,16 +274,12 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
   )
 
   airstack.nft.trackNFTSaleTransactions(
-    ETHEREUM_MAINNET_ID,
+    call.block,
     transactionHash.toHexString(),
     call.transaction.index,
-    [nftSales],
-    false,
+    sale,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
-    call.block.timestamp,
-    call.block.number,
-    call.block.hash.toHexString()
   );
 }
 
@@ -388,10 +356,10 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
     royalties.push(royalty);
   }
 
-  let nftSales = new airstack.nft.Sale(
+  let sale = new airstack.nft.Sale(
     call.from, //to
     direct.sellOrderMaker,  //from
-    nft,
+    [nft],
     matchAndTransferResult.payment, //payment amount
     direct.paymentToken, //payment token
     matchAndTransferResult.originFee.value,  //protocol fees
@@ -400,15 +368,11 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
   )
 
   airstack.nft.trackNFTSaleTransactions(
-    ETHEREUM_MAINNET_ID,
+    call.block,
     transactionHash.toHexString(),
     call.transaction.index,
-    [nftSales],
-    false,
+    sale,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
-    call.block.timestamp,
-    call.block.number,
-    call.block.hash.toHexString()
   );
 }
