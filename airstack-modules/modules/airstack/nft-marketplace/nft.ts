@@ -9,6 +9,7 @@ import {
     AirNftTransaction,
     AirNftSaleRoyalty,
     AirNFT,
+    AirBlock,
 } from "../../../generated/schema";
 
 import { AIR_NFT_SALE_TRANSACTION_COUNTER_ID, BUNDLE_SALE, SINGLE_ITEM_SALE } from "./utils";
