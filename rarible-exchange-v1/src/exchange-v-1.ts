@@ -43,10 +43,10 @@ export function handleExchange(call: ExchangeCall): void {
       call.inputs.amount,
     )
 
-    let nftSales = new airstack.nft.Sale(
+    let sale = new airstack.nft.Sale(
       call.from,
       call.inputs.order.key.owner,
-      nft,
+      [nft],
       paymentAmount,
       buyAsset.token,
       beneficiaryDetails.beneficiaryFee,
@@ -55,16 +55,12 @@ export function handleExchange(call: ExchangeCall): void {
     )
 
     airstack.nft.trackNFTSaleTransactions(
-      ETHEREUM_MAINNET_ID,
+      call.block,
       call.transaction.hash.toHexString(),
       call.transaction.index,
-      [nftSales],
-      false,
+      sale,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
-      call.block.timestamp,
-      call.block.number,
-      call.block.hash.toHexString(),
     );
 
   } else {
@@ -102,10 +98,10 @@ export function handleExchange(call: ExchangeCall): void {
       nftAmount,
     )
 
-    let nftSales = new airstack.nft.Sale(
+    let sale = new airstack.nft.Sale(
       call.inputs.order.key.owner,
       call.from,
-      nft,
+      [nft],
       paymentAmount,
       sellAsset.token,
       beneficiaryDetails.beneficiaryFee,
@@ -114,30 +110,26 @@ export function handleExchange(call: ExchangeCall): void {
     )
 
     airstack.nft.trackNFTSaleTransactions(
-      ETHEREUM_MAINNET_ID,
+      call.block,
       call.transaction.hash.toHexString(),
       call.transaction.index,
-      [nftSales],
-      false,
+      sale,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.SELL,
-      call.block.timestamp,
-      call.block.number,
-      call.block.hash.toHexString(),
     );
   }
 }
 
 export function handleBuyTokenSaleErc721(event: BuyTokenSale721): void {
-  const nftSales = new airstack.nft.Sale(
+  const sale = new airstack.nft.Sale(
     event.params.buyer,
     event.params.seller,
-    new airstack.nft.NFT(
+    [new airstack.nft.NFT(
       event.params.token,
       "ERC721",
       event.params.tokenId,
       BIGINT_ONE,
-    ),
+    )],
     event.transaction.value,
     utils.zeroAddress,
     utils.BIGINT_ZERO,
@@ -145,16 +137,12 @@ export function handleBuyTokenSaleErc721(event: BuyTokenSale721): void {
     new Array<airstack.nft.CreatorRoyalty>(),
   );
   airstack.nft.trackNFTSaleTransactions(
-    ETHEREUM_MAINNET_ID,
+    event.block,
     event.transaction.hash.toHexString(),
     event.transaction.index,
-    [nftSales],
-    false,
+    sale,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
-    event.block.timestamp,
-    event.block.number,
-    event.block.hash.toHexString(),
   );
   log.info("handleBuyTokenSaleErc721 price {} token {} tokenId {} buyer {} seller {} exchange {} txhash {}", [
     event.params.price.toString(),
@@ -173,15 +161,15 @@ export function handleBuyErc1155Sale1(call: BuyCall1155Sale1): void {
     call.inputs.token,
     call.transaction.value,
   );
-  const nftSales = new airstack.nft.Sale(
+  const sale = new airstack.nft.Sale(
     call.transaction.from,
     call.inputs.owner,
-    new airstack.nft.NFT(
+    [new airstack.nft.NFT(
       call.inputs.token,
       "ERC1155",
       call.inputs.tokenId,
       call.inputs.buying,
-    ),
+    )],
     call.transaction.value,
     utils.zeroAddress,
     utils.BIGINT_ZERO,
@@ -189,16 +177,12 @@ export function handleBuyErc1155Sale1(call: BuyCall1155Sale1): void {
     royalties,
   );
   airstack.nft.trackNFTSaleTransactions(
-    ETHEREUM_MAINNET_ID,
+    call.block,
     call.transaction.hash.toHexString(),
     call.transaction.index,
-    [nftSales],
-    false,
+    sale,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
-    call.block.timestamp,
-    call.block.number,
-    call.block.hash.toHexString(),
   );
   log.info("handleBuyErc1155Sale1 total {} token {} tokenId {} buyer {} seller {} royalty lenght {} exchange {} txhash {}", [
     call.transaction.value.toString(),
@@ -225,15 +209,15 @@ export function handleBuyErc1155Sale2(call: BuyCall1155Sale2): void {
     protocolFeeDetails.restValue,
     total
   );
-  const nftSales = new airstack.nft.Sale(
+  const sale = new airstack.nft.Sale(
     call.transaction.from,
     call.inputs.owner,
-    new airstack.nft.NFT(
+    [new airstack.nft.NFT(
       call.inputs.token,
       "ERC1155",
       call.inputs.tokenId,
       call.inputs.buying,
-    ),
+    )],
     call.transaction.value,
     utils.zeroAddress,
     protocolFeeDetails.beneficiaryFee,
@@ -241,16 +225,12 @@ export function handleBuyErc1155Sale2(call: BuyCall1155Sale2): void {
     royalties,
   );
   airstack.nft.trackNFTSaleTransactions(
-    ETHEREUM_MAINNET_ID,
+    call.block,
     call.transaction.hash.toHexString(),
     call.transaction.index,
-    [nftSales],
-    false,
+    sale,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
-    call.block.timestamp,
-    call.block.number,
-    call.block.hash.toHexString(),
   );
   log.info("handleBuyErc1155Sale2 price {} sellerFee {} token {} tokenId {} buyer {} seller {} royalty length {} protocolfee {} protocol beneficiary {} exchange {} txhash {}", [
     call.inputs.price.toString(),
@@ -279,15 +259,15 @@ export function handleBuyErc721(event: Buy721Sale): void {
     protocolFeeDetails.restValue,
     event.params.price,
   );
-  const nftSales = new airstack.nft.Sale(
+  const sale = new airstack.nft.Sale(
     event.params.buyer,
     event.params.seller,
-    new airstack.nft.NFT(
+    [new airstack.nft.NFT(
       event.params.token,
       "ERC721",
       event.params.tokenId,
       BIGINT_ONE,
-    ),
+    )],
     event.transaction.value,
     utils.zeroAddress,
     protocolFeeDetails.beneficiaryFee,
@@ -295,16 +275,12 @@ export function handleBuyErc721(event: Buy721Sale): void {
     royalties,
   );
   airstack.nft.trackNFTSaleTransactions(
-    ETHEREUM_MAINNET_ID,
+    event.block,
     event.transaction.hash.toHexString(),
     event.transaction.index,
-    [nftSales],
-    false,
+    sale,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
-    event.block.timestamp,
-    event.block.number,
-    event.block.hash.toHexString(),
   );
   log.info("handleBuyErc721 token {} tokenId {} buyer {} seller {} royalty length {} protocolfee {} protocol beneficiary {} exchange {} txhash {}", [
     event.params.token.toHexString(),
