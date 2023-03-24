@@ -2,12 +2,10 @@ import {
   Address,
   BigInt,
   Bytes,
-  ethereum,
-  log,
-  TypedMap,
-  crypto,
 } from "@graphprotocol/graph-ts";
 import { ExchangeV1 } from "../generated/ExchangeV1/ExchangeV1";
+import { ERC721 } from "../generated/ERC721Sale1/ERC721";
+import { ERC721Sale } from "../generated/ERC721Sale1/ERC721Sale";
 import { SecondarySaleFees } from "../generated/ExchangeV1/SecondarySaleFees";
 import { nft } from "../modules/airstack/nft-marketplace";
 
@@ -165,4 +163,121 @@ export function getFeeBeneficiaryDetails(
     beneficiary,
     restValue: subFeeInBpResponse.newValue,
   };
+}
+
+/**
+ * @dev this function is used to get token owner of an erc721 token
+ * @param tokenAddress erc721 token contract address
+ * @param tokenId erc721 token id
+ * @returns 
+ */
+export function getTokenOwnerErc721(
+  tokenAddress: Address,
+  tokenId: BigInt,
+): Address {
+  let contractInstance = ERC721.bind(tokenAddress);
+  let ownerResult = contractInstance.try_ownerOf(tokenId);
+  if (!ownerResult.reverted) {
+    return ownerResult.value;
+  } else {
+    return zeroAddress;
+  }
+}
+
+/**
+ * @dev this function is used to get protocol fee details of erc721 token
+ * @param exchangeAddress exchange contract address
+ * @param total transaction value amount
+ * @param sellerFee seller fee in basis point
+ * @returns protocol beneficiary fee details
+ */
+export function getProtocolFeeDetails(
+  exchangeAddress: Address,
+  total: BigInt,
+  sellerFee: BigInt,
+): BeneficiaryDetails {
+  let subFeeInBpResponse = subFee(total, bp(total, sellerFee));
+  const buyerFeeAndBeneficiaryAddress = getBuyerFeeAndBeneficiaryAddressFromExchange(exchangeAddress);
+  const buyerFeeValue = bp(total, buyerFeeAndBeneficiaryAddress.buyerFee);
+  const beneficiaryFee = buyerFeeValue.plus(subFeeInBpResponse.realFee);
+  return {
+    beneficiaryFee,
+    beneficiary: buyerFeeAndBeneficiaryAddress.beneficiary,
+    restValue: subFeeInBpResponse.newValue,
+  }
+}
+
+/**
+ * dev this class has beneficiary and buyer fee details
+ */
+class BuyerAndBeneficiaryAddress {
+  beneficiary: Address;
+  buyerFee: BigInt;
+}
+
+/**
+ * @dev this function is used to get buyer fee and protocol beneficiary address from exchange contract
+ * @param exchangeAddress exchange contract address
+ * @returns buyer and beneficiary address
+ */
+export function getBuyerFeeAndBeneficiaryAddressFromExchange(
+  exchangeAddress: Address,
+): BuyerAndBeneficiaryAddress {
+  let contractInstance = ERC721Sale.bind(exchangeAddress);
+  let beneficiaryResult = contractInstance.try_beneficiary();
+  let buyerFeeResult = contractInstance.try_buyerFee();
+
+  let beneficiary: Address;
+  let buyerFee: BigInt;
+
+  if (!beneficiaryResult.reverted) {
+    beneficiary = beneficiaryResult.value;
+  } else {
+    beneficiary = zeroAddress;
+  }
+
+  if (!buyerFeeResult.reverted) {
+    buyerFee = buyerFeeResult.value;
+  } else {
+    buyerFee = BIGINT_ZERO;
+  }
+
+  return {
+    beneficiary,
+    buyerFee,
+  };
+}
+
+/**
+ * @dev this function is used to get royalty details for erc1155Sale1 transaction
+ * @param tokenId erc1155 token id
+ * @param tokenAddress erc1155 token contract address
+ * @param total total payment amount of payment asset
+ * @returns creator royalty details
+ */
+export function getRoyaltyDetailsErc1155Sale1(
+  tokenId: BigInt,
+  tokenAddress: Address,
+  total: BigInt,
+): nft.CreatorRoyalty[] {
+  // extract data from contract logic comes here
+  let contractInstance = SecondarySaleFees.bind(tokenAddress);
+  let supportsInterface = contractInstance.try_supportsInterface(INTERFACE_ID_FEES);
+  let creatorRoyalties: nft.CreatorRoyalty[] = [];
+
+  if (!supportsInterface.reverted && supportsInterface.value) {
+    let royaltyRecipients = contractInstance.getFeeRecipients(tokenId);
+    let royaltyAmounts = contractInstance.getFeeBps(tokenId);
+    for (let i = 0; i < royaltyAmounts.length; i++) {
+      let royaltyFee = bp(total, royaltyAmounts[i]);
+      creatorRoyalties.push(
+        new nft.CreatorRoyalty(
+          royaltyFee,
+          royaltyRecipients[i],
+        )
+      );
+      total = total.minus(royaltyFee);
+    }
+  };
+  return creatorRoyalties;
 }
