@@ -22,7 +22,7 @@ import {
   NameRenewed as ControllerNameRenewedEvent
 } from '../generated/EthRegistrarController/EthRegistrarController';
 import { uint256ToByteArray, byteArrayFromHex, createNameRegisteredTransactionVsRegistrant } from './utils';
-import { AirNameRegisteredTransaction } from '../generated/schema';
+import { AirDomain, AirNameRegisteredTransaction } from '../generated/schema';
 import { getChainId, getOrCreateAirAccount, getOrCreateAirBlock } from '../modules/airstack/common';
 
 const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae");
@@ -35,6 +35,9 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
   let label = uint256ToByteArray(event.params.id);
   log.info("handleNameRegistered: registrant {} label {} expiry {} txhash {} logIndex {}", [event.params.owner.toHexString(), label.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString(), event.logIndex.toString()]);
   let labelName = ens.nameByHash(label.toHexString());
+  if (labelName && !checkValidLabel(labelName, event.transaction.hash.toHexString())) {
+    labelName = '[' + label.toHexString().slice(2) + ']';
+  }
   let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
   airstack.domain.trackNameRegisteredTransaction(
     event.block,
@@ -77,14 +80,18 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
 export function handleNameRegisteredByControllerOld(event: ControllerNameRegisteredEventOld): void {
   log.info("handleNameRegisteredByControllerOld: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
+  let labelName = event.params.name;
   if (!checkValidLabel(event.params.name, event.transaction.hash.toHexString())) {
-    return;
+    // assuming domain and labelHash exists as this txn cannot happen otherwise
+    const domainEntity = AirDomain.load(domainId);
+    const labelHash = domainEntity!.labelHash;
+    labelName = '[' + labelHash!.slice(2) + ']';
   }
   airstack.domain.trackNameRenewedOrRegistrationByController(
     event.block,
     event.transaction.hash.toHexString(),
     domainId,
-    event.params.name,
+    labelName,
     event.params.cost,
     ZERO_ADDRESS,
     event.params.owner.toHexString(),
@@ -101,14 +108,18 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
 export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
   log.info("handleNameRegisteredByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
+  let labelName = event.params.name;
   if (!checkValidLabel(event.params.name, event.transaction.hash.toHexString())) {
-    return;
+    // assuming domain and labelHash exists as this txn cannot happen otherwise
+    const domainEntity = AirDomain.load(domainId);
+    const labelHash = domainEntity!.labelHash;
+    labelName = '[' + labelHash!.slice(2) + ']';
   }
   airstack.domain.trackNameRenewedOrRegistrationByController(
     event.block,
     event.transaction.hash.toHexString(),
     domainId,
-    event.params.name,
+    labelName,
     event.params.cost,
     ZERO_ADDRESS,
     event.params.owner.toHexString(),
@@ -125,14 +136,18 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
 export function handleNameRenewedByController(event: ControllerNameRenewedEvent): void {
   log.info("handleNameRenewedByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
+  let labelName = event.params.name;
   if (!checkValidLabel(event.params.name, event.transaction.hash.toHexString())) {
-    return;
+    // assuming domain and labelHash exists as this txn cannot happen otherwise
+    const domainEntity = AirDomain.load(domainId);
+    const labelHash = domainEntity!.labelHash;
+    labelName = '[' + labelHash!.slice(2) + ']';
   }
   airstack.domain.trackNameRenewedOrRegistrationByController(
     event.block,
     event.transaction.hash.toHexString(),
     domainId,
-    event.params.name,
+    labelName,
     event.params.cost,
     ZERO_ADDRESS,
     event.transaction.from.toHexString(),

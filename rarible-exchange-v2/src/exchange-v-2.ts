@@ -111,6 +111,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       transactionHash.toHexString(),
       call.transaction.index,
       [nftSales],
+      false,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.SELL,
       call.block.timestamp,
@@ -139,7 +140,7 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
     let nftTokenId = matchAndTransferResult.nftData.tokenId;
 
     let allSales = new Array<airstack.nft.Sale>();
-    // handling random 721 mint case
+    // handling random 721 mint case with mutiple tokenIds
     if (nftTokenId == BIGINT_MINUS_ONE && getClass(Bytes.fromHexString(matchAndTransferResult.nftData.standard)) == RANDOM_MINT_721) {
       log.info("its a random721 mint case txhash {}", [transactionHash.toHexString()]);
       // get tokenIds from mapping
@@ -203,12 +204,13 @@ export function handleMatchOrders(call: MatchOrdersCall): void {
       )
       allSales.push(nftSale);
     }
-
+    const isBundle = allSales.length > 1;
     airstack.nft.trackNFTSaleTransactions(
       ETHEREUM_MAINNET_ID,
       transactionHash.toHexString(),
       call.transaction.index,
       allSales,
+      isBundle,
       AirProtocolType.NFT_MARKET_PLACE,
       AirProtocolActionType.BUY,
       call.block.timestamp,
@@ -304,6 +306,7 @@ export function handleDirectAcceptBid(call: DirectAcceptBidCall): void {
     transactionHash.toHexString(),
     call.transaction.index,
     [nftSales],
+    false,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
     call.block.timestamp,
@@ -401,6 +404,7 @@ export function handleDirectPurchase(call: DirectPurchaseCall): void {
     transactionHash.toHexString(),
     call.transaction.index,
     [nftSales],
+    false,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
     call.block.timestamp,
