@@ -90,7 +90,7 @@ interface AirTransaction {
 }
 
 type AirNFT @entity {
-  id: ID! #tokenAddress+TokenID
+  id: ID! #AirNftTransaction(ID)-tokenAddress-TokenID
   tokenAddress: AirToken!
   tokenId: String!
   tokenAmount:BigInt!
@@ -121,7 +121,7 @@ type AirNftTransaction implements AirTransaction @entity {
 }
 
 type AirNftSaleRoyalty @entity{
-  id: ID! #AirNftTransaction(ID) + royalty beneficiary
+  id: ID! #AirNftTransaction(ID)-royalty beneficiary-amount
   amount: BigInt!
   beneficiary: AirAccount!
   nftTransaction: AirNftTransaction!
