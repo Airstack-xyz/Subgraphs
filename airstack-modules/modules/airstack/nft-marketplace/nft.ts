@@ -2,7 +2,6 @@ import {
     Address,
     BigInt,
     ethereum,
-    log,
 } from "@graphprotocol/graph-ts";
 
 import {
@@ -33,20 +32,20 @@ export namespace nft {
         protocolType: string,
         protocolActionType: string,
     ): void {
-        let nftIds: string[] = [];
-        let royaltyIds: string[] = [];
-        let saleType = SINGLE_ITEM_SALE;
         const chainId = getChainId();
+        const airNftTransactionEntityId = chainId.concat('-').concat(transactionHash).concat("-").concat(logOrCallIndex.toString());
+        let nftIds: string[] = [];
+        let saleType = SINGLE_ITEM_SALE;
         let airBlock = getOrCreateAirBlock(chainId, block.number, block.hash.toHexString(), block.timestamp);
         airBlock.save();
         for (let i = 0; i < sale.nfts.length; i++) {
             let nft = sale.nfts[i];
-            let nftEntity = getOrCreateAirNFTEntity(nft.collection.toHexString(), nft.tokenId.toString(), nft.amount);
+            let nftEntity = getOrCreateAirNFTEntity(nft.collection.toHexString(), nft.tokenId.toString(), nft.amount, airNftTransactionEntityId);
             nftIds.push(nftEntity.id);
         }
         for (let i = 0; i < sale.royalties.length; i++) {
             let royalty = sale.royalties[i];
-            createAirNftSaleRoyalty(chainId, transactionHash, logOrCallIndex, royalty.beneficiary.toHexString(), royalty.fee, airBlock);
+            createAirNftSaleRoyalty(chainId, royalty.beneficiary.toHexString(), royalty.fee, airBlock, airNftTransactionEntityId);
         }
         if (nftIds.length > 1) {
             saleType = BUNDLE_SALE;
@@ -182,15 +181,17 @@ function createAirNftSaleTransaction(
  * @param tokenAddress nft token address
  * @param tokenId nft token id
  * @param tokenAmount nft token amount
+ * @param airNftTransactionEntityId AirNftTransaction entity id
  * @returns AirNFT entity
  */
 function getOrCreateAirNFTEntity(
     tokenAddress: string,
     tokenId: string,
     tokenAmount: BigInt,
+    airNftTransactionEntityId: string,
 ): AirNFT {
     const chainId = getChainId();
-    const id = chainId.concat("-").concat(tokenAddress).concat('-').concat(tokenId.toString());
+    const id = airNftTransactionEntityId.concat("-").concat(tokenAddress).concat('-').concat(tokenId.toString());
     let entity = AirNFT.load(id);
     if (entity == null) {
         entity = new AirNFT(id);
@@ -207,23 +208,20 @@ function getOrCreateAirNFTEntity(
 /**
  * @dev this function creates AirNftSaleRoyalty entity
  * @param chainId chain id
- * @param transactionHash transaction hash
- * @param logOrCallIndex transaction log or call index
  * @param royaltyBeneficiary royalty beneficiary address
  * @param royaltyAmount royalty amount
  * @param airBlock air block entity
+ * @param airNftTransactionId AirNftTransaction entity id
  * @returns AirNftSaleRoyalty entity
  */
 function createAirNftSaleRoyalty(
     chainId: string,
-    transactionHash: string,
-    logOrCallIndex: BigInt,
     royaltyBeneficiary: string,
     royaltyAmount: BigInt,
     airBlock: AirBlock,
+    airNftTransactionId: string,
 ): AirNftSaleRoyalty {
-    const airNftTransactionId = chainId.concat('-').concat(transactionHash).concat("-").concat(logOrCallIndex.toString());
-    const id = airNftTransactionId.concat("-").concat(royaltyBeneficiary);
+    const id = airNftTransactionId.concat("-").concat(royaltyBeneficiary).concat("-").concat(royaltyAmount.toString());
     let entity = AirNftSaleRoyalty.load(id);
     if (entity == null) {
         entity = new AirNftSaleRoyalty(id);
