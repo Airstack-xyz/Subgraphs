@@ -2,7 +2,7 @@ import { Address, BigInt, ByteArray, Bytes, crypto, ethereum } from "@graphproto
 import { ADDRESS_ZERO } from "@protofire/subgraph-toolkit"
 import { log } from "matchstick-as"
 // import { MissingFunctionSig, MissingTxns } from "../generated/schema"
-import { BIGINT_ONE } from "../modules/airstack/common"
+import { BIGINT_ONE, BIG_INT_ZERO } from "../modules/airstack/common"
 
 export namespace abi {
     export class Decoded_atomicize_Result {
@@ -19,7 +19,14 @@ export namespace abi {
             this.transfers = _transfers
         }
     }
-
+    export class Decoded_Token {
+        contract: Address
+        tokenId: BigInt
+        constructor(_contract: Address, _tokenId: BigInt) {
+            this.contract = _contract
+            this.tokenId = _tokenId
+        }
+    }
     export class Decoded_TransferFrom_Result {
         method: string
         from: Address
@@ -27,13 +34,15 @@ export namespace abi {
         token: BigInt
         amount: BigInt
         contract: Address
+        tokens: Decoded_Token[]
         constructor(
             _method: string,
             _from: Address,
             _to: Address,
             _token: BigInt,
             _amount: BigInt,
-            _contract: Address
+            _contract: Address,
+            _tokens: Decoded_Token[]
         ) {
             this.method = _method
             this.from = _from
@@ -41,6 +50,7 @@ export namespace abi {
             this.token = _token
             this.amount = _amount
             this.contract = _contract
+            this.tokens = _tokens
         }
 
         public toStringArray(): string[] {
@@ -103,7 +113,9 @@ export namespace abi {
     export function checkDelegateCall(functionSelector: string): boolean {
         return functionSelector == "0x00d6d2b6" || functionSelector == "0xd6d2b6ba" // delegate(address,bytes)
     }
-
+    export function checkBatchTxn(functionSelector: string): boolean {
+        return functionSelector == "0x7049e961"
+    }
     export function checkMatchERC1155UsingCriteria(functionSelector: string): boolean {
         log.info("@@functionCheckMatchERC1155UsingCriteria\n selector ( {} ) \n", [
             functionSelector,
@@ -342,7 +354,8 @@ export namespace abi {
                 recieverAddress,
                 tokenId,
                 BigInt.fromI32(1),
-                Address.zero()
+                Address.zero(),
+                []
             )
         } else if (checkMatchERC1155UsingCriteria(functionSelector)) {
             /*
@@ -389,7 +402,8 @@ export namespace abi {
                 recieverAddress,
                 tokenId,
                 amount,
-                contract
+                contract,
+                []
             )
         } else if (checkMatchERC721UsingCriteria(functionSelector)) {
             // address from,
@@ -429,7 +443,8 @@ export namespace abi {
                 recieverAddress,
                 tokenId,
                 BIGINT_ONE,
-                contract
+                contract,
+                []
             )
         } else if (checkENSFunctionSelector(functionSelector)) {
             // hash 0xa360c37342d9f4dc76039ddda2c1ac3e1d5290aadc9ae73dda1df397482e2aa6
@@ -447,7 +462,8 @@ export namespace abi {
                 recieverAddress,
                 tokenId,
                 BIGINT_ONE,
-                Address.fromString("0xfac7bea255a6990f749363002136af6556b31e04") //TODO: verify with future txns
+                Address.fromString("0xfac7bea255a6990f749363002136af6556b31e04"), //TODO: verify with future txns
+                []
             )
         } else if (checkSharedStorefront(functionSelector)) {
             let decoded = ethereum
@@ -468,7 +484,8 @@ export namespace abi {
                 to,
                 tokenId,
                 BIGINT_ONE,
-                Address.fromString("0x5fbEf9FCb449D56154980e52E165d9650B9f6EC2") //TODO: verify with future txns
+                Address.fromString("0x5fbEf9FCb449D56154980e52E165d9650B9f6EC2"), //TODO: verify with future txns
+                []
             )
         } else if (checkEnjinCase(functionSelector)) {
             let contract = Address.fromString("0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab") //TODO: verify with future txns
@@ -502,7 +519,8 @@ export namespace abi {
                 to,
                 tokenId,
                 BIGINT_ONE,
-                contract
+                contract,
+                []
             )
         } else if (checkSafeTransferFrom(functionSelector)) {
             let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().split("b88d4fde")[1]
@@ -527,7 +545,8 @@ export namespace abi {
                 to,
                 tokenId,
                 BIGINT_ONE,
-                Address.zero()
+                Address.zero(),
+                []
             )
         } else if (checkDelegateCall(functionSelector)) {
             let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().substring(212)
@@ -560,7 +579,44 @@ export namespace abi {
                 to,
                 tokenId,
                 BIGINT_ONE,
-                contract
+                contract,
+                []
+            )
+        } else if (checkBatchTxn(functionSelector)) {
+            let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().substring(74)
+            log.error("batchCase hash {} datawithoutselector: {}", [
+                txHash,
+                dataWithoutFunctionSelectorStr,
+            ])
+            let decoded = ethereum
+                .decode(
+                    "(address,address,uint256)",
+                    Bytes.fromHexString(dataWithoutFunctionSelectorStr)
+                )!
+                .toTuple()
+            let from = decoded[0].toAddress()
+            let to = decoded[1].toAddress()
+            let arrayLen = decoded[2].toBigInt()
+            let encodedTokenArray = dataWithoutFunctionSelectorStr.substring(194)
+            let tokens = new Array<Decoded_Token>()
+            for (let i = 0; i < arrayLen.toI64(); i++) {
+                let encoded = encodedTokenArray.substring(i * 128, i * 128 + 128)
+                let decoded = ethereum
+                    .decode("(address,uint256)", Bytes.fromHexString("0x" + encoded))!
+                    .toTuple()
+                let tokenAddress = decoded[0].toAddress()
+                let tokenId = decoded[1].toBigInt()
+                let token = new Decoded_Token(tokenAddress, tokenId)
+                tokens.push(token)
+            }
+            return new Decoded_TransferFrom_Result(
+                functionSelector,
+                from,
+                to,
+                BIG_INT_ZERO,
+                BIGINT_ONE,
+                Address.zero(),
+                tokens
             )
         } else {
             log.error(
