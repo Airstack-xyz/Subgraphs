@@ -116,23 +116,3 @@ export function uint256ToByteArray(i: BigInt): ByteArray {
   let hex = i.toHex().slice(2).padStart(64, '0')
   return byteArrayFromHex(hex)
 }
-
-/**
- * @dev this function is used to check if the label is valid to prevent homoglyph attacks (which ens is prone to)
- * @param name ens label name
- * @param txHash transaction hash
- * @returns boolean - true if label is valid
- */
-export function checkValidLabel(name: string, txHash: string): boolean {
-  for (let i = 0; i < name.length; i++) {
-    let c = name.charCodeAt(i);
-    if (c === 0) {
-      log.warning("Invalid label '{}' contained null byte. Skipping. txhash {}", [name, txHash]);
-      return false;
-    } else if (c === 46) {
-      log.warning("Invalid label '{}' contained separator char '.'. Skipping. txhash {}", [name, txHash]);
-      return false;
-    }
-  }
-  return true;
-}

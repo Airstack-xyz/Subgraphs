@@ -5,6 +5,7 @@ import {
   Transfer as TransferEvent
 } from "../generated/EnsRegistry/EnsRegistry"
 import * as airstack from "../modules/airstack/domain-name";
+import { checkValidLabel } from "../modules/airstack/domain-name/utils";
 import {
   log,
   BigInt,
@@ -17,7 +18,6 @@ import {
   createIsMigratedMapping,
   createAirDomainEntityId,
   createReverseRegistrar,
-  checkValidLabel,
 } from "./utils";
 import { AirDomain, DomainVsIsMigratedMapping } from "../generated/schema";
 /**

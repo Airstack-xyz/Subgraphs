@@ -25,7 +25,7 @@ import {
   PrimaryDomain,
   AirExtra,
 } from "../../../generated/schema";
-import { createAirExtra, AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ZERO_ADDRESS, ETHEREUM_MAINNET_ID } from "./utils";
+import { createAirExtra, AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ZERO_ADDRESS, ETHEREUM_MAINNET_ID, checkValidLabel } from "./utils";
 import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, getChainId, updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount, getOrCreateAirToken } from "../common";
 
 export namespace domain {
@@ -435,6 +435,10 @@ export namespace domain {
       txn.save();
     }
     if (domain.labelName !== labelName) {
+      if (!checkValidLabel(labelName, transactionHash) && domain.labelHash) {
+        const labelHash = domain.labelHash!;
+        labelName = '[' + labelHash.slice(2) + ']';
+      }
       domain.labelName = labelName
       domain.name = labelName + '.eth'
       // creating reverse registrar to get domainId when setting primary domain
