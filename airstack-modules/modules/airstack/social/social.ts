@@ -13,8 +13,7 @@ import {
   AirSocialProfileRenewalTransaction,
 } from '../../../generated/schema';
 import { getOrCreateAirAccount, getOrCreateAirBlock, getChainId, updateAirEntityCounter, getOrCreateAirToken, EMPTY_STRING } from '../common/index';
-import { AirProtocolType, AirProtocolActionType, AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID, createSocialUserEntityId, createAirExtra, AIR_PROFILE_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_PROFILE_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, profileRecoveryAddress, userRecoveryAddress, AIR_USER_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_HOME_URL_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, userHomeUrl, AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER_ID } from './utils';
-import { zeroAddress } from '../../../src/utils';
+import { zeroAddress, AirProtocolType, AirProtocolActionType, AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID, createSocialUserEntityId, createAirExtra, AIR_PROFILE_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_PROFILE_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, profileRecoveryAddress, userRecoveryAddress, AIR_USER_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_HOME_URL_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, userHomeUrl, AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER_ID } from './utils';
 
 export namespace social {
 
@@ -25,10 +24,10 @@ export namespace social {
    * @param block ethereum block
    * @param transactionHash transaction hash
    * @param logOrCallIndex log or call index
-   * @param from erc721 token sender addres
-   * @param to erc721 token receiver address
-   * @param tokenId erc721 token id
-   * @param tokenAddress erc721 token address
+   * @param from erc721 profile token sender address
+   * @param to erc721 profile token receiver address
+   * @param tokenId erc721 profile token id
+   * @param tokenAddress erc721 profile token address
    * @param socialUserId dapp user id (eg: farcasterId)
    * @param userExtras air extra data array (eg: farcaster homeUrl and recoveryAddress)
    * @param profileName air social profile name (eg: farcaster profile name)
@@ -56,37 +55,37 @@ export namespace social {
     // creating air social user
     const userId = createSocialUserEntityId(chainId, socialUserId);
     // create air social user extras
-    let AirSocialUserExtras = new Array<AirExtra>();
-    let AirSocialUserExtraIds = new Array<string>();
+    let airSocialUserExtras = new Array<AirExtra>();
+    let airSocialUserExtraIds = new Array<string>();
     for (let i = 0; i < userExtras.length; i++) {
       const extra = userExtras[i];
       const extraId = userId.concat("-").concat(extra.name);
-      const AirSocialUserExtraData = createAirExtra(
+      const airSocialUserExtraData = createAirExtra(
         extra.name,
         extra.value,
         extraId,
       );
-      AirSocialUserExtraIds.push(extraId);
-      AirSocialUserExtras.push(AirSocialUserExtraData);
+      airSocialUserExtraIds.push(extraId);
+      airSocialUserExtras.push(airSocialUserExtraData);
     }
     // create air social profile extras
-    let AirSocialProfileExtras = new Array<AirExtra>();
-    let AirSocialProfileExtraIds = new Array<string>();
+    let airSocialProfileExtras = new Array<AirExtra>();
+    let airSocialProfileExtraIds = new Array<string>();
     for (let i = 0; i < profileExtras.length; i++) {
       const extra = profileExtras[i];
-      const extraId = userId.concat("-").concat(extra.name);
-      const AirSocialProfileExtraData = createAirExtra(
+      const extraId = chainId.concat("-").concat(tokenAddress).concat("-").concat(tokenId).concat("-").concat(extra.name);
+      const airSocialProfileExtraData = createAirExtra(
         extra.name,
         extra.value,
         extraId,
       );
-      AirSocialProfileExtraIds.push(extraId);
-      AirSocialProfileExtras.push(AirSocialProfileExtraData);
+      airSocialProfileExtraIds.push(extraId);
+      airSocialProfileExtras.push(airSocialProfileExtraData);
     }
     // create air social user
-    const airSocialUser = createAirSocialUser(chainId, airBlock, socialUserId, to, AirSocialUserExtraIds);
+    const airSocialUser = createAirSocialUser(chainId, airBlock, socialUserId, to, airSocialUserExtraIds);
     // create air social profile
-    const airSocialProfile = createAirSocialProfile(airBlock, chainId, airSocialUser.id, profileName, tokenId, tokenAddress, AirSocialProfileExtraIds, profileExpiryTimestamp);
+    const airSocialProfile = createAirSocialProfile(airBlock, chainId, airSocialUser.id, profileName, tokenId, tokenAddress, airSocialProfileExtraIds, profileExpiryTimestamp);
     // create air social user registered transaction
     createAirSocialUserRegisteredTransaction(
       chainId,
@@ -101,8 +100,8 @@ export namespace social {
       to,
       tokenId,
       tokenAddress,
-      AirSocialUserExtraIds,
-      AirSocialProfileExtraIds,
+      airSocialUserExtraIds,
+      airSocialProfileExtraIds,
       profileExpiryTimestamp,
     );
   }
@@ -245,7 +244,7 @@ export namespace social {
       throw new Error("air social profile not found");
     }
     // updating air social profile recovery address in extra entity
-    let profileRecoveryAddressExtraId = chainId.concat("-").concat(tokenId).concat("-").concat(profileRecoveryAddress);
+    let profileRecoveryAddressExtraId = chainId.concat("-").concat(tokenAddress).concat("-").concat(tokenId).concat("-").concat(profileRecoveryAddress);
     let extraEntity = AirExtra.load(profileRecoveryAddressExtraId);
     if (extraEntity != null) {
       // of extra entity exists, update value

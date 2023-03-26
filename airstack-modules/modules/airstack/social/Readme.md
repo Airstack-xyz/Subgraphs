@@ -104,7 +104,7 @@
 ## Supporting Classes
 ```
 class AirExtraData {
-  name: string,                                 #name of the extra data (eg: "tokenUri","recoveryAddress","homeUrl" in farcaster)
-  value: string,                                #value of the extra data (eg: values of tokenUri,recoveryAddress,homeUrl in farcaster)
+  name: string,                                 #name of the extra data (eg: "profileTokenUri","userRecoveryAddress","profileRecoveryAddress","userHomeUrl" in farcaster)
+  value: string,                                #value of the extra data (eg: values of profileTokenUri,userRecoveryAddress,profileRecoveryAddress,userHomeUrl in farcaster)
 }
 ```

@@ -9,8 +9,8 @@ import {
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
 import { Transfer as FidTransfer, Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress as FidChangeRecoveryAddress } from "../generated/FarcasterIdRegistry/FarcasterIdRegistry";
 import * as airstack from "../modules/airstack/social/social";
-import { zeroAddress, FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping, getExpiryTimestampFromFnameRegistry } from "./utils";
-import { userRecoveryAddress, userHomeUrl } from "../modules/airstack/social/utils";
+import { FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping, getExpiryTimestampFromFnameRegistry } from "./utils";
+import { userRecoveryAddress, userHomeUrl, profileTokenUri, zeroAddress } from "../modules/airstack/social/utils";
 
 /**
  * @dev this function is called when a farcaster name is transfered
@@ -68,7 +68,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
     let profileExtras = new Array<airstack.social.AirExtraData>();
     profileExtras.push(
       new airstack.social.AirExtraData(
-        "tokenUri",
+        profileTokenUri,
         mapping.tokenUri!,
       )
     );
@@ -135,7 +135,7 @@ export function handleRegister(event: Register): void {
     let profileExtras = new Array<airstack.social.AirExtraData>();
     profileExtras.push(
       new airstack.social.AirExtraData(
-        "tokenUri",
+        profileTokenUri,
         mapping.tokenUri!,
       )
     );

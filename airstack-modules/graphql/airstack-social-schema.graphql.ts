@@ -49,7 +49,7 @@ type AirToken @entity {
 }
 
 type AirExtra @entity {
-  id: ID! #<chainId-socialUserId/profileTokenId-userHomeUrl/userRecoveryAddress/profileRecoveryAddress>
+  id: ID! #<parentEntityId(chainId-socialUserId/chainId-tokenAddress-tokenId)-userHomeUrl/userRecoveryAddress/profileRecoveryAddress>
   name: String!
   value: String!
 }

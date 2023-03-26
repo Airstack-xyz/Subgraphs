@@ -66,7 +66,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "profileExpiryTimestamp", "123456789");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "address", "1-0x084b1c3c81545d370f3634392de611caabff8148");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "name", "sarvesh");
-    assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "extras", "[1-1234-userRecoveryAddress, 1-1234-userHomeUrl, 1-1234-tokenUri]");
+    assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "extras", "[1-1234-userRecoveryAddress, 1-1234-userHomeUrl, 1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-52188151743400395627052985077509996575321231749758347050596502733779185434624-profileTokenUri]");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "from", "1-0x0000000000000000000000000000000000000000");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "to", "1-0x084b1c3c81545d370f3634392de611caabff8148");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "tokenId", "52188151743400395627052985077509996575321231749758347050596502733779185434624");
@@ -98,8 +98,8 @@ describe("Mapping unit tests", () => {
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "id", "AIR_META")
     assert.fieldEquals("AirMeta", "AIR_META", "name", "farcaster")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_v1")
-    assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_goerli")
+    assert.fieldEquals("AirMeta", "AIR_META", "version", "goerli")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
     assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirEntityCounter
@@ -121,9 +121,9 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirExtra", airExtraId, "id", "1-1234-userHomeUrl");
     assert.fieldEquals("AirExtra", airExtraId, "name", "userHomeUrl");
     assert.fieldEquals("AirExtra", airExtraId, "value", "https://farcaster.com/u/1234");
-    airExtraId = "1-1234-tokenUri";
-    assert.fieldEquals("AirExtra", airExtraId, "id", "1-1234-tokenUri");
-    assert.fieldEquals("AirExtra", airExtraId, "name", "tokenUri");
+    airExtraId = "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-52188151743400395627052985077509996575321231749758347050596502733779185434624-profileTokenUri";
+    assert.fieldEquals("AirExtra", airExtraId, "id", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-52188151743400395627052985077509996575321231749758347050596502733779185434624-profileTokenUri");
+    assert.fieldEquals("AirExtra", airExtraId, "name", "profileTokenUri");
     assert.fieldEquals("AirExtra", airExtraId, "value", "https://farcaster.com/u/tokenUri.json");
     // AirSocialUser
     let AirSocialUserId = "1-1234";
@@ -141,7 +141,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "tokenId", "52188151743400395627052985077509996575321231749758347050596502733779185434624");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "tokenAddress", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "user", "1-1234");
-    assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "extras", "[1-1234-tokenUri]");
+    assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "extras", "[1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-52188151743400395627052985077509996575321231749758347050596502733779185434624-profileTokenUri]");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "createdAt", "1-10098239");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "lastUpdatedAt", "1-10098239");
   })
@@ -191,7 +191,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "profileExpiryTimestamp", "123456789");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "address", "1-0x084b1c3c81545d370f3634392de611caabff8148");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "name", "bard");
-    assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "extras", "[1-1234-userRecoveryAddress, 1-1234-userHomeUrl, 1-1234-tokenUri]");
+    assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "extras", "[1-1234-userRecoveryAddress, 1-1234-userHomeUrl, 1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-234567890876543234567890987654-profileTokenUri]");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "from", "1-0x0000000000000000000000000000000000000000");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "to", "1-0x084b1c3c81545d370f3634392de611caabff8148");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "tokenId", "234567890876543234567890987654");
@@ -223,8 +223,8 @@ describe("Mapping unit tests", () => {
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "id", "AIR_META")
     assert.fieldEquals("AirMeta", "AIR_META", "name", "farcaster")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_v1")
-    assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_goerli")
+    assert.fieldEquals("AirMeta", "AIR_META", "version", "goerli")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
     assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirEntityCounter
@@ -246,9 +246,9 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirExtra", airExtraId, "id", "1-1234-userHomeUrl");
     assert.fieldEquals("AirExtra", airExtraId, "name", "userHomeUrl");
     assert.fieldEquals("AirExtra", airExtraId, "value", "https://farcaster.com/u/1234");
-    airExtraId = "1-1234-tokenUri";
-    assert.fieldEquals("AirExtra", airExtraId, "id", "1-1234-tokenUri");
-    assert.fieldEquals("AirExtra", airExtraId, "name", "tokenUri");
+    airExtraId = "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-234567890876543234567890987654-profileTokenUri";
+    assert.fieldEquals("AirExtra", airExtraId, "id", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-234567890876543234567890987654-profileTokenUri");
+    assert.fieldEquals("AirExtra", airExtraId, "name", "profileTokenUri");
     assert.fieldEquals("AirExtra", airExtraId, "value", "https://farcaster.com/u/tokenUri.json");
     // AirSocialUser
     let AirSocialUserId = "1-1234";
@@ -266,7 +266,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "tokenId", "234567890876543234567890987654");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "tokenAddress", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "user", "1-1234");
-    assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "extras", "[1-1234-tokenUri]");
+    assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "extras", "[1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-234567890876543234567890987654-profileTokenUri]");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "createdAt", "1-10098239");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "lastUpdatedAt", "1-10098239");
   })
@@ -409,7 +409,7 @@ describe("Mapping unit tests", () => {
 
   test("Test handleChangeRecoveryAddressFname if", () => {
     // prepare - keeping chanid 1 for unit tests
-    let id = "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress";
+    let id = "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress";
     let airExtrasData = new AirExtra(id);
     airExtrasData.name = "profileRecoveryAddress";
     airExtrasData.value = "0xca207a1caf36d198b12c16c7c7a1d1c795978c42";
@@ -436,24 +436,24 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "tokenAddress", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "expiryTimestamp", "234567898322");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "user", "1-9397");
-    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "createdAt", "1-10098200");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200");
     // call event handler for if condition
     let event = getHandleChangeRecoveryAddressEventFname()
     handleChangeRecoveryAddressFname(event);
     // assert extra ids and lastUpdatedAt for social user
-    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200"); // if extra entity exists
     // assert air extra
-    assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "id", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress");
-    assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "name", "profileRecoveryAddress");
-    assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "value", "0xda107a1caf36d198b12c16c7c7a1d1c795978c42");
+    assert.fieldEquals("AirExtra", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress");
+    assert.fieldEquals("AirExtra", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "name", "profileRecoveryAddress");
+    assert.fieldEquals("AirExtra", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "value", "0xda107a1caf36d198b12c16c7c7a1d1c795978c42");
   })
 
   test("Test handleChangeRecoveryAddressFname else", () => {
     // prepare - keeping chanid 1 for unit tests
-    let id = "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress";
+    let id = "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress";
     // create air social profile
     let airSocialProfile = new AirSocialProfile("1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
     const farcasterName = Bytes.fromHexString(BigInt.fromString("51735769851106138132655535136624048777650501777323249040829743839027683917824").toHexString()).toString();
@@ -479,12 +479,12 @@ describe("Mapping unit tests", () => {
     let event = getHandleChangeRecoveryAddressEventFname()
     handleChangeRecoveryAddressFname(event);
     // assert extra ids and lastUpdatedAt for social user
-    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098239"); // if extra entity doesnt exists
     // assert air extra
-    assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "id", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress");
-    assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "name", "profileRecoveryAddress");
-    assert.fieldEquals("AirExtra", "1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "value", "0xda107a1caf36d198b12c16c7c7a1d1c795978c42");
+    assert.fieldEquals("AirExtra", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress");
+    assert.fieldEquals("AirExtra", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "name", "profileRecoveryAddress");
+    assert.fieldEquals("AirExtra", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress", "value", "0xda107a1caf36d198b12c16c7c7a1d1c795978c42");
   })
 
   test("Test handleFarcasterIdTransfer", () => {
@@ -515,8 +515,8 @@ describe("Mapping unit tests", () => {
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "id", "AIR_META")
     assert.fieldEquals("AirMeta", "AIR_META", "name", "farcaster")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_v1")
-    assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_goerli")
+    assert.fieldEquals("AirMeta", "AIR_META", "version", "goerli")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
     assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirEntityCounter
@@ -597,8 +597,8 @@ describe("Mapping unit tests", () => {
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "id", "AIR_META")
     assert.fieldEquals("AirMeta", "AIR_META", "name", "farcaster")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_v1")
-    assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "farcaster_goerli")
+    assert.fieldEquals("AirMeta", "AIR_META", "version", "goerli")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
     assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirEntityCounter

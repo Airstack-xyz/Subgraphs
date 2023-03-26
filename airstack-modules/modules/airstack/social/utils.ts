@@ -1,3 +1,4 @@
+import { Address } from "@graphprotocol/graph-ts";
 import {
   AirExtra,
 } from "../../../generated/schema";
@@ -27,6 +28,8 @@ export const AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER_ID = "AIR_PROFI
 export const profileRecoveryAddress = "profileRecoveryAddress";
 export const userRecoveryAddress = "userRecoveryAddress";
 export const userHomeUrl = "userHomeUrl";
+export const profileTokenUri = "profileTokenUri";
+export const zeroAddress = Address.fromString("0x0000000000000000000000000000000000000000");
 
 export function createSocialUserEntityId(chainId: string, socialUserId: string): string {
   return chainId.concat("-").concat(socialUserId);
