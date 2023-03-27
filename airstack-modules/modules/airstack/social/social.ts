@@ -55,32 +55,27 @@ export namespace social {
     // creating air social user
     const userId = createSocialUserEntityId(chainId, socialUserId);
     // create air social user extras
-    let airSocialUserExtras = new Array<AirExtra>();
     let airSocialUserExtraIds = new Array<string>();
     for (let i = 0; i < userExtras.length; i++) {
       const extra = userExtras[i];
-      const extraId = userId.concat("-").concat(extra.name);
       const airSocialUserExtraData = createAirExtra(
         extra.name,
         extra.value,
-        extraId,
+        userId,
       );
-      airSocialUserExtraIds.push(extraId);
-      airSocialUserExtras.push(airSocialUserExtraData);
+      airSocialUserExtraIds.push(airSocialUserExtraData.id);
     }
     // create air social profile extras
-    let airSocialProfileExtras = new Array<AirExtra>();
     let airSocialProfileExtraIds = new Array<string>();
+    const socialProfileEntityId = chainId.concat("-").concat(tokenAddress).concat("-").concat(tokenId);
     for (let i = 0; i < profileExtras.length; i++) {
       const extra = profileExtras[i];
-      const extraId = chainId.concat("-").concat(tokenAddress).concat("-").concat(tokenId).concat("-").concat(extra.name);
       const airSocialProfileExtraData = createAirExtra(
         extra.name,
         extra.value,
-        extraId,
+        socialProfileEntityId,
       );
-      airSocialProfileExtraIds.push(extraId);
-      airSocialProfileExtras.push(airSocialProfileExtraData);
+      airSocialProfileExtraIds.push(airSocialProfileExtraData.id);
     }
     // create air social user
     const airSocialUser = createAirSocialUser(chainId, airBlock, socialUserId, to, airSocialUserExtraIds);
@@ -244,7 +239,7 @@ export namespace social {
       throw new Error("air social profile not found");
     }
     // updating air social profile recovery address in extra entity
-    let profileRecoveryAddressExtraId = chainId.concat("-").concat(tokenAddress).concat("-").concat(tokenId).concat("-").concat(profileRecoveryAddress);
+    let profileRecoveryAddressExtraId = airSocialProfile.id.concat("-").concat(profileRecoveryAddress);
     let extraEntity = AirExtra.load(profileRecoveryAddressExtraId);
     if (extraEntity != null) {
       // of extra entity exists, update value
@@ -257,7 +252,7 @@ export namespace social {
       const extraEntity = createAirExtra(
         profileRecoveryAddress,
         recoveryAddress,
-        profileRecoveryAddressExtraId,
+        airSocialProfile.id,
       );
       let airExtras = airSocialProfile.extras;
       if (airExtras == null) {
@@ -319,7 +314,7 @@ export namespace social {
       throw new Error("air social user not found");
     }
     // updating air social profile recovery address in extra entity
-    let userRecoveryAddressExtraId = chainId.concat("-").concat(socialUserId).concat("-").concat(userRecoveryAddress);
+    let userRecoveryAddressExtraId = airSocialUser.id.concat("-").concat(userRecoveryAddress);
     let extraEntity = AirExtra.load(userRecoveryAddressExtraId);
     if (extraEntity != null) {
       // of extra entity exists, update value
@@ -332,7 +327,7 @@ export namespace social {
       const extraEntity = createAirExtra(
         userRecoveryAddress,
         recoveryAddress,
-        userRecoveryAddressExtraId,
+        airSocialUser.id,
       );
       let airExtras = airSocialUser.extras;
       if (airExtras == null) {
@@ -394,7 +389,7 @@ export namespace social {
       throw new Error("air social user not found");
     }
     // updating air social profile recovery address in extra entity
-    let userHomeUrlExtraId = chainId.concat("-").concat(socialUserId).concat("-").concat(userHomeUrl);
+    let userHomeUrlExtraId = airSocialUser.id.concat("-").concat(userHomeUrl);
     let extraEntity = AirExtra.load(userHomeUrlExtraId);
     if (extraEntity != null) {
       // of extra entity exists, update value
@@ -407,7 +402,7 @@ export namespace social {
       const extraEntity = createAirExtra(
         userHomeUrl,
         homeUrl,
-        userHomeUrlExtraId,
+        airSocialUser.id,
       );
       let airExtras = airSocialUser.extras;
       if (airExtras == null) {

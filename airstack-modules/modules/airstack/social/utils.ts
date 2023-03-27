@@ -39,14 +39,15 @@ export function createSocialUserEntityId(chainId: string, socialUserId: string):
  * @dev this function creates an air extra entity
  * @param name air extra name
  * @param value air extra value
- * @param extraId air extra entity id
+ * @param parentId air extra parent entity id
  * @returns air extra entity
  */
 export function createAirExtra(
   name: string,
   value: string,
-  id: string,
+  parentId: string,
 ): AirExtra {
+  const id = parentId.concat("-").concat(name);
   let entity = AirExtra.load(id);
   if (entity == null) {
     entity = new AirExtra(id);
