@@ -4,10 +4,12 @@ import * as yaml from "js-yaml";
 import dexSchema from "../graphql/airstack-dex-schema.graphql";
 import nftMarketPlaceSchema from "../graphql/airstack-nft-marketplace-schema.graphql";
 import domainNameSchema from "../graphql/airstack-domain-name-schema.graphql";
+import socialSchema from "../graphql/airstack-social-schema.graphql";
 
 import dexYamlString from "../yamls/dex.yaml";
 import nftMarketPlaceYamlString from "../yamls/nft-marketplace.yaml";
 import domainNameYamlString from "../yamls/domain-name.yaml";
+import socialYamlString from "../yamls/social.yaml";
 
 export namespace Utils {
   export function isVerticalSupported(verticalName: string): boolean {
@@ -34,14 +36,19 @@ export namespace Utils {
     switch (verticalName) {
       case Vertical.Dex:
         yamlString = dexYamlString;
+        break;
       case Vertical.NftMarketplace:
         yamlString = nftMarketPlaceYamlString;
+        break;
       case Vertical.DomainName:
         yamlString = domainNameYamlString;
+        break;
+      case Vertical.Social:
+        yamlString = socialYamlString;
+        break;
       default:
         break;
     }
-
     if (yamlString !== null) {
       return yaml.load(yamlString) as Record<string, any>;
     } else {
@@ -62,6 +69,8 @@ export namespace Utils {
         return nftMarketPlaceSchema;
       case Vertical.DomainName:
         return domainNameSchema;
+      case Vertical.Social:
+        return socialSchema;
       default:
         break;
     }
@@ -88,6 +97,22 @@ export namespace Utils {
   ): Promise<boolean> {
     return new Promise((resolve, reject) => {
       fs.appendFile(filePath, content, (err) => {
+        if (err) {
+          console.log(err);
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
+  }
+
+  export function overwriteFile(
+    filePath: string,
+    content: string
+  ): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      fs.writeFile(filePath, content, (err) => {
         if (err) {
           console.log(err);
           resolve(false);
