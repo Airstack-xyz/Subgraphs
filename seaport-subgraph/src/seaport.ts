@@ -118,7 +118,7 @@ function handleCompleteEvent(event: OrderFulfilled): void {
     airstack.nft.trackNFTSaleTransactions(
         event.block,
         txHash.toHexString(),
-        event.transaction.index,
+        event.logIndex,
         sale,
         MARKET_PLACE_TYPE,
         PROTOCOL_SELL_ACTION_TYPE
@@ -366,7 +366,7 @@ function handlePartialEvent(event: OrderFulfilled): void {
             airstack.nft.trackNFTSaleTransactions(
                 event.block,
                 txHash.toHexString(),
-                event.transaction.index,
+                event.logIndex,
                 sale,
                 MARKET_PLACE_TYPE,
                 PROTOCOL_SELL_ACTION_TYPE
