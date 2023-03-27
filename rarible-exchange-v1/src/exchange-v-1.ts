@@ -139,7 +139,7 @@ export function handleBuyTokenSaleErc721(event: BuyTokenSale721): void {
   airstack.nft.trackNFTSaleTransactions(
     event.block,
     event.transaction.hash.toHexString(),
-    event.transaction.index,
+    event.logIndex,
     sale,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,
@@ -277,7 +277,7 @@ export function handleBuyErc721(event: Buy721Sale): void {
   airstack.nft.trackNFTSaleTransactions(
     event.block,
     event.transaction.hash.toHexString(),
-    event.transaction.index,
+    event.logIndex,
     sale,
     AirProtocolType.NFT_MARKET_PLACE,
     AirProtocolActionType.BUY,

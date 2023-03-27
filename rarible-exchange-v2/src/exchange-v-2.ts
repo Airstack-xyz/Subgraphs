@@ -9,19 +9,15 @@ import {
   AirProtocolType,
   zeroAddress,
   BIGINT_ZERO,
-  getOriginFeeArray,
   matchAndTransfer,
   LibOrder,
-  LibDealSide,
   LibAsset,
   LibAssetType,
   getPaymentAssetType,
   getOtherOrderType,
   generateOrderData,
-  ETHEREUM_MAINNET_ID,
   BIGINT_MINUS_ONE,
   RANDOM_MINT_721,
-  createTxnHashVsTokenIdMapping,
 } from "./utils";
 import * as airstack from "../modules/airstack/nft-marketplace";
 import { TxnHashVsTokenIdMapping } from "../generated/schema";
