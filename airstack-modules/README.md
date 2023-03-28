@@ -1,36 +1,24 @@
 # Airstack Subgraphs
 
-**Every day there are millions of blockchain transactions.**
-**Airstack makes sense of them.**
-
-[Here](https://app.airstack.xyz/) is a live example of how the Airstack entities are consumed.
-
 ## Introduction
 
-Airstack is developing a Protocol and DAPP for browsing, discovering, and consuming on-chain data across projects and across blockchains. Our motivation for creating Airstack is to enable common ways to organize blockchain data and make it universally consumable.
+Airstack is a web3 developer platform that provides powerful APIs for integrating on-chain and off-chain data into any application. With Airstack developers are able to easily connect their applications to the web3 ecosystem. 
 
-This is a large and important problem to solve. On Ethereum based chains (EVMs) alone there are already more than 10 million daily transactions happening across thousands of protocols and dapps. Today those transactions exist in silos; there are no easy ways to query across projects and blockchains — to map relationship and behaviors, discover trends at the event level, and analyze product utility.
+Airstack enables GraphQL queries that combine on-chain and off-chain data from multiple sources in a single response. Our goal is to enable developers to query and integrate relevant web3 data, and serve it up to users without requiring heavy infrastructure or even a back-end. 
 
-Airstack is building the tooling now to enable a decentralized web3 data network that will enable easy querying of data across projects and blockchains.
+Airstack identity APIs map addresses and transactions across various sources, including: ENS, Farcaster, Lens, POAP, Dapps, and Marketplaces.
 
-To do so, Airstack is helping standardize blockchain data, aggregating it, mapping relationships, and providing protocols and APIs to access it.
+## Airstack Substreams & Subgraphs
 
-## What are Airstack Schema?
+Airstack is a pioneer in utilizing Substreams to index on-chain transactions faster than RPC-based solutions. Substreams are used for real-time indexing of on-chain events and for high volume blockchains such as Polygon. Airstack Substreams are hosted in-house on our infra.
 
-Airstack schemas are standardized schemas to access the data across projects and blockchains.
-These schemas are for eight initial verticals, and it is intended that any dapp/protocol within those verticals could be indexed consistently by utilizing the Airstack schemas for Subgraph.
+Airstack deploys Subgraphs with custom schemas for indexing historical events and sales data from specific dapps, marketplaces and protocols. Airstack subgraphs are hosted in-house on our infra.
 
-The 8 verticals defined for Airstack schemas are:
+Airstack schemas for Substreams and Subgraphs define how events and transactions are indexed, aggregated, and consumed across projects in standard formats, enabling seamless querying of like data across projects and chains. Example verticals: NFT Marketplace, Social, DAOs, DeFi.
 
-1. NFT Marketplaces (E.g. OpenSea, Looksrare)
-2. NFT Projects (E.g. ENS, POAP, Nouns, Moonbirds, Apes)
-3. Swaps (e.g. Quickswap, Uniswap, Sushiswap)
-4. Defi (e.g. Aave or Compound)
-5. Bridges (e.g. Hop)
-6. Games (e.g. Sandbox)
-7. DAOs
-8. Social (e.g. Farcaster and Lens)
-9. Catch all for Other Dapps (we anticipate that this will soon be broken out into additional verticals, e.g. Music, Publishing, Social)
+Airstack augments on-chain data with off-chain metadata from IPFS, dapps and marketplaces (for example NFT images and descriptions). Wherever possible we default to on-chain data.
+
+Data is stored in the Airstack backend and optimized with parallel processing for fast GraphQL querying.
 
 ## Getting Started
 
