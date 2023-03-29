@@ -22,59 +22,24 @@ export namespace abi {
     export class Decoded_Token {
         contract: Address
         tokenId: BigInt
-        constructor(_contract: Address, _tokenId: BigInt) {
+        amount: BigInt
+
+        constructor(_contract: Address, _tokenId: BigInt, _amount: BigInt) {
             this.contract = _contract
             this.tokenId = _tokenId
+            this.amount = _amount
         }
     }
     export class Decoded_TransferFrom_Result {
         method: string
         from: Address
         to: Address
-        token: BigInt
-        amount: BigInt
-        contract: Address
         tokens: Decoded_Token[]
-        constructor(
-            _method: string,
-            _from: Address,
-            _to: Address,
-            _token: BigInt,
-            _amount: BigInt,
-            _contract: Address,
-            _tokens: Decoded_Token[]
-        ) {
+        constructor(_method: string, _from: Address, _to: Address, _tokens: Decoded_Token[]) {
             this.method = _method
             this.from = _from
             this.to = _to
-            this.token = _token
-            this.amount = _amount
-            this.contract = _contract
             this.tokens = _tokens
-        }
-
-        public toStringArray(): string[] {
-            return [
-                this.method,
-                this.from.toHexString(),
-                this.to.toHexString(),
-                this.token.toString(),
-            ]
-        }
-
-        /*
-         * toString method to be used for debbuging only
-         */
-        public toString(): string {
-            return this.toLogFormattedString()
-        }
-
-        public toLogFormattedString(): string {
-            return `\n · · · · · · method( ${
-                this.method
-            } )\n · · · · · · from( ${this.from.toHexString()} ) \n · · · · · · to( ${this.to.toHexString()} )\n · · · · · · id( ${
-                this.token
-            } ) `
         }
     }
 
@@ -193,7 +158,6 @@ export namespace abi {
 
     export function decodeAbi_Atomicize_Method(_callData: Bytes): Decoded_atomicize_Result {
         let dataWithoutFunctionSelector: Bytes = changetype<Bytes>(_callData.subarray(4))
-
         // As function encoding is not handled yet by the lib, we first need to reach the offset of where the
         // actual params are located. As they are all dynamic we can just fetch the offset of the first param
         // and then start decoding params from there as known sized types
@@ -217,6 +181,7 @@ export namespace abi {
                 changetype<Bytes>(dataWithoutFunctionSelector.subarray(offset))
             )!
             .toAddressArray()
+
         offset += arrayLength * 32
 
         offset += 1 * 32
@@ -282,8 +247,8 @@ export namespace abi {
         txHash: string,
         buyCallData: Bytes,
         sellCallData: Bytes,
-        replacementPattern: Bytes,
-        blockNo: BigInt
+        replacementPattern: Bytes
+        // blockNo: BigInt
     ): Decoded_TransferFrom_Result | null {
         /**
          *
@@ -307,13 +272,12 @@ export namespace abi {
             replacementPattern.toHexString(),
         ])
         let mergedCallData = guardedArrayReplace(buyCallData, sellCallData, replacementPattern)
-        return decodeAbi_transferFrom_Method(mergedCallData, txHash, blockNo)
+        return decodeAbi_transferFrom_Method(mergedCallData, txHash)
     }
 
     export function decodeAbi_transferFrom_Method(
         callData: Bytes,
-        txHash: string = "dummy",
-        blockNo: BigInt = BigInt.fromI32(0)
+        txHash: string = "dummy"
     ): Decoded_TransferFrom_Result | null {
         /**
          * callData as bytes doesn't have a trailing 0x but represents a hex string
@@ -348,14 +312,14 @@ export namespace abi {
                 recieverAddress.toHexString(),
                 tokenId.toString(),
             ])
+            let tokens = new Array<Decoded_Token>()
+            let token = new Decoded_Token(Address.zero(), tokenId, BigInt.fromI64(1))
+            tokens.push(token)
             return new Decoded_TransferFrom_Result(
                 functionSelector,
                 senderAddress,
                 recieverAddress,
-                tokenId,
-                BigInt.fromI32(1),
-                Address.zero(),
-                []
+                tokens
             )
         } else if (checkMatchERC1155UsingCriteria(functionSelector)) {
             /*
@@ -383,9 +347,8 @@ export namespace abi {
             let tokenId = decoded[3].toBigInt()
             let amount = decoded[4].toBigInt()
             log.info(
-                "ERC1155 blockNo {} txHash {} \n senderAddress {} \n recieverAddress {} \n tokenId {} \n contract {} amount {} functionSelector {}",
+                "ERC1155  txHash {} \n senderAddress {} \n recieverAddress {} \n tokenId {} \n contract {} amount {} functionSelector {}",
                 [
-                    blockNo.toString(),
                     txHash,
                     senderAddress.toHexString(),
                     recieverAddress.toHexString(),
@@ -395,15 +358,14 @@ export namespace abi {
                     functionSelector,
                 ]
             )
-
+            let tokens = new Array<Decoded_Token>()
+            let token = new Decoded_Token(contract, tokenId, amount)
+            tokens.push(token)
             return new Decoded_TransferFrom_Result(
                 functionSelector,
                 senderAddress,
                 recieverAddress,
-                tokenId,
-                amount,
-                contract,
-                []
+                tokens
             )
         } else if (checkMatchERC721UsingCriteria(functionSelector)) {
             // address from,
@@ -425,9 +387,8 @@ export namespace abi {
             let contract = decoded[2].toAddress()
             let tokenId = decoded[3].toBigInt()
             log.info(
-                "ERC721 blockNo {} txHash {} \n senderAddress {} \n recieverAddress {} \n tokenId {} \n contract {} functionSelector {}",
+                "ERC721 txHash {} \n senderAddress {} \n recieverAddress {} \n tokenId {} \n contract {} functionSelector {}",
                 [
-                    blockNo.toString(),
                     txHash,
                     senderAddress.toHexString(),
                     recieverAddress.toHexString(),
@@ -436,18 +397,19 @@ export namespace abi {
                     functionSelector,
                 ]
             )
-
+            let tokens = new Array<Decoded_Token>()
+            let token = new Decoded_Token(contract, tokenId, BIGINT_ONE)
+            tokens.push(token)
             return new Decoded_TransferFrom_Result(
                 functionSelector,
                 senderAddress,
                 recieverAddress,
-                tokenId,
-                BIGINT_ONE,
-                contract,
-                []
+                tokens
             )
         } else if (checkENSFunctionSelector(functionSelector)) {
             // hash 0xa360c37342d9f4dc76039ddda2c1ac3e1d5290aadc9ae73dda1df397482e2aa6
+            let contract = Address.fromString("0xfac7bea255a6990f749363002136af6556b31e04") //TODO: verify with future txns
+
             let prefixStr = "0x0000000000000000000000000000000000000000000000000000000000000020"
             let fixedData = prefixStr + dataWithoutFunctionSelector.toHexString().substring(2)
             let decoded = ethereum
@@ -456,16 +418,19 @@ export namespace abi {
             let ensName = decoded[0].toString()
             let recieverAddress = decoded[1].toAddress()
             let tokenId = getEnsId(ensName)
+
+            let tokens = new Array<Decoded_Token>()
+            let token = new Decoded_Token(contract, tokenId, BIGINT_ONE)
+            tokens.push(token)
             return new Decoded_TransferFrom_Result(
                 functionSelector,
                 Address.fromString(ADDRESS_ZERO),
                 recieverAddress,
-                tokenId,
-                BIGINT_ONE,
-                Address.fromString("0xfac7bea255a6990f749363002136af6556b31e04"), //TODO: verify with future txns
-                []
+                tokens
             )
         } else if (checkSharedStorefront(functionSelector)) {
+            let contract = Address.fromString("0x5fbef9fcb449d56154980e52e165d9650b9f6ec2") //TODO: verify with future txns
+
             let decoded = ethereum
                 .decode("(address,address,uint256)", dataWithoutFunctionSelector)!
                 .toTuple()
@@ -478,15 +443,10 @@ export namespace abi {
                 to.toHexString(),
                 tokenId.toString(),
             ])
-            return new Decoded_TransferFrom_Result(
-                functionSelector,
-                from,
-                to,
-                tokenId,
-                BIGINT_ONE,
-                Address.fromString("0x5fbEf9FCb449D56154980e52E165d9650B9f6EC2"), //TODO: verify with future txns
-                []
-            )
+            let tokens = new Array<Decoded_Token>()
+            let token = new Decoded_Token(contract, tokenId, BIGINT_ONE)
+            tokens.push(token)
+            return new Decoded_TransferFrom_Result(functionSelector, from, to, tokens)
         } else if (checkEnjinCase(functionSelector)) {
             let contract = Address.fromString("0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab") //TODO: verify with future txns
             let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().split("fe99049a")[1]
@@ -513,15 +473,11 @@ export namespace abi {
                 to.toHexString(),
                 tokenId.toString(),
             ])
-            return new Decoded_TransferFrom_Result(
-                functionSelector,
-                from,
-                to,
-                tokenId,
-                BIGINT_ONE,
-                contract,
-                []
-            )
+            let tokens = new Array<Decoded_Token>()
+            let token = new Decoded_Token(contract, tokenId, BIGINT_ONE)
+            tokens.push(token)
+
+            return new Decoded_TransferFrom_Result(functionSelector, from, to, tokens)
         } else if (checkSafeTransferFrom(functionSelector)) {
             let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().split("b88d4fde")[1]
             let decoded = ethereum
@@ -539,15 +495,10 @@ export namespace abi {
                 to.toHexString(),
                 tokenId.toString(),
             ])
-            return new Decoded_TransferFrom_Result(
-                functionSelector,
-                from,
-                to,
-                tokenId,
-                BIGINT_ONE,
-                Address.zero(),
-                []
-            )
+            let tokens = new Array<Decoded_Token>()
+            let token = new Decoded_Token(Address.zero(), tokenId, BIGINT_ONE)
+            tokens.push(token)
+            return new Decoded_TransferFrom_Result(functionSelector, from, to, tokens)
         } else if (checkDelegateCall(functionSelector)) {
             let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().substring(212)
             log.error("checkDelegateCall txhash {} dataWithoutFunctionSelectorStr {} ", [
@@ -573,21 +524,13 @@ export namespace abi {
                 contract.toHexString(),
                 tokenId.toString(),
             ])
-            return new Decoded_TransferFrom_Result(
-                functionSelector,
-                from,
-                to,
-                tokenId,
-                BIGINT_ONE,
-                contract,
-                []
-            )
+            let tokens = new Array<Decoded_Token>()
+            let token = new Decoded_Token(contract, tokenId, BIGINT_ONE)
+            tokens.push(token)
+            return new Decoded_TransferFrom_Result(functionSelector, from, to, tokens)
         } else if (checkBatchTxn(functionSelector)) {
             let dataWithoutFunctionSelectorStr = "0x" + callData.toHexString().substring(74)
-            log.error("batchCase hash {} datawithoutselector: {}", [
-                txHash,
-                dataWithoutFunctionSelectorStr,
-            ])
+
             let decoded = ethereum
                 .decode(
                     "(address,address,uint256)",
@@ -606,18 +549,10 @@ export namespace abi {
                     .toTuple()
                 let tokenAddress = decoded[0].toAddress()
                 let tokenId = decoded[1].toBigInt()
-                let token = new Decoded_Token(tokenAddress, tokenId)
+                let token = new Decoded_Token(tokenAddress, tokenId, BIGINT_ONE)
                 tokens.push(token)
             }
-            return new Decoded_TransferFrom_Result(
-                functionSelector,
-                from,
-                to,
-                BIG_INT_ZERO,
-                BIGINT_ONE,
-                Address.zero(),
-                tokens
-            )
+            return new Decoded_TransferFrom_Result(functionSelector, from, to, tokens)
         } else {
             log.error(
                 `We dont understanding decoding {} functionSelector {} dataWithoutFunctionSelector {} callData {}`,

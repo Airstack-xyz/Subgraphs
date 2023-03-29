@@ -1,4 +1,4 @@
-import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
+import { Address, BigDecimal, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 
 import { AtomicMatch_Call } from "../generated/WyvernExchange/WyvernExchange"
 
@@ -16,49 +16,57 @@ import {
 import { ContractAddressIssue, ContractTracker } from "../generated/schema"
 import { BIGINT_ONE, BIG_INT_ZERO } from "../modules/airstack/common"
 
-export function handleAtomicMatch_(call: AtomicMatch_Call): void {
-    log.info("txHash {}", [call.transaction.hash.toHexString()])
-    let txHash = call.transaction.hash
-    let timestamp = call.block.timestamp
-    let sellTakerAddress = call.inputs.addrs[9]
-    let paymentToken = call.inputs.addrs[6]
-
-    let saleTarget = call.inputs.addrs[11]
+export function atomicMatch(
+    txHash: string,
+    blockTimeStamp: BigInt,
+    addrs: Array<Address>,
+    uints: Array<BigInt>,
+    feeMethodsSidesKindsHowToCalls: Array<i32>,
+    calldataBuy: Bytes,
+    calldataSell: Bytes,
+    replacementPatternBuy: Bytes,
+    replacementPatternSell: Bytes,
+    staticExtradataBuy: Bytes,
+    staticExtradataSell: Bytes,
+    vs: Array<i32>,
+    rssMetadata: Array<Bytes>
+): airstack.nft.Sale {
+    let sellTakerAddress = addrs[9]
+    let paymentToken = addrs[6]
+    let saleTarget = addrs[11]
     let isBundleSale = saleTarget.toHexString() == orders.constants.WYVERN_ATOMICIZER_ADDRESS
-
-    let contractAddress = call.inputs.addrs[11]
-
+    let contractAddress = addrs[11]
     // buy Order
     let buyOrder: orders.Order = new orders.Order(
-        call.inputs.addrs[0], //exchange:
-        call.inputs.addrs[1].toHexString(), //maker:
-        call.inputs.addrs[2].toHexString(), // taker:
-        call.inputs.uints[0], //makerRelayerFee:
-        call.inputs.uints[1], //takerRelayerFee:
-        call.inputs.uints[2], //makerProtocolFee:
-        call.inputs.uints[3], //takerProtocolFee:
-        call.inputs.addrs[3].toHex(), //feeRecipient:
-        orders.helpers.getFeeMethod(call.inputs.feeMethodsSidesKindsHowToCalls[0]), //feeMethod:
-        orders.helpers.getOrderSide(call.inputs.feeMethodsSidesKindsHowToCalls[1]), //side:
-        orders.helpers.getSaleKind(call.inputs.feeMethodsSidesKindsHowToCalls[2]), //saleKind:
-        call.inputs.addrs[4].toHexString(), //target:
-        orders.helpers.getHowToCall(call.inputs.feeMethodsSidesKindsHowToCalls[3]), //howToCall:
-        call.inputs.calldataBuy, //callData:
-        call.inputs.replacementPatternBuy, //replacementPattern:
-        call.inputs.addrs[5], //staticTarget:
-        call.inputs.staticExtradataBuy, //staticExtradata:
+        addrs[0], //exchange:
+        addrs[1].toHexString(), //maker:
+        addrs[2].toHexString(), // taker:
+        uints[0], //makerRelayerFee:
+        uints[1], //takerRelayerFee:
+        uints[2], //makerProtocolFee:
+        uints[3], //takerProtocolFee:
+        addrs[3].toHex(), //feeRecipient:
+        orders.helpers.getFeeMethod(feeMethodsSidesKindsHowToCalls[0]), //feeMethod:
+        orders.helpers.getOrderSide(feeMethodsSidesKindsHowToCalls[1]), //side:
+        orders.helpers.getSaleKind(feeMethodsSidesKindsHowToCalls[2]), //saleKind:
+        addrs[4].toHexString(), //target:
+        orders.helpers.getHowToCall(feeMethodsSidesKindsHowToCalls[3]), //howToCall:
+        calldataBuy, //callData:
+        replacementPatternBuy, //replacementPattern:
+        addrs[5], //staticTarget:
+        staticExtradataBuy, //staticExtradata:
         paymentToken.toHexString(), //paymentToken:
-        call.inputs.uints[4], //basePrice:
-        call.inputs.uints[5], //extra:
-        call.inputs.uints[6], //listingTime:
-        call.inputs.uints[7], //expirationTIme:
-        call.inputs.uints[8] // salt:
+        uints[4], //basePrice:
+        uints[5], //extra:
+        uints[6], //listingTime:
+        uints[7], //expirationTIme:
+        uints[8] // salt:
     )
 
     log.info(
         "txHash {} buyOrder maker {} taker {} makerProtocolFee {} takerProtocolFee {} makerRelayerFee {} takerRelayerFee {} feeRecipient {} feeMethod {} side {} saleKind {} exchange {} target{}",
         [
-            txHash.toHexString(),
+            txHash,
             buyOrder.maker,
             buyOrder.taker,
             buyOrder.makerProtocolFee.toString(),
@@ -73,37 +81,35 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
             buyOrder.target,
         ]
     )
-
     let sellOrder: orders.Order = new orders.Order(
-        call.inputs.addrs[7], //exchange:
-        call.inputs.addrs[8].toHexString(), //maker:
+        addrs[7], //exchange:
+        addrs[8].toHexString(), //maker:
         sellTakerAddress.toHexString(), //taker:
-        call.inputs.uints[9], //makerRelayerFee:
-        call.inputs.uints[10], // takerRelayerFee:
-        call.inputs.uints[11], //makerProtocolFee:
-        call.inputs.uints[12], //takerProtocolFee:
-        call.inputs.addrs[10].toHexString(), // feeRecipient:
-        orders.helpers.getFeeMethod(call.inputs.feeMethodsSidesKindsHowToCalls[4]), //feeMethod:
-        orders.helpers.getOrderSide(call.inputs.feeMethodsSidesKindsHowToCalls[5]), //side:
-        orders.helpers.getSaleKind(call.inputs.feeMethodsSidesKindsHowToCalls[6]), //saleKind:
-        call.inputs.addrs[11].toHexString(), //target:
-        orders.helpers.getHowToCall(call.inputs.feeMethodsSidesKindsHowToCalls[7]), //howToCall:
-        call.inputs.calldataSell, // callData:
-        call.inputs.replacementPatternSell, //replacementPattern:
-        call.inputs.addrs[12], //staticTarget:
-        call.inputs.staticExtradataSell, //staticExtradata:
+        uints[9], //makerRelayerFee:
+        uints[10], // takerRelayerFee:
+        uints[11], //makerProtocolFee:
+        uints[12], //takerProtocolFee:
+        addrs[10].toHexString(), // feeRecipient:
+        orders.helpers.getFeeMethod(feeMethodsSidesKindsHowToCalls[4]), //feeMethod:
+        orders.helpers.getOrderSide(feeMethodsSidesKindsHowToCalls[5]), //side:
+        orders.helpers.getSaleKind(feeMethodsSidesKindsHowToCalls[6]), //saleKind:
+        addrs[11].toHexString(), //target:
+        orders.helpers.getHowToCall(feeMethodsSidesKindsHowToCalls[7]), //howToCall:
+        calldataSell, // callData:
+        replacementPatternSell, //replacementPattern:
+        addrs[12], //staticTarget:
+        staticExtradataSell, //staticExtradata:
         paymentToken.toHexString(), //paymentToken:
-        call.inputs.uints[13], //basePrice:
-        call.inputs.uints[14], //extra:
-        call.inputs.uints[15], //listingTime:
-        call.inputs.uints[16], //expirationTIme:
-        call.inputs.uints[17] //salt:
+        uints[13], //basePrice:
+        uints[14], //extra:
+        uints[15], //listingTime:
+        uints[16], //expirationTIme:
+        uints[17] //salt:
     )
-
     log.info(
         "txHash {} sellOrder maker {} taker {} makerProtocolFee {} takerProtocolFee {} makerRelayerFee {} takerRelayerFee {} feeRecipient {} feeMethod {} side {} saleKind {} exchange {} target{}",
         [
-            txHash.toHexString(),
+            txHash,
             sellOrder.maker,
             sellOrder.taker,
             sellOrder.makerProtocolFee.toString(),
@@ -119,94 +125,114 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
         ]
     )
 
-    let matchPrice = orders.helpers.calculateMatchPrice(buyOrder, sellOrder, timestamp)
-
-    let allSales = new Array<airstack.nft.Sale>()
+    let matchPrice = orders.helpers.calculateMatchPrice(buyOrder, sellOrder, blockTimeStamp)
 
     if (isBundleSale) {
-        log.info("txHash {} isbundlesale", [txHash.toHexString()])
+        log.info("txHash {} isbundlesale", [txHash])
         let decoded = abi.decodeBatchNftData(
             buyOrder.callData,
             sellOrder.callData,
             buyOrder.replacementPattern
         )
+        let from = Address.zero()
+        let to = Address.zero()
+        let nfts: airstack.nft.NFT[] = []
 
         for (let i = 0; i < decoded.transfers.length; i++) {
-            log.info("txHash {} transfer method {}", [
-                txHash.toHexString(),
-                decoded.transfers[i].method,
+            let transfer = decoded.transfers[i]
+            log.debug("from {} to {} method {} ", [
+                transfer.from.toHexString(),
+                transfer.to.toHexString(),
+                transfer.method,
             ])
-            let nft = new airstack.nft.NFT(
-                decoded.addressList[i],
-                decoded.transfers[i].method,
-                decoded.transfers[i].token,
-                decoded.transfers[i].amount
-            )
-            // let feeAmount = BigInt.zero();
-
-            let royaltyDetails = new royaltyResult()
-            if (sellOrder.feeRecipient != Address.zero().toHexString()) {
-                royaltyDetails = calculateRoyality(
-                    sellOrder.makerRelayerFee,
-                    sellOrder.feeRecipient,
-                    matchPrice
-                )
-            } else {
-                royaltyDetails = calculateRoyality(
-                    sellOrder.takerRelayerFee,
-                    sellOrder.feeRecipient,
-                    matchPrice
-                )
+            if (from == Address.zero()) {
+                from = transfer.from
+            } else if (from != transfer.from) {
+                log.error("from address change not expected,txhash {}", [txHash])
+                throw new Error("")
             }
-            let marketplaceRevenueETH = royaltyDetails.marketplaceRevenueETH
-            let feeRecipient = royaltyDetails.feeRecipient
-            log.info("txHash bundleSale {} matchPrice {}", [
-                txHash.toHexString(),
-                matchPrice.toString(),
-            ])
-            let sale = new airstack.nft.Sale(
-                decoded.transfers[i].to,
-                decoded.transfers[i].from,
-                nft,
-                matchPrice.div(BigInt.fromI64(decoded.transfers.length)),
-                paymentToken,
-                marketplaceRevenueETH,
-                Address.fromString(feeRecipient),
-                new Array<airstack.nft.CreatorRoyalty>()
-            )
-            allSales.push(sale)
+            if (to == Address.zero()) {
+                to = transfer.to
+            } else if (to != transfer.to) {
+                log.error("to address change not expected,txhash {}", [txHash])
+                throw new Error("")
+            }
+            if (transfer.tokens.length > 1) {
+                log.error("transferlen >1 isn't expected,txhash {}", [txHash])
+                throw new Error("transferlen >1 isn't expected")
+            }
+            for (let j = 0; j < transfer.tokens.length; j++) {
+                let tokens = transfer.tokens[j]
+                let nft = new airstack.nft.NFT(
+                    decoded.addressList[j],
+                    "",
+                    tokens.tokenId,
+                    tokens.amount
+                )
+                log.debug("nft collection {} tokenId {} amount {}", [
+                    nft.collection.toHexString(),
+                    nft.tokenId.toString(),
+                    nft.amount.toString(),
+                ])
+                nfts.push(nft)
+            }
         }
+        let royaltyDetails = new royaltyResult()
+        if (sellOrder.feeRecipient != Address.zero().toHexString()) {
+            royaltyDetails = calculateRoyality(
+                sellOrder.makerRelayerFee,
+                sellOrder.feeRecipient,
+                matchPrice
+            )
+        } else {
+            royaltyDetails = calculateRoyality(
+                sellOrder.takerRelayerFee,
+                sellOrder.feeRecipient,
+                matchPrice
+            )
+        }
+        let feeRecipient = royaltyDetails.feeRecipient
+        let totalRevenueETH = royaltyDetails.totalRevenueETH
+        if (from == Address.zero() || to == Address.zero()) {
+            log.error("from or to is zero, from {} to {}", [from.toHexString(), to.toHexString()])
+            throw new Error("")
+        }
+        log.error(
+            "bundle from {} to {} matchPrice {} paymentToken {} feeRecipient {} protocolFees {}",
+            [
+                from.toHexString(),
+                to.toHexString(),
+                matchPrice.toString(),
+                paymentToken.toHexString(),
+                feeRecipient.toString(),
+                totalRevenueETH.toString(),
+            ]
+        )
+
+        let sale = new airstack.nft.Sale(
+            from,
+            to,
+            nfts,
+            matchPrice,
+            paymentToken,
+            totalRevenueETH,
+            Address.fromString(feeRecipient),
+            new Array<airstack.nft.CreatorRoyalty>()
+        )
+        return sale
     } else {
-        log.info("txHash {} not bundle sale", [txHash.toHexString()])
+        log.info("txHash {} not bundle sale", [txHash])
         let decoded = abi.decodeSingleNftData(
-            txHash.toHexString(),
+            txHash,
             buyOrder.callData,
             sellOrder.callData,
-            buyOrder.replacementPattern,
-            call.block.number
+            buyOrder.replacementPattern
         )
-
         if (decoded == null) {
-            log.debug("missing record {} ", [txHash.toHexString()])
-            return
+            log.debug("missing record {} ", [txHash])
+            throw new Error("")
         }
 
-        contractAddress = decoded.contract != Address.zero() ? decoded.contract : contractAddress
-        if (contractAddress != Address.fromString(sellOrder.target)) {
-            createAddressIssue(
-                txHash.toHexString(),
-                sellOrder.target,
-                contractAddress.toHexString(),
-                decoded.method
-            )
-        }
-
-        let nft = new airstack.nft.NFT(
-            contractAddress,
-            decoded.method,
-            decoded.token,
-            decoded.amount
-        )
         let royaltyDetails = new royaltyResult()
         if (sellOrder.feeRecipient != Address.zero().toHexString()) {
             royaltyDetails = calculateRoyality(
@@ -223,41 +249,74 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
         }
         let feeRecipient = royaltyDetails.feeRecipient
         let totalRevenueETH = royaltyDetails.totalRevenueETH
-        let creatorRevenueETH = royaltyDetails.creatorRevenueETH
-        creatorRevenueETH = matchPrice.minus(totalRevenueETH)
-        log.info(
-            "txHash not bundleSale {} totalRevenueETH {} creatorRevenueETH {} feeRecipient {}",
+        // let creatorRevenueETH = royaltyDetails.creatorRevenueETH
+        // creatorRevenueETH = matchPrice.minus(totalRevenueETH)
+        let nfts: airstack.nft.NFT[] = []
+        for (let i = 0; i < decoded.tokens.length; i++) {
+            const token = decoded.tokens[i]
+            contractAddress = token.contract != Address.zero() ? token.contract : contractAddress
+            let nft = new airstack.nft.NFT(contractAddress, "", token.tokenId, token.amount)
+            nfts.push(nft)
+        }
+
+        log.debug(
+            // protocolFeesBeneficiary: Address
+            "sale decoded buyer {} seller {} paymentAmount {} paymentToken {} protocolFees {} protocolFeesBeneficiary {} ",
             [
-                txHash.toHexString(),
+                decoded.to.toHexString(),
+                decoded.from.toHexString(),
+                matchPrice.toString(),
+                paymentToken.toHexString(),
                 totalRevenueETH.toString(),
-                creatorRevenueETH.toString(),
                 feeRecipient,
             ]
         )
+        for (let i = 0; i < nfts.length; i++) {
+            const nft = nfts[i]
+            log.debug("nft collection {} tokenId {} amount {} ", [
+                nft.collection.toHexString(),
+                nft.tokenId.toString(),
+                nft.amount.toString(),
+            ])
+        }
         let sale = new airstack.nft.Sale(
             decoded.to,
             decoded.from,
-            nft,
+            nfts,
             matchPrice,
             paymentToken,
             totalRevenueETH,
             Address.fromString(feeRecipient),
             new Array<airstack.nft.CreatorRoyalty>()
         )
-        allSales.push(sale)
+        return sale
     }
+}
+
+export function handleAtomicMatch_(call: AtomicMatch_Call): void {
+    let sale = atomicMatch(
+        call.transaction.hash.toHexString(),
+        call.block.timestamp,
+        call.inputs.addrs,
+        call.inputs.uints,
+        call.inputs.feeMethodsSidesKindsHowToCalls,
+        call.inputs.calldataBuy,
+        call.inputs.calldataSell,
+        call.inputs.replacementPatternBuy,
+        call.inputs.replacementPatternSell,
+        call.inputs.staticExtradataBuy,
+        call.inputs.staticExtradataSell,
+        call.inputs.vs,
+        call.inputs.rssMetadata
+    )
 
     airstack.nft.trackNFTSaleTransactions(
-        ETHEREUM_MAINNET_ID,
-        txHash.toHexString(),
+        call.block,
+        call.transaction.hash.toHexString(),
         call.transaction.index,
-        allSales,
-        isBundleSale,
+        sale,
         MARKET_PLACE_TYPE,
-        PROTOCOL_SELL_ACTION_TYPE,
-        timestamp,
-        call.block.number,
-        call.block.hash.toHexString()
+        PROTOCOL_SELL_ACTION_TYPE
     )
 }
 
