@@ -8,7 +8,7 @@ import {
 } from "matchstick-as/assembly/index"
 import { Address, BigDecimal, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 
-import { batchInSingle, batchTransfer, sample1, sharedStorefront } from "./example"
+import { batchInSingle, batchTransfer, sample1, sharedStorefront, tokenAmountGt1 } from "./example"
 import { AtomicMatchInput } from "./types"
 import * as airstack from "../modules/airstack/nft-marketplace"
 import { atomicMatch } from "../src/wyvern-exchange"
@@ -57,6 +57,12 @@ describe("Describe entity assertions", () => {
         let sample = new AtomicMatchInput(batchTransfer)
         let hash = "0xa5b0b2d7773741598016e877dc351e7956605ce22c07c5a1675648409608b4f8"
         let blockTimeStamp = BigInt.fromString("1659353957")
+        let sale = callAtomicMatch(hash, blockTimeStamp, sample)
+    })
+    test("should handle tokenAmountGt1 case", () => {
+        let sample = new AtomicMatchInput(tokenAmountGt1)
+        let hash = "0x00008f324bf193b214a701d5321ca3e493f638936ca48bdf095a61dacbf77bbc"
+        let blockTimeStamp = BigInt.fromString("1644856231")
         let sale = callAtomicMatch(hash, blockTimeStamp, sample)
     })
 })
