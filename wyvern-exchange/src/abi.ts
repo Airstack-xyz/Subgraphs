@@ -48,6 +48,7 @@ export namespace abi {
 
         return (
             functionSelector == "0x23b872dd" ||
+            functionSelector == "0xb88d4fde" || // safeTransferFrom(address,address,uint256,bytes)
             functionSelector == "0x23b872dd" ||
             functionSelector == "0x42842e0e" ||
             functionSelector == "0xf242432a" ||
@@ -211,7 +212,6 @@ export namespace abi {
         let callDatas: Bytes = changetype<Bytes>(
             dataWithoutFunctionSelector.subarray(offset, offset + decodedCallDatasLength)
         )
-
         let addressList = new Array<Address>()
         let transfersList = new Array<abi.Decoded_TransferFrom_Result>()
 
@@ -227,10 +227,11 @@ export namespace abi {
             if (checkCallDataFunctionSelector(calldata)) {
                 addressList.push(decodedAddresses[i])
 
-                log.info("call data {}", [calldata.toHexString()])
+                // log.info("decodedAddresses--> {}", [decodedAddresses[i].toHexString()])
                 let decoded = abi.decodeAbi_transferFrom_Method(calldata)
                 if (decoded != null) {
                     transfersList.push(decoded)
+                    log.debug("decoded len {}", [decoded.tokens.length.toString()])
                 }
             }
 
@@ -291,7 +292,7 @@ export namespace abi {
 
         if (dataWithoutFunctionSelector.equals(ByteArray.fromHexString("0x"))) {
             log.warning("Issue with decoding", [])
-            return null
+            throw new Error("")
         }
         log.debug("hash {} functionSelector {}", [txHash, functionSelector.toString()])
         if (checkFunctionSelector(functionSelector)) {

@@ -13,7 +13,6 @@ import {
     MARKET_PLACE_TYPE,
     PROTOCOL_SELL_ACTION_TYPE,
 } from "./utils"
-import { ContractAddressIssue, ContractTracker } from "../generated/schema"
 import { BIGINT_ONE, BIG_INT_ZERO } from "../modules/airstack/common"
 
 export function atomicMatch(
@@ -134,10 +133,12 @@ export function atomicMatch(
             sellOrder.callData,
             buyOrder.replacementPattern
         )
+        if (decoded.addressList.length != decoded.transfers.length) {
+            log.error("bundleSale addressList len != transfers len,txHash {}", [txHash])
+        }
         let from = Address.zero()
         let to = Address.zero()
         let nfts: airstack.nft.NFT[] = []
-
         for (let i = 0; i < decoded.transfers.length; i++) {
             let transfer = decoded.transfers[i]
             log.debug("from {} to {} method {} ", [
@@ -164,7 +165,7 @@ export function atomicMatch(
             for (let j = 0; j < transfer.tokens.length; j++) {
                 let tokens = transfer.tokens[j]
                 let nft = new airstack.nft.NFT(
-                    decoded.addressList[j],
+                    decoded.addressList[i],
                     "",
                     tokens.tokenId,
                     tokens.amount
@@ -194,7 +195,11 @@ export function atomicMatch(
         let feeRecipient = royaltyDetails.feeRecipient
         let totalRevenueETH = royaltyDetails.totalRevenueETH
         if (from == Address.zero() || to == Address.zero()) {
-            log.error("from or to is zero, from {} to {}", [from.toHexString(), to.toHexString()])
+            log.error("from or to is zero, from {} to {} ,txHash {}", [
+                from.toHexString(),
+                to.toHexString(),
+                txHash,
+            ])
             throw new Error("")
         }
         log.error(
@@ -210,8 +215,8 @@ export function atomicMatch(
         )
 
         let sale = new airstack.nft.Sale(
-            from,
             to,
+            from,
             nfts,
             matchPrice,
             paymentToken,
@@ -294,6 +299,10 @@ export function atomicMatch(
 }
 
 export function handleAtomicMatch_(call: AtomicMatch_Call): void {
+    log.error("txhash {} blockNo {}", [
+        call.transaction.hash.toHexString(),
+        call.block.number.toString(),
+    ])
     let sale = atomicMatch(
         call.transaction.hash.toHexString(),
         call.block.timestamp,
@@ -354,35 +363,4 @@ export function calculateRoyality(
 
     royaltyDetails.feeRecipient = feeRecipient
     return royaltyDetails
-}
-
-export function createAddressIssue(
-    txHash: string,
-    target: string,
-    contract: string,
-    method: string
-): void {
-    // added for later verification
-    log.error("txHash {} contract {} not equal to target {}", [txHash, contract, target])
-    let contractissue = ContractAddressIssue.load(txHash)
-    if (contractissue == null) {
-        contractissue = new ContractAddressIssue(txHash)
-        contractissue.txCount = BIG_INT_ZERO
-    }
-    contractissue.txCount = contractissue.txCount.plus(BIGINT_ONE)
-    let contractTracker = ContractTracker.load(txHash + "-" + contractissue.txCount.toString())
-    if (contractTracker == null) {
-        contractTracker = new ContractTracker(txHash + "-" + contractissue.txCount.toString())
-    }
-    contractTracker.hash = contractissue.id
-    contractTracker.target = target
-    contractTracker.decodedAddress = contract
-    if (target == ENS_WALLET) {
-        contractTracker.label = "ENS"
-    }
-    if (method == "0x00d6d2b6" || method == "0xd6d2b6ba") {
-        contractTracker.label = "DelegateCall"
-    }
-    contractissue.save()
-    contractTracker.save()
 }
