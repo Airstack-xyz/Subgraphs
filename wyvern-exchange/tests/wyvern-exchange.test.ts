@@ -11,6 +11,7 @@ import { Address, BigDecimal, BigInt, Bytes, log } from "@graphprotocol/graph-ts
 import {
     batchInSingle,
     batchTransfer,
+    phishing,
     safeTransferFromWithBytes,
     sample1,
     sharedStorefront,
@@ -23,7 +24,7 @@ export function callAtomicMatch(
     hash: string,
     blockTimeStamp: BigInt,
     input: AtomicMatchInput
-): airstack.nft.Sale {
+): airstack.nft.Sale | null {
     return atomicMatch(
         hash,
         blockTimeStamp,
@@ -66,7 +67,10 @@ describe("Describe entity assertions", () => {
             Address.fromString("0x5b3256965e7c3cf26e11fcaf296dfc8807c01073"),
             []
         )
-        checkSaledata(sale, expectedSale)
+        assert.assertNotNull(sale)
+        if (sale != null) {
+            checkSaledata(sale, expectedSale)
+        }
     })
     test("should handle batch transfer in single case", () => {
         let sample = new AtomicMatchInput(batchInSingle)
@@ -108,7 +112,10 @@ describe("Describe entity assertions", () => {
             Address.fromString("0x5b3256965e7c3cf26e11fcaf296dfc8807c01073"),
             []
         )
-        checkSaledata(sale, expectedSale)
+        assert.assertNotNull(sale)
+        if (sale != null) {
+            checkSaledata(sale, expectedSale)
+        }
     })
     test("should handle sharedStorefront case", () => {
         let sample = new AtomicMatchInput(sharedStorefront)
@@ -135,7 +142,10 @@ describe("Describe entity assertions", () => {
             Address.fromString("0xb4e7843ebf4e9e4bb618627d6f7697096ae1be7a"),
             []
         )
-        checkSaledata(sale, expectedSale)
+        assert.assertNotNull(sale)
+        if (sale != null) {
+            checkSaledata(sale, expectedSale)
+        }
     })
     test("should handle batch case", () => {
         let sample = new AtomicMatchInput(batchTransfer)
@@ -198,7 +208,10 @@ describe("Describe entity assertions", () => {
             Address.fromString("0x5b3256965e7C3cF26E11FCAf296DfC8807C01073"),
             []
         )
-        checkSaledata(sale, expectedSale)
+        assert.assertNotNull(sale)
+        if (sale != null) {
+            checkSaledata(sale, expectedSale)
+        }
     })
     test("should handle tokenAmountGt1 case", () => {
         let sample = new AtomicMatchInput(tokenAmountGt1)
@@ -223,7 +236,10 @@ describe("Describe entity assertions", () => {
             Address.fromString("0x5b3256965e7C3cF26E11FCAf296DfC8807C01073"),
             []
         )
-        checkSaledata(sale, expectedSale)
+        assert.assertNotNull(sale)
+        if (sale != null) {
+            checkSaledata(sale, expectedSale)
+        }
     })
     test("should handle safeTransferFromWithBytes case with BundleSale", () => {
         let sample = new AtomicMatchInput(safeTransferFromWithBytes)
@@ -255,7 +271,18 @@ describe("Describe entity assertions", () => {
             Address.fromString("0x5b3256965e7C3cF26E11FCAf296DfC8807C01073"),
             []
         )
-        checkSaledata(sale, expectedSale)
+        assert.assertNotNull(sale)
+        if (sale != null) {
+            checkSaledata(sale, expectedSale)
+        }
+    })
+
+    test("should handle Phishing case", () => {
+        let sample = new AtomicMatchInput(phishing)
+        let hash = "0x337a707baaa15f3aa4004f0a2c9b5dcf38efc5c00fe162b27787409097cf20f8"
+        let blockTimeStamp = BigInt.fromString("14238192")
+        let sale = callAtomicMatch(hash, blockTimeStamp, sample)
+        assert.assertNull(sale)
     })
 })
 

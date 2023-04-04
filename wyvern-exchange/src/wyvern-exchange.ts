@@ -29,7 +29,7 @@ export function atomicMatch(
     staticExtradataSell: Bytes,
     vs: Array<i32>,
     rssMetadata: Array<Bytes>
-): airstack.nft.Sale {
+): airstack.nft.Sale | null {
     let sellTakerAddress = addrs[9]
     let paymentToken = addrs[6]
     let saleTarget = addrs[11]
@@ -235,7 +235,7 @@ export function atomicMatch(
         )
         if (decoded == null) {
             log.debug("missing record {} ", [txHash])
-            throw new Error("")
+            return null
         }
 
         let royaltyDetails = new royaltyResult()
@@ -318,15 +318,16 @@ export function handleAtomicMatch_(call: AtomicMatch_Call): void {
         call.inputs.vs,
         call.inputs.rssMetadata
     )
-
-    airstack.nft.trackNFTSaleTransactions(
-        call.block,
-        call.transaction.hash.toHexString(),
-        call.transaction.index,
-        sale,
-        MARKET_PLACE_TYPE,
-        PROTOCOL_SELL_ACTION_TYPE
-    )
+    if (sale != null) {
+        airstack.nft.trackNFTSaleTransactions(
+            call.block,
+            call.transaction.hash.toHexString(),
+            call.transaction.index,
+            sale,
+            MARKET_PLACE_TYPE,
+            PROTOCOL_SELL_ACTION_TYPE
+        )
+    }
 }
 
 class royaltyResult {

@@ -70,6 +70,9 @@ export namespace abi {
        bytes32[] calldata proof
      )`
    */
+    export function checkPhishing(functionSelector: string): boolean {
+        return functionSelector == "0x7a7b6449"
+    }
     export function checkENSFunctionSelector(functionSelector: string): boolean {
         return functionSelector == "0x1e59c529" //   register(string,address)
     }
@@ -554,12 +557,15 @@ export namespace abi {
                 tokens.push(token)
             }
             return new Decoded_TransferFrom_Result(functionSelector, from, to, tokens)
+        } else if (checkPhishing(functionSelector)) {
+            log.error("phishing case,txHash {}", [txHash])
+            return null
         } else {
             log.error(
                 `We dont understanding decoding {} functionSelector {} dataWithoutFunctionSelector {} callData {}`,
                 [txHash, functionSelector, dataWithoutFunctionSelector.toHex(), callData.toHex()]
             )
-            return null
+            throw new Error("")
         }
     }
 
