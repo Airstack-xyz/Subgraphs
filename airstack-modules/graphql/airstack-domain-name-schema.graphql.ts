@@ -167,6 +167,7 @@ type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration
 
 type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   id: ID!
+  previousDomain: AirDomain
   block: AirBlock!
   transactionHash: String!
   tokenId: String # dec(labelhash) # - NA

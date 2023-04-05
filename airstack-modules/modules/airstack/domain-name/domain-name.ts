@@ -553,6 +553,7 @@ export namespace domain {
     let domain = getOrCreateAirDomain(new Domain(reverseRegistrar.domain, chainId, airBlock, tokenAddress));
     let fromAccount = getOrCreateAirAccount(chainId, from, airBlock);
     fromAccount.save();
+    let oldPrimaryDomain: AirDomain | null = null;
     // when domain's resolvedAddress is set as from address
     if (domain.resolvedAddress == fromAccount.id) {
       // get or create primary domain entity
@@ -561,7 +562,7 @@ export namespace domain {
       if (primaryDomainEntity.domain != domain.id) {
         log.info("Primary domain already exists for resolvedAddressId {} oldDomain {} newDomain {}", [fromAccount.id, primaryDomainEntity.domain, domain.id])
         // unset isPrimary on old domain
-        let oldPrimaryDomain = getOrCreateAirDomain(new Domain(primaryDomainEntity.domain, chainId, airBlock, tokenAddress));
+        oldPrimaryDomain = getOrCreateAirDomain(new Domain(primaryDomainEntity.domain, chainId, airBlock, tokenAddress));
         oldPrimaryDomain.isPrimary = false;
         oldPrimaryDomain.lastUpdatedBlock = airBlock.id;
         oldPrimaryDomain.save();
@@ -579,6 +580,7 @@ export namespace domain {
     let txn = getOrCreateAirPrimaryDomainTransaction(
       airBlock,
       transactionHash,
+      oldPrimaryDomain,
       domain,
       from,
       chainId,
@@ -617,6 +619,7 @@ export namespace domain {
    * @dev This function gets or creates a air primary domain transaction
    * @param block air block
    * @param transactionHash transaction hash
+   * @param previousDomain previous domain or null
    * @param domain air domain
    * @param resolvedAddress domain resolved address
    * @param chainId chain id
@@ -625,6 +628,7 @@ export namespace domain {
   function getOrCreateAirPrimaryDomainTransaction(
     block: AirBlock,
     transactionHash: string,
+    previousDomain: AirDomain | null,
     domain: AirDomain,
     resolvedAddress: string,
     chainId: string,
@@ -636,6 +640,9 @@ export namespace domain {
       entity.block = block.id;
       entity.transactionHash = transactionHash;
       entity.tokenId = domain.tokenId;
+      if (previousDomain != null) {
+        entity.previousDomain = previousDomain.id;
+      }
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, block);
       let resolvedAddressAccount = getOrCreateAirAccount(chainId, resolvedAddress, block); //make sure to remove the old primary ens if changed
