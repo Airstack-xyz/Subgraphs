@@ -11,6 +11,7 @@ import { Address, BigDecimal, BigInt, Bytes, log } from "@graphprotocol/graph-ts
 import {
     batchInSingle,
     batchTransfer,
+    noPayment,
     phishing,
     safeTransferFromWithBytes,
     sample1,
@@ -279,6 +280,13 @@ describe("Describe entity assertions", () => {
 
     test("should handle Phishing case", () => {
         let sample = new AtomicMatchInput(phishing)
+        let hash = "0x337a707baaa15f3aa4004f0a2c9b5dcf38efc5c00fe162b27787409097cf20f8"
+        let blockTimeStamp = BigInt.fromString("14238192")
+        let sale = callAtomicMatch(hash, blockTimeStamp, sample)
+        assert.assertNull(sale)
+    })
+    test("should handle case without payment", () => {
+        let sample = new AtomicMatchInput(noPayment)
         let hash = "0x337a707baaa15f3aa4004f0a2c9b5dcf38efc5c00fe162b27787409097cf20f8"
         let blockTimeStamp = BigInt.fromString("14238192")
         let sale = callAtomicMatch(hash, blockTimeStamp, sample)

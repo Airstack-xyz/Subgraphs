@@ -294,8 +294,8 @@ export namespace abi {
         let dataWithoutFunctionSelector = Bytes.fromUint8Array(callData.subarray(4))
 
         if (dataWithoutFunctionSelector.equals(ByteArray.fromHexString("0x"))) {
-            log.warning("Issue with decoding", [])
-            throw new Error("")
+            log.error("Verify,Issue with decoding hash {}", [txHash])
+            return null
         }
         log.debug("hash {} functionSelector {}", [txHash, functionSelector.toString()])
         if (checkFunctionSelector(functionSelector)) {
@@ -558,7 +558,7 @@ export namespace abi {
             }
             return new Decoded_TransferFrom_Result(functionSelector, from, to, tokens)
         } else if (checkPhishing(functionSelector)) {
-            log.error("phishing case,txHash {}", [txHash])
+            log.error("Verify,phishing case,txHash {}", [txHash])
             return null
         } else {
             log.error(
