@@ -26,3 +26,9 @@ type NameRegisteredTransactionVsRegistrant @entity {
   createdAt: AirBlock!
 }
 
+type LabelhashToNameMapping @entity {
+  id: ID! #labelhash
+  name: String!
+  createdAt: String!
+}
+

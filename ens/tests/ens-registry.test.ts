@@ -531,4 +531,10 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "domain", domainId);
     assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "index", BIGINT_ONE.toString());
   })
+
+  test("ens name by hash", () => {
+    const labelHash = "0x8e60bd7bd6a2886831b6d6ef4b70051b734b9caab02b0edca7b63f8385600063";
+    let labelName = ens.nameByHash(labelHash);
+    log.info("labelName: {}", [labelName!]);
+  })
 })

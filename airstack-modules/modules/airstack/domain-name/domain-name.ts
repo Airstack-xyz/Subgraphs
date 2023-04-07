@@ -569,8 +569,8 @@ export namespace domain {
         // set new primary domain for resolved address
         primaryDomainEntity.domain = domain.id;
         primaryDomainEntity.lastUpdatedAt = airBlock.id;
-        primaryDomainEntity.save();
       }
+      primaryDomainEntity.save();
       // set isPrimary on new domain
       domain.isPrimary = true;
       domain.lastUpdatedBlock = airBlock.id;

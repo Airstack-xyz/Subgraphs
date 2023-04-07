@@ -5,7 +5,7 @@ import {
   ens,
   crypto,
 } from '@graphprotocol/graph-ts'
-import { TOKEN_ADDRESS_ENS } from "./utils";
+import { TOKEN_ADDRESS_ENS, createLabelhashToNameMapping, getNameByLabelHash } from "./utils";
 import { ZERO_ADDRESS } from '../modules/airstack/domain-name/utils';
 import * as airstack from "../modules/airstack/domain-name";
 import { checkValidLabel } from "../modules/airstack/domain-name/utils";
@@ -36,7 +36,15 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
   let label = uint256ToByteArray(event.params.id);
   log.info("handleNameRegistered: registrant {} label {} expiry {} txhash {} logIndex {}", [event.params.owner.toHexString(), label.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString(), event.logIndex.toString()]);
   let labelName = ens.nameByHash(label.toHexString());
-  if (labelName && !checkValidLabel(labelName, event.transaction.hash.toHexString())) {
+  if (labelName == null) {
+    // try to get the name from the labelhash to name mapping
+    labelName = getNameByLabelHash(label.toHexString());
+    if (labelName == null) {
+      log.info("handleNameRegistered: labelName is null from getNameByLabelHash label {} txhash {}, converting to brackets", [label.toHexString(), event.transaction.hash.toHexString()]);
+      labelName = '[' + label.toHexString().slice(2) + ']';
+    }
+  } else if (labelName && !checkValidLabel(labelName, event.transaction.hash.toHexString())) {
+    log.info("handleNameRegistered: labelName is invalid for label {} txhash {}", [label.toHexString(), event.transaction.hash.toHexString()]);
     labelName = '[' + label.toHexString().slice(2) + ']';
   }
   let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
@@ -82,6 +90,8 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
   log.info("handleNameRegisteredByControllerOld: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
   let labelName = event.params.name;
+  // create Labelhash to Name mapping
+  createLabelhashToNameMapping(event.params.label.toHexString(), labelName, event.block.number.toString());
   airstack.domain.trackNameRenewedOrRegistrationByController(
     event.block,
     event.transaction.hash.toHexString(),
@@ -104,6 +114,8 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
   log.info("handleNameRegisteredByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
   let labelName = event.params.name;
+  // create Labelhash to Name mapping
+  createLabelhashToNameMapping(event.params.label.toHexString(), labelName, event.block.number.toString());
   airstack.domain.trackNameRenewedOrRegistrationByController(
     event.block,
     event.transaction.hash.toHexString(),

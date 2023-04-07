@@ -3,6 +3,7 @@ import {
   ReverseRegistrar,
   NameRegisteredTransactionVsRegistrant,
   AirBlock,
+  LabelhashToNameMapping,
 } from "../generated/schema";
 import {
   Bytes,
@@ -98,6 +99,24 @@ export function createNameRegisteredTransactionVsRegistrant(
     entity.save();
   }
   return entity as NameRegisteredTransactionVsRegistrant;
+}
+
+export function createLabelhashToNameMapping(labelhash: string, name: string, createdAt: string): void {
+  let entity = LabelhashToNameMapping.load(labelhash);
+  if (entity == null) {
+    entity = new LabelhashToNameMapping(labelhash);
+    entity.name = name;
+    entity.createdAt = createdAt;
+    entity.save();
+  }
+}
+
+export function getNameByLabelHash(labelhash: string): string | null {
+  let entity = LabelhashToNameMapping.load(labelhash);
+  if (entity == null) {
+    return null;
+  }
+  return entity.name;
 }
 
 // specific to ens
