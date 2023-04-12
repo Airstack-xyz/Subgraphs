@@ -1,6 +1,11 @@
 specVersion: 0.0.5
 schema:
   file: ./schema.graphql
+features:
+  - grafting
+graft:
+  base: QmYHMXrruCAq733xom6Hhxp4jfKfQoFi83YDuB42jSEwyB
+  block: 16925605
 dataSources:
   - kind: ethereum
     name: EnsRegistry
@@ -154,3 +159,43 @@ dataSources:
           handler: handleNameRegisteredByControllerOld
         - event: NameRenewed(string,indexed bytes32,uint256,uint256)
           handler: handleNameRenewedByController
+  - kind: ethereum/contract
+    name: ETHRegistrarControllerNew
+    network: mainnet
+    source:
+      address: '0x253553366Da8546fC250F225fe3d25d0C782303b'
+      abi: ETHRegistrarControllerNew
+      startBlock: 16925618
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/eth-registrar.ts
+      entities:
+      abis:
+        - name: ETHRegistrarControllerNew
+          file: ./abis/ETHRegistrarControllerNew.json
+      eventHandlers:
+        - event: NameRegistered(string,indexed bytes32,indexed address,uint256,uint256,uint256)
+          handler: handleNameRegisteredByControllerNew
+        - event: NameRenewed(string,indexed bytes32,uint256,uint256)
+          handler: handleNameRenewedByController
+  - kind: ethereum/contract
+    name: ReverseRegistrarNew
+    network: mainnet
+    source:
+      abi: ReverseRegistrar
+      address: '0xa58E81fe9b61B5c3fE2AFD33CF304c454AbFc7Cb'
+      startBlock: 16925606
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/reverse-registrar.ts
+      entities:
+      abis:
+        - name: ReverseRegistrar
+          file: ./abis/ReverseRegistrar.json
+      callHandlers:
+        - function: setName(string)
+          handler: handleSetName
