@@ -19,6 +19,9 @@ import {
   NameRegistered as ControllerNameRegisteredEventOld,
 } from '../generated/EthRegistrarControllerOld/EthRegistrarControllerOld';
 import {
+  NameRegistered as ControllerNameRegisteredEventNew,
+} from '../generated/EthRegistrarControllerNew/EthRegistrarControllerNew';
+import {
   NameRegistered as ControllerNameRegisteredEvent,
   NameRenewed as ControllerNameRenewedEvent
 } from '../generated/EthRegistrarController/EthRegistrarController';
@@ -98,6 +101,30 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
     domainId,
     labelName,
     event.params.cost,
+    ZERO_ADDRESS,
+    event.params.owner.toHexString(),
+    event.params.expires,
+    true,
+    TOKEN_ADDRESS_ENS,
+  )
+}
+
+/**
+ * @dev this function maps the NameRegistered from the EthRegistrarControllerNew contract 
+ * @param event ControllerNameRegisteredEventNew from EthRegistrarControllerNew contract
+ */
+export function handleNameRegisteredByControllerNew(event: ControllerNameRegisteredEventNew): void {
+  log.info("handleNameRegisteredByControllerNew: name {} label {} baseCost {} premium {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.baseCost.toString(), event.params.premium.toString(), event.transaction.hash.toHexString()]);
+  let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
+  let labelName = event.params.name;
+  // create Labelhash to Name mapping
+  createLabelhashToNameMapping(event.params.label.toHexString(), labelName, event.block.number.toString());
+  airstack.domain.trackNameRenewedOrRegistrationByController(
+    event.block,
+    event.transaction.hash.toHexString(),
+    domainId,
+    labelName,
+    event.params.baseCost.plus(event.params.premium),
     ZERO_ADDRESS,
     event.params.owner.toHexString(),
     event.params.expires,
