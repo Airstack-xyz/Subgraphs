@@ -12,6 +12,7 @@ enum AirProtocolActionType {
   SOCIAL_PROFILE_RECOVERY_ADDRESS_CHANGE
   SOCIAL_USER_HOME_URL_CHANGE
   SOCIAL_USER_RECOVERY_ADDRESS_CHANGE
+  SOCIAL_USER_DEFAULT_PROFILE_CHANGE
 }
 
 type AirBlock @entity {
@@ -60,6 +61,7 @@ type AirSocialUser @entity {
   address: AirAccount!
   extras: [AirExtra!] #Store recovery address & home URLs
   profiles: [AirSocialProfile!] @derivedFrom(field: "user")
+  defaultProfile: AirSocialProfile # Store default Profile (Lens addition)
   createdAt: AirBlock!
   lastUpdatedAt: AirBlock!
 }
@@ -207,6 +209,22 @@ type AirSocialUserRecoveryAddressChangeTransaction implements AirTransaction @en
   index: BigInt!
   protocolType: AirProtocolType!  #SOCIAL
   protocolActionType: AirProtocolActionType!  #SOCIAL_USER_RECOVERY_ADDRESS_CHANGE
+}
+
+type AirSocialUserDefaultProfileChangeTransaction implements AirTransaction
+  @entity {
+  id: ID! #<transactionHash-logOrCallIndex-user.Id>
+  oldDefaultProfile: AirSocialProfile
+  newDefaultProfile: AirSocialProfile!
+  user: AirSocialUser!
+  from: AirAccount!
+  to: AirAccount!
+  transactionHash: String!
+  logOrCallIndex: BigInt!
+  block: AirBlock!
+  index: BigInt!
+  protocolType: AirProtocolType! #SOCIAL
+  protocolActionType: AirProtocolActionType! #SOCIAL_USER_DEFAULT_PROFILE_CHANGE
 }
 `;
 
