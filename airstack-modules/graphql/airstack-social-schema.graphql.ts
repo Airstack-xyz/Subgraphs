@@ -215,7 +215,7 @@ type AirSocialUserDefaultProfileChangeTransaction implements AirTransaction
   @entity {
   id: ID! #<transactionHash-logOrCallIndex-user.Id>
   oldDefaultProfile: AirSocialProfile
-  newDefaultProfile: AirSocialProfile!
+  newDefaultProfile: AirSocialProfile
   user: AirSocialUser!
   from: AirAccount!
   to: AirAccount!
