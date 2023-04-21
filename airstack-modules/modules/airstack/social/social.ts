@@ -1,4 +1,4 @@
-import { BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { BigInt, ethereum, log } from "@graphprotocol/graph-ts"
 import {
     AirExtra,
     AirSocialUser,
@@ -279,11 +279,16 @@ export namespace social {
             .concat(logOrCallIndex.toString())
             .concat("-")
             .concat(airSocialUser.id)
+
         let entity = AirSocialUserDefaultProfileChangeTransaction.load(id)
         if (entity == null) {
             entity = new AirSocialUserDefaultProfileChangeTransaction(id)
             entity.oldDefaultProfile = airSocialUser.defaultProfile
             entity.newDefaultProfile = newDefaultProfile != null ? newDefaultProfile.id : null
+            log.debug("changing profile {} to {}", [
+                entity.oldDefaultProfile == null ? "null" : entity.oldDefaultProfile!.toString(),
+                entity.newDefaultProfile == null ? "null" : entity.newDefaultProfile!.toString(),
+            ])
             entity.user = airSocialUser.id
             const airAccountFrom = getOrCreateAirAccount(chainId, from, block)
             airAccountFrom.save()
