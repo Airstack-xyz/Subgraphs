@@ -34,7 +34,7 @@
 ```
 ```
 3. Track profile ownership change transaction
-  trackSocialProfileOnwershipChangeTransaction(
+  trackSocialProfileOwnershipChangeTransaction(
     block: ethereum.Block,                     #ethereum block of the profile ownership change transaction
     transactionHash: string,                   #transaction hash of the profile ownership change transaction
     logOrCallIndex: BigInt,                    #log or call index - used to differentiate between multiple logs or calls in a single transaction
@@ -100,7 +100,18 @@
     renewalCost: BigInt,                       #renewal cost of the profile
   )
 ```
-
+```
+8. Track default profile set transaction
+  trackSocialUserDefaultProfileSet(
+    block: ethereum.Block,                     #ethereum block of the profile ownership change transaction
+    transactionHash: string,                   #transaction hash of the profile ownership change transaction
+    logOrCallIndex: BigInt,                    #log or call index - used to differentiate between multiple logs or calls in a single transaction
+    from: string,
+    to: string,
+    tokenId: string,                          #token id of the profile token
+    tokenAddress: string,                     #token address of profile token
+    socialUserId: string                      #address of user who's default profile is set
+  )
 ## Supporting Classes
 ```
 class AirExtraData {
