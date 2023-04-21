@@ -101,16 +101,16 @@
   )
 ```
 ```
-8. Track default profile set transaction
-  trackSocialUserDefaultProfileSet(
+8. Track default profile change transaction
+  trackSocialUserDefaultProfileChange(
     block: ethereum.Block,                     #ethereum block of the profile ownership change transaction
     transactionHash: string,                   #transaction hash of the profile ownership change transaction
     logOrCallIndex: BigInt,                    #log or call index - used to differentiate between multiple logs or calls in a single transaction
-    from: string,
-    to: string,
-    tokenId: string,                          #token id of the profile token
-    tokenAddress: string,                     #token address of profile token
-    socialUserId: string                      #address of user who's default profile is set
+    from: string,                              #intiator of the transaction
+    to: string,                                #contract address
+    tokenId: string,                           #token id of the profile token
+    tokenAddress: string,                      #token address of profile token
+    socialUserId: string                       #address of user who's default profile is set
   )
 ## Supporting Classes
 ```

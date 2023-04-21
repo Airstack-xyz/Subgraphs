@@ -14,7 +14,7 @@ import {
     AirSocialUserDefaultProfileChangeTransaction,
 } from "../../../generated/schema"
 import { getOrCreateAirAccount, getOrCreateAirBlock, getChainId, updateAirEntityCounter, getOrCreateAirToken, EMPTY_STRING } from '../common/index';
-import { zeroAddress, AirProtocolType, AirProtocolActionType, AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID, createSocialUserEntityId, createAirExtra, AIR_PROFILE_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_PROFILE_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, profileRecoveryAddress, userRecoveryAddress, AIR_USER_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_HOME_URL_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, userHomeUrl, AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_DEFAULT_PROFILE_SET_TRANSACTION_ENTITY_COUNTER } from './utils';
+import { zeroAddress, AirProtocolType, AirProtocolActionType, AIR_USER_REGISTERED_TRANSACTION_ENTITY_COUNTER_ID, createSocialUserEntityId, createAirExtra, AIR_PROFILE_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_OWNERSHIP_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_PROFILE_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, profileRecoveryAddress, userRecoveryAddress, AIR_USER_RECOVERY_ADDRESS_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_HOME_URL_CHANGE_TRANSACTION_ENTITY_COUNTER_ID, userHomeUrl, AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER_ID, AIR_USER_DEFAULT_PROFILE_CHANGE_TRANSACTION_ENTITY_COUNTER_ID } from './utils';
 
 export namespace social {
     // start of track functions
@@ -177,17 +177,17 @@ export namespace social {
         )
     }
     /**
-     * @dev this function tracks when user sets defaultProfile
+     * @dev this function tracks when user changes defaultProfile
      * @param block ethereum block
      * @param transactionHash transaction hash
      * @param logOrCallIndex log or call index
-     * @param from erc721 token sender addres
-     * @param to erc721 token receiver address
+     * @param from intiator of the transaction
+     * @param to protocol contract
      * @param tokenId erc721 token id
      * @param tokenAddress erc721 token address
      * @param socialUserId social user id (eg: farcasterId)
      */
-    export function trackSocialUserDefaultProfileSet(
+    export function trackSocialUserDefaultProfileChange(
         block: ethereum.Block,
         transactionHash: string,
         logOrCallIndex: BigInt,
@@ -205,15 +205,16 @@ export namespace social {
             block.timestamp
         )
         airBlock.save()
-        const newDefaultAirSocialProfile = getAirSocialProfile(chainId, tokenAddress, tokenId)
-        if (newDefaultAirSocialProfile == null) {
+        const newDefaultProfile = getAirSocialProfile(chainId, tokenAddress, tokenId)
+        if (newDefaultProfile == null) {
             throw new Error("air social profile not found")
         }
         const airSocialUser = getAirSocialUser(chainId, socialUserId)
         if (airSocialUser == null) {
             throw new Error("air social user not found")
         }
-        airSocialUser.defaultProfile = newDefaultAirSocialProfile.id
+        let oldDefaultProfile = airSocialUser.defaultProfile
+        airSocialUser.defaultProfile = newDefaultProfile.id
         createAirSocialUserDefaultProfileChangeTransaction(
             chainId,
             airBlock,
@@ -222,7 +223,8 @@ export namespace social {
             from,
             to,
             airSocialUser,
-            newDefaultAirSocialProfile
+            oldDefaultProfile,
+            newDefaultProfile
         )
         airSocialUser.save()
     }
@@ -232,10 +234,11 @@ export namespace social {
      * @param block air block entity
      * @param transactionHash transaction hash
      * @param logOrCallIndex log or call index
-     * @param from erc721 token sender address
-     * @param to erc721 token receiver address
+     * @param from intiator of the transaction
+     * @param to protocol contract
      * @param airSocialUser airSocialUser who's default profile changed
-     * @param newAirSocialProfile new default AirSocialProfile
+     * @param oldDefaultProfile new default AirSocialProfile
+     * @param newDefaultProfile new default AirSocialProfile
      */
     function createAirSocialUserDefaultProfileChangeTransaction(
         chainId: string,
@@ -245,7 +248,8 @@ export namespace social {
         from: string,
         to: string,
         airSocialUser: AirSocialUser,
-        newAirSocialProfile: AirSocialProfile
+        oldDefaultProfile: AirSocialProfile,
+        newDefaultProfile: AirSocialProfile
     ): void {
         const id = transactionHash
             .concat("-")
@@ -255,8 +259,8 @@ export namespace social {
         let entity = AirSocialUserDefaultProfileChangeTransaction.load(id)
         if (entity == null) {
             entity = new AirSocialUserDefaultProfileChangeTransaction(id)
-            entity.oldDefaultProfile = airSocialUser.defaultProfile
-            entity.newDefaultProfile = newAirSocialProfile.id
+            entity.oldDefaultProfile = oldDefaultProfile.id
+            entity.newDefaultProfile = newDefaultProfile.id
             entity.user = airSocialUser.id
             const airAccountFrom = getOrCreateAirAccount(chainId, from, block)
             airAccountFrom.save()
@@ -268,7 +272,7 @@ export namespace social {
             entity.logOrCallIndex = logOrCallIndex
             entity.block = block.id
             entity.index = updateAirEntityCounter(
-                AIR_USER_DEFAULT_PROFILE_SET_TRANSACTION_ENTITY_COUNTER,
+                AIR_USER_DEFAULT_PROFILE_CHANGE_TRANSACTION_ENTITY_COUNTER_ID,
                 block
             )
             entity.protocolType = AirProtocolType.SOCIAL
