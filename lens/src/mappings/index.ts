@@ -13,11 +13,9 @@ import {
 
 export function handleProfileCreated(event: ProfileCreated): void {
   let txHash = event.transaction.hash.toHexString()
-  let creator = event.params.creator
   let to = event.params.to
   let profileId = event.params.profileId
 
-  log.debug('event.block.number {}', [event.block.number.toString()])
   let userToProfileMap = UserToProfileMap.load(to.toHexString())
   if (userToProfileMap == null) {
     userToProfileMap = new UserToProfileMap(to.toHexString())
@@ -27,7 +25,6 @@ export function handleProfileCreated(event: ProfileCreated): void {
     userToProfileMap.count = BIGINT_ONE
     userToProfileMap.hashes = [txHash]
   } else {
-    log.error('one User multiple profile,txHash {}', [txHash])
     let profileArr = userToProfileMap.profile
     if (profileArr == null) {
       throw new Error('')
