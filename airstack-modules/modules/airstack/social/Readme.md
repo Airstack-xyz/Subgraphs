@@ -110,7 +110,7 @@
     to: string,                                #contract address
     tokenId: string,                           #token id of the profile token
     tokenAddress: string,                      #token address of profile token
-    socialUserId: string                       #address of user who's default profile is set
+    socialUserId: string                       #user id from respective dapp
   )
 ## Supporting Classes
 ```
