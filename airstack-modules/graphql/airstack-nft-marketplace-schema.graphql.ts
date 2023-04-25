@@ -89,8 +89,20 @@ interface AirTransaction {
   protocolActionType: AirProtocolActionType!
 }
 
+type AirNFT @entity {
+  id: ID! #AirNftTransaction(ID)-tokenAddress-TokenID
+  tokenAddress: AirToken!
+  tokenId: String!
+  tokenAmount:BigInt!
+}
+
+enum AirNFTSaleType {
+ SINGLE_ITEM_SALE
+ BUNDLE_SALE
+}
+
 type AirNftTransaction implements AirTransaction @entity {
-  id: ID!
+  id: ID!   #chainId-txHash-logOrCallIndex
   from: AirAccount!
   to: AirAccount!
   hash: String!
@@ -98,20 +110,18 @@ type AirNftTransaction implements AirTransaction @entity {
   index: BigInt!
   protocolType: AirProtocolType!
   protocolActionType: AirProtocolActionType!
-  isBundle: Boolean!
-	tokenId: BigInt! #nft
-  tokenAmount:BigInt!   #nft 
-	transactionToken: AirToken!   #nft
-	paymentToken: AirToken #payment
-  paymentAmount: BigInt #payment
+  nfts: [AirNFT!]!
+  saleType: AirNFTSaleType!
+	paymentToken: AirToken! #payment
+  paymentAmount: BigInt! #payment
   royalties: [AirNftSaleRoyalty!] @derivedFrom(field: "nftTransaction")
-  feeAmount: BigInt
-  feeBeneficiary: AirAccount
+  feeAmount: BigInt!
+  feeBeneficiary: AirAccount!
   extraData: AirExtraData
 }
 
 type AirNftSaleRoyalty @entity{
-  id: ID! #AirNftTransaction(ID) + royalty beneficiary
+  id: ID! #AirNftTransaction(ID)-royalty beneficiary-amount
   amount: BigInt!
   beneficiary: AirAccount!
   nftTransaction: AirNftTransaction!
@@ -122,6 +132,6 @@ type AirExtraData @entity {
   name: String!
   value: String!
 }
-`
+`;
 
 export default schema;
