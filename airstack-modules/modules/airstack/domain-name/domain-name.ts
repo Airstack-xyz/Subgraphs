@@ -128,6 +128,8 @@ export namespace domain {
     let newOwnerAccount = getOrCreateAirAccount(chainId, newOwnerAddress, airBlock);
     newOwnerAccount.save();
     domain.owner = newOwnerAccount.id;
+    // set primary to false when domain is transferred
+    domain.isPrimary = false;
     domain.lastUpdatedBlock = airBlock.id;
     domain.save();
     let id = createEntityId(transactionHash, block.number, logOrCallIndex);
