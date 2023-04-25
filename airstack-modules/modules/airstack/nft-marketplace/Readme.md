@@ -1,6 +1,6 @@
 # NFT_MARKET_PLACE vertical integration
 
-### After module integration for NFT_MARKET_PLACE vertical is done. Please call the below functions to track the transactions of the domain name vertical.
+### After module integration for NFT_MARKET_PLACE vertical is done. Please call the below functions to track transactions of the nft sales.
 
 ```
 1. Track NFT trade transaction
