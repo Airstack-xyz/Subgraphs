@@ -52,7 +52,8 @@ export function canMatchMakerAsk(
     } else if (StandardPolicyERC721.addresses.includes(address)) {
         return StandardPolicyERC721.canMatchMakerAsk(makerAsk, takerBid)
     } else {
-        throw new Error("")
+        log.error("unknown policy address {}", [address])
+        throw new Error("unknown policy address")
     }
 }
 
@@ -67,6 +68,7 @@ export function canMatchMakerBid(
     } else if (StandardPolicyERC721.addresses.includes(address)) {
         return StandardPolicyERC721.canMatchMakerBid(makerBid, takerAsk)
     } else {
-        throw new Error("")
+        log.error("unknown policy address {}", [address])
+        throw new Error("unknown policy address")
     }
 }
