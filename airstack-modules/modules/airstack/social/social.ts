@@ -126,10 +126,13 @@ export namespace social {
       profileExpiryTimestamp
     )
     let userProfiles = airSocialUser.profiles
+    log.debug("old userProfiles {}", [userProfiles!.toString()])
     if (userProfiles == null) {
       userProfiles = []
     }
     userProfiles.push(airSocialProfile.id)
+    log.debug("new userProfiles {}", [userProfiles!.toString()])
+
     airSocialUser.profiles = userProfiles
     airSocialUser.save()
     // create air social user registered transaction
@@ -732,8 +735,10 @@ export namespace social {
     if (extrasIds.length > 0) {
       entity.extras = extrasIds
     }
+    if (entity.profiles == null) {
+      entity.profiles = []
+    }
     entity.lastUpdatedAt = block.id
-    entity.profiles = []
     entity.save()
     return entity as AirSocialUser
   }
