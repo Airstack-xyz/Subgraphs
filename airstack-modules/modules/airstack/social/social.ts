@@ -126,12 +126,10 @@ export namespace social {
       profileExpiryTimestamp
     )
     let userProfiles = airSocialUser.profiles
-    log.debug("old userProfiles {}", [userProfiles!.toString()])
     if (userProfiles == null) {
       userProfiles = []
     }
     userProfiles.push(airSocialProfile.id)
-    log.debug("new userProfiles {}", [userProfiles!.toString()])
 
     airSocialUser.profiles = userProfiles
     airSocialUser.save()
