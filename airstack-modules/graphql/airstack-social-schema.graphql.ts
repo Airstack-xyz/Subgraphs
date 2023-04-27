@@ -60,7 +60,7 @@ type AirSocialUser @entity {
   socialUserId: String!
   address: AirAccount!
   extras: [AirExtra!] #Store recovery address & home URLs
-  profiles: [AirSocialProfile!] @derivedFrom(field: "user")
+  profiles: [AirSocialProfile!]
   defaultProfile: AirSocialProfile # Store default Profile (Lens addition)
   createdAt: AirBlock!
   lastUpdatedAt: AirBlock!
@@ -74,6 +74,7 @@ type AirSocialProfile @entity {
   renewalCost: BigInt
   tokenAddress: AirToken!
   user: AirSocialUser!
+  isDefault: Boolean!
   extras: [AirExtra!] #Store tokenUri
   createdAt: AirBlock!
   lastUpdatedAt: AirBlock!
@@ -226,6 +227,6 @@ type AirSocialUserDefaultProfileChangeTransaction implements AirTransaction
   protocolType: AirProtocolType! #SOCIAL
   protocolActionType: AirProtocolActionType! #SOCIAL_USER_DEFAULT_PROFILE_CHANGE
 }
-`;
+`
 
-export default schema;
+export default schema

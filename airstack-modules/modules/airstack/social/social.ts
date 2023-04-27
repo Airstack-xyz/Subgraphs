@@ -125,6 +125,13 @@ export namespace social {
       airSocialProfileExtraIds,
       profileExpiryTimestamp
     )
+    let userProfiles = airSocialUser.profiles
+    if (userProfiles == null) {
+      userProfiles = []
+    }
+    userProfiles.push(airSocialProfile.id)
+    airSocialUser.profiles = userProfiles
+    airSocialUser.save()
     // create air social user registered transaction
     createAirSocialUserRegisteredTransaction(
       chainId,
@@ -188,6 +195,31 @@ export namespace social {
     airSocialProfile.user = airSocialUser.id
     airSocialProfile.lastUpdatedAt = airBlock.id
     airSocialProfile.save()
+    // removing profile (tokenId) from -  from user
+    const airSocialUserOld = getAirSocialUser(chainId, from)
+    if (airSocialUserOld == null) {
+      log.debug("air social user old not found,address {} hash {}", [from, transactionHash])
+      throw new Error("air social user old not found")
+    }
+    let fromOldProfiles: string[] = []
+    for (let i = 0; i < airSocialUserOld.profiles!.length; i++) {
+      const profileId = airSocialUserOld.profiles![i]
+      if (airSocialProfile.id == profileId) {
+        continue
+      }
+      fromOldProfiles.push(profileId)
+    }
+    airSocialUserOld.profiles = fromOldProfiles
+    airSocialUserOld.save()
+
+    // adding profile (tokenid) to - to user
+    let toProfiles = airSocialUser.profiles
+    if (toProfiles == null) {
+      toProfiles = []
+    }
+    toProfiles.push(airSocialProfile.id)
+    airSocialUser.profiles = toProfiles
+    airSocialUser.save()
     createAirSocialProfileOwnershipChangeTransaction(
       chainId,
       airBlock,
@@ -233,11 +265,13 @@ export namespace social {
     if (tokenId != "") {
       newDefaultProfile = getAirSocialProfile(chainId, tokenAddress, tokenId)
       if (newDefaultProfile == null) {
+        log.error("air social profile not found,txHash {} tokenId {}", [transactionHash, tokenId])
         throw new Error("air social profile not found")
       }
     }
     const airSocialUser = getAirSocialUser(chainId, socialUserId)
     if (airSocialUser == null) {
+      log.error("air social profile not found,txHash {} tokenId {}", [transactionHash, tokenId])
       throw new Error("air social user not found")
     }
     createAirSocialUserDefaultProfileChangeTransaction(
@@ -251,6 +285,38 @@ export namespace social {
       newDefaultProfile
     )
     airSocialUser.defaultProfile = newDefaultProfile != null ? newDefaultProfile.id : null
+    // change isDefault flag
+    if (airSocialUser.profiles == null) {
+      log.error(
+        "airSocialUser without profiles not expected in trackSocialUserDefaultProfileChange,txHash {}",
+        [transactionHash]
+      )
+      throw new Error(
+        "airSocialUser without profiles not expected in trackSocialUserDefaultProfileChange"
+      )
+    }
+    for (let i = 0; i < airSocialUser.profiles!.length; i++) {
+      const profId = airSocialUser.profiles![i]
+      let profile = AirSocialProfile.load(profId)
+      if (profile == null) {
+        log.error("profile nil not expected in trackSocialUserDefaultProfileChange", [])
+        throw new Error("profile nil not expected in trackSocialUserDefaultProfileChange")
+      }
+      if (newDefaultProfile == null) {
+        // reset all isDefault flags
+        if (profile.isDefault) {
+          profile.isDefault = false
+        }
+        profile.save()
+      } else {
+        if (profId == newDefaultProfile.id) {
+          profile.isDefault = true
+        } else {
+          profile.isDefault = false
+        }
+        profile.save()
+      }
+    }
     airSocialUser.save()
   }
   /**
@@ -279,7 +345,6 @@ export namespace social {
       .concat(logOrCallIndex.toString())
       .concat("-")
       .concat(airSocialUser.id)
-
     let entity = AirSocialUserDefaultProfileChangeTransaction.load(id)
     if (entity == null) {
       entity = new AirSocialUserDefaultProfileChangeTransaction(id)
@@ -668,6 +733,7 @@ export namespace social {
       entity.extras = extrasIds
     }
     entity.lastUpdatedAt = block.id
+    entity.profiles = []
     entity.save()
     return entity as AirSocialUser
   }
@@ -705,6 +771,7 @@ export namespace social {
       entity.user = userId
       entity.tokenId = tokenId
       entity.expiryTimestamp = profileExpiryTimestamp
+      entity.isDefault = false
       const airToken = getOrCreateAirToken(chainId, tokenAddress)
       airToken.save()
       entity.tokenAddress = airToken.id
