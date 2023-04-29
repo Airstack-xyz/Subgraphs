@@ -61,6 +61,7 @@ type AirSocialUser @entity {
   extras: [AirExtra!] #Store recovery address & home URLs
   profiles: [AirSocialProfile!] @derivedFrom(field: "user")
   createdAt: AirBlock!
+  lastUpdatedIndex: BigInt!
   lastUpdatedAt: AirBlock!
 }
 
@@ -74,6 +75,7 @@ type AirSocialProfile @entity {
   user: AirSocialUser!
   extras: [AirExtra!] #Store tokenUri
   createdAt: AirBlock!
+  lastUpdatedIndex: BigInt!
   lastUpdatedAt: AirBlock!
 }
 
@@ -87,6 +89,7 @@ interface AirTransaction {
   index: BigInt!
   protocolType: AirProtocolType!  #SOCIAL
   protocolActionType: AirProtocolActionType!  #REGISTRATION
+  lastUpdatedIndex: BigInt!
 }
 
 type AirSocialUserRegisteredTransaction implements AirTransaction @entity {
@@ -107,6 +110,8 @@ type AirSocialUserRegisteredTransaction implements AirTransaction @entity {
   index: BigInt! #entity counter
   protocolType: AirProtocolType!  #SOCIAL
   protocolActionType: AirProtocolActionType!  #SOCIAL_REGISTRATION
+  lastUpdatedIndex: BigInt!
+  lastUpdatedProfileIndex: BigInt!
 }
 
 type AirSocialProfileOwnershipChangeTransaction implements AirTransaction @entity {
@@ -123,6 +128,7 @@ type AirSocialProfileOwnershipChangeTransaction implements AirTransaction @entit
   index: BigInt!
   protocolType: AirProtocolType!  #SOCIAL
   protocolActionType: AirProtocolActionType!  #SOCIAL_PROFILE_OWNERSHIP_CHANGE
+  lastUpdatedIndex: BigInt!
 }
 
 type AirSocialUserOwnershipChangeTransaction implements AirTransaction @entity {
@@ -139,6 +145,7 @@ type AirSocialUserOwnershipChangeTransaction implements AirTransaction @entity {
   index: BigInt!
   protocolType: AirProtocolType!  #SOCIAL
   protocolActionType: AirProtocolActionType!  #SOCIAL_USER_OWNERSHIP_CHANGE
+  lastUpdatedIndex: BigInt!
 }
 
 type AirSocialProfileRenewalTransaction implements AirTransaction @entity {
@@ -156,6 +163,7 @@ type AirSocialProfileRenewalTransaction implements AirTransaction @entity {
   index: BigInt!
   protocolType: AirProtocolType!  #SOCIAL
   protocolActionType: AirProtocolActionType!  #SOCIAL_PROFILE_NAME_RENEWAL
+  lastUpdatedIndex: BigInt!
 }
 
 type AirSocialProfileRecoveryAddressChangeTransaction implements AirTransaction @entity {
@@ -173,6 +181,7 @@ type AirSocialProfileRecoveryAddressChangeTransaction implements AirTransaction 
   index: BigInt!
   protocolType: AirProtocolType!  #SOCIAL
   protocolActionType: AirProtocolActionType!  #SOCIAL_PROFILE_RECOVERY_ADDRESS_CHANGE
+  lastUpdatedIndex: BigInt!
 }
 
 type AirSocialUserHomeUrlChangeTransaction implements AirTransaction @entity {
@@ -190,6 +199,7 @@ type AirSocialUserHomeUrlChangeTransaction implements AirTransaction @entity {
   index: BigInt!
   protocolType: AirProtocolType!  #SOCIAL
   protocolActionType: AirProtocolActionType!  #SOCIAL_USER_HOME_URL_CHANGE
+  lastUpdatedIndex: BigInt!
 }
 
 type AirSocialUserRecoveryAddressChangeTransaction implements AirTransaction @entity {
@@ -207,6 +217,7 @@ type AirSocialUserRecoveryAddressChangeTransaction implements AirTransaction @en
   index: BigInt!
   protocolType: AirProtocolType!  #SOCIAL
   protocolActionType: AirProtocolActionType!  #SOCIAL_USER_RECOVERY_ADDRESS_CHANGE
+  lastUpdatedIndex: BigInt!
 }
 `;
 
