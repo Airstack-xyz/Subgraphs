@@ -469,7 +469,7 @@ export namespace abi {
                     txHash,
                     openseaAmt.toString(),
                 ])
-                throw new Error("")
+                throw new Error("Enjin case tokenAmount greater than one")
             }
             log.debug("checkEnjinCase txHash {} from {} to {} tokenId {}", [
                 txHash,
@@ -565,7 +565,7 @@ export namespace abi {
                 `We dont understanding decoding {} functionSelector {} dataWithoutFunctionSelector {} callData {}`,
                 [txHash, functionSelector, dataWithoutFunctionSelector.toHex(), callData.toHex()]
             )
-            throw new Error("")
+            throw new Error("We dont understanding decoding")
         }
     }
 

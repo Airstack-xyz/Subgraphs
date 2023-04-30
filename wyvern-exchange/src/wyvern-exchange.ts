@@ -150,13 +150,13 @@ export function atomicMatch(
                 from = transfer.from
             } else if (from != transfer.from) {
                 log.error("from address change not expected,txhash {}", [txHash])
-                throw new Error("")
+                throw new Error("from address change not expected")
             }
             if (to == Address.zero()) {
                 to = transfer.to
             } else if (to != transfer.to) {
                 log.error("to address change not expected,txhash {}", [txHash])
-                throw new Error("")
+                throw new Error("to address change not expected")
             }
             if (transfer.tokens.length > 1) {
                 log.error("transferlen >1 isn't expected,txhash {}", [txHash])
@@ -200,7 +200,7 @@ export function atomicMatch(
                 to.toHexString(),
                 txHash,
             ])
-            throw new Error("")
+            throw new Error("from or to is zero address")
         }
         log.error(
             "bundle from {} to {} matchPrice {} paymentToken {} feeRecipient {} protocolFees {}",

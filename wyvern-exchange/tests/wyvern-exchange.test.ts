@@ -302,7 +302,7 @@ function checkSaledata(sale: airstack.nft.Sale, expectedSale: airstack.nft.Sale)
     assert.bigIntEquals(sale.paymentAmount, expectedSale.paymentAmount)
     assert.bigIntEquals(sale.protocolFees, expectedSale.protocolFees)
     if (expectedSale.nfts.length == 0) {
-        throw new Error("")
+        throw new Error("expectedSale.nfts.length is zero")
     }
     for (let i = 0; i < expectedSale.nfts.length; i++) {
         const nft = sale.nfts[i]
