@@ -308,15 +308,28 @@ export namespace social {
         // reset all isDefault flags
         if (profile.isDefault) {
           profile.isDefault = false
+          profile.lastUpdatedIndex = updateAirEntityCounter(
+            AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+            airBlock
+          )
+          profile.save()
         }
-        profile.save()
       } else {
         if (profId == newDefaultProfile.id) {
           profile.isDefault = true
+          profile.lastUpdatedIndex = updateAirEntityCounter(
+            AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+            airBlock
+          )
+          profile.save()
         } else {
           profile.isDefault = false
+          profile.lastUpdatedIndex = updateAirEntityCounter(
+            AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+            airBlock
+          )
+          profile.save()
         }
-        profile.save()
       }
     }
     airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
