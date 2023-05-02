@@ -276,21 +276,16 @@ export namespace social {
         throw new Error("air social profile not found")
       }
     }
+    let newDefaultProfileId = newDefaultProfile == null ? "" : newDefaultProfile.id
     const airSocialUser = getAirSocialUser(chainId, socialUserId)
     if (airSocialUser == null) {
       log.error("air social profile not found,txHash {} tokenId {}", [transactionHash, tokenId])
       throw new Error("air social user not found")
     }
-    createAirSocialUserDefaultProfileChangeTransaction(
-      chainId,
-      airBlock,
-      transactionHash,
-      logOrCallIndex,
-      from,
-      to,
-      airSocialUser,
-      newDefaultProfile
-    )
+
+    let currDefaultProfileId =
+      airSocialUser.defaultProfile != null ? airSocialUser.defaultProfile! : ""
+
     airSocialUser.defaultProfile = newDefaultProfile != null ? newDefaultProfile.id : null
     // change isDefault flag
     if (airSocialUser.profiles == null) {
@@ -329,6 +324,17 @@ export namespace social {
       airBlock
     )
     airSocialUser.save()
+    createAirSocialUserDefaultProfileChangeTransaction(
+      chainId,
+      airBlock,
+      transactionHash,
+      logOrCallIndex,
+      from,
+      to,
+      airSocialUser,
+      newDefaultProfileId,
+      currDefaultProfileId
+    )
   }
   /**
    * @dev this function creates a AirSocialUserDefaultProfileChangeTransaction entity
@@ -339,7 +345,8 @@ export namespace social {
    * @param from intiator of the transaction
    * @param to protocol contract
    * @param airSocialUser airSocialUser who's default profile changed
-   * @param newDefaultProfile new default AirSocialProfile
+   * @param newDefaultProfileId new default AirSocialProfile id
+   * @param currentDefaultProfileId current default AirSocialProfile id
    */
   function createAirSocialUserDefaultProfileChangeTransaction(
     chainId: string,
@@ -349,7 +356,8 @@ export namespace social {
     from: string,
     to: string,
     airSocialUser: AirSocialUser,
-    newDefaultProfile: AirSocialProfile | null
+    newDefaultProfileId: string,
+    currentDefaultProfileId: string
   ): void {
     const id = transactionHash
       .concat("-")
@@ -358,13 +366,25 @@ export namespace social {
       .concat(airSocialUser.id)
     let entity = AirSocialUserDefaultProfileChangeTransaction.load(id)
     if (entity == null) {
-      entity = new AirSocialUserDefaultProfileChangeTransaction(id)
-      entity.oldDefaultProfile = airSocialUser.defaultProfile
-      entity.newDefaultProfile = newDefaultProfile != null ? newDefaultProfile.id : null
-      log.debug("changing profile {} to {}", [
-        entity.oldDefaultProfile == null ? "null" : entity.oldDefaultProfile!.toString(),
-        entity.newDefaultProfile == null ? "null" : entity.newDefaultProfile!.toString(),
+      log.debug("changing default profile {} to {} of user {},txHash {}", [
+        currentDefaultProfileId,
+        newDefaultProfileId,
+        airSocialUser.address,
+        transactionHash,
       ])
+      entity = new AirSocialUserDefaultProfileChangeTransaction(id)
+      let oldDefaultProfile = AirSocialProfile.load(currentDefaultProfileId)
+      if (oldDefaultProfile == null && currentDefaultProfileId != "") {
+        log.error("currentDefaultProfileId profile missing:id {}", [currentDefaultProfileId])
+        throw new Error("currentDefaultProfileId profile missing")
+      }
+      let newDefaultProfile = AirSocialProfile.load(newDefaultProfileId)
+      if (newDefaultProfile == null && newDefaultProfileId != "") {
+        log.error("newDefaultProfileId profile missing:id {}", [newDefaultProfileId])
+        throw new Error("newDefaultProfileId profile missing")
+      }
+      entity.oldDefaultProfile = oldDefaultProfile == null ? "" : oldDefaultProfile.id
+      entity.newDefaultProfile = newDefaultProfile == null ? "" : newDefaultProfile.id
       entity.user = airSocialUser.id
       const airAccountFrom = getOrCreateAirAccount(chainId, from, block)
       airAccountFrom.save()
