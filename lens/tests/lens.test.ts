@@ -84,8 +84,13 @@ describe("Testing Lens Subgraph", () => {
     )
   })
   test("Testing minting,setting default profile,transferring & automatic unsetting", () => {
+    let profileId =
+      chainIdPrefix + LENSHUB_ADDRESS.toHexString() + joiner + profileCreated1.profileId
+    log.debug("profileId from test {}", [profileId])
     let profileCreatedEvent = getProfileCreatedEvent(profileCreated1)
     handleProfileCreated(profileCreatedEvent)
+
+    log.info("Profile created!", [])
     // checking AirSocialUser
     assert.entityCount("AirSocialUser", 1)
     assert.fieldEquals(
@@ -94,24 +99,29 @@ describe("Testing Lens Subgraph", () => {
       "address",
       chainIdPrefix + profileCreated1.to
     )
+    assert.fieldEquals("AirSocialUser", chainIdPrefix + profileCreated1.to, "lastUpdatedIndex", "1")
+
     // checking AirSocialProfile
     assert.entityCount("AirSocialProfile", 1)
-    let profile1id =
-      chainIdPrefix + LENSHUB_ADDRESS.toHexString() + joiner + profileCreated1.profileId
-    assert.fieldEquals("AirSocialProfile", profile1id, "name", profileCreated1.handle)
-    assert.fieldEquals("AirSocialProfile", profile1id, "user", chainIdPrefix + profileCreated1.to)
-    assert.fieldEquals("AirSocialProfile", profile1id, "tokenId", profileCreated1.profileId)
+
+    assert.fieldEquals("AirSocialProfile", profileId, "name", profileCreated1.handle)
+    assert.fieldEquals("AirSocialProfile", profileId, "user", chainIdPrefix + profileCreated1.to)
+    assert.fieldEquals("AirSocialProfile", profileId, "tokenId", profileCreated1.profileId)
     assert.fieldEquals(
       "AirSocialProfile",
-      profile1id,
+      profileId,
       "tokenAddress",
       chainIdPrefix + LENSHUB_ADDRESS.toHexString()
     )
-    assert.fieldEquals("AirSocialProfile", profile1id, "isDefault", "false")
-    assert.fieldEquals("AirSocialProfile", profile1id, "user", chainIdPrefix + profileCreated1.to)
+    assert.fieldEquals("AirSocialProfile", profileId, "isDefault", "false")
+    assert.fieldEquals("AirSocialProfile", profileId, "lastUpdatedIndex", "1")
+    assert.fieldEquals("AirSocialProfile", profileId, "user", chainIdPrefix + profileCreated1.to)
+    log.info("setting defaultProfile", [])
 
     let defaultProfileSetEvent = getDefaultProfileSet(setDefault2)
     handleDefaultProfileSet(defaultProfileSetEvent)
+    assert.fieldEquals("AirSocialProfile", profileId, "lastUpdatedIndex", "2")
+
     // checking DefaultProfileSetEntity
     let defaultProfileSetId = setDefault2.txHash
       .concat("-")
@@ -120,6 +130,7 @@ describe("Testing Lens Subgraph", () => {
     assert.fieldEquals("DefaultProfileSet", defaultProfileSetId, "wallet", setDefault2.wallet)
     assert.fieldEquals("DefaultProfileSet", defaultProfileSetId, "hash", setDefault2.txHash)
     assert.fieldEquals("DefaultProfileSet", defaultProfileSetId, "profileId", setDefault2.profileId)
+
     // checking UserToDefaultProfileIdMap
     assert.entityCount("UserToDefaultProfileIdMap", 1)
     assert.fieldEquals(
@@ -135,8 +146,10 @@ describe("Testing Lens Subgraph", () => {
       "defaultProfile",
       chainIdPrefix + LENSHUB_ADDRESS.toHexString() + joiner + setDefault2.profileId
     )
+
     // checking isDefault in AirSocialProfile
-    assert.fieldEquals("AirSocialProfile", profile1id, "isDefault", "true")
+    assert.fieldEquals("AirSocialProfile", profileId, "isDefault", "true")
+    assert.fieldEquals("AirSocialProfile", profileId, "lastUpdatedIndex", "2")
     // checking AirSocialUserDefaultProfileChangeTransaction
     assert.fieldEquals(
       "AirSocialUserDefaultProfileChangeTransaction",
@@ -148,10 +161,15 @@ describe("Testing Lens Subgraph", () => {
       "AirSocialUserDefaultProfileChangeTransaction",
       setDefault2.txHash + joiner + chainIdPrefix + chainIdPrefix + profileCreated1.to,
       "newDefaultProfile",
-      chainIdPrefix + LENSHUB_ADDRESS.toHexString() + joiner + setDefault2.profileId
+      profileId
     )
+    log.info("transferring", [])
+
     let transferEvent = getTransferEvent(transfer3)
     handleTransfer(transferEvent)
+
+    assert.fieldEquals("AirSocialProfile", profileId, "lastUpdatedIndex", "4")
+
     // checking defaultProfile in AirSocialUser (cleared to null)
     assert.fieldEquals(
       "AirSocialUser",
@@ -159,15 +177,17 @@ describe("Testing Lens Subgraph", () => {
       "defaultProfile",
       "null"
     )
+    // check ownerOf old profile
+    assert.fieldEquals("AirSocialProfile", profileId, "user", chainIdPrefix + transfer3.to)
+
     // checking isDefault in AirSocialProfile
-    assert.fieldEquals("AirSocialProfile", profile1id, "isDefault", "false")
-    assert.fieldEquals("AirSocialProfile", profile1id, "user", chainIdPrefix + transfer3.to)
+    assert.fieldEquals("AirSocialProfile", profileId, "isDefault", "false")
     // checking AirSocialUserDefaultProfileChangeTransaction
     assert.fieldEquals(
       "AirSocialUserDefaultProfileChangeTransaction",
       transfer3.txHash + joiner + chainIdPrefix + chainIdPrefix + profileCreated1.to,
       "oldDefaultProfile",
-      chainIdPrefix + LENSHUB_ADDRESS.toHexString() + joiner + setDefault2.profileId
+      profileId
     )
     assert.fieldEquals(
       "AirSocialUserDefaultProfileChangeTransaction",
@@ -188,8 +208,10 @@ describe("Testing Lens Subgraph", () => {
       "profiles",
       `[${chainIdPrefix + LENSHUB_ADDRESS.toHexString() + joiner + minting.profileId}]`
     )
+    assert.fieldEquals("AirSocialUser", mintedUserId, "lastUpdatedIndex", "1")
     // --- profile owner
     assert.fieldEquals("AirSocialProfile", profileId, "user", chainIdPrefix + minting.to)
+    assert.fieldEquals("AirSocialProfile", profileId, "lastUpdatedIndex", "1")
 
     // transferring
     let transferringEvent = getTransferEvent(transferring)
@@ -199,6 +221,7 @@ describe("Testing Lens Subgraph", () => {
     assert.fieldEquals("AirSocialProfile", profileId, "user", chainIdPrefix + transferring.to)
     // --- profile default status
     assert.fieldEquals("AirSocialProfile", profileId, "isDefault", "false")
+    assert.fieldEquals("AirSocialProfile", profileId, "lastUpdatedIndex", "2")
 
     // --- profiles of minted user
     assert.fieldEquals("AirSocialUser", mintedUserId, "profiles", `[]`)
@@ -212,7 +235,7 @@ describe("Testing Lens Subgraph", () => {
       "profiles",
       `[${chainIdPrefix + LENSHUB_ADDRESS.toHexString() + joiner + transferring.tokenId}]`
     )
-    // --- checking default profile of user before setting
+    assert.fieldEquals("AirSocialUser", transferredToUserId, "lastUpdatedIndex", "2")
     // setting default
     let setDetaultEvent = getDefaultProfileSet(settingDefault)
     handleDefaultProfileSet(setDetaultEvent)
@@ -223,6 +246,7 @@ describe("Testing Lens Subgraph", () => {
       "defaultProfile",
       chainIdPrefix + LENSHUB_ADDRESS.toHexString() + joiner + minting.profileId
     )
+    assert.fieldEquals("AirSocialUser", transferredToUserId, "lastUpdatedIndex", "3")
     //  -- checking default status
     assert.fieldEquals("AirSocialProfile", profileId, "isDefault", "true")
 
