@@ -37,6 +37,8 @@ import {
   AIR_USER_HOME_URL_CHANGE_TRANSACTION_ENTITY_COUNTER_ID,
   userHomeUrl,
   AIR_PROFILE_NAME_RENEWAL_TRANSACTION_ENTITY_COUNTER_ID,
+  AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+  AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
   AIR_USER_DEFAULT_PROFILE_CHANGE_TRANSACTION_ENTITY_COUNTER_ID,
 } from "./utils"
 
@@ -140,8 +142,8 @@ export namespace social {
       transactionHash,
       logOrCallIndex,
       to,
-      airSocialUser.id,
-      airSocialProfile.id,
+      airSocialUser,
+      airSocialProfile,
       profileName,
       from,
       to,
@@ -194,6 +196,10 @@ export namespace social {
       new Array<string>()
     )
     airSocialProfile.user = airSocialUser.id
+    airSocialProfile.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
     airSocialProfile.lastUpdatedAt = airBlock.id
     airSocialProfile.save()
     // removing profile (tokenId) from -  from user
@@ -318,6 +324,10 @@ export namespace social {
         profile.save()
       }
     }
+    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
     airSocialUser.save()
   }
   /**
@@ -371,6 +381,7 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_DEFAULT_PROFILE_CHANGE
+      entity.lastUpdatedIndex = airSocialUser.lastUpdatedIndex
       entity.save()
     }
   }
@@ -412,6 +423,10 @@ export namespace social {
     airAccountTo.save()
     airSocialUser.address = airAccountTo.id
     airSocialUser.lastUpdatedAt = airBlock.id
+    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
     airSocialUser.save()
     createAirSocialUserOnwershipChangeTransaction(
       chainId,
@@ -486,8 +501,12 @@ export namespace social {
       }
       airSocialProfile.extras = airExtras
       airSocialProfile.lastUpdatedAt = airBlock.id
-      airSocialProfile.save()
     }
+    airSocialProfile.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
+    airSocialProfile.save()
     createAirSocialProfileRecoveryAddressChangeTransaction(
       chainId,
       airBlock,
@@ -559,8 +578,12 @@ export namespace social {
       }
       airSocialUser.extras = airExtras
       airSocialUser.lastUpdatedAt = airBlock.id
-      airSocialUser.save()
     }
+    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
+    airSocialUser.save()
     createAirSocialUserRecoveryAddressChangeTransaction(
       chainId,
       airBlock,
@@ -632,8 +655,12 @@ export namespace social {
       }
       airSocialUser.extras = airExtras
       airSocialUser.lastUpdatedAt = airBlock.id
-      airSocialUser.save()
     }
+    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
+    airSocialUser.save()
     createAirSocialUserHomeUrlChangeTransaction(
       chainId,
       airBlock,
@@ -687,6 +714,10 @@ export namespace social {
     airSocialProfile.expiryTimestamp = expiryTimestamp
     airSocialProfile.renewalCost = renewalCost
     airSocialProfile.lastUpdatedAt = airBlock.id
+    airSocialProfile.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
     airSocialProfile.save()
     createAirSocialProfileRenewalTransaction(
       chainId,
@@ -736,6 +767,10 @@ export namespace social {
     if (entity.profiles == null) {
       entity.profiles = []
     }
+    entity.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      block
+    )
     entity.lastUpdatedAt = block.id
     entity.save()
     return entity as AirSocialUser
@@ -781,6 +816,10 @@ export namespace social {
       if (extraIds.length > 0) {
         entity.extras = extraIds
       }
+      entity.lastUpdatedIndex = updateAirEntityCounter(
+        AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+        block
+      )
       entity.createdAt = block.id
       entity.lastUpdatedAt = block.id
     }
@@ -826,8 +865,8 @@ export namespace social {
    * @param transactionHash transaction hash
    * @param logOrCallIndex log or call index
    * @param address user address (owner of the socialUserId)
-   * @param userId air social user entity id
-   * @param profileId air social profile entity id
+   * @param socialUser air social user entity
+   * @param socialProfile air social profile entity
    * @param name air social profile name
    * @param from address from which user token was sent
    * @param to address to which user token was sent
@@ -843,8 +882,8 @@ export namespace social {
     transactionHash: string,
     logOrCallIndex: BigInt,
     address: string,
-    userId: string,
-    profileId: string,
+    socialUser: AirSocialUser,
+    socialProfile: AirSocialProfile,
     name: string,
     from: string,
     to: string,
@@ -854,6 +893,8 @@ export namespace social {
     profileExtraIds: string[],
     profileExpiryTimestamp: BigInt
   ): void {
+    const userId = socialUser.id
+    const profileId = socialProfile.id
     const id = userId
       .concat("-")
       .concat(transactionHash)
@@ -893,6 +934,8 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_REGISTRATION
+      entity.lastUpdatedIndex = socialUser.lastUpdatedIndex
+      entity.lastUpdatedProfileIndex = socialProfile.lastUpdatedIndex
       entity.save()
     }
   }
@@ -949,6 +992,7 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_PROFILE_OWNERSHIP_CHANGE
+      entity.lastUpdatedIndex = airSocialProfile.lastUpdatedIndex
       entity.save()
     }
   }
@@ -1005,6 +1049,7 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_OWNERSHIP_CHANGE
+      entity.lastUpdatedIndex = airSocialUser.lastUpdatedIndex
       entity.save()
     }
   }
@@ -1076,6 +1121,7 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_PROFILE_RECOVERY_ADDRESS_CHANGE
+      entity.lastUpdatedIndex = airSocialProfile.lastUpdatedIndex
       entity.save()
     }
   }
@@ -1147,6 +1193,7 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_RECOVERY_ADDRESS_CHANGE
+      entity.lastUpdatedIndex = airSocialUser.lastUpdatedIndex
       entity.save()
     }
   }
@@ -1208,6 +1255,7 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_HOME_URL_CHANGE
+      entity.lastUpdatedIndex = airSocialUser.lastUpdatedIndex
       entity.save()
     }
   }
@@ -1269,6 +1317,7 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_PROFILE_NAME_RENEWAL
+      entity.lastUpdatedIndex = airSocialProfile.lastUpdatedIndex
       entity.save()
     }
   }
