@@ -39,7 +39,7 @@ export function handleOrdersMatched(event: OrdersMatched): void {
         orderDetails.price,
         event.params.sell.paymentToken,
         BIG_INT_ZERO,
-        Address.zero(),
+        Address.zero(), // no protocolFees in Blur
         royalties
     )
     airstack.nft.trackNFTSaleTransactions(
