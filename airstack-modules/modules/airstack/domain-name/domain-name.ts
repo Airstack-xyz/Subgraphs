@@ -25,7 +25,7 @@ import {
   PrimaryDomain,
   AirExtra,
 } from "../../../generated/schema";
-import { createAirExtra, AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ZERO_ADDRESS, ETHEREUM_MAINNET_ID, checkValidLabel } from "./utils";
+import { createAirExtra, AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ZERO_ADDRESS, ETHEREUM_MAINNET_ID, checkValidLabel, AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID } from "./utils";
 import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, getChainId, updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount, getOrCreateAirToken } from "../common";
 
 export namespace domain {
@@ -70,6 +70,7 @@ export namespace domain {
     if (domain.parent == null) {
       parentDomain.subdomainCount = parentDomain.subdomainCount.plus(BIGINT_ONE);
       parentDomain.lastUpdatedBlock = airBlock.id;
+      parentDomain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
     }
     domain.name = name;
     domain.labelName = labelName;
@@ -80,6 +81,7 @@ export namespace domain {
     domain.labelHash = labelHash;
     domain.tokenId = tokenId;
     domain.lastUpdatedBlock = airBlock.id;
+    domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
     parentDomain.save();
     domain.save();
     recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
@@ -131,6 +133,7 @@ export namespace domain {
     // set primary to false when domain is transferred
     domain.isPrimary = false;
     domain.lastUpdatedBlock = airBlock.id;
+    domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
     domain.save();
     let id = createEntityId(transactionHash, block.number, logOrCallIndex);
     let entity = AirDomainTransferTransaction.load(id);
@@ -143,6 +146,7 @@ export namespace domain {
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, airBlock);
+      entity.lastUpdatedIndex = domain.lastUpdatedIndex;
       entity.save();
     }
   }
@@ -183,6 +187,7 @@ export namespace domain {
     }
     // do recursive subdomain count decrement
     domain.lastUpdatedBlock = airBlock.id;
+    domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
     domain.save();
     recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
 
@@ -247,6 +252,7 @@ export namespace domain {
     }
     domain.extras = extrasArray;
     domain.lastUpdatedBlock = airBlock.id;
+    domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
     domain.save();
     // create AirDomainNewTTLTransaction
     let txn = getOrCreateAirDomainNewTTLTransaction(
@@ -307,6 +313,7 @@ export namespace domain {
     let airToken = getOrCreateAirToken(chainId, paymentToken);
     airToken.save();
     domain.paymentToken = airToken.id;
+    domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
     domain.save();
     // create name registered transaction
     let txn = getOrCreateAirNameRegisteredTransaction(
@@ -354,6 +361,7 @@ export namespace domain {
     ));
     domain.expiryTimestamp = expiryTimestamp;
     domain.lastUpdatedBlock = airBlock.id;
+    domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
     domain.save();
     // create name renewed transaction
     let txn = getOrCreateAirNameRenewedTransaction(
@@ -403,6 +411,7 @@ export namespace domain {
       airBlock,
       tokenAddress,
     ));
+    domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
     // tracking registration cost in domain entity  - renewal cost is not being tracked yet
     if (fromRegistrationEvent) {
       domain.registrationCost = cost;
@@ -487,6 +496,7 @@ export namespace domain {
     if (domain.resolver == resolver.id) {
       domain.resolvedAddress = addrAccount.id;
       domain.lastUpdatedBlock = airBlock.id;
+      domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
       domain.save();
       let txn = getOrCreateAirResolvedAddressChanged(
         chainId,
@@ -524,6 +534,7 @@ export namespace domain {
     if (domain && domain.resolver == resolver.id) {
       domain.resolvedAddress = null
       domain.lastUpdatedBlock = airBlock.id;
+      domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
       domain.save();
     }
   }
@@ -567,6 +578,7 @@ export namespace domain {
         oldPrimaryDomain = getOrCreateAirDomain(new Domain(primaryDomainEntity.domain, chainId, airBlock, tokenAddress));
         oldPrimaryDomain.isPrimary = false;
         oldPrimaryDomain.lastUpdatedBlock = airBlock.id;
+        oldPrimaryDomain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
         oldPrimaryDomain.save();
         // set new primary domain for resolved address
         primaryDomainEntity.domain = domain.id;
@@ -576,6 +588,7 @@ export namespace domain {
       // set isPrimary on new domain
       domain.isPrimary = true;
       domain.lastUpdatedBlock = airBlock.id;
+      domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
       domain.save();
     }
     // record a set primary domain transaction with new domain
@@ -647,6 +660,7 @@ export namespace domain {
       }
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, block);
+      entity.lastUpdatedIndex = domain.lastUpdatedIndex;
       let resolvedAddressAccount = getOrCreateAirAccount(chainId, resolvedAddress, block); //make sure to remove the old primary ens if changed
       resolvedAddressAccount.save();
       entity.resolvedAddress = resolvedAddressAccount.id;
@@ -691,6 +705,7 @@ export namespace domain {
       entity.domain = domain.id;
       entity.tokenId = domain.tokenId;
       entity.index = updateAirEntityCounter(AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, block);
+      entity.lastUpdatedIndex = domain.lastUpdatedIndex;
     }
     return entity as AirResolvedAddressChanged;
   }
@@ -749,6 +764,7 @@ export namespace domain {
       entity.domain = domain.id;
       entity.cost = cost;
       entity.index = updateAirEntityCounter(AIR_NAME_RENEWED_ENTITY_COUNTER_ID, block);
+      entity.lastUpdatedIndex = domain.lastUpdatedIndex;
       let airToken = getOrCreateAirToken(chainId, paymentToken);
       airToken.save();
       entity.paymentToken = airToken.id;
@@ -797,6 +813,7 @@ export namespace domain {
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, block);
+      entity.lastUpdatedIndex = domain.lastUpdatedIndex;
       let airToken = getOrCreateAirToken(chainId, paymentToken);
       airToken.save();
       entity.paymentToken = airToken.id;
@@ -877,6 +894,7 @@ export namespace domain {
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, block);
+      entity.lastUpdatedIndex = domain.lastUpdatedIndex;
     }
     return entity as AirDomainNewTTLTransaction;
   }
@@ -911,6 +929,7 @@ export namespace domain {
       entity.tokenId = domain.tokenId;
       entity.domain = domain.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, block);
+      entity.lastUpdatedIndex = domain.lastUpdatedIndex;
     }
     return entity as AirDomainNewResolverTransaction;
   }
@@ -957,7 +976,7 @@ export namespace domain {
    * @param domain Domain class object
    * @returns AirDomain entity
    */
-  function getOrCreateAirDomain(
+  export function getOrCreateAirDomain(
     domain: Domain,
   ): AirDomain {
     let entity = AirDomain.load(domain.id);
@@ -1026,6 +1045,7 @@ export namespace domain {
       entity.domain = domain.id;
       entity.block = block.id;
       entity.index = updateAirEntityCounter(AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, block);
+      entity.lastUpdatedIndex = domain.lastUpdatedIndex;
     }
     return entity as AirDomainOwnerChangedTransaction;
   }

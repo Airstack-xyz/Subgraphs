@@ -60,6 +60,7 @@ type AirDomain @entity {
   createdAt: AirBlock!
 	lastUpdatedBlock: AirBlock #- NA
   extras: [AirExtra!]
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainTransferTransaction implements AirDomainEvent @entity {
@@ -71,6 +72,7 @@ type AirDomainTransferTransaction implements AirDomainEvent @entity {
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainOwnerChangedTransaction implements AirDomainEvent @entity {
@@ -82,6 +84,7 @@ type AirDomainOwnerChangedTransaction implements AirDomainEvent @entity {
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainNewResolverTransaction implements AirDomainEvent @entity {
@@ -93,6 +96,7 @@ type AirDomainNewResolverTransaction implements AirDomainEvent @entity {
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainNewTTLTransaction implements AirDomainEvent @entity {
@@ -104,6 +108,7 @@ type AirDomainNewTTLTransaction implements AirDomainEvent @entity {
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
+  lastUpdatedIndex: BigInt!
 }
 
 type AirResolver @entity {
@@ -123,6 +128,7 @@ type AirResolvedAddressChanged implements AirDomainEvent @entity {
   tokenId: String # dec(labelhash) - NA
   domain: AirDomain!
   index: BigInt! # - NA
+  lastUpdatedIndex: BigInt!
 }
 
 interface AirDomainEvent {
@@ -131,6 +137,7 @@ interface AirDomainEvent {
   tokenId: String # dec(labelhash) - NA
   domain: AirDomain!
   index: BigInt! # - NA
+  lastUpdatedIndex: BigInt!
 }
 
 interface AirDomainRegistrationEvent  {
@@ -146,6 +153,7 @@ type AirNameRegisteredTransaction implements AirDomainEvent & AirDomainRegistrat
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
+  lastUpdatedIndex: BigInt!
   cost: BigInt
   paymentToken: AirToken
   registrant: AirAccount!
@@ -159,6 +167,7 @@ type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration
   tokenId: String # dec(labelhash)  # - NA
   domain: AirDomain!
   index: BigInt! # - NA
+  lastUpdatedIndex: BigInt!
   cost: BigInt
   paymentToken: AirToken
   renewer: AirAccount!
@@ -173,6 +182,7 @@ type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   tokenId: String # dec(labelhash) # - NA
   domain: AirDomain! # - name
   index: BigInt! # - NA
+  lastUpdatedIndex: BigInt!
   resolvedAddress: AirAccount! #make sure to remove the old primary ens if changed
 }
 `

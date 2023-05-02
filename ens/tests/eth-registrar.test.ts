@@ -57,6 +57,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
     assert.fieldEquals("AirDomain", domainId, "paymentToken", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
     // AirNameRegisteredTransaction
     let nameRegisteredId = domainId.concat("-").concat(event.transaction.hash.toHexString());
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "paymentToken", airTokenId);
@@ -106,6 +107,7 @@ describe("Unit tests for eth registrar handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
     // AirNameRenewedTransaction
     let nameRenewedId = event.transaction.hash.toHexString().concat("-").concat(domainId);
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "paymentToken", airTokenId);
@@ -138,6 +140,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
     // ReverseRegistrar
     let domain = AirDomain.load(domainId)!;
     assert.fieldEquals("ReverseRegistrar", reverseRegistrarId, "id", crypto.keccak256(Bytes.fromUTF8(event.params.name.concat(".eth"))).toHexString());
@@ -165,6 +168,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
     // ReverseRegistrar
     let domain = AirDomain.load(domainId)!;
     assert.fieldEquals("ReverseRegistrar", reverseRegistrarId, "id", crypto.keccak256(Bytes.fromUTF8(event.params.name.concat(".eth"))).toHexString());
@@ -207,6 +211,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);
     assert.fieldEquals("AirDomain", domainId, "name", event.params.name.concat(".eth"));
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
     // AirNameRenewedTransaction
     let nameRenewedId = event.transaction.hash.toHexString().concat("-").concat(domainId);
     assert.fieldEquals("AirNameRenewedTransaction", nameRenewedId, "block", blockId);
@@ -264,5 +269,6 @@ describe("Unit tests for eth registrar handlers", () => {
     // AirNameRegisteredTransaction
     let nameRegisteredId = domainId.concat("-").concat(event.transaction.hash.toHexString());
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "registrant", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.to.toHexString()));
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
   })
 })
