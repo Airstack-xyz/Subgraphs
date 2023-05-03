@@ -442,6 +442,7 @@ describe("Mapping unit tests", () => {
     airSocialProfile.lastUpdatedIndex = BigInt.fromString("1");
     airSocialProfile.createdAt = "1-10098200";
     airSocialProfile.lastUpdatedAt = "1-10098200";
+    airSocialProfile.isDefault = false;
     airSocialProfile.save();
     // assert here for air social profile
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
@@ -480,6 +481,7 @@ describe("Mapping unit tests", () => {
     airSocialProfile.lastUpdatedIndex = BigInt.fromString("1");
     airSocialProfile.createdAt = "1-10098200";
     airSocialProfile.lastUpdatedAt = "1-10098200";
+    airSocialProfile.isDefault = false;
     airSocialProfile.save();
     // assert here for air social profile
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
@@ -586,6 +588,7 @@ describe("Mapping unit tests", () => {
     airSocialProfile.lastUpdatedIndex = BigInt.fromString("1");
     airSocialProfile.createdAt = "1-10098200";
     airSocialProfile.lastUpdatedAt = "1-10098200";
+    airSocialProfile.isDefault = false;
     airSocialProfile.save();
     // assert here for air social user
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");

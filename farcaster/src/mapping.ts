@@ -28,7 +28,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
   // check if event is a transfer txn, then update the user for the profile
   if (fromAdress.toHexString() != zeroAddress.toHexString()) {
     // track profile ownership change, not user registration
-    airstack.social.trackSocialProfileOnwershipChangeTransaction(
+    airstack.social.trackSocialProfileOwnershipChangeTransaction(
       event.block,
       event.transaction.hash.toHexString(),
       event.transaction.index,
