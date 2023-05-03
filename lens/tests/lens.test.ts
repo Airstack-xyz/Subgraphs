@@ -235,7 +235,8 @@ describe("Testing Lens Subgraph", () => {
       "profiles",
       `[${chainIdPrefix + LENSHUB_ADDRESS.toHexString() + joiner + transferring.tokenId}]`
     )
-    assert.fieldEquals("AirSocialUser", transferredToUserId, "lastUpdatedIndex", "2")
+    assert.fieldEquals("AirSocialUser", mintedUserId, "lastUpdatedIndex", "3")
+    assert.fieldEquals("AirSocialUser", transferredToUserId, "lastUpdatedIndex", "4")
     // setting default
     let setDetaultEvent = getDefaultProfileSet(settingDefault)
     handleDefaultProfileSet(setDetaultEvent)
@@ -246,7 +247,7 @@ describe("Testing Lens Subgraph", () => {
       "defaultProfile",
       chainIdPrefix + LENSHUB_ADDRESS.toHexString() + joiner + minting.profileId
     )
-    assert.fieldEquals("AirSocialUser", transferredToUserId, "lastUpdatedIndex", "3")
+    assert.fieldEquals("AirSocialUser", transferredToUserId, "lastUpdatedIndex", "5")
     //  -- checking default status
     assert.fieldEquals("AirSocialProfile", profileId, "isDefault", "true")
 
@@ -260,6 +261,10 @@ describe("Testing Lens Subgraph", () => {
     assert.fieldEquals("AirSocialProfile", profileId, "user", transferringAgainUserId)
     // -- checking profiles of current user
     assert.fieldEquals("AirSocialUser", transferringAgainUserId, "profiles", `[${profileId}]`)
+    // lastUpdatedIndex 6 during reseting defaultProfile
+    // lastUpdatedIndex 7 creates user transferringAgainUserId
+    assert.fieldEquals("AirSocialUser", transferredToUserId, "lastUpdatedIndex", "8")
+    assert.fieldEquals("AirSocialUser", transferringAgainUserId, "lastUpdatedIndex", "9")
 
     // -- checking profiles of old user
     assert.fieldEquals("AirSocialUser", transferredToUserId, "profiles", `[]`)
