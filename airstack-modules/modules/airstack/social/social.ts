@@ -217,6 +217,10 @@ export namespace social {
       fromOldProfiles.push(profileId)
     }
     airSocialUserOld.profiles = fromOldProfiles
+    airSocialUserOld.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
     airSocialUserOld.save()
 
     // adding profile (tokenid) to - to user
@@ -226,6 +230,10 @@ export namespace social {
     }
     toProfiles.push(airSocialProfile.id)
     airSocialUser.profiles = toProfiles
+    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
     airSocialUser.save()
     createAirSocialProfileOwnershipChangeTransaction(
       chainId,
