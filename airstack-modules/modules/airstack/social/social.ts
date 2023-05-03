@@ -196,12 +196,8 @@ export namespace social {
       new Array<string>()
     )
     airSocialProfile.user = airSocialUser.id
-    airSocialProfile.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-      airBlock
-    )
     airSocialProfile.lastUpdatedAt = airBlock.id
-    airSocialProfile.save()
+    saveAirSocialProfile(airSocialProfile, airBlock)
     // removing profile (tokenId) from -  from user
     const airSocialUserOld = getAirSocialUser(chainId, from)
     if (airSocialUserOld == null) {
@@ -217,11 +213,7 @@ export namespace social {
       fromOldProfiles.push(profileId)
     }
     airSocialUserOld.profiles = fromOldProfiles
-    airSocialUserOld.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-      airBlock
-    )
-    airSocialUserOld.save()
+    saveAirSocialUser(airSocialUserOld, airBlock)
 
     // adding profile (tokenid) to - to user
     let toProfiles = airSocialUser.profiles
@@ -230,11 +222,7 @@ export namespace social {
     }
     toProfiles.push(airSocialProfile.id)
     airSocialUser.profiles = toProfiles
-    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-      airBlock
-    )
-    airSocialUser.save()
+    saveAirSocialUser(airSocialUser, airBlock)
     createAirSocialProfileOwnershipChangeTransaction(
       chainId,
       airBlock,
@@ -312,39 +300,15 @@ export namespace social {
         log.error("profile nil not expected in trackSocialUserDefaultProfileChange", [])
         throw new Error("profile nil not expected in trackSocialUserDefaultProfileChange")
       }
-      if (newDefaultProfile == null) {
-        // reset all isDefault flags
-        if (profile.isDefault) {
-          profile.isDefault = false
-          profile.lastUpdatedIndex = updateAirEntityCounter(
-            AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-            airBlock
-          )
-          profile.save()
-        }
-      } else {
-        if (profId == newDefaultProfile.id) {
-          profile.isDefault = true
-          profile.lastUpdatedIndex = updateAirEntityCounter(
-            AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-            airBlock
-          )
-          profile.save()
-        } else {
-          profile.isDefault = false
-          profile.lastUpdatedIndex = updateAirEntityCounter(
-            AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-            airBlock
-          )
-          profile.save()
-        }
+      if (newDefaultProfile != null && profId == newDefaultProfile.id) {
+        profile.isDefault = true
+        saveAirSocialProfile(profile, airBlock)
+      } else if (profile.isDefault) {
+        profile.isDefault = false
+        saveAirSocialProfile(profile, airBlock)
       }
     }
-    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-      airBlock
-    )
-    airSocialUser.save()
+    saveAirSocialUser(airSocialUser, airBlock)
     createAirSocialUserDefaultProfileChangeTransaction(
       chainId,
       airBlock,
@@ -464,11 +428,7 @@ export namespace social {
     airAccountTo.save()
     airSocialUser.address = airAccountTo.id
     airSocialUser.lastUpdatedAt = airBlock.id
-    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-      airBlock
-    )
-    airSocialUser.save()
+    saveAirSocialUser(airSocialUser, airBlock)
     createAirSocialUserOnwershipChangeTransaction(
       chainId,
       airBlock,
@@ -543,11 +503,7 @@ export namespace social {
       airSocialProfile.extras = airExtras
       airSocialProfile.lastUpdatedAt = airBlock.id
     }
-    airSocialProfile.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-      airBlock
-    )
-    airSocialProfile.save()
+    saveAirSocialProfile(airSocialProfile, airBlock)
     createAirSocialProfileRecoveryAddressChangeTransaction(
       chainId,
       airBlock,
@@ -620,11 +576,7 @@ export namespace social {
       airSocialUser.extras = airExtras
       airSocialUser.lastUpdatedAt = airBlock.id
     }
-    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-      airBlock
-    )
-    airSocialUser.save()
+    saveAirSocialUser(airSocialUser, airBlock)
     createAirSocialUserRecoveryAddressChangeTransaction(
       chainId,
       airBlock,
@@ -697,11 +649,7 @@ export namespace social {
       airSocialUser.extras = airExtras
       airSocialUser.lastUpdatedAt = airBlock.id
     }
-    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-      airBlock
-    )
-    airSocialUser.save()
+    saveAirSocialUser(airSocialUser, airBlock)
     createAirSocialUserHomeUrlChangeTransaction(
       chainId,
       airBlock,
@@ -755,11 +703,7 @@ export namespace social {
     airSocialProfile.expiryTimestamp = expiryTimestamp
     airSocialProfile.renewalCost = renewalCost
     airSocialProfile.lastUpdatedAt = airBlock.id
-    airSocialProfile.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
-      airBlock
-    )
-    airSocialProfile.save()
+    saveAirSocialProfile(airSocialProfile, airBlock)
     createAirSocialProfileRenewalTransaction(
       chainId,
       airBlock,
@@ -1370,5 +1314,19 @@ export namespace social {
    */
   export class AirExtraData {
     constructor(public name: string, public value: string) {}
+  }
+  function saveAirSocialProfile(airSocialProfile: AirSocialProfile, airBlock: AirBlock): void {
+    airSocialProfile.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
+    airSocialProfile.save()
+  }
+  function saveAirSocialUser(airSocialUser: AirSocialUser, airBlock: AirBlock): void {
+    airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
+    airSocialUser.save()
   }
 }
