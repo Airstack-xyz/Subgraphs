@@ -164,7 +164,8 @@ export namespace social {
    * @param to erc721 token receiver address
    * @param tokenId erc721 token id
    * @param tokenAddress erc721 token address
-   * @param socialUserId social user id (eg: farcasterId)
+   * @param oldSocialUserId old social user id (eg: farcasterId of from address)
+   * @param newSocialUserId new social user id (eg: farcasterId of to address)
    */
   export function trackSocialProfileOwnershipChangeTransaction(
     block: ethereum.Block,
@@ -174,7 +175,8 @@ export namespace social {
     to: string,
     tokenId: string,
     tokenAddress: string,
-    socialUserId: string
+    oldSocialUserId: string,
+    newSocialUserId: string
   ): void {
     const chainId = getChainId()
     const airBlock = getOrCreateAirBlock(
@@ -191,7 +193,7 @@ export namespace social {
     const airSocialUser = createAirSocialUser(
       chainId,
       airBlock,
-      socialUserId,
+      newSocialUserId,
       to,
       new Array<string>()
     )
@@ -199,9 +201,13 @@ export namespace social {
     airSocialProfile.lastUpdatedAt = airBlock.id
     saveAirSocialProfile(airSocialProfile, airBlock)
     // removing profile (tokenId) from -  from user
-    const airSocialUserOld = getAirSocialUser(chainId, from)
+    const airSocialUserOld = getAirSocialUser(chainId, oldSocialUserId)
     if (airSocialUserOld == null) {
-      log.debug("air social user old not found,address {} hash {}", [from, transactionHash])
+      log.debug("air social user old not found, socialUserId {}, from {}, hash {}", [
+        oldSocialUserId,
+        from,
+        transactionHash,
+      ])
       throw new Error("air social user old not found")
     }
     let fromOldProfiles: string[] = []

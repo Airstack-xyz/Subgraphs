@@ -1,7 +1,9 @@
 # SOCIAL vertical integration
+
 ### After module integration for SOCIAL vertical is done. Please call the below functions to track the transactions of the social vertical.
 
 ## Transaction tracking functions
+
 ```
 1. Track user and profile registration transaction
   trackSocialUserAndProfileRegisteredTransaction(
@@ -19,6 +21,7 @@
     profileExpiryTimestamp: BigInt,             #expiry timestamp of the profile
   )
 ```
+
 ```
 2. Track user ownership change transaction
   trackSocialUserOwnershipChangeTransaction(
@@ -32,6 +35,7 @@
     socialUserId: string,                      #user id from respective dapp (eg: farcasterId)
   )
 ```
+
 ```
 3. Track profile ownership change transaction
   trackSocialProfileOwnershipChangeTransaction(
@@ -42,9 +46,11 @@
     to: string,                                #profile token receiver address
     tokenId: string,                           #token id of the profile token - ERC721 (eg: farcaster profile token id)
     tokenAddress: string,                      #token address of profile token
-    socialUserId: string,                      #user id from respective dapp (eg: farcasterId)
+    oldSocialUserId: string,                   #user id from respective dapp (eg: farcasterId of from address)
+    newSocialUserId: string,                   #user id from respective dapp (eg: farcasterId of to address)
   )
 ```
+
 ```
 4. Track user home url change transaction
   trackSocialUserHomeUrlChangeTransaction(
@@ -59,6 +65,7 @@
     homeUrl: string,                           #updated home url of the user
   )
 ```
+
 ```
 5. Track user recovery address change transaction
   trackSocialUserRecoveryAddressChangeTransaction(
@@ -73,6 +80,7 @@
     recoveryAddress: string,                   #updated recovery address of the user
   )
 ```
+
 ```
 6. Track profile recovery address change transaction
   trackSocialProfileRecoveryAddressChangeTransaction(
@@ -86,6 +94,7 @@
     recoveryAddress: string,                   #updated recovery address of the profile
   )
 ```
+
 ```
 7. Track profile renewal transaction
   trackSocialProfileRenewalTransaction(
@@ -100,6 +109,7 @@
     renewalCost: BigInt,                       #renewal cost of the profile
   )
 ```
+
 ```
 8. Track default profile change transaction
   trackSocialUserDefaultProfileChange(
@@ -114,8 +124,12 @@
   )
 ## Supporting Classes
 ```
+
 class AirExtraData {
-  name: string,                                 #name of the extra data (eg: "profileTokenUri","userRecoveryAddress","profileRecoveryAddress","userHomeUrl" in farcaster)
-  value: string,                                #value of the extra data (eg: values of profileTokenUri,userRecoveryAddress,profileRecoveryAddress,userHomeUrl in farcaster)
+name: string, #name of the extra data (eg: "profileTokenUri","userRecoveryAddress","profileRecoveryAddress","userHomeUrl" in farcaster)
+value: string, #value of the extra data (eg: values of profileTokenUri,userRecoveryAddress,profileRecoveryAddress,userHomeUrl in farcaster)
 }
+
+```
+
 ```
