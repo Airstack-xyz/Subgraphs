@@ -203,7 +203,11 @@ export namespace social {
     // removing profile (tokenId) from -  from user
     const airSocialUserOld = getAirSocialUser(chainId, oldSocialUserId)
     if (airSocialUserOld == null) {
-      log.debug("air social user old not found, socialUserId {}, from {}, hash {}", [oldSocialUserId, from, transactionHash])
+      log.debug("air social user old not found, socialUserId {}, from {}, hash {}", [
+        oldSocialUserId,
+        from,
+        transactionHash,
+      ])
       throw new Error("air social user old not found")
     }
     let fromOldProfiles: string[] = []
