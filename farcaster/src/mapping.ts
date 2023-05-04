@@ -34,7 +34,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
     const fromAddressFid = getFidForAddress(fromAdress.toHexString());
     if (fromAddressFid == null) {
       log.error("handleFarcasterNameTransfer: fromAddressFid is null for address {} txHash {}", [fromAdress.toHexString(), event.transaction.hash.toHexString()]);
-      return;
+      throw new Error("handleFarcasterNameTransfer: fromAddressFid is null")
     }
     // track profile ownership change, not user registration
     airstack.social.trackSocialProfileOwnershipChangeTransaction(
@@ -246,6 +246,8 @@ export function handleChangeRecoveryAddressFname(event: FnameChangeRecoveryAddre
 export function handleFarcasterIdTransfer(event: FidTransfer): void {
   log.info("handleFarcasterIdTransfer from {} to {} id {} contractAddress {} txhash {}", [event.params.from.toHexString(), event.params.to.toHexString(), event.params.id.toString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
   if (event.params.from != zeroAddress) {
+    // update farcaster id for to address
+    upsertFidForAddress(event.params.to.toHexString(), event.params.id.toString());
     log.info("handleFarcasterIdTransfer from is not zero address hash {}", [event.transaction.hash.toHexString()]);
     airstack.social.trackSocialUserOwnershipChangeTransaction(
       event.block,
