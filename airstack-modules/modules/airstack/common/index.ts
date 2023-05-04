@@ -97,7 +97,7 @@ export function createAirMeta(
   if (meta == null) {
     meta = new AirMeta(AIR_META_ID);
     let network = dataSource.network().toString();
-    // halding special case for matic network
+    // handling special case for matic network
     if (network == "matic") {
       network = "polygon";
     }
