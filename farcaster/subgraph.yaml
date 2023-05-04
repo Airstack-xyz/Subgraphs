@@ -14,6 +14,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - OwnerToFidMapping
       abis:
         - name: FarcasterNameRegistry
           file: ./abis/FarcasterNameRegistry.json

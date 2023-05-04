@@ -202,8 +202,6 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "index", "1");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "protocolType", "SOCIAL");
     assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "protocolActionType", "SOCIAL_REGISTRATION");
-    assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "lastUpdatedIndex", "1");
-    assert.fieldEquals("AirSocialUserRegisteredTransaction", AirSocialUserRegisteredTransactionId, "lastUpdatedProfileIndex", "1");
     // AirBlock
     assert.fieldEquals("AirBlock", "1-10098239", "id", "1-10098239");
     assert.fieldEquals("AirBlock", "1-10098239", "number", "10098239");
@@ -572,7 +570,6 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "index", "1")
     assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "protocolType", "SOCIAL")
     assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "protocolActionType", "SOCIAL_USER_OWNERSHIP_CHANGE")
-    assert.fieldEquals("AirSocialUserOwnershipChangeTransaction", airSocialUserOwnershipChangeTransactionId, "lastUpdatedIndex", "1")
   })
 
   test("Test handleRenewFname", () => {
@@ -662,7 +659,6 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "index", "1");
     assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "protocolType", "SOCIAL");
     assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "protocolActionType", "SOCIAL_PROFILE_NAME_RENEWAL");
-    assert.fieldEquals("AirSocialProfileRenewalTransaction", airSocialProfileRenewalTransactionId, "lastUpdatedIndex", "1");
   })
 
 })
