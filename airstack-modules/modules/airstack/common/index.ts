@@ -96,7 +96,12 @@ export function createAirMeta(
   let meta = AirMeta.load(AIR_META_ID);
   if (meta == null) {
     meta = new AirMeta(AIR_META_ID);
-    meta.network = dataSource.network().toString();
+    let network = dataSource.network().toString();
+    // handling special case for matic network
+    if (network == "matic") {
+      network = "polygon";
+    }
+    meta.network = network;
     meta.schemaVersion = SUBGRAPH_SCHEMA_VERSION;
     meta.version = SUBGRAPH_VERSION;
     meta.slug = slug;
