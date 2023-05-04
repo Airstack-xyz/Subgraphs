@@ -386,7 +386,6 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_DEFAULT_PROFILE_CHANGE
-      entity.lastUpdatedIndex = airSocialUser.lastUpdatedIndex
       entity.save()
     }
   }
@@ -919,8 +918,6 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_REGISTRATION
-      entity.lastUpdatedIndex = socialUser.lastUpdatedIndex
-      entity.lastUpdatedProfileIndex = socialProfile.lastUpdatedIndex
       entity.save()
     }
   }
@@ -977,7 +974,6 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_PROFILE_OWNERSHIP_CHANGE
-      entity.lastUpdatedIndex = airSocialProfile.lastUpdatedIndex
       entity.save()
     }
   }
@@ -1034,7 +1030,6 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_OWNERSHIP_CHANGE
-      entity.lastUpdatedIndex = airSocialUser.lastUpdatedIndex
       entity.save()
     }
   }
@@ -1106,7 +1101,6 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_PROFILE_RECOVERY_ADDRESS_CHANGE
-      entity.lastUpdatedIndex = airSocialProfile.lastUpdatedIndex
       entity.save()
     }
   }
@@ -1178,7 +1172,6 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_RECOVERY_ADDRESS_CHANGE
-      entity.lastUpdatedIndex = airSocialUser.lastUpdatedIndex
       entity.save()
     }
   }
@@ -1240,7 +1233,6 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_USER_HOME_URL_CHANGE
-      entity.lastUpdatedIndex = airSocialUser.lastUpdatedIndex
       entity.save()
     }
   }
@@ -1302,7 +1294,6 @@ export namespace social {
       )
       entity.protocolType = AirProtocolType.SOCIAL
       entity.protocolActionType = AirProtocolActionType.SOCIAL_PROFILE_NAME_RENEWAL
-      entity.lastUpdatedIndex = airSocialProfile.lastUpdatedIndex
       entity.save()
     }
   }
