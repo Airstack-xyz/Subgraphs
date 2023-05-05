@@ -1310,7 +1310,7 @@ export namespace social {
    * @param value value of the extra data
    */
   export class AirExtraData {
-    constructor(public name: string, public value: string) { }
+    constructor(public name: string, public value: string) {}
   }
   function saveAirSocialProfile(airSocialProfile: AirSocialProfile, airBlock: AirBlock): void {
     airSocialProfile.lastUpdatedIndex = updateAirEntityCounter(
