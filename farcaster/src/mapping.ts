@@ -9,7 +9,7 @@ import {
 } from "../generated/FarcasterNameRegistry/FarcasterNameRegistry";
 import { Transfer as FidTransfer, Register, FarcasterIdRegistry, ChangeHome, ChangeRecoveryAddress as FidChangeRecoveryAddress } from "../generated/FarcasterIdRegistry/FarcasterIdRegistry";
 import * as airstack from "../modules/airstack/social/social";
-import { FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping, getExpiryTimestampFromFnameRegistry } from "./utils";
+import { FARCASTER_ID_REGISTRY_CONTRACT, FARCASTER_NAME_REGISTRY_CONTRACT, createOrUpdateUserRegAndProfileFarcasterMapping, validateFarcasterMapping, getExpiryTimestampFromFnameRegistry, upsertFidForAddress, getFidForAddress } from "./utils";
 import { userRecoveryAddress, userHomeUrl, profileTokenUri, zeroAddress } from "../modules/airstack/social/utils";
 
 /**
@@ -24,11 +24,20 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
   const farcasterTokenIdRegistry = FarcasterIdRegistry.bind(FARCASTER_ID_REGISTRY_CONTRACT)
   const farcasterId = farcasterTokenIdRegistry.try_idOf(toAdress);
   const farcasterName = Bytes.fromHexString(event.params.tokenId.toHexString()).toString();
-
+  // set fid of to address as farcasterId
+  if (!farcasterId.reverted) {
+    upsertFidForAddress(toAdress.toHexString(), farcasterId.value.toString());
+  }
   // check if event is a transfer txn, then update the user for the profile
   if (fromAdress.toHexString() != zeroAddress.toHexString()) {
+    // get fid of from address
+    const fromAddressFid = getFidForAddress(fromAdress.toHexString());
+    if (fromAddressFid == null) {
+      log.error("handleFarcasterNameTransfer: fromAddressFid is null for address {} txHash {}", [fromAdress.toHexString(), event.transaction.hash.toHexString()]);
+      throw new Error("handleFarcasterNameTransfer: fromAddressFid is null")
+    }
     // track profile ownership change, not user registration
-    airstack.social.trackSocialProfileOnwershipChangeTransaction(
+    airstack.social.trackSocialProfileOwnershipChangeTransaction(
       event.block,
       event.transaction.hash.toHexString(),
       event.transaction.index,
@@ -36,6 +45,7 @@ export function handleFarcasterNameTransfer(event: Transfer): void {
       event.params.to.toHexString(),
       event.params.tokenId.toString(),
       FARCASTER_NAME_REGISTRY_CONTRACT.toHexString(),
+      fromAddressFid!,
       farcasterId.value.toString(),
     )
     return;
@@ -236,6 +246,8 @@ export function handleChangeRecoveryAddressFname(event: FnameChangeRecoveryAddre
 export function handleFarcasterIdTransfer(event: FidTransfer): void {
   log.info("handleFarcasterIdTransfer from {} to {} id {} contractAddress {} txhash {}", [event.params.from.toHexString(), event.params.to.toHexString(), event.params.id.toString(), event.address.toHexString(), event.transaction.hash.toHexString()]);
   if (event.params.from != zeroAddress) {
+    // update farcaster id for to address
+    upsertFidForAddress(event.params.to.toHexString(), event.params.id.toString());
     log.info("handleFarcasterIdTransfer from is not zero address hash {}", [event.transaction.hash.toHexString()]);
     airstack.social.trackSocialUserOwnershipChangeTransaction(
       event.block,

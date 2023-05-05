@@ -11,3 +11,8 @@ type UserRegAndProfileFarcasterMapping @entity {
   logOrCallIndex: BigInt #from user reg event, not profile transfer event
   transactionHash: String #txn hash of user reg event, not profile transfer event
 }
+
+type OwnerToFidMapping @entity {
+  id: ID! #<toAddress>
+  farcasterId: String! #socialUserId
+}
