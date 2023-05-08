@@ -1,7 +1,12 @@
-import { describe, test, clearStore, beforeEach } from "matchstick-as/assembly/index"
+import {
+    describe,
+    test,
+    clearStore,
+    beforeEach,
+} from "matchstick-as/assembly/index"
 
 import { getOrdersMatched } from "./utils"
-import { expectedOutput1, sample1 } from "./example"
+import { expectedOutput1, expectedOutput2, sample1, sample2 } from "./example"
 import { handleOrdersMatched } from "../src/blur-exchange"
 import { assertMarketPlaceOutput } from "./test-utils"
 // Tests structure (matchstick-as >=0.5.0)
@@ -16,5 +21,11 @@ describe("Describe entity assertions", () => {
         handleOrdersMatched(orderMatchedEvent)
         // asserting AirNftTransaction
         assertMarketPlaceOutput(expectedOutput1)
+    })
+    test("test handleOrdersMatched with tokenId of sell not equal to tokenId of buy", () => {
+        let orderMatchedEvent = getOrdersMatched(sample2)
+        handleOrdersMatched(orderMatchedEvent)
+        // asserting AirNftTransaction
+        assertMarketPlaceOutput(expectedOutput2)
     })
 })

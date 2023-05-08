@@ -74,7 +74,9 @@ export const expectedOutput1: ExpectedOutput = {
   royalties: [
     {
       amount: "4796000000000000",
-      beneficiary: { address: "0xcc8f3cd409b9be605ff7926b60f5ab37d6ea46ef" },
+      beneficiary: {
+        address: "0xcc8f3cd409b9be605ff7926b60f5ab37d6ea46ef",
+      },
     },
   ],
   feeAmount: "0",
@@ -107,7 +109,8 @@ export const sample1: OrderMatchedInput = {
     salt: "166948742092558330862365866791783007234",
     extraParams: "0x",
   },
-  sellHash: "0xb622fe256b754dbffaa778297f867ad5bc33035ed964cc02fe1c1944eaa5e5a6",
+  sellHash:
+    "0xb622fe256b754dbffaa778297f867ad5bc33035ed964cc02fe1c1944eaa5e5a6",
   buy: {
     trader: "0x4e4e611104cbc11c3490279fd14a3f38dbc61e5b",
     side: 0, // buy
@@ -124,4 +127,78 @@ export const sample1: OrderMatchedInput = {
     extraParams: "0x",
   },
   buyHash: "0xfb7e46c75d5e5cd2b8c695c2a484dde6663b1a0a6124b6089d78cbd9fbf72d04",
+}
+export const expectedOutput2: ExpectedOutput = {
+  hash: "0xddfbb2fab1d7567611fde604c5f837578b0bdf1cd26a03d933ccafeb09cb5888",
+  from: { address: "0x5f0bcc59ef72fbbd12d3d45976ee3e62887bb91c" },
+  to: { address: "0xe1749558e716eedc94c5651ea78d921432724cea" },
+  nfts: [
+    {
+      tokenId: "3667",
+      tokenAmount: "1",
+      tokenAddress: {
+        address: "0x3235ba66bc9ff27efea7021112d593a92433668d",
+      },
+    },
+  ],
+  paymentToken: {
+    address: "0x0000000000a39bb272e79075ade125fd351887ac",
+  },
+  paymentAmount: "20000000000000000",
+  royalties: [
+    {
+      amount: "200000000000000",
+      beneficiary: {
+        address: "0x837ec5e5b8bd970d168b26f7b06f8d4e12747102",
+      },
+    },
+  ],
+  feeAmount: "0",
+  feeBeneficiary: {
+    address: "0x0000000000000000000000000000000000000000",
+  },
+}
+
+export const sample2: OrderMatchedInput = {
+  hash: "0xddfbb2fab1d7567611fde604c5f837578b0bdf1cd26a03d933ccafeb09cb5888",
+  maker: "0xe1749558e716eedc94c5651ea78d921432724cea",
+  taker: "0x5f0bcc59ef72fbbd12d3d45976ee3e62887bb91c",
+  sell: {
+    trader: "0x5f0bcc59ef72fbbd12d3d45976ee3e62887bb91c",
+    side: 1,
+    matchingPolicy: "0x0000000000b92d5d043faf7cecf7e2ee6aaed232",
+    collection: "0x3235ba66bc9ff27efea7021112d593a92433668d",
+    tokenId: "3667",
+    amount: "1",
+    paymentToken: "0x0000000000a39bb272e79075ade125fd351887ac",
+    price: "20000000000000000",
+    listingTime: "1670247385",
+    expirationTime: "1670251045",
+    fees: [
+      {
+        rate: 100,
+        recipient: "0x837ec5e5b8bd970d168b26f7b06f8d4e12747102",
+      },
+    ],
+    salt: "182409287283553749665970217272194833686",
+    extraParams: "0x01",
+  },
+  sellHash:
+    "0x57804a984af800ed21124ddf1ced3ceadf9ed08cdce40986f78438504459943e",
+  buy: {
+    trader: "0xe1749558e716eedc94c5651ea78d921432724cea",
+    side: 0,
+    matchingPolicy: "0x0000000000b92d5d043faf7cecf7e2ee6aaed232",
+    collection: "0x3235ba66bc9ff27efea7021112d593a92433668d",
+    tokenId: "0",
+    amount: "1",
+    paymentToken: "0x0000000000a39bb272e79075ade125fd351887ac",
+    price: "20000000000000000",
+    listingTime: "1670238156",
+    expirationTime: "1701774156",
+    fees: [],
+    salt: "80945410961933228460078542969501319966",
+    extraParams: "0x01",
+  },
+  buyHash: "0x3f592c4568fe6a7b8090f998ee15b110a24408ff61a7e47e24ad10b18d88a45f",
 }
