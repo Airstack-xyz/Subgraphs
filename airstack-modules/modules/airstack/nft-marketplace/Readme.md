@@ -43,7 +43,6 @@ class CreatorRoyalty {
 ```
 class NFT {
   collection: Address,                  #nft collection address
-  standard: string,                     #nft standard - ["ERC721", "ERC1155"]
   tokenId: BigInt,                      #nft token id
   amount: BigInt                        #nft amount - 1 for ERC721 and n for ERC1155
 }

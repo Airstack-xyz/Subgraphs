@@ -132,6 +132,6 @@ type AirExtraData @entity {
   name: String!
   value: String!
 }
-`
+`;
 
 export default schema;
