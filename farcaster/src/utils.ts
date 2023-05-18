@@ -1,5 +1,5 @@
 import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
-import { UserRegAndProfileFarcasterMapping } from '../generated/schema';
+import { OwnerToFidMapping, UserRegAndProfileFarcasterMapping } from '../generated/schema';
 import { FarcasterNameRegistry, Renew, ChangeRecoveryAddress, Invite, BidCall } from '../generated/FarcasterNameRegistry/FarcasterNameRegistry';
 import { FarcasterIdRegistry } from '../generated/FarcasterNameRegistry/FarcasterIdRegistry';
 import { getChainId, getOrCreateAirBlock, updateAirEntityCounter } from '../modules/airstack/common';
@@ -80,4 +80,23 @@ export function getExpiryTimestampFromFnameRegistry(tokenId: BigInt): BigInt {
     return expiryTs.value;
   }
   return BigInt.fromI32(0);
+}
+
+export function upsertFidForAddress(address: string, fid: string): void {
+  const id = address;
+  let entity = OwnerToFidMapping.load(id);
+  if (entity == null) {
+    entity = new OwnerToFidMapping(id);
+  }
+  entity.farcasterId = fid;
+  entity.save();
+}
+
+export function getFidForAddress(address: string): string | null {
+  const id = address;
+  let entity = OwnerToFidMapping.load(id);
+  if (entity == null) {
+    return null;
+  }
+  return entity.farcasterId;
 }

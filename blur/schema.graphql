@@ -1,0 +1,4 @@
+type MatchingPolicy @entity {
+    id: ID!
+    hashArr: [String!]
+}

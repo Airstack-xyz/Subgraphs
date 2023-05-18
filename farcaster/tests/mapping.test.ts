@@ -256,6 +256,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialUser", AirSocialUserId, "socialUserId", "1234");
     assert.fieldEquals("AirSocialUser", AirSocialUserId, "address", "1-0x084b1c3c81545d370f3634392de611caabff8148");
     assert.fieldEquals("AirSocialUser", AirSocialUserId, "extras", "[1-1234-userRecoveryAddress, 1-1234-userHomeUrl]");
+    assert.fieldEquals("AirSocialUser", AirSocialUserId, "lastUpdatedIndex", "1");
     assert.fieldEquals("AirSocialUser", AirSocialUserId, "createdAt", "1-10098239");
     assert.fieldEquals("AirSocialUser", AirSocialUserId, "lastUpdatedAt", "1-10098239");
     // AirSocialProfile
@@ -267,6 +268,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "tokenAddress", "1-0xe3be01d99baa8db9905b33a3ca391238234b79d1");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "user", "1-1234");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "extras", "[1-0xe3be01d99baa8db9905b33a3ca391238234b79d1-234567890876543234567890987654-profileTokenUri]");
+    assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "lastUpdatedIndex", "1");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "createdAt", "1-10098239");
     assert.fieldEquals("AirSocialProfile", AirSocialProfileId, "lastUpdatedAt", "1-10098239");
   })
@@ -283,6 +285,7 @@ describe("Mapping unit tests", () => {
     airSocialUser.socialUserId = "1234";
     airSocialUser.address = "1-0xda317a1caf36d198b12c16c7c7a1d1c795979d72";
     airSocialUser.extras = [id];
+    airSocialUser.lastUpdatedIndex = BigInt.fromString("1");
     airSocialUser.createdAt = "1-10098200";
     airSocialUser.lastUpdatedAt = "1-10098200";
     airSocialUser.save();
@@ -295,6 +298,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialUser", "1-1234", "socialUserId", "1234");
     assert.fieldEquals("AirSocialUser", "1-1234", "address", "1-0xda317a1caf36d198b12c16c7c7a1d1c795979d72");
     assert.fieldEquals("AirSocialUser", "1-1234", "extras", "[1-1234-userHomeUrl]");
+    assert.fieldEquals("AirSocialUser", "1-1234", "lastUpdatedIndex", "1");
     assert.fieldEquals("AirSocialUser", "1-1234", "createdAt", "1-10098200");
     assert.fieldEquals("AirSocialUser", "1-1234", "lastUpdatedAt", "1-10098200");
     // call event handler for if condition
@@ -317,6 +321,7 @@ describe("Mapping unit tests", () => {
     airSocialUser.socialUserId = "1234";
     airSocialUser.address = "1-0xda317a1caf36d198b12c16c7c7a1d1c795979d72";
     airSocialUser.extras = null;
+    airSocialUser.lastUpdatedIndex = BigInt.fromString("1");
     airSocialUser.createdAt = "1-10098200";
     airSocialUser.lastUpdatedAt = "1-10098200";
     airSocialUser.save();
@@ -325,6 +330,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialUser", "1-1234", "socialUserId", "1234");
     assert.fieldEquals("AirSocialUser", "1-1234", "address", "1-0xda317a1caf36d198b12c16c7c7a1d1c795979d72");
     assert.fieldEquals("AirSocialUser", "1-1234", "extras", "null");
+    assert.fieldEquals("AirSocialUser", "1-1234", "lastUpdatedIndex", "1");
     assert.fieldEquals("AirSocialUser", "1-1234", "createdAt", "1-10098200");
     assert.fieldEquals("AirSocialUser", "1-1234", "lastUpdatedAt", "1-10098200");
     // call event handler for else condition
@@ -351,6 +357,7 @@ describe("Mapping unit tests", () => {
     airSocialUser.socialUserId = "1234";
     airSocialUser.address = "1-0xda317a1caf36d198b12c16c7c7a1d1c795979d72";
     airSocialUser.extras = [id];
+    airSocialUser.lastUpdatedIndex = BigInt.fromString("1");
     airSocialUser.createdAt = "1-10098200";
     airSocialUser.lastUpdatedAt = "1-10098200";
     airSocialUser.save();
@@ -363,6 +370,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialUser", "1-1234", "socialUserId", "1234");
     assert.fieldEquals("AirSocialUser", "1-1234", "address", "1-0xda317a1caf36d198b12c16c7c7a1d1c795979d72");
     assert.fieldEquals("AirSocialUser", "1-1234", "extras", "[1-1234-userRecoveryAddress]");
+    assert.fieldEquals("AirSocialUser", "1-1234", "lastUpdatedIndex", "1");
     assert.fieldEquals("AirSocialUser", "1-1234", "createdAt", "1-10098200");
     assert.fieldEquals("AirSocialUser", "1-1234", "lastUpdatedAt", "1-10098200");
     // call event handler
@@ -385,6 +393,7 @@ describe("Mapping unit tests", () => {
     airSocialUser.socialUserId = "1234";
     airSocialUser.address = "1-0xda317a1caf36d198b12c16c7c7a1d1c795979d72";
     airSocialUser.extras = null;
+    airSocialUser.lastUpdatedIndex = BigInt.fromString("1");
     airSocialUser.createdAt = "1-10098200";
     airSocialUser.lastUpdatedAt = "1-10098200";
     airSocialUser.save();
@@ -393,6 +402,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialUser", "1-1234", "socialUserId", "1234");
     assert.fieldEquals("AirSocialUser", "1-1234", "address", "1-0xda317a1caf36d198b12c16c7c7a1d1c795979d72");
     assert.fieldEquals("AirSocialUser", "1-1234", "extras", "null");
+    assert.fieldEquals("AirSocialUser", "1-1234", "lastUpdatedIndex", "1");
     assert.fieldEquals("AirSocialUser", "1-1234", "createdAt", "1-10098200");
     assert.fieldEquals("AirSocialUser", "1-1234", "lastUpdatedAt", "1-10098200");
     // call event handler for else condition
@@ -427,8 +437,10 @@ describe("Mapping unit tests", () => {
     airSocialProfile.expiryTimestamp = BigInt.fromString("234567898322");
     airSocialProfile.user = "1-9397"
     airSocialProfile.extras = [id];
+    airSocialProfile.lastUpdatedIndex = BigInt.fromString("1");
     airSocialProfile.createdAt = "1-10098200";
     airSocialProfile.lastUpdatedAt = "1-10098200";
+    airSocialProfile.isDefault = false;
     airSocialProfile.save();
     // assert here for air social profile
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
@@ -437,6 +449,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "expiryTimestamp", "234567898322");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "user", "1-9397");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedIndex", "1");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "createdAt", "1-10098200");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200");
     // call event handler for if condition
@@ -463,8 +476,10 @@ describe("Mapping unit tests", () => {
     airSocialProfile.expiryTimestamp = BigInt.fromString("234567898322");
     airSocialProfile.user = "1-9397"
     airSocialProfile.extras = null;
+    airSocialProfile.lastUpdatedIndex = BigInt.fromString("1");
     airSocialProfile.createdAt = "1-10098200";
     airSocialProfile.lastUpdatedAt = "1-10098200";
+    airSocialProfile.isDefault = false;
     airSocialProfile.save();
     // assert here for air social profile
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
@@ -473,6 +488,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "expiryTimestamp", "234567898322");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "user", "1-9397");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "null");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedIndex", "1");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "createdAt", "1-10098200");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200");
     // call event handler for else condition
@@ -495,6 +511,7 @@ describe("Mapping unit tests", () => {
     airSocialUser.extras = null;
     airSocialUser.createdAt = "1-10098239";
     airSocialUser.lastUpdatedAt = "1-10098200";
+    airSocialUser.lastUpdatedIndex = BigInt.fromString("1");
     airSocialUser.save();
     let event = getHandleFarcasterIdTransferEvent()
     handleFarcasterIdTransfer(event);
@@ -533,6 +550,7 @@ describe("Mapping unit tests", () => {
     let AirSocialUserId = "1-9397";
     assert.fieldEquals("AirSocialUser", AirSocialUserId, "id", "1-9397");
     assert.fieldEquals("AirSocialUser", AirSocialUserId, "socialUserId", "9397");
+    assert.fieldEquals("AirSocialUser", AirSocialUserId, "lastUpdatedIndex", "1");
     assert.fieldEquals("AirSocialUser", AirSocialUserId, "address", "1-0x084b1c3c81545d370f3634392de611caabff8148");
     // extras does not exist if the user is created in this txn
     assert.fieldEquals("AirSocialUser", AirSocialUserId, "createdAt", "1-10098239");
@@ -564,8 +582,10 @@ describe("Mapping unit tests", () => {
     airSocialProfile.expiryTimestamp = BigInt.fromString("234567898322");
     airSocialProfile.user = "1-9397"
     airSocialProfile.extras = ["1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress"];
+    airSocialProfile.lastUpdatedIndex = BigInt.fromString("1");
     airSocialProfile.createdAt = "1-10098200";
     airSocialProfile.lastUpdatedAt = "1-10098200";
+    airSocialProfile.isDefault = false;
     airSocialProfile.save();
     // assert here for air social user
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "id", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824");
@@ -575,6 +595,7 @@ describe("Mapping unit tests", () => {
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "expiryTimestamp", "234567898322");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "user", "1-9397");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "extras", "[1-51735769851106138132655535136624048777650501777323249040829743839027683917824-profileRecoveryAddress]");
+    assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedIndex", "1");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "createdAt", "1-10098200");
     assert.fieldEquals("AirSocialProfile", "1-0xa16081f360e3847006db660bae1c6d1b2e17ec2a-51735769851106138132655535136624048777650501777323249040829743839027683917824", "lastUpdatedAt", "1-10098200");
     // call event handler

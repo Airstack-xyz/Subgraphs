@@ -12,6 +12,7 @@ enum AirProtocolActionType {
   SOCIAL_PROFILE_RECOVERY_ADDRESS_CHANGE
   SOCIAL_USER_HOME_URL_CHANGE
   SOCIAL_USER_RECOVERY_ADDRESS_CHANGE
+  SOCIAL_USER_DEFAULT_PROFILE_CHANGE
 }
 
 type AirBlock @entity {
@@ -59,8 +60,10 @@ type AirSocialUser @entity {
   socialUserId: String!
   address: AirAccount!
   extras: [AirExtra!] #Store recovery address & home URLs
-  profiles: [AirSocialProfile!] @derivedFrom(field: "user")
+  profiles: [AirSocialProfile!] 
+  defaultProfile: AirSocialProfile # Store default Profile 
   createdAt: AirBlock!
+  lastUpdatedIndex: BigInt!
   lastUpdatedAt: AirBlock!
 }
 
@@ -72,8 +75,10 @@ type AirSocialProfile @entity {
   renewalCost: BigInt
   tokenAddress: AirToken!
   user: AirSocialUser!
+  isDefault: Boolean!
   extras: [AirExtra!] #Store tokenUri
   createdAt: AirBlock!
+  lastUpdatedIndex: BigInt!
   lastUpdatedAt: AirBlock!
 }
 
@@ -208,6 +213,22 @@ type AirSocialUserRecoveryAddressChangeTransaction implements AirTransaction @en
   protocolType: AirProtocolType!  #SOCIAL
   protocolActionType: AirProtocolActionType!  #SOCIAL_USER_RECOVERY_ADDRESS_CHANGE
 }
-`;
 
-export default schema;
+type AirSocialUserDefaultProfileChangeTransaction implements AirTransaction
+  @entity {
+  id: ID! #<transactionHash-logOrCallIndex-user.Id>
+  oldDefaultProfile: AirSocialProfile
+  newDefaultProfile: AirSocialProfile
+  user: AirSocialUser!
+  from: AirAccount!
+  to: AirAccount!
+  transactionHash: String!
+  logOrCallIndex: BigInt!
+  block: AirBlock!
+  index: BigInt!
+  protocolType: AirProtocolType! #SOCIAL
+  protocolActionType: AirProtocolActionType! #SOCIAL_USER_DEFAULT_PROFILE_CHANGE
+}
+`
+
+export default schema
