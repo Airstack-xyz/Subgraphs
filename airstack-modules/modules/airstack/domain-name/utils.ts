@@ -1,7 +1,12 @@
 import { log } from "@graphprotocol/graph-ts";
 import {
   AirExtra,
+  AirDomain,
+  AirBlock,
 } from "../../../generated/schema";
+import {
+  updateAirEntityCounter
+} from "../common/index";
 
 export const AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID = "AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER";
 export const AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID = "AIR_DOMAIN_TRANSFER_ENTITY_COUNTER";
@@ -62,4 +67,15 @@ export function checkValidLabel(name: string, txHash: string): boolean {
     }
   }
   return true;
+}
+
+/**
+ * @dev this function is used to save air domain entity and update the last updated index and block
+ * @param domain air domain entity to be saved
+ * @param airBlock air block entity
+ */
+export function saveDomainEntity(domain: AirDomain, airBlock: AirBlock): void {
+  domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
+  domain.lastUpdatedBlock = airBlock.id;
+  domain.save();
 }

@@ -4,10 +4,14 @@ import {
 } from "../generated/NameWrapper/NameWrapper";
 import { decodeName } from "./utils";
 import { getChainId, getOrCreateAirBlock, updateAirEntityCounter } from "../modules/airstack/common";
-import { AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID } from "../modules/airstack/domain-name/utils";
+import { saveDomainEntity } from "../modules/airstack/domain-name/utils";
 import { TOKEN_ADDRESS_ENS } from "./utils";
+import {
+  log,
+} from "@graphprotocol/graph-ts";
 
 export function handleNameWrapped(event: NameWrappedEvent): void {
+  log.info("handleNameWrapped: node {} name {} owner {} txhash {}", [event.params.node.toHexString(), event.params.name.toHexString(), event.params.owner.toHexString(), event.transaction.hash.toHexString()]);
   let decoded = decodeName(event.params.name, event.transaction.hash.toHexString());
   let label: string | null = null;
   let name: string | null = null;
@@ -22,8 +26,6 @@ export function handleNameWrapped(event: NameWrappedEvent): void {
   if (!domain.labelName && label) {
     domain.labelName = label;
     domain.name = name;
-    domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_LAST_UPDATED_INDEX_ENTITY_COUNTER_ID, airBlock);
-    domain.lastUpdatedBlock = airBlock.id;
-    domain.save();
+    saveDomainEntity(domain, airBlock);
   }
 }
