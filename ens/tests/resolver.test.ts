@@ -8,7 +8,6 @@ import {
 import { handleAddrChanged, handleVersionChanged } from "../src/resolver"
 import { createAirDomain, getHandleAddrChangedEvent, getHandleVersionChangedEvent } from "./resolver-utils"
 import { ETHEREUM_MAINNET_ID } from "../modules/airstack/domain-name/utils"
-import { log } from "@graphprotocol/graph-ts"
 
 describe("Unit tests for resolver handlers", () => {
   afterEach(() => {
@@ -56,6 +55,7 @@ describe("Unit tests for resolver handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "id", domainId)
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId)
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
     assert.fieldEquals("AirDomain", domainId, "resolvedAddress", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.a.toHexString()))
     // AirResolvedAddressChanged
     assert.fieldEquals("AirResolvedAddressChanged", addrChangedId, "resolver", resolverId)
@@ -91,6 +91,7 @@ describe("Unit tests for resolver handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "id", domainId)
     assert.fieldEquals("AirDomain", domainId, "resolvedAddress", "null")
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId)
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
     // AirResolver
     let resolverId = event.address.toHexString().concat("-").concat(event.params.node.toHexString())
     assert.fieldEquals("AirResolver", resolverId, "id", resolverId)

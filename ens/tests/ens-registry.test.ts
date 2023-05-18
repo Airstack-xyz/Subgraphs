@@ -84,6 +84,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "registrationCost", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "isPrimary", "false");
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "2");
     assert.fieldEquals("AirDomain", domainId, "tokenAddress", ETHEREUM_MAINNET_ID.concat("-").concat(TOKEN_ADDRESS_ENS));
     // AirDomainOwnerChangedTransaction
     let domainOwnerChangedEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
@@ -158,6 +159,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "registrationCost", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "isPrimary", "false");
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "2");
     assert.fieldEquals("AirDomain", domainId, "tokenAddress", ETHEREUM_MAINNET_ID.concat("-").concat(TOKEN_ADDRESS_ENS));
     // AirDomainOwnerChangedTransaction
     let domainOwnerChangedEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
@@ -209,6 +211,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "owner", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirDomainTransferTransaction
     let domainOwnerChangedEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainTransferTransaction", domainOwnerChangedEntityId, "from", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
@@ -259,6 +262,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "owner", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirDomainTransferTransaction
     let domainOwnerChangedEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainTransferTransaction", domainOwnerChangedEntityId, "from", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
@@ -316,6 +320,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "resolver", resolverId);
     assert.fieldEquals("AirDomain", domainId, "subdomainCount", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirDomainNewResolverTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "previousResolver", "null");
@@ -373,6 +378,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "resolver", resolverId);
     assert.fieldEquals("AirDomain", domainId, "subdomainCount", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirDomainNewResolverTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "previousResolver", "null");
@@ -420,6 +426,7 @@ describe("Unit tests for ens registry handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "extras", "[0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407-ttl]");
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirExtra
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
@@ -466,6 +473,7 @@ describe("Unit tests for ens registry handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "extras", "[0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407-ttl]");
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "2");
     // AirExtra
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
@@ -517,6 +525,7 @@ describe("Unit tests for ens registry handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "extras", "[0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407-ttl]");
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirExtra
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");

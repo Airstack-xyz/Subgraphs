@@ -3,8 +3,6 @@ import {
   Bytes,
   crypto,
   log,
-  ByteArray,
-  ens,
   ethereum,
 } from "@graphprotocol/graph-ts";
 
@@ -25,7 +23,7 @@ import {
   PrimaryDomain,
   AirExtra,
 } from "../../../generated/schema";
-import { createAirExtra, AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ZERO_ADDRESS, ETHEREUM_MAINNET_ID, checkValidLabel } from "./utils";
+import { createAirExtra, AIR_EXTRA_TTL, AIR_SET_PRIMARY_DOMAIN_ENTITY_COUNTER_ID, AIR_DOMAIN_OWNER_CHANGED_ENTITY_COUNTER_ID, AIR_ADDR_CHANGED_ENTITY_COUNTER_ID, AIR_NAME_RENEWED_ENTITY_COUNTER_ID, AIR_NAME_REGISTERED_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_TTL_ENTITY_COUNTER_ID, AIR_DOMAIN_NEW_RESOLVER_ENTITY_COUNTER_ID, AIR_DOMAIN_TRANSFER_ENTITY_COUNTER_ID, ZERO_ADDRESS, ETHEREUM_MAINNET_ID, checkValidLabel, saveDomainEntity } from "./utils";
 import { BIGINT_ONE, BIG_INT_ZERO, EMPTY_STRING, getChainId, updateAirEntityCounter, getOrCreateAirBlock, getOrCreateAirAccount, getOrCreateAirToken } from "../common";
 
 export namespace domain {
@@ -69,7 +67,6 @@ export namespace domain {
     ));
     if (domain.parent == null) {
       parentDomain.subdomainCount = parentDomain.subdomainCount.plus(BIGINT_ONE);
-      parentDomain.lastUpdatedBlock = airBlock.id;
     }
     domain.name = name;
     domain.labelName = labelName;
@@ -79,9 +76,8 @@ export namespace domain {
     domain.parent = parentDomain.id;
     domain.labelHash = labelHash;
     domain.tokenId = tokenId;
-    domain.lastUpdatedBlock = airBlock.id;
-    parentDomain.save();
-    domain.save();
+    saveDomainEntity(parentDomain, airBlock);
+    saveDomainEntity(domain, airBlock);
     recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
 
     let txn = getOrCreateAirDomainOwnerChangedTransaction(
@@ -130,8 +126,7 @@ export namespace domain {
     domain.owner = newOwnerAccount.id;
     // set primary to false when domain is transferred
     domain.isPrimary = false;
-    domain.lastUpdatedBlock = airBlock.id;
-    domain.save();
+    saveDomainEntity(domain, airBlock);
     let id = createEntityId(transactionHash, block.number, logOrCallIndex);
     let entity = AirDomainTransferTransaction.load(id);
     if (entity == null) {
@@ -182,8 +177,7 @@ export namespace domain {
       domain.resolvedAddress = resolverEntity.resolvedAddress;
     }
     // do recursive subdomain count decrement
-    domain.lastUpdatedBlock = airBlock.id;
-    domain.save();
+    saveDomainEntity(domain, airBlock);
     recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
 
     // create new resolver transaction
@@ -246,8 +240,7 @@ export namespace domain {
       }
     }
     domain.extras = extrasArray;
-    domain.lastUpdatedBlock = airBlock.id;
-    domain.save();
+    saveDomainEntity(domain, airBlock);
     // create AirDomainNewTTLTransaction
     let txn = getOrCreateAirDomainNewTTLTransaction(
       transactionHash,
@@ -300,14 +293,13 @@ export namespace domain {
       domain.labelName = labelName
     }
     domain.expiryTimestamp = expiryTimestamp;
-    domain.lastUpdatedBlock = airBlock.id;
     if (cost) {
       domain.registrationCost = cost;
     }
     let airToken = getOrCreateAirToken(chainId, paymentToken);
     airToken.save();
     domain.paymentToken = airToken.id;
-    domain.save();
+    saveDomainEntity(domain, airBlock);
     // create name registered transaction
     let txn = getOrCreateAirNameRegisteredTransaction(
       chainId,
@@ -353,8 +345,7 @@ export namespace domain {
       tokenAddress,
     ));
     domain.expiryTimestamp = expiryTimestamp;
-    domain.lastUpdatedBlock = airBlock.id;
-    domain.save();
+    saveDomainEntity(domain, airBlock);
     // create name renewed transaction
     let txn = getOrCreateAirNameRenewedTransaction(
       transactionHash,
@@ -449,8 +440,7 @@ export namespace domain {
         reverseRegistrar.save();
       }
     }
-    domain.lastUpdatedBlock = airBlock.id;
-    domain.save();
+    saveDomainEntity(domain, airBlock);
     //new name registered event
   }
 
@@ -486,8 +476,7 @@ export namespace domain {
 
     if (domain.resolver == resolver.id) {
       domain.resolvedAddress = addrAccount.id;
-      domain.lastUpdatedBlock = airBlock.id;
-      domain.save();
+      saveDomainEntity(domain, airBlock);
       let txn = getOrCreateAirResolvedAddressChanged(
         chainId,
         logOrCallIndex,
@@ -523,8 +512,7 @@ export namespace domain {
     resolver.save();
     if (domain && domain.resolver == resolver.id) {
       domain.resolvedAddress = null
-      domain.lastUpdatedBlock = airBlock.id;
-      domain.save();
+      saveDomainEntity(domain, airBlock);
     }
   }
 
@@ -566,8 +554,7 @@ export namespace domain {
         // unset isPrimary on old domain
         oldPrimaryDomain = getOrCreateAirDomain(new Domain(primaryDomainEntity.domain, chainId, airBlock, tokenAddress));
         oldPrimaryDomain.isPrimary = false;
-        oldPrimaryDomain.lastUpdatedBlock = airBlock.id;
-        oldPrimaryDomain.save();
+        saveDomainEntity(oldPrimaryDomain, airBlock);
         // set new primary domain for resolved address
         primaryDomainEntity.domain = domain.id;
         primaryDomainEntity.lastUpdatedAt = airBlock.id;
@@ -575,8 +562,7 @@ export namespace domain {
       primaryDomainEntity.save();
       // set isPrimary on new domain
       domain.isPrimary = true;
-      domain.lastUpdatedBlock = airBlock.id;
-      domain.save();
+      saveDomainEntity(domain, airBlock);
     }
     // record a set primary domain transaction with new domain
     let txn = getOrCreateAirPrimaryDomainTransaction(
@@ -957,7 +943,7 @@ export namespace domain {
    * @param domain Domain class object
    * @returns AirDomain entity
    */
-  function getOrCreateAirDomain(
+  export function getOrCreateAirDomain(
     domain: Domain,
   ): AirDomain {
     let entity = AirDomain.load(domain.id);
@@ -1044,8 +1030,7 @@ export namespace domain {
         const parentDomain = getOrCreateAirDomain(new Domain(domain.parent!, chainId, block, tokenAddress));
         if (parentDomain) {
           parentDomain.subdomainCount = parentDomain.subdomainCount.minus(BIGINT_ONE)
-          parentDomain.lastUpdatedBlock = block.id;
-          parentDomain.save();
+          saveDomainEntity(parentDomain, block);
           recurseSubdomainCountDecrement(parentDomain, chainId, block, tokenAddress)
         }
       }

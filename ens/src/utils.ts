@@ -13,7 +13,9 @@ import {
   BigInt,
   log,
 } from "@graphprotocol/graph-ts";
-
+import {
+  checkValidLabel
+} from "../modules/airstack/domain-name/utils";
 // ens constants
 export const TOKEN_ADDRESS_ENS = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
 
@@ -134,4 +136,35 @@ export function byteArrayFromHex(s: string): ByteArray {
 export function uint256ToByteArray(i: BigInt): ByteArray {
   let hex = i.toHex().slice(2).padStart(64, '0')
   return byteArrayFromHex(hex)
+}
+
+export function decodeName(buf: Bytes, txHash: string): Array<string> | null {
+  let offset = 0;
+  let list = new ByteArray(0);
+  let dot = Bytes.fromHexString("2e");
+  let len = buf[offset++];
+  let hex = buf.toHexString();
+  let firstLabel = "";
+  if (len === 0) {
+    return [firstLabel, "."];
+  }
+
+  while (len) {
+    let label = hex.slice((offset + 1) * 2, (offset + 1 + len) * 2);
+    let labelBytes = Bytes.fromHexString(label);
+
+    if (!checkValidLabel(labelBytes.toString(), txHash)) {
+      return null;
+    }
+
+    if (offset > 1) {
+      list = list.concat(dot);
+    } else {
+      firstLabel = labelBytes.toString();
+    }
+    list = list.concat(labelBytes);
+    offset += len;
+    len = buf[offset++];
+  }
+  return [firstLabel, list.toString()];
 }

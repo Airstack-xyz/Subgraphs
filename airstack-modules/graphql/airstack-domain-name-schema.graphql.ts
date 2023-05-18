@@ -60,6 +60,7 @@ type AirDomain @entity {
   createdAt: AirBlock!
 	lastUpdatedBlock: AirBlock #- NA
   extras: [AirExtra!]
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainTransferTransaction implements AirDomainEvent @entity {

@@ -1,11 +1,6 @@
 specVersion: 0.0.5
 schema:
   file: ./schema.graphql
-features:
-  - grafting
-graft:
-  base: QmYHMXrruCAq733xom6Hhxp4jfKfQoFi83YDuB42jSEwyB
-  block: 16925605
 dataSources:
   - kind: ethereum
     name: EnsRegistry
@@ -199,3 +194,23 @@ dataSources:
       callHandlers:
         - function: setName(string)
           handler: handleSetName
+  - kind: ethereum/contract
+    name: NameWrapper
+    network: mainnet
+    source:
+      address: '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401'
+      abi: NameWrapper
+      startBlock: 16925608
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/name-wrapper.ts
+      entities:
+        - NameWrapper
+      abis:
+        - name: NameWrapper
+          file: ./abis/NameWrapper.json
+      eventHandlers:
+        - event: NameWrapped(indexed bytes32,bytes,address,uint32,uint64)
+          handler: handleNameWrapped
