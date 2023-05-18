@@ -30,11 +30,11 @@ export namespace nft {
         protocolActionType: string
     ): void {
         const chainId = getChainId()
-        const airNftTransactionEntityId = chainId
-            .concat("-")
-            .concat(transactionHash)
-            .concat("-")
-            .concat(logOrCallIndex.toString())
+        const airNftTransactionEntityId = GetAirNftTransactionEntityId(
+            chainId,
+            transactionHash,
+            logOrCallIndex
+        )
         let nftIds: string[] = []
         let saleType = SINGLE_ITEM_SALE
         let airBlock = getOrCreateAirBlock(
@@ -159,11 +159,7 @@ function createAirNftSaleTransaction(
     feeAmount: BigInt,
     feeBeneficiary: string
 ): void {
-    const id = chainId
-        .concat("-")
-        .concat(transactionHash)
-        .concat("-")
-        .concat(logOrCallIndex.toString())
+    const id = GetAirNftTransactionEntityId(chainId, transactionHash, logOrCallIndex)
     let entity = AirNftTransaction.load(id)
     if (entity == null) {
         entity = new AirNftTransaction(id)
@@ -261,4 +257,23 @@ function createAirNftSaleRoyalty(
         entity.save()
     }
     return entity as AirNftSaleRoyalty
+}
+
+/**
+ * @dev this function returns id of AirNftTransactionEntity
+ * @param chainId
+ * @param transactionHash
+ * @param logOrCallIndex
+ * @returns AirNftTransactionEntity id
+ */
+function GetAirNftTransactionEntityId(
+    chainId: string,
+    transactionHash: string,
+    logOrCallIndex: BigInt
+): string {
+    return chainId
+        .concat("-")
+        .concat(transactionHash)
+        .concat("-")
+        .concat(logOrCallIndex.toString())
 }
