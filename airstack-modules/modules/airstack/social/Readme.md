@@ -14,7 +14,7 @@
     to: string,                                 #profile token receiver address
     tokenId: string,                            #token id of the profile token - ERC721
     tokenAddress: string,                       #token address of the profile token - ERC721
-    dappUserId: string,                         #dapp user id of the air user who registered (eg: farcasterId)
+    socialUserId: string,                         #dapp user id of the air user who registered (eg: farcasterId)
     userExtras: AirExtraData[],                 #extra data of the profile transferred (eg: recoveryAddress and homeUrl in farcaster)
     profileName: string,                        #name of the profile (eg: farcasterProfileName)
     profileExtras: AirExtraData[],              #extra data of the profile transferred (eg: tokenUri in farcaster)
