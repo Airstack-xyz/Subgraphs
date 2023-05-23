@@ -168,17 +168,21 @@ function handlePartialEvent(event: OrderFulfilled): void {
   let txHash = event.transaction.hash
   let offerer = event.params.offerer
   let recipient = event.params.recipient
+
+  // in partialEvents, recipient == Address.zero()
   if (recipient != Address.zero()) {
     log.error("recipient {} not expected for partial event", [recipient.toHexString()])
     throw new Error("")
   }
   let partialRecord = getOrCreatePartialNftTransaction(txHash)
+  
   if (
     partialRecord.from != Address.zero().toHexString() ||
     partialRecord.to != Address.zero().toHexString()
   ) {
     partialRecord.isComplete = true
   }
+  
   for (let i = 0; i < event.params.offer.length; i++) {
     const offer = event.params.offer[i]
     let isNFT = isNFTEntity(offer.itemType)
@@ -196,6 +200,8 @@ function handlePartialEvent(event: OrderFulfilled): void {
         standard
       )
       partialNft.save()
+
+      // checking if this NFT already added during last event or not
       let alreadyExists = false
       let partialNftArr = partialRecord.partialNFT
       for (let j = 0; j < partialNftArr.length; j++) {
@@ -212,6 +218,7 @@ function handlePartialEvent(event: OrderFulfilled): void {
       partialRecord.from = offerer.toHexString()
     }
   }
+
   for (let i = 0; i < event.params.consideration.length; i++) {
     const consideration = event.params.consideration[i]
     let isNFT = isNFTEntity(consideration.itemType)
@@ -219,13 +226,16 @@ function handlePartialEvent(event: OrderFulfilled): void {
       partialRecord.paymentToken = consideration.token.toHexString()
 
       if (consideration.recipient.toHexString() == partialRecord.from) {
+        // calculating amount sent back to seller/from address
         let amountToSeller = partialRecord.totalAmountToSeller
         partialRecord.totalAmountToSeller = amountToSeller.plus(consideration.amount)
       } else if (isOpenSeaFeeAccount(consideration.recipient)) {
+        // calculating total platform fees
         let feeAmount = partialRecord.totalFeeAmount
         partialRecord.totalFeeAmount = feeAmount.plus(consideration.amount)
         partialRecord.feeBeneficiary = consideration.recipient.toHexString()
       } else if (consideration.recipient.toHexString() != partialRecord.to) {
+        // calculating royalty
         let royaltyCount = partialRecord.royaltyCount
         let partialRoyalty = getOrCreatePartialRoyalty(txHash, royaltyCount.toI64())
         partialRecord.totalRoyalty = partialRecord.totalRoyalty.plus(consideration.amount)
@@ -244,6 +254,8 @@ function handlePartialEvent(event: OrderFulfilled): void {
         standard
       )
       partialNft.save()
+
+      // checking if this NFT already added during last event or not
       let alreadyExists = false
       let partialNftArr = partialRecord.partialNFT
       for (let j = 0; j < partialNftArr.length; j++) {
@@ -260,7 +272,10 @@ function handlePartialEvent(event: OrderFulfilled): void {
       partialRecord.to = consideration.recipient.toHexString()
     }
   }
+
   if (partialRecord.isComplete) {
+    
+    // calculating paymentAmount
     if (partialRecord.totalAmountToSeller != BIGINT_ZERO) {
       partialRecord.totalPaymentAmount = partialRecord.totalAmountToSeller
         .plus(partialRecord.totalFeeAmount)
@@ -273,8 +288,10 @@ function handlePartialEvent(event: OrderFulfilled): void {
     }
   }
   partialRecord.save()
+
   if (partialRecord.isComplete) {
-    // logging
+    
+    // creating airstack Royalty array
     let royaltyArr = new Array<airstack.nft.CreatorRoyalty>()
     for (let i = 0; i < partialRecord.royaltyCount.toI64(); i++) {
       let royaltyKey = getPartialRoyaltyKey(txHash, i)
@@ -291,8 +308,9 @@ function handlePartialEvent(event: OrderFulfilled): void {
         }
       }
     }
+    
+    // creating sale array
     let allSales = new Array<airstack.nft.Sale>()
-
     for (let i = 0; i < partialRecord.partialNFT.length; i++) {
       let partialNftKey = partialRecord.partialNFT[i]
       let partialNft = PartialNft.load(partialNftKey)
@@ -317,6 +335,7 @@ function handlePartialEvent(event: OrderFulfilled): void {
       }
     }
     if (allSales.length > 0) {
+      // calling standard function
       airstack.nft.trackNFTSaleTransactions(
           ETHEREUM_MAINNET_ID,
           txHash.toHexString(),
