@@ -91,7 +91,13 @@ https://github.com/Airstack-xyz/Subgraphs/tree/main/airstack-modules/modules/air
         `
         );
         break;
-
+ case Vertical.Social:
+        console.log(`
+Integration for POAP vertical done. For documentation and examples please check below link:
+https://github.com/Airstack-xyz/Subgraphs/tree/main/airstack-modules/modules/airstack/poap/Readme.md
+        `
+        );
+        break;
       default:
         break;
     }

@@ -260,6 +260,10 @@ function copyAirstackModules(vertical: Vertical): { targetDir: string, commontTa
       sourceDir = path.resolve(__dirname, '../../modules/airstack/social');
       targetDir = path.resolve(__dirname, '../../../../../modules/airstack/social');
       break;
+    case Vertical.Poap:
+      sourceDir = path.resolve(__dirname, '../../modules/airstack/poap');
+      targetDir = path.resolve(__dirname, '../../../../../modules/airstack/poap');
+      break;
     default:
       console.error("Invalid vertical, please check the vertical name.");
       process.exit(1); // an error occurred
