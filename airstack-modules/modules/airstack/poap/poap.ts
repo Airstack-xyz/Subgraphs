@@ -63,24 +63,15 @@ export namespace poap {
         let token = getOrCreateAirToken(chainId, tokenAddress.toHexString())
         token.save()
 
-        let ownerAttendee = getOrCreatePoapAttendee(chainId, owner.toHexString(), airBlock)
-        ownerAttendee.lastUpdatedIndex = updateAirEntityCounter(
-            AIR_POAP_ATTENDEE_UPDATED_INDEX_ID,
-            airBlock
-        )
+        let ownerAttendee = getOrCreateAirPoapAttendee(chainId, owner.toHexString(), airBlock)
         ownerAttendee.tokensOwned = ownerAttendee.tokensOwned.plus(BIGINT_ONE)
-        ownerAttendee.save()
+        saveAirPoapAttendee(ownerAttendee, airBlock)
 
         let event = getOrCreateAirPoapEvent(eventId, airBlock)
-        event.lastUpdatedIndex = updateAirEntityCounter(
-            AIR_POAP_EVENT_LAST_UPDATED_INDEX_ID,
-            airBlock
-        )
-        event.save()
-
         // tokenMints = number of tokens minted under particular event
         event.tokenMints = event.tokenMints.plus(BIGINT_ONE)
-        event.save()
+        saveAirPoapEvent(event, airBlock)
+
         let eventAttendee = getOrCreateAirPoapEventAttendee(
             chainId,
             tokenAddress,
@@ -91,7 +82,7 @@ export namespace poap {
             ownerAttendee,
             event.tokenMints // used as mintOrder
         )
-        eventAttendee.save()
+        saveAirPoapEventAttendee(eventAttendee, airBlock)
 
         createAirPoapMintTransaction(
             chainId,
@@ -134,41 +125,29 @@ export namespace poap {
         )
         airBlock.save()
 
+        // creating / updating from attendee
+        let fromAttendee = getOrCreateAirPoapAttendee(chainId, from.toHexString(), airBlock)
+        fromAttendee.tokensOwned = fromAttendee.tokensOwned.minus(BIGINT_ONE)
+        saveAirPoapAttendee(fromAttendee, airBlock)
+        // creating / updating to attendee
+        let toAttendee = getOrCreateAirPoapAttendee(chainId, to.toHexString(), airBlock)
+        toAttendee.tokensOwned = toAttendee.tokensOwned.plus(BIGINT_ONE)
+        saveAirPoapAttendee(toAttendee, airBlock)
+
+        // updating event
+        let event = getOrCreateAirPoapEvent(eventId, airBlock)
+        event.transferCount = event.transferCount.plus(BIGINT_ONE)
+        saveAirPoapEvent(event, airBlock)
+
+        // updating eventAttendee
         let eventAttendeeId = getAirPoapEventAttendeeId(eventId.toString(), tokenId)
         let eventAttendee = AirPoapEventAttendee.load(eventAttendeeId)
         if (eventAttendee == null) {
             throw new Error("eventAttendee should not be null")
         }
-
-        // creating / updating from attendee
-        let fromAttendee = getOrCreatePoapAttendee(chainId, from.toHexString(), airBlock)
-        fromAttendee.updatedAt = airBlock.id
-        fromAttendee.tokensOwned = fromAttendee.tokensOwned.minus(BIGINT_ONE)
-        fromAttendee.lastUpdatedIndex = updateAirEntityCounter(
-            AIR_POAP_ATTENDEE_UPDATED_INDEX_ID,
-            airBlock
-        )
-        fromAttendee.save()
-
-        // creating / updating to attendee
-        let toAttendee = getOrCreatePoapAttendee(chainId, to.toHexString(), airBlock)
-        fromAttendee.updatedAt = airBlock.id
-        toAttendee.tokensOwned = toAttendee.tokensOwned.plus(BIGINT_ONE)
-        toAttendee.lastUpdatedIndex = updateAirEntityCounter(
-            AIR_POAP_ATTENDEE_UPDATED_INDEX_ID,
-            airBlock
-        )
-        toAttendee.save()
-
-        // updating event
-        let event = getOrCreateAirPoapEvent(eventId, airBlock)
-        event.transferCount = event.transferCount.plus(BIGINT_ONE)
-        event.lastUpdatedIndex = updateAirEntityCounter(
-            AIR_POAP_EVENT_LAST_UPDATED_INDEX_ID,
-            airBlock
-        )
-        event.save()
-
+        eventAttendee.transferCount = eventAttendee.transferCount.plus(BIGINT_ONE)
+        eventAttendee.owner = toAttendee.id
+        saveAirPoapEventAttendee(eventAttendee, airBlock)
         createAirPoapTransferTransaction(
             chainId,
             airBlock,
@@ -217,14 +196,6 @@ function createAirPoapTransferTransaction(
         entity.protocolActionType = TRANSFER
     }
     entity.save()
-    eventAttendee.transferCount = eventAttendee.transferCount.plus(BIGINT_ONE)
-    eventAttendee.updatedAt = block.id
-    eventAttendee.lastUpdatedIndex = updateAirEntityCounter(
-        AIR_POAP_EVENT_ATTENDEE_LAST_UPDATED_INDEX_ID,
-        block
-    )
-    eventAttendee.owner = to.id
-    eventAttendee.save()
 }
 
 function createAirPoapMintTransaction(
@@ -263,14 +234,9 @@ function createAirPoapMintTransaction(
         entity.attendee = attendee.id
         entity.save()
     }
-    eventAttendee.lastUpdatedIndex = updateAirEntityCounter(
-        AIR_POAP_EVENT_ATTENDEE_LAST_UPDATED_INDEX_ID,
-        block
-    )
-    eventAttendee.save()
 }
 
-function getOrCreatePoapAttendee(
+function getOrCreateAirPoapAttendee(
     chainId: string,
     address: string,
     block: AirBlock
@@ -290,6 +256,12 @@ function getOrCreatePoapAttendee(
     return entity as AirPoapAttendee
 }
 
+function saveAirPoapAttendee(attendee: AirPoapAttendee, block: AirBlock): void {
+    attendee.lastUpdatedIndex = updateAirEntityCounter(AIR_POAP_ATTENDEE_UPDATED_INDEX_ID, block)
+    attendee.updatedAt = block.id
+    attendee.save()
+}
+
 function getOrCreateAirPoapEvent(eventId: BigInt, block: AirBlock): AirPoapEvent {
     let entity = AirPoapEvent.load(eventId.toString())
     if (entity == null) {
@@ -303,11 +275,17 @@ function getOrCreateAirPoapEvent(eventId: BigInt, block: AirBlock): AirPoapEvent
     }
     return entity
 }
+function saveAirPoapEvent(event: AirPoapEvent, block: AirBlock): void {
+    event.lastUpdatedIndex = updateAirEntityCounter(AIR_POAP_EVENT_LAST_UPDATED_INDEX_ID, block)
+    event.updatedAt = block.id
+    event.save()
+}
 
 function getAirPoapEventAttendeeId(eventId: string, tokenId: BigInt): string {
     const id = eventId.concat("-").concat(tokenId.toString())
     return id
 }
+
 function getOrCreateAirPoapEventAttendee(
     chainId: string,
     tokenAddress: Bytes,
@@ -335,4 +313,13 @@ function getOrCreateAirPoapEventAttendee(
         entity.lastUpdatedIndex = BIG_INT_ZERO
     }
     return entity
+}
+
+function saveAirPoapEventAttendee(eventAttendee: AirPoapEventAttendee, block: AirBlock): void {
+    eventAttendee.updatedAt = block.id
+    eventAttendee.lastUpdatedIndex = updateAirEntityCounter(
+        AIR_POAP_EVENT_ATTENDEE_LAST_UPDATED_INDEX_ID,
+        block
+    )
+    eventAttendee.save()
 }
