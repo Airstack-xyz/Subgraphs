@@ -1,0 +1,6 @@
+type ValidateEntity @entity {
+    id: ID! #tokenId
+    eventId: BigInt!
+    from: Bytes!
+    to: Bytes!
+}
