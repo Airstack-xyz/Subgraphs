@@ -13,7 +13,7 @@ import {
 
 import {
     AIR_POAP_ATTENDEE_UPDATED_INDEX_ID,
-    AIR_POAP_CONSTANT_ID,
+    AIR_POAP_CONSTANT_UPDATED_INDEX_ID,
     AIR_POAP_EVENT_ATTENDEE_LAST_UPDATED_INDEX_ID,
     AIR_POAP_EVENT_LAST_UPDATED_INDEX_ID,
     AIR_POAP_MINT_TRANSACTION_LAST_UPDATED_INDEX_ID,
@@ -358,6 +358,9 @@ function getOrCreateAirPoapConstant(id: string, value: string, block: AirBlock):
 }
 function saveAirPoapConstant(airPoapConstant: AirPoapConstant, block: AirBlock): void {
     airPoapConstant.updatedAt = block.id
-    airPoapConstant.lastUpdatedIndex = updateAirEntityCounter(AIR_POAP_CONSTANT_ID, block)
+    airPoapConstant.lastUpdatedIndex = updateAirEntityCounter(
+        AIR_POAP_CONSTANT_UPDATED_INDEX_ID,
+        block
+    )
     airPoapConstant.save()
 }
