@@ -51,7 +51,6 @@ export namespace poap {
         tokenAddress: Bytes,
         eventId: BigInt,
         tokenId: BigInt,
-        tokenURI: string,
         owner: Bytes
     ): void {
         const chainId = getChainId()
@@ -80,7 +79,6 @@ export namespace poap {
             tokenAddress,
             airBlock,
             tokenId,
-            tokenURI,
             event,
             ownerAttendee,
             event.tokenMints // used as mintOrder
@@ -313,7 +311,6 @@ function getOrCreateAirPoapEventAttendee(
     tokenAddress: Bytes,
     block: AirBlock,
     tokenId: BigInt,
-    tokenUri: string,
     event: AirPoapEvent,
     owner: AirPoapAttendee,
     mintOrder: BigInt

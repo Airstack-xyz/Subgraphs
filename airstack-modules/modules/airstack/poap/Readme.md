@@ -11,7 +11,6 @@
     tokenAddress: Bytes,            # token address of POAP
     eventId: BigInt,                # eventId of POAP token
     tokenId: BigInt,                # tokenId of POAP token
-    tokenURI: string,               # tokenURI of POAP token
     owner: Bytes                    # owner of POAP token
   )
 ```
