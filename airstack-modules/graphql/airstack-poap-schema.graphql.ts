@@ -65,7 +65,6 @@ type AirPoapEventAttendee @entity {
     id: ID!
     tokenId: String!
     tokenAddress: AirToken!
-    tokenUri: String!
     owner: AirPoapAttendee!
     event: AirPoapEvent!
     mint: AirPoapMintTransaction! @derivedFrom(field: "eventAttendee")
