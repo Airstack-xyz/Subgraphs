@@ -99,6 +99,14 @@ type AirPoapTransferTransaction @entity {
     protocolType: AirProtocolType! #POAP
     protocolActionType: AirProtocolActionType! #TRANSFER
 }
+
+type AirPoapConstant @entity {
+    id: ID!
+    value: String!
+    createdAt: AirBlock!
+    updatedAt: AirBlock!
+    lastUpdatedIndex: BigInt! # gets updated setBaseUri call
+}
 `
 
 export default schema
