@@ -1,5 +1,5 @@
-import { Address, BigInt, log } from "@graphprotocol/graph-ts"
-import { Poap, EventToken, Transfer } from "../generated/poap/poap"
+import { Address } from "@graphprotocol/graph-ts"
+import { EventToken, Transfer, SetBaseURICall } from "../generated/poap/poap"
 import * as airstack from "../modules/airstack/poap"
 import { ValidateEntity } from "../generated/schema"
 import { BIG_INT_ZERO } from "../modules/airstack/common"
@@ -7,12 +7,6 @@ import { BIG_INT_ZERO } from "../modules/airstack/common"
 export function handleEventToken(event: EventToken): void {
     const eventId = event.params.eventId
     const tokenId = event.params.tokenId
-    const poapContract = Poap.bind(event.address)
-    let tokenURI = ""
-    let tokenURIres = poapContract.try_tokenURI(tokenId)
-    if (!tokenURIres.reverted) {
-        tokenURI = tokenURIres.value
-    }
     let validateEntity = ValidateEntity.load(tokenId.toString())
     if (validateEntity == null) {
         // this means minting of this token is not tracked properly
@@ -31,7 +25,6 @@ export function handleEventToken(event: EventToken): void {
         event.address,
         eventId,
         tokenId,
-        tokenURI,
         validateEntity.to
     )
 }
@@ -62,4 +55,9 @@ export function handleTransfer(event: Transfer): void {
             to
         )
     }
+}
+
+export function handleSetBaseURI(call: SetBaseURICall): void {
+    const baseURI = call.inputs.baseURI
+    airstack.poap.trackPoapBaseURI(call.block, baseURI)
 }
