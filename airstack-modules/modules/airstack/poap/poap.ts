@@ -8,12 +8,12 @@ import {
     AirPoapEvent,
     AirPoapTransferTransaction,
     AirToken,
-    AirPoapConstant,
+    AirDataUpdate,
 } from "../../../generated/schema"
 
 import {
-    AIR_POAP_ATTENDEE_UPDATED_INDEX_ID,
-    AIR_POAP_CONSTANT_UPDATED_INDEX_ID,
+    AIR_POAP_ATTENDEE_LAST_UPDATED_INDEX_ID,
+    AIR_DATA_UPDATE_LAST_UPDATED_INDEX_ID,
     AIR_POAP_EVENT_ATTENDEE_LAST_UPDATED_INDEX_ID,
     AIR_POAP_EVENT_LAST_UPDATED_INDEX_ID,
     AIR_POAP_MINT_TRANSACTION_LAST_UPDATED_INDEX_ID,
@@ -162,9 +162,14 @@ export namespace poap {
     /**
      * @dev this function is used to base uri change
      * @param block, ethereum block
+     * @param contractAddress,of POAP
      * @param baseURI, POAP baseURI
      */
-    export function trackPoapBaseURI(block: ethereum.Block, baseURI: string): void {
+    export function trackPoapBaseURI(
+        block: ethereum.Block,
+        contractAddress: Bytes,
+        baseURI: string
+    ): void {
         const chainId = getChainId()
 
         let airBlock = getOrCreateAirBlock(
@@ -174,9 +179,9 @@ export namespace poap {
             block.timestamp
         )
         airBlock.save()
-
-        let baseURIEntity = getOrCreateAirPoapConstant(BASE_URI, baseURI, airBlock)
-        saveAirPoapConstant(baseURIEntity, airBlock)
+        let id = contractAddress.toHexString() + "-BASE_URI"
+        let baseURIEntity = getOrCreateAirDataUpdate(id, BASE_URI, baseURI, airBlock)
+        saveAirDataUpdate(baseURIEntity, airBlock)
     }
 }
 function createAirPoapTransferTransaction(
@@ -277,7 +282,10 @@ function getOrCreateAirPoapAttendee(
 }
 
 function saveAirPoapAttendee(attendee: AirPoapAttendee, block: AirBlock): void {
-    attendee.lastUpdatedIndex = updateAirEntityCounter(AIR_POAP_ATTENDEE_UPDATED_INDEX_ID, block)
+    attendee.lastUpdatedIndex = updateAirEntityCounter(
+        AIR_POAP_ATTENDEE_LAST_UPDATED_INDEX_ID,
+        block
+    )
     attendee.updatedAt = block.id
     attendee.save()
 }
@@ -342,22 +350,28 @@ function saveAirPoapEventAttendee(eventAttendee: AirPoapEventAttendee, block: Ai
     eventAttendee.save()
 }
 
-function getOrCreateAirPoapConstant(id: string, value: string, block: AirBlock): AirPoapConstant {
-    let airPoapConstant = AirPoapConstant.load(id)
-    if (airPoapConstant == null) {
-        airPoapConstant = new AirPoapConstant(id)
-        airPoapConstant.value = value
-        airPoapConstant.createdAt = block.id
-        airPoapConstant.updatedAt = block.id
-        airPoapConstant.lastUpdatedIndex = BIG_INT_ZERO
+function getOrCreateAirDataUpdate(
+    id: string,
+    type: string,
+    value: string,
+    block: AirBlock
+): AirDataUpdate {
+    let airDataUpdate = AirDataUpdate.load(id)
+    if (airDataUpdate == null) {
+        airDataUpdate = new AirDataUpdate(id)
+        airDataUpdate.type = type
+        airDataUpdate.value = value
+        airDataUpdate.createdAt = block.id
+        airDataUpdate.updatedAt = block.id
+        airDataUpdate.lastUpdatedIndex = BIG_INT_ZERO
     }
-    return airPoapConstant
+    return airDataUpdate
 }
-function saveAirPoapConstant(airPoapConstant: AirPoapConstant, block: AirBlock): void {
-    airPoapConstant.updatedAt = block.id
-    airPoapConstant.lastUpdatedIndex = updateAirEntityCounter(
-        AIR_POAP_CONSTANT_UPDATED_INDEX_ID,
+function saveAirDataUpdate(airDataUpdate: AirDataUpdate, block: AirBlock): void {
+    airDataUpdate.updatedAt = block.id
+    airDataUpdate.lastUpdatedIndex = updateAirEntityCounter(
+        AIR_DATA_UPDATE_LAST_UPDATED_INDEX_ID,
         block
     )
-    airPoapConstant.save()
+    airDataUpdate.save()
 }

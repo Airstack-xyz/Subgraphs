@@ -99,8 +99,9 @@ type AirPoapTransferTransaction @entity {
     protocolActionType: AirProtocolActionType! #TRANSFER
 }
 
-type AirPoapConstant @entity {
-    id: ID!
+type AirDataUpdate @entity {
+    id: ID! # "BASE_URI"
+    type: String!
     value: String!
     createdAt: AirBlock!
     updatedAt: AirBlock!

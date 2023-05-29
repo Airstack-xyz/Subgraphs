@@ -32,6 +32,7 @@
 3. Track Base URI
   trackPoapBaseURI(
     block: ethereum.Block,          # block, ethereum block
+    contractAddress: Bytes,         # contractAddress of POAP
     baseURI: string,                # transaction hash
   )
 ```
