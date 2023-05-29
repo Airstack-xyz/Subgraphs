@@ -59,5 +59,5 @@ export function handleTransfer(event: Transfer): void {
 
 export function handleSetBaseURI(call: SetBaseURICall): void {
     const baseURI = call.inputs.baseURI
-    airstack.poap.trackPoapBaseURI(call.block, baseURI)
+    airstack.poap.trackPoapBaseURI(call.block, call.to, baseURI)
 }
