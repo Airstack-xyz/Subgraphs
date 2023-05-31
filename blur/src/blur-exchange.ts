@@ -4,19 +4,11 @@ import * as airstack from "../modules/airstack/nft-marketplace"
 import {
   PROTOCOL_SELL_ACTION_TYPE,
   MARKET_PLACE_TYPE,
-  BLURSWAP_ADDRESS,
 } from "./constants"
 import { BIG_INT_ZERO } from "../modules/airstack/common"
 export function handleOrdersMatched(event: OrdersMatched): void {
   let txHash = event.transaction.hash.toHexString()
   let buyer = event.params.buy.trader
-  if (buyer.toHexString() == BLURSWAP_ADDRESS) {
-    log.debug("replacing blurswap address with from address:{} hash:{}", [
-      event.transaction.from.toHexString(),
-      txHash,
-    ])
-    buyer = event.transaction.from
-  }
   let seller = event.params.sell.trader
 
   let nfts = new Array<airstack.nft.NFT>()
