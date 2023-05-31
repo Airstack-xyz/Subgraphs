@@ -10,6 +10,7 @@ entities:
   - AirPoapEventAttendee
   - AirPoapMintTransaction
   - AirPoapTransferTransaction
+  - AirDataUpdate
 `
 
 export default yamlString;

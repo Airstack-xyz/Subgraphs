@@ -65,7 +65,6 @@ type AirPoapEventAttendee @entity {
     id: ID!
     tokenId: String!
     tokenAddress: AirToken!
-    tokenUri: String!
     owner: AirPoapAttendee!
     event: AirPoapEvent!
     mint: AirPoapMintTransaction! @derivedFrom(field: "eventAttendee")
@@ -98,6 +97,15 @@ type AirPoapTransferTransaction @entity {
     to: AirPoapAttendee!
     protocolType: AirProtocolType! #POAP
     protocolActionType: AirProtocolActionType! #TRANSFER
+}
+
+type AirDataUpdate @entity {
+    id: ID! # "BASE_URI"
+    type: String!
+    value: String!
+    createdAt: AirBlock!
+    updatedAt: AirBlock!
+    lastUpdatedIndex: BigInt! # gets updated setBaseUri call
 }
 `
 
