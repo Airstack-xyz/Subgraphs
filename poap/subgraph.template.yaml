@@ -24,4 +24,7 @@ dataSources:
                 handler: handleEventToken
               - event: Transfer(indexed address,indexed address,indexed uint256)
                 handler: handleTransfer
+          callHandlers:
+              - function: setBaseURI(string)
+                handler: handleSetBaseURI
           file: ./src/poap.ts
