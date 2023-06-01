@@ -127,7 +127,7 @@ export function atomicMatch(
     let matchPrice = orders.helpers.calculateMatchPrice(buyOrder, sellOrder, blockTimeStamp)
 
     if (isBundleSale) {
-        log.info("txHash {} isbundlesale", [txHash])
+        log.debug("txHash {} isbundlesale", [txHash])
         let decoded = abi.decodeBatchNftData(
             buyOrder.callData,
             sellOrder.callData,
@@ -162,21 +162,15 @@ export function atomicMatch(
                 log.error("transferlen >1 isn't expected,txhash {}", [txHash])
                 throw new Error("transferlen >1 isn't expected")
             }
-            for (let j = 0; j < transfer.tokens.length; j++) {
-                let tokens = transfer.tokens[j]
-                let nft = new airstack.nft.NFT(
-                    decoded.addressList[i],
-                    "",
-                    tokens.tokenId,
-                    tokens.amount
-                )
-                log.debug("nft collection {} tokenId {} amount {}", [
-                    nft.collection.toHexString(),
-                    nft.tokenId.toString(),
-                    nft.amount.toString(),
-                ])
-                nfts.push(nft)
-            }
+            let token = transfer.tokens[0]
+            let nft = new airstack.nft.NFT(decoded.addressList[i], token.tokenId, token.amount)
+            log.debug("bundleSale hash {} collection {} tokenId {} amount {}", [
+                txHash,
+                nft.collection.toHexString(),
+                nft.tokenId.toString(),
+                nft.amount.toString(),
+            ])
+            nfts.push(nft)
         }
         let royaltyDetails = new royaltyResult()
         if (sellOrder.feeRecipient != Address.zero().toHexString()) {
@@ -203,8 +197,9 @@ export function atomicMatch(
             throw new Error("from or to is zero address")
         }
         log.error(
-            "bundle from {} to {} matchPrice {} paymentToken {} feeRecipient {} protocolFees {}",
+            "bundle hash {} from {} to {} matchPrice {} paymentToken {} feeRecipient {} protocolFees {}",
             [
+                txHash,
                 from.toHexString(),
                 to.toHexString(),
                 matchPrice.toString(),
@@ -260,7 +255,7 @@ export function atomicMatch(
         for (let i = 0; i < decoded.tokens.length; i++) {
             const token = decoded.tokens[i]
             contractAddress = token.contract != Address.zero() ? token.contract : contractAddress
-            let nft = new airstack.nft.NFT(contractAddress, "", token.tokenId, token.amount)
+            let nft = new airstack.nft.NFT(contractAddress, token.tokenId, token.amount)
             nfts.push(nft)
         }
 

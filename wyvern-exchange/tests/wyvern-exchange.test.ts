@@ -53,7 +53,6 @@ describe("Describe entity assertions", () => {
         let expectedNfts: airstack.nft.NFT[] = []
         let expectedNFT1 = new airstack.nft.NFT(
             Address.fromString("0x045Ec645aBB6b768206B079cdDb59677cDb071A5"),
-            "",
             BigInt.fromString("2"),
             BigInt.fromString("1")
         )
@@ -82,7 +81,6 @@ describe("Describe entity assertions", () => {
         let expectedNfts: airstack.nft.NFT[] = []
         let expectedNFT1 = new airstack.nft.NFT(
             Address.fromString("0x366E3B64Ef9060EB4B2B0908d7cD165C26312A23"),
-            "",
             BigInt.fromString("1445"),
             BigInt.fromString("1")
         )
@@ -90,14 +88,12 @@ describe("Describe entity assertions", () => {
 
         let expectedNFT2 = new airstack.nft.NFT(
             Address.fromString("0x9f35425c2ef3616dd024d866082e0b61023fbfe1"),
-            "",
             BigInt.fromString("3017"),
             BigInt.fromString("1")
         )
         expectedNfts.push(expectedNFT2)
         let expectedNFT3 = new airstack.nft.NFT(
             Address.fromString("0xF80bd8c7f0f68CCF76E638Edb53fDB922e05295c"),
-            "",
             BigInt.fromString("7220"),
             BigInt.fromString("1")
         )
@@ -126,7 +122,6 @@ describe("Describe entity assertions", () => {
         let expectedNfts: airstack.nft.NFT[] = []
         let expectedNFT1 = new airstack.nft.NFT(
             Address.fromString("0x5fbef9fcb449d56154980e52e165d9650b9f6ec2"),
-            "",
             BigInt.fromString(
                 "34923513782120467435984595847068866881775186546998211107474682676588369129455"
             ),
@@ -156,7 +151,6 @@ describe("Describe entity assertions", () => {
         let expectedNfts: airstack.nft.NFT[] = []
         let expectedNFT1 = new airstack.nft.NFT(
             Address.fromString("0x495f947276749ce646f68ac8c248420045cb7b5e"),
-            "",
             BigInt.fromString(
                 "17854310454196282035870592841598074249268846845716858963664664195636899348481"
             ),
@@ -165,7 +159,6 @@ describe("Describe entity assertions", () => {
         expectedNfts.push(expectedNFT1)
         let expectedNFT2 = new airstack.nft.NFT(
             Address.fromString("0x495f947276749ce646f68ac8c248420045cb7b5e"),
-            "",
             BigInt.fromString(
                 "17854310454196282035870592841598074249268846845716858963664664196736410976257"
             ),
@@ -174,7 +167,6 @@ describe("Describe entity assertions", () => {
         expectedNfts.push(expectedNFT2)
         let expectedNFT3 = new airstack.nft.NFT(
             Address.fromString("0x495f947276749ce646f68ac8c248420045cb7b5e"),
-            "",
             BigInt.fromString(
                 "17854310454196282035870592841598074249268846845716858963664664197835922604033"
             ),
@@ -183,7 +175,6 @@ describe("Describe entity assertions", () => {
         expectedNfts.push(expectedNFT3)
         let expectedNFT4 = new airstack.nft.NFT(
             Address.fromString("0x495f947276749ce646f68ac8c248420045cb7b5e"),
-            "",
             BigInt.fromString(
                 "17854310454196282035870592841598074249268846845716858963664664198935434231809"
             ),
@@ -192,7 +183,6 @@ describe("Describe entity assertions", () => {
         expectedNfts.push(expectedNFT4)
         let expectedNFT5 = new airstack.nft.NFT(
             Address.fromString("0x495f947276749ce646f68ac8c248420045cb7b5e"),
-            "",
             BigInt.fromString(
                 "17854310454196282035870592841598074249268846845716858963664664200034945859585"
             ),
@@ -222,7 +212,6 @@ describe("Describe entity assertions", () => {
         let expectedNfts: airstack.nft.NFT[] = []
         let expectedNFT1 = new airstack.nft.NFT(
             Address.fromString("0x5079FC4e96338be1B5aff236ff4b00eC4452B2D3"),
-            "",
             BigInt.fromString("1"),
             BigInt.fromString("4")
         )
@@ -250,13 +239,11 @@ describe("Describe entity assertions", () => {
         let expectedNfts: airstack.nft.NFT[] = []
         let expectedNFT1 = new airstack.nft.NFT(
             Address.fromString("0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"),
-            "",
             BigInt.fromString("8167"),
             BigInt.fromString("1")
         )
         let expectedNFT2 = new airstack.nft.NFT(
             Address.fromString("0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e"),
-            "",
             BigInt.fromString("2779"),
             BigInt.fromString("1")
         )
