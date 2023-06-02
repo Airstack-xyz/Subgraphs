@@ -6,8 +6,8 @@ import {
   afterEach,
 } from "matchstick-as/assembly/index"
 import { ByteArray, crypto, Bytes } from "@graphprotocol/graph-ts"
-import { handleNameTransferred, handleNameRenewedByController, handleNameRegistered, handleNameRenewed, handleNameRegisteredByControllerOld, handleNameRegisteredByController } from "../src/eth-registrar"
-import { getHandleNameTransferredEvent, getHandleNameRenewedByControllerEvent, getHandleNameRegisteredEvent, getHandleNameRenewedEvent, getHandleNameRegisteredByControllerOldEvent, getHandleNameRegisteredByControllerEvent } from "./eth-registrar-utils"
+import { handleNameRenewedByController, handleNameRegistered, handleNameRenewed, handleNameRegisteredByControllerOld, handleNameRegisteredByController } from "../src/eth-registrar"
+import { getHandleNameRenewedByControllerEvent, getHandleNameRegisteredEvent, getHandleNameRenewedEvent, getHandleNameRegisteredByControllerOldEvent, getHandleNameRegisteredByControllerEvent } from "./eth-registrar-utils"
 import { ETHEREUM_MAINNET_ID, ZERO_ADDRESS } from "../modules/airstack/domain-name/utils"
 import { uint256ToByteArray, byteArrayFromHex } from "../src/utils"
 import { BIGINT_ONE } from "../modules/airstack/common"
@@ -29,10 +29,10 @@ describe("Unit tests for eth registrar handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -59,7 +59,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
     // AirNameRegisteredTransaction
-    let nameRegisteredId = domainId.concat("-").concat(event.transaction.hash.toHexString());
+    let nameRegisteredId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "paymentToken", airTokenId);
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "block", blockId);
     assert.fieldEquals("AirNameRegisteredTransaction", nameRegisteredId, "transactionHash", event.transaction.hash.toHexString());
@@ -80,10 +80,10 @@ describe("Unit tests for eth registrar handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());

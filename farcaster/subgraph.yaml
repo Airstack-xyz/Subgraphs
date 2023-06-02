@@ -1,0 +1,58 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: FarcasterNameRegistry
+    network: goerli
+    source:
+      address: '0xe3be01d99baa8db9905b33a3ca391238234b79d1'
+      abi: FarcasterNameRegistry
+      startBlock: 7648795
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - OwnerToFidMapping
+      abis:
+        - name: FarcasterNameRegistry
+          file: ./abis/FarcasterNameRegistry.json
+        - name: FarcasterIdRegistry
+          file: ./abis/TokenIdRegistry.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleFarcasterNameTransfer
+        - event: ChangeRecoveryAddress(indexed uint256,indexed address)
+          handler: handleChangeRecoveryAddressFname
+        - event: Renew(indexed uint256,uint256)
+          handler: handleRenewFname
+      # callHandlers: #we are not using this, keeping for future reference
+      #   - function: bid(address,uint256,address)
+      #     handler: handlerFnameBid
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: FarcasterIdRegistry
+    network: goerli
+    source:
+      address: '0xda107a1caf36d198b12c16c7b6a1d1c795978c42'
+      abi: FarcasterIdRegistry
+      startBlock: 7648795
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+      abis:
+        - name: FarcasterIdRegistry
+          file: ./abis/TokenIdRegistry.json
+      eventHandlers:
+        - event: Register(indexed address,indexed uint256,address,string)
+          handler: handleRegister
+        - event: ChangeHome(indexed uint256,string)
+          handler: handleChangeHomeUrlFid
+        - event: ChangeRecoveryAddress(indexed uint256,indexed address)
+          handler: handleChangeRecoveryAddressFid
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleFarcasterIdTransfer
+      file: ./src/mapping.ts

@@ -15,12 +15,12 @@ import { ETHEREUM_MAINNET_ID, ROOT_NODE } from "../modules/airstack/domain-name/
 import { getChainId } from "../modules/airstack/common";
 import {
   TOKEN_ADDRESS_ENS,
-  createIsMigratedMapping,
+  getOrCreateIsMigratedMapping,
   createAirDomainEntityId,
   createReverseRegistrar,
   getNameByLabelHash,
 } from "./utils";
-import { AirDomain, DomainVsIsMigratedMapping } from "../generated/schema";
+import { AirDomain } from "../generated/schema";
 /**
  * @dev this functions maps the NewOwner event to airstack trackDomainOwnerChangedTransaction
  * @param event NewOwnerEvent from ENS Registry
@@ -31,7 +31,7 @@ export function handleNewOwner(event: NewOwnerEvent): void {
   let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
   let tokenId = BigInt.fromUnsignedBytes(event.params.label).toString();
   // marking the domain as migrated
-  let isMigratedMapping = createIsMigratedMapping(
+  let isMigratedMapping = getOrCreateIsMigratedMapping(
     domainId,
     ETHEREUM_MAINNET_ID,
     blockId,
@@ -95,7 +95,7 @@ export function handleTransfer(event: TransferEvent): void {
   // marking the domain as migrated
   let domainId = event.params.node.toHexString();
   let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
-  let isMigratedMapping = createIsMigratedMapping(
+  let isMigratedMapping = getOrCreateIsMigratedMapping(
     domainId,
     ETHEREUM_MAINNET_ID,
     blockId,
@@ -121,7 +121,7 @@ export function handleNewResolver(event: NewResolverEvent): void {
   log.info("handleNewResolver: resolver {} node {} txhash {}", [event.params.resolver.toHexString(), event.params.node.toHexString(), event.transaction.hash.toHexString()]);
   let domainId = event.params.node.toHexString();
   let blockId = getChainId().concat("-").concat(event.block.number.toString());
-  let isMigratedMapping = createIsMigratedMapping(
+  let isMigratedMapping = getOrCreateIsMigratedMapping(
     domainId,
     getChainId(),
     blockId,
@@ -147,7 +147,7 @@ export function handleNewTTL(event: NewTTLEvent): void {
   log.info("handleNewTTL: {} {} {} ", [event.params.ttl.toString(), event.params.node.toHexString(), event.transaction.hash.toHexString()]);
   let domainId = event.params.node.toHexString();
   let blockId = getChainId().concat("-").concat(event.block.number.toString());
-  let isMigratedMapping = createIsMigratedMapping(
+  let isMigratedMapping = getOrCreateIsMigratedMapping(
     domainId,
     getChainId(),
     blockId,
@@ -175,22 +175,19 @@ export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
   let blockId = getChainId().concat("-").concat(event.block.number.toString());
   let tokenId = BigInt.fromUnsignedBytes(event.params.label).toString();
   // getting is migrated mapping
-  let isMigratedMapping = DomainVsIsMigratedMapping.load(domainId);
-  if (isMigratedMapping == null) {
-    isMigratedMapping = createIsMigratedMapping(
-      domainId,
-      getChainId(),
-      blockId,
-      false,
-    );
-    // if the domain is not migrated yet, we save the above created mapping
-    isMigratedMapping.save();
-  }
+  let isMigratedMapping = getOrCreateIsMigratedMapping(
+    domainId,
+    getChainId(),
+    blockId,
+    false,
+  );
   // this domain was migrated from the old registry, so we don't need to handle old registry event now
   // this check needs to be done only in old registry event
-  else if (isMigratedMapping.isMigrated == true) {
+  if (isMigratedMapping.isMigrated == true) {
     return;
   }
+  // if the domain is not migrated yet, we save the above created mapping
+  isMigratedMapping.save();
   // creating labelName from label
   let labelName = ens.nameByHash(event.params.label.toHexString());
   if (labelName == null) {
@@ -247,22 +244,19 @@ export function handleNewResolverOldRegistry(event: NewResolverEvent): void {
   // getting is migrated mapping
   let domainId = event.params.node.toHexString();
   let blockId = getChainId().concat("-").concat(event.block.number.toString());
-  let isMigratedMapping = DomainVsIsMigratedMapping.load(domainId);
-  if (isMigratedMapping == null) {
-    isMigratedMapping = createIsMigratedMapping(
-      domainId,
-      getChainId(),
-      blockId,
-      false,
-    );
-    // if the domain is not migrated yet, we save the above created mapping
-    isMigratedMapping.save();
-  }
+  let isMigratedMapping = getOrCreateIsMigratedMapping(
+    domainId,
+    getChainId(),
+    blockId,
+    false,
+  );
   // this domain was migrated from the old registry, so we don't need to handle old registry event now
   // this check needs to be done only in old registry event
-  else if (isMigratedMapping && domainId != ROOT_NODE && isMigratedMapping.isMigrated == true) {
+  if (domainId != ROOT_NODE && isMigratedMapping.isMigrated == true) {
     return;
   }
+  // if the domain is not migrated yet, we save the above created mapping
+  isMigratedMapping.save();
   // sending transaction to airstack
   airstack.domain.trackDomainNewResolverTransaction(
     event.block,
@@ -283,22 +277,19 @@ export function handleNewTTLOldRegistry(event: NewTTLEvent): void {
   // getting is migrated mapping
   let domainId = event.params.node.toHexString();
   let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
-  let isMigratedMapping = DomainVsIsMigratedMapping.load(domainId);
-  if (isMigratedMapping == null) {
-    isMigratedMapping = createIsMigratedMapping(
-      domainId,
-      getChainId(),
-      blockId,
-      false,
-    );
-    // if the domain is not migrated yet, we save the above created mapping
-    isMigratedMapping.save();
-  }
+  let isMigratedMapping = getOrCreateIsMigratedMapping(
+    domainId,
+    ETHEREUM_MAINNET_ID,
+    blockId,
+    false,
+  );
   // this domain was migrated from the old registry, so we don't need to handle old registry event now
   // this check needs to be done only in old registry event
-  else if (isMigratedMapping.isMigrated == true) {
+  if (isMigratedMapping.isMigrated == true) {
     return;
   }
+  // if the domain is not migrated yet, we save the above created mapping
+  isMigratedMapping.save();
   airstack.domain.trackDomainNewTTLTransaction(
     event.block,
     event.transaction.hash.toHexString(),
@@ -318,22 +309,19 @@ export function handleTransferOldRegistry(event: TransferEvent): void {
   // getting is migrated mapping
   let domainId = event.params.node.toHexString();
   let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
-  let isMigratedMapping = DomainVsIsMigratedMapping.load(domainId);
-  if (isMigratedMapping == null) {
-    isMigratedMapping = createIsMigratedMapping(
-      domainId,
-      getChainId(),
-      blockId,
-      false,
-    );
-    // if the domain is not migrated yet, we save the above created mapping
-    isMigratedMapping.save();
-  }
+  let isMigratedMapping = getOrCreateIsMigratedMapping(
+    domainId,
+    ETHEREUM_MAINNET_ID,
+    blockId,
+    false,
+  );
   // this domain was migrated from the old registry, so we don't need to handle old registry event now
   // this check needs to be done only in old registry event
-  else if (isMigratedMapping.isMigrated == true) {
+  if (isMigratedMapping.isMigrated == true) {
     return;
   }
+  // if the domain is not migrated yet, we save the above created mapping
+  isMigratedMapping.save();
   // sending transaction to airstack
   airstack.domain.trackDomainTransferTransaction(
     event.block,

@@ -45,7 +45,7 @@ AIR_CHAIN_ID_MAP.set("near-mainnet", "1313161554");
 AIR_CHAIN_ID_MAP.set("optimism", "10");
 AIR_CHAIN_ID_MAP.set("osmosis", "osmosis-1");
 AIR_CHAIN_ID_MAP.set("matic", "137");
-AIR_CHAIN_ID_MAP.set("xdai", "100");
+AIR_CHAIN_ID_MAP.set("gnosis", "100")
 
 export function getChainId(): string {
   const network = dataSource.network();
@@ -96,7 +96,12 @@ export function createAirMeta(
   let meta = AirMeta.load(AIR_META_ID);
   if (meta == null) {
     meta = new AirMeta(AIR_META_ID);
-    meta.network = dataSource.network().toString();
+    let network = dataSource.network().toString();
+    // handling special case for matic network
+    if (network == "matic") {
+      network = "polygon";
+    }
+    meta.network = network;
     meta.schemaVersion = SUBGRAPH_SCHEMA_VERSION;
     meta.version = SUBGRAPH_VERSION;
     meta.slug = slug;

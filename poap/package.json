@@ -1,0 +1,32 @@
+{
+    "name": "poap-mainnet",
+    "license": "UNLICENSED",
+    "scripts": {
+        "codegen": "graph codegen",
+        "build": "graph build",
+        "prepare:mainnet": "mustache config/mainnet.json subgraph.template.yaml > subgraph.yaml",
+        "prepare:gnosis": "mustache config/gnosis.json subgraph.template.yaml > subgraph.yaml",
+        "prepare:chiado": "mustache config/chiado.json subgraph.template.yaml > subgraph.yaml",
+        "prepare:goerli": "mustache config/goerli.json subgraph.template.yaml > subgraph.yaml",
+        "deploy:mainnet": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ sharathkrml/poap-mainnet",
+        "deploy:gnosis": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ sharathkrml/poap-gnosis",
+        "deploy:chiado": "goldsky subgraph deploy poap-xyz/poap-chiado",
+        "deploy:goerli": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ sharathkrml/poap-goerli",
+        "mainnet": " yarn prepare:mainnet && yarn codegen && yarn build && yarn deploy:mainnet",
+        "gnosis": " yarn prepare:gnosis && yarn codegen && yarn build && yarn deploy:gnosis",
+        "goerli": " yarn prepare:goerli && yarn codegen && yarn build && yarn deploy:goerli",
+        "all": "yarn mainnet && yarn gnosis && yarn goerli",
+        "create-local": "graph create --node http://localhost:8020/ poap-xyz/poap",
+        "remove-local": "graph remove --node http://localhost:8020/ poap-xyz/poap",
+        "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 poap-xyz/poap"
+    },
+    "dependencies": {
+        "@airstack/subgraph-generator": "file:airstack-subgraph-generator-1.0.0-alpha.3.tgz",
+        "@graphprotocol/graph-cli": "^0.47.0",
+        "@graphprotocol/graph-ts": "^0.29.3"
+    },
+    "devDependencies": {
+        "matchstick-as": "0.5.0",
+        "mustache": "^4.2.0"
+    }
+}

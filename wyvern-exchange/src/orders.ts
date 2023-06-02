@@ -107,7 +107,7 @@ export namespace orders {
 
 	export namespace constants {
 
-		export const WYVERN_ATOMICIZER_ADDRESS = "0xc99f70bfd82fb7c8f8191fdfbfb735606b15e5c5"
+		export const WYVERN_ATOMICIZER_ADDRESS = "0xc99f70bfd82fb7c8f8191fdfbfb735606b15e5c5" 
 
 		export function getFeeTypes(): TypedMap<string, string> {
 			let PROTOCOL = "0"
@@ -149,16 +149,16 @@ export namespace orders {
 		export function calculateMatchPrice(buy: Order, sell: Order, now: BigInt): BigInt {
 			/* Calculate sell price. */
 			let sellPrice = calculateFinalPrice(
-				sell.side, sell.saleKind, sell.basePrice,
-				sell.extra, sell.listingTime, sell.expirationTIme, now)
+				sell.side!, sell.saleKind!, sell.basePrice!,
+				sell.extra!, sell.listingTime!, sell.expirationTIme!, now)
 
 			/* Calculate buy price. */
 			let buyPrice = calculateFinalPrice(
-				buy.side, buy.saleKind, buy.basePrice,
-				buy.extra, buy.listingTime, buy.expirationTIme, now)
+				buy.side!, buy.saleKind!, buy.basePrice!,
+				buy.extra!, buy.listingTime!, buy.expirationTIme!, now)
 
 			/* Maker/taker priority. */
-			let isMissingSellFeeRecipient = (address.isZeroAddress(Address.fromString(sell.feeRecipient)))
+			let isMissingSellFeeRecipient = (address.isZeroAddress(Address.fromString(sell.feeRecipient!)))
 			return isMissingSellFeeRecipient ? buyPrice : sellPrice
 
 		}

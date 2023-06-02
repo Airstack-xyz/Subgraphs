@@ -7,7 +7,7 @@ import { ExchangeV1 } from "../generated/ExchangeV1/ExchangeV1";
 import { ERC721 } from "../generated/ERC721Sale1/ERC721";
 import { ERC721Sale } from "../generated/ERC721Sale1/ERC721Sale";
 import { SecondarySaleFees } from "../generated/ExchangeV1/SecondarySaleFees";
-import { nft } from "../modules/airstack/nft-marketplace";
+import { nft } from "../modules/airstack";
 
 export const INTERFACE_ID_FEES = Bytes.fromHexString("0xb7799584");
 export const exchangeV1Address = Address.fromString("0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06");

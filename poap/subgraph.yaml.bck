@@ -1,0 +1,28 @@
+specVersion: 0.0.4
+description: POAP
+schema:
+    file: ./schema.graphql
+dataSources:
+    - kind: ethereum/contract
+      name: Poap
+      network: xdai
+      source:
+          address: "0x22C1f6050E56d2876009903609a2cC3fEf83B415"
+          abi: Poap
+          startBlock: 12188423
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.6
+          language: wasm/assemblyscript
+          entities:
+              - EventToken
+              - Transfer
+          abis:
+              - name: Poap
+                file: ./abis/XPoap.json
+          eventHandlers:
+              - event: EventToken(indexed uint256,uint256)
+                handler: handleEventToken
+              - event: Transfer(indexed address,indexed address,indexed uint256)
+                handler: handleTransfer
+          file: ./src/poap.ts

@@ -14,7 +14,19 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - TxnHashVsTokenIdMapping
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirToken
+        - AirNftTransaction
+        - AirTokenMetadata
+        - AirExtraData
+        - AirAccount,
+        - AirNftTransaction,
+        - AirToken,
+        - AirBlock,
+        - AirNftSaleRoyalty
       abis:
         - name: ExchangeV2
           file: ./abis/ExchangeV2.json

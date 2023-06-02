@@ -14,6 +14,17 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - OrderApprovedPartOne
+        - OrderApprovedPartTwo
+        - OrderCancelled
+        - OrdersMatched
+        - OwnershipRenounced
+        - OwnershipTransferred
+        - AirAccount,
+        - AirNftTransaction,
+        - AirToken,
+        - AirBlock,
+        - AirNftSaleRoyalty
       abis:
         - name: WyvernExchange
           file: ./abis/WyvernExchange.json
@@ -33,6 +44,18 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - ContractOrderApprovedPartOne
+        - ContractOrderApprovedPartTwo
+        - ContractOrderCancelled
+        - ContractOrdersMatched
+        - NonceIncremented
+        - ContractOwnershipRenounced
+        - ContractOwnershipTransferred
+        - AirAccount,
+        - AirNftTransaction,
+        - AirToken,
+        - AirBlock,
+        - AirNftSaleRoyalty
       abis:
         - name: Contract
           file: ./abis/Contract.json
