@@ -27,10 +27,10 @@ describe("Unit tests for resolver handlers", () => {
     let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirResolver
     assert.fieldEquals("AirResolver", resolverId, "id", resolverId)
     assert.fieldEquals("AirResolver", resolverId, "domain", domainId)

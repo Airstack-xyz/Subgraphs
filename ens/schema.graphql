@@ -17,41 +17,12 @@ type DomainVsIsMigratedMapping @entity {
   lastUpdatedAt: AirBlock!
 }
 
-#
-# --Airstack Schemas--
-
-type AirBlock @entity {
- id: ID! #chain-number
- hash: String!
- number: BigInt!
- timestamp: BigInt!
-}
-
-type AirMeta @entity {
-  id: ID! # air_meta 
-  network: String!
-  schemaVersion: String!
-  slug: String! #Opensea_V1
-  name: String! # Opeasea V1
-	version: String!
-}
-
-type AirEntityCounter @entity {
-	id: ID! #AIR_DAILY_STATS_ACCOUNT
-	count: BigInt!
-	createdAt: AirBlock! 
-	lastUpdatedAt: AirBlock!
-}
-
-type AirExtra @entity {
-  id: ID! # Concatenation of domainId and name
-  name: String!
-  value: String!
-}
-
-type AirAccount @entity {
+type NameRegisteredTransactionVsRegistrant @entity {
   id: ID!
-  address: String!
+  tokenId: String!
+  transactionHash: String!
+  oldRegistrant: AirAccount!
+  newRegistrant: AirAccount!
   createdAt: AirBlock!
 }
 
@@ -60,4 +31,3 @@ type LabelhashToNameMapping @entity {
   name: String!
   createdAt: String!
 }
-
