@@ -195,6 +195,25 @@ dataSources:
         - function: setName(string)
           handler: handleSetName
   - kind: ethereum/contract
+    name: ReverseRegistrarOld
+    network: mainnet
+    source:
+      abi: ReverseRegistrar
+      address: '0x9062C0A6Dbd6108336BcBe4593a3D1cE05512069'
+      startBlock: 3787060
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/reverse-registrar.ts
+      entities:
+      abis:
+        - name: ReverseRegistrar
+          file: ./abis/ReverseRegistrar.json
+      callHandlers:
+        - function: setName(string)
+          handler: handleSetName
+  - kind: ethereum/contract
     name: NameWrapper
     network: mainnet
     source:
