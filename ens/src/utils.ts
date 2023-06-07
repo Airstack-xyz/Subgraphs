@@ -3,6 +3,7 @@ import {
   ReverseRegistrar,
   NameRegisteredTransactionVsRegistrant,
   AirBlock,
+  AirDomain,
   LabelhashToNameMapping,
 } from "../generated/schema";
 import {
@@ -11,10 +12,10 @@ import {
   ethereum,
   ByteArray,
   BigInt,
-  log,
 } from "@graphprotocol/graph-ts";
+import * as airstack from "../modules/airstack/domain-name";
 import {
-  checkValidLabel
+  checkValidLabel, saveDomainEntity
 } from "../modules/airstack/domain-name/utils";
 // ens constants
 export const TOKEN_ADDRESS_ENS = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
@@ -167,4 +168,51 @@ export function decodeName(buf: Bytes, txHash: string): Array<string> | null {
     len = buf[offset++];
   }
   return [firstLabel, list.toString()];
+}
+
+/**
+ * @dev function to recursively update subdomain names for a given domain id
+ */
+export function updateSubdomainNames(parentDomain: AirDomain, block: AirBlock): void {
+  let domainId = parentDomain.id;
+  let subdomainIds = getSubdomainIds(domainId);
+  // make sure parent domain does not have [hex] in it
+  if (parentDomain.name != null) {
+    let parentDomainName = parentDomain.name!
+    if (!parentDomainName.includes("]") && !parentDomainName.includes("[")) {
+      for (let i = 0; i < subdomainIds.length; i++) {
+        let subdomainId = subdomainIds[i];
+        let subdomainEntity = AirDomain.load(subdomainId);
+        if (subdomainEntity != null) {
+          if (subdomainEntity.name != null) {
+            let subdomainEntityNameArray = subdomainEntity.name!.split(".")
+            if (subdomainEntityNameArray.length >= 3) { // only allowing domains with format abc.[hex].eth
+              // loop through subdomainEntityNameArray
+              for (let i = 0; i < subdomainEntityNameArray.length; i++) {
+                // only fix index one if it has [hex], assuming 'abc' is correct
+                if (i == 1 && subdomainEntityNameArray[i].endsWith("]") || subdomainEntityNameArray[i].startsWith("[")) {
+                  let updatedName = subdomainEntityNameArray[0].concat(".").concat(parentDomain.name!)
+                  subdomainEntity.name = updatedName;
+                }
+              }
+            }
+            saveDomainEntity(subdomainEntity, block);
+            updateSubdomainNames(subdomainEntity, block);
+          }
+        }
+      }
+    }
+  }
+}
+
+/** 
+ * @dev function to get a list of subdomains given a domain id
+*/
+export function getSubdomainIds(domainId: string): Array<string> {
+  let subdomainIds = new Array<string>();
+  let domain = airstack.domain.getAirDomain(domainId);
+  if (domain != null) {
+    return domain.subdomains;
+  }
+  return subdomainIds;
 }
