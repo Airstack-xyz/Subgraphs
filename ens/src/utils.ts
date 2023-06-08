@@ -187,19 +187,21 @@ export function updateSubdomainNames(parentDomain: AirDomain, block: AirBlock): 
         let subdomainEntity = AirDomain.load(subdomainId);
         if (subdomainEntity != null) {
           if (subdomainEntity.name != null) {
-            let subdomainEntityNameArray = subdomainEntity.name!.split(".")
-            if (subdomainEntityNameArray.length >= 3) { // only allowing domains with format abc.[hex].eth
-              // loop through subdomainEntityNameArray
-              for (let i = 0; i < subdomainEntityNameArray.length; i++) {
-                // only fix index one if it has [hex], assuming 'abc' is correct
-                if (i == 1 && subdomainEntityNameArray[i].endsWith("]") || subdomainEntityNameArray[i].startsWith("[")) {
-                  let updatedName = subdomainEntityNameArray[0].concat(".").concat(parentDomain.name!)
-                  subdomainEntity.name = updatedName;
+            if (subdomainEntity.name!.includes("]") || subdomainEntity.name!.includes("[")) {
+              let subdomainEntityNameArray = subdomainEntity.name!.split(".")
+              if (subdomainEntityNameArray.length >= 3) { // only allowing domains with format abc.[hex].eth
+                // loop through subdomainEntityNameArray
+                for (let i = 0; i < subdomainEntityNameArray.length; i++) {
+                  // only fix index one if it has [hex], assuming 'abc' is correct
+                  if (i == 1 && subdomainEntityNameArray[i].endsWith("]") || subdomainEntityNameArray[i].startsWith("[")) {
+                    let updatedName = subdomainEntityNameArray[0].concat(".").concat(parentDomain.name!)
+                    subdomainEntity.name = updatedName;
+                  }
                 }
               }
-            } // todo: should also allow to fix domains which have format [hex].eth
-            saveDomainEntity(subdomainEntity, block);
-            updateSubdomainNames(subdomainEntity, block);
+              saveDomainEntity(subdomainEntity, block);
+              updateSubdomainNames(subdomainEntity, block);
+            }
           }
         }
       }
