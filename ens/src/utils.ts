@@ -216,8 +216,8 @@ export function getSubdomainIds(domainId: string): Array<string> {
   let subdomainIds = new Array<string>();
   let domain = airstack.domain.getAirDomain(domainId);
   if (domain != null && domain.subdomains != null) {
-    log.info("domain: {} subdomains: {}", [domainId, domain.subdomains.toString()])
-    return domain.subdomains;
+    log.info("domain: {} subdomains: {}", [domainId, domain.subdomains!.toString()])
+    return domain.subdomains!;
   }
   return subdomainIds;
 }
