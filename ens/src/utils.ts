@@ -12,6 +12,7 @@ import {
   ethereum,
   ByteArray,
   BigInt,
+  log,
 } from "@graphprotocol/graph-ts";
 import * as airstack from "../modules/airstack/domain-name";
 import {
@@ -178,6 +179,7 @@ export function updateSubdomainNames(parentDomain: AirDomain, block: AirBlock): 
   let subdomainIds = getSubdomainIds(domainId);
   // make sure parent domain does not have [hex] in it
   if (parentDomain.name != null) {
+    log.info("parent domain name: {} subdomainIds: {}", [parentDomain.name!, subdomainIds.toString()])
     let parentDomainName = parentDomain.name!
     if (!parentDomainName.includes("]") && !parentDomainName.includes("[")) {
       for (let i = 0; i < subdomainIds.length; i++) {
@@ -195,7 +197,7 @@ export function updateSubdomainNames(parentDomain: AirDomain, block: AirBlock): 
                   subdomainEntity.name = updatedName;
                 }
               }
-            }
+            } // todo: should also allow to fix domains which have format [hex].eth
             saveDomainEntity(subdomainEntity, block);
             updateSubdomainNames(subdomainEntity, block);
           }
@@ -212,6 +214,7 @@ export function getSubdomainIds(domainId: string): Array<string> {
   let subdomainIds = new Array<string>();
   let domain = airstack.domain.getAirDomain(domainId);
   if (domain != null && domain.subdomains != null) {
+    log.info("domain: {} subdomains: {}", [domainId, domain.subdomains!.toString()])
     return domain.subdomains!;
   }
   return subdomainIds;
