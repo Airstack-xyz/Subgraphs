@@ -169,14 +169,22 @@ export namespace domain {
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     // get previous resolver
     let previousResolverId = domain.resolver;
-    // create new resolver
-    let resolverEntity = getOrCreateAirResolver(domain, chainId, airBlock, resolver);
-    resolverEntity.save();
-    // update domain resolver
-    domain.resolver = resolverEntity.id;
-    // update domain resolved address
-    if (resolverEntity.resolvedAddress) {
-      domain.resolvedAddress = resolverEntity.resolvedAddress;
+    // check if resolver is zero address
+    let resolverEntity = getAirResolver(resolver, domain);
+    if (resolver == ZERO_ADDRESS) {
+      // if yes, set domain.resolver = null
+      domain.resolvedAddress = null;
+    } else {
+      if (resolverEntity == null) {
+        // marking domain.resolvedAddress as null as the resolver entity will be created newly
+        domain.resolvedAddress = null;
+        // create new resolver entity
+        resolverEntity = getOrCreateAirResolver(domain, chainId, airBlock, resolver);
+        resolverEntity.save();
+      } else {
+        domain.resolvedAddress = resolverEntity.resolvedAddress;
+      }
+      domain.resolver = resolverEntity.id;
     }
     // do recursive subdomain count decrement
     saveDomainEntity(domain, airBlock);
@@ -185,7 +193,7 @@ export namespace domain {
     // create new resolver transaction
     let tnx = getOrCreateAirDomainNewResolverTransaction(
       previousResolverId,
-      resolverEntity.address,
+      resolverEntity!.address,
       airBlock,
       transactionHash,
       logOrCallIndex,
@@ -976,6 +984,21 @@ export namespace domain {
     domainId: string,
   ): AirDomain | null {
     return AirDomain.load(domainId);
+  }
+
+  /**
+   * @dev this function gets a air resolver entity
+   * @param resolver resolver address
+   * @param domain air domain entity
+   * @returns AirResolver entity or null
+   */
+  export function getAirResolver(
+    resolver: string,
+    domain: AirDomain,
+  ): AirResolver | null {
+    let id = createResolverEntityId(resolver, domain.id);
+    let entity = AirResolver.load(id);
+    return entity;
   }
 
   /**
