@@ -68,8 +68,10 @@ export namespace domain {
     if (domain.parent == null) {
       parentDomain.subdomainCount = parentDomain.subdomainCount.plus(BIGINT_ONE);
     }
-    domain.name = name;
-    domain.labelName = labelName;
+    if (domain.name == null || domain.name!.includes("]") || domain.name!.includes("[")) {
+      domain.name = name;
+      domain.labelName = labelName;
+    }
     let ownerAccount = getOrCreateAirAccount(chainId, newOwner, airBlock);
     ownerAccount.save();
     domain.owner = ownerAccount.id;

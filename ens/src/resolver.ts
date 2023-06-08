@@ -2,7 +2,7 @@ import * as airstack from "../modules/airstack/domain-name";
 import {
   AddrChanged as AddrChangedEvent,
   VersionChanged as VersionChangedEvent,
-} from "../generated/Resolver1/Resolver";
+} from "../generated/Resolver/Resolver";
 import { log } from "@graphprotocol/graph-ts";
 import { TOKEN_ADDRESS_ENS } from "./utils";
 /**
