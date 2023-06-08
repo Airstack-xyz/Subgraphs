@@ -3,4 +3,5 @@ type ValidateEntity @entity {
     eventId: BigInt!
     from: Bytes!
     to: Bytes!
+    mintHash: String!
 }

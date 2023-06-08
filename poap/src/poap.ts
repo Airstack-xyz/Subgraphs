@@ -1,4 +1,4 @@
-import { Address } from "@graphprotocol/graph-ts"
+import { Address, log } from "@graphprotocol/graph-ts"
 import { EventToken, Transfer, SetBaseURICall } from "../generated/poap/poap"
 import * as airstack from "../modules/airstack/poap"
 import { ValidateEntity } from "../generated/schema"
@@ -16,6 +16,7 @@ export function handleEventToken(event: EventToken): void {
         // this means minting of this token is not tracked properly
         throw new Error("mint logic failed - from should be zero address")
     }
+    validateEntity.mintHash = event.transaction.hash.toHexString()
     validateEntity.eventId = eventId
     validateEntity.save()
     airstack.poap.trackPoapMintTransactions(
@@ -37,12 +38,19 @@ export function handleTransfer(event: Transfer): void {
     if (validateEntity == null) {
         if (from != Address.zero()) {
             // this means given token is already minted but not captured by our logic
-            throw new Error("Non mint case - validate Entity should not be null")
+            log.error("Non mint case - validate Entity should not be null,hash:{}", [
+                event.transaction.hash.toHexString(),
+            ])
+            throw new Error(
+                "Non mint case - validate Entity should not be null,hash:" +
+                    event.transaction.hash.toHexString()
+            )
         }
         validateEntity = new ValidateEntity(tokenId.toString())
         validateEntity.eventId = BIG_INT_ZERO
         validateEntity.from = from
         validateEntity.to = to
+        validateEntity.mintHash = ""
         validateEntity.save()
     } else {
         airstack.poap.trackPoapTransferTransactions(
