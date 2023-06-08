@@ -5,7 +5,7 @@ import {
   ens,
   crypto,
 } from '@graphprotocol/graph-ts'
-import { TOKEN_ADDRESS_ENS, createLabelhashToNameMapping, getNameByLabelHash } from "./utils";
+import { TOKEN_ADDRESS_ENS, createLabelhashToNameMapping, getNameByLabelHash, updateSubdomainNames } from "./utils";
 import { ZERO_ADDRESS } from '../modules/airstack/domain-name/utils';
 import * as airstack from "../modules/airstack/domain-name";
 import { checkValidLabel } from "../modules/airstack/domain-name/utils";
@@ -26,7 +26,7 @@ import {
   NameRenewed as ControllerNameRenewedEvent
 } from '../generated/EthRegistrarController/EthRegistrarController';
 import { uint256ToByteArray, byteArrayFromHex, createNameRegisteredTransactionVsRegistrant } from './utils';
-import { AirDomain, AirNameRegisteredTransaction } from '../generated/schema';
+import { AirNameRegisteredTransaction } from '../generated/schema';
 import { getChainId, getOrCreateAirAccount, getOrCreateAirBlock } from '../modules/airstack/common';
 
 const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae");
@@ -39,18 +39,20 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
   let label = uint256ToByteArray(event.params.id);
   log.info("handleNameRegistered: registrant {} label {} expiry {} txhash {} logIndex {}", [event.params.owner.toHexString(), label.toHexString(), event.params.expires.toString(), event.transaction.hash.toHexString(), event.logIndex.toString()]);
   let labelName = ens.nameByHash(label.toHexString());
+  let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
   if (labelName == null) {
     // try to get the name from the labelhash to name mapping
     labelName = getNameByLabelHash(label.toHexString());
     if (labelName == null) {
       log.info("handleNameRegistered: labelName is null from getNameByLabelHash label {} txhash {}, converting to brackets", [label.toHexString(), event.transaction.hash.toHexString()]);
       labelName = '[' + label.toHexString().slice(2) + ']';
+    } else {
+      log.info("handleNameRegistered: labelName {} exists from getNameByLabelHash label {} txhash {}", [labelName!, label.toHexString(), event.transaction.hash.toHexString()]);
     }
   } else if (labelName && !checkValidLabel(labelName, event.transaction.hash.toHexString())) {
     log.info("handleNameRegistered: labelName is invalid for label {} txhash {}", [label.toHexString(), event.transaction.hash.toHexString()]);
     labelName = '[' + label.toHexString().slice(2) + ']';
   }
-  let domainId = crypto.keccak256(rootNode.concat(label)).toHex();
   airstack.domain.trackNameRegisteredTransaction(
     event.block,
     event.transaction.hash.toHexString(),
@@ -107,6 +109,11 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
     true,
     TOKEN_ADDRESS_ENS,
   )
+  // above func updates domain.name, then we can go and update subdomain names
+  let domain = airstack.domain.getAirDomain(domainId);
+  // assuming domain is not null
+  let airBlock = getOrCreateAirBlock(getChainId(), event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  updateSubdomainNames(domain!, airBlock);
 }
 
 /**
@@ -131,6 +138,11 @@ export function handleNameRegisteredByControllerNew(event: ControllerNameRegiste
     true,
     TOKEN_ADDRESS_ENS,
   )
+  // above func updates domain.name, then we can go and update subdomain names
+  let domain = airstack.domain.getAirDomain(domainId);
+  // assuming domain is not null
+  let airBlock = getOrCreateAirBlock(getChainId(), event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  updateSubdomainNames(domain!, airBlock);
 }
 
 /**
@@ -155,6 +167,11 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
     true,
     TOKEN_ADDRESS_ENS,
   )
+  // above func updates domain.name, then we can go and update subdomain names
+  let domain = airstack.domain.getAirDomain(domainId);
+  // assuming domain is not null
+  let airBlock = getOrCreateAirBlock(getChainId(), event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  updateSubdomainNames(domain!, airBlock);
 }
 
 /**
@@ -165,6 +182,8 @@ export function handleNameRenewedByController(event: ControllerNameRenewedEvent)
   log.info("handleNameRenewedByController: name {} label {} cost {} txhash {}", [event.params.name, event.params.label.toHexString(), event.params.cost.toString(), event.transaction.hash.toHexString()]);
   let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
   let labelName = event.params.name;
+  // create Labelhash to Name mapping
+  createLabelhashToNameMapping(event.params.label.toHexString(), labelName, event.block.number.toString());
   airstack.domain.trackNameRenewedOrRegistrationByController(
     event.block,
     event.transaction.hash.toHexString(),
@@ -177,6 +196,11 @@ export function handleNameRenewedByController(event: ControllerNameRenewedEvent)
     false,
     TOKEN_ADDRESS_ENS,
   )
+  // above func updates domain.name, then we can go and update subdomain names
+  let domain = airstack.domain.getAirDomain(domainId);
+  // assuming domain is not null
+  let airBlock = getOrCreateAirBlock(getChainId(), event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  updateSubdomainNames(domain!, airBlock);
 }
 
 /**

@@ -12,7 +12,7 @@ import {
   ens,
 } from "@graphprotocol/graph-ts";
 import { ETHEREUM_MAINNET_ID, ROOT_NODE } from "../modules/airstack/domain-name/utils";
-import { getChainId } from "../modules/airstack/common";
+import { getChainId, getOrCreateAirBlock } from "../modules/airstack/common";
 import {
   TOKEN_ADDRESS_ENS,
   getOrCreateIsMigratedMapping,
@@ -21,6 +21,8 @@ import {
   getNameByLabelHash,
 } from "./utils";
 import { AirDomain } from "../generated/schema";
+import { updateSubdomainNames } from "./utils"
+
 /**
  * @dev this functions maps the NewOwner event to airstack trackDomainOwnerChangedTransaction
  * @param event NewOwnerEvent from ENS Registry
@@ -84,6 +86,11 @@ export function handleNewOwner(event: NewOwnerEvent): void {
     event.params.owner.toHexString(),
     TOKEN_ADDRESS_ENS,
   )
+  // above func updates domain.name, then we can go and update subdomain names
+  let domain = airstack.domain.getAirDomain(domainId);
+  let airBlock = getOrCreateAirBlock(getChainId(), event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  // assuming domain is not null as it just has a txn above
+  updateSubdomainNames(domain!, airBlock);
 }
 
 /**
@@ -233,6 +240,11 @@ export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
     event.params.owner.toHexString(),
     TOKEN_ADDRESS_ENS,
   )
+  // above func updates domain.name, then we can go and update subdomain names
+  let domain = airstack.domain.getAirDomain(domainId);
+  let airBlock = getOrCreateAirBlock(getChainId(), event.block.number, event.block.hash.toHexString(), event.block.timestamp);
+  // assuming domain is not null as it just has a txn above
+  updateSubdomainNames(domain!, airBlock);
 }
 
 /**

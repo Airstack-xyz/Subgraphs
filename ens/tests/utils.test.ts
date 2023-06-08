@@ -99,4 +99,33 @@ describe("Unit tests for util functions", () => {
     let subdomain3Updated = airstack.domain.getAirDomain(subdomain3.id);
     assert.stringEquals("lmn.def.abc.efg.eth", subdomain3Updated!.name!);
   })
+  test("name should be same if parent domain name has hex", () => {
+    let domainId = "0xea6cc843bbe16a18e678f7050e9183f09ccf900a3b4b74de12dae9ce1f95dff4"
+    let domain1 = createAirDomain(domainId);
+    domain1.name = "efg.eth"
+    domain1.save();
+    let subdomain1 = createAirDomain("0xea6cc843bbe16a18e678f7050e9183f09ccf900a3b4b74de12dae9ce1f95dff45")
+    subdomain1.name = "abc.[hex].eth"
+    subdomain1.parent = domain1.id;
+    subdomain1.save();
+    let subdomain2 = createAirDomain("0xea6cc843bbe16a18e678f7050e9183f09ccf900a3b4b74de12dae9ce1f95dff46")
+    subdomain2.name = "def.[hex].[hex].eth"
+    subdomain2.parent = subdomain1.id;
+    subdomain2.save();
+    let subdomain3 = createAirDomain("0xea6cc843bbe16a18e678f7050e9183f09ccf900a3b4b74de12dae9ce1f95dff47")
+    subdomain3.name = "lmn.[hex].[hex].efg.eth"
+    subdomain3.parent = subdomain2.id;
+    subdomain3.save();
+    // create airBlock
+    let block = airstackCommon.getOrCreateAirBlock("1", BigInt.fromI32(162879), "0x00", BigInt.fromI32(3298));
+    // test function
+    updateSubdomainNames(subdomain1, block);
+    // assert here
+    let subdomain1Updated = airstack.domain.getAirDomain(subdomain1.id);
+    assert.stringEquals("abc.[hex].eth", subdomain1Updated!.name!);
+    let subdomain2Updated = airstack.domain.getAirDomain(subdomain2.id);
+    assert.stringEquals("def.[hex].[hex].eth", subdomain2Updated!.name!);
+    let subdomain3Updated = airstack.domain.getAirDomain(subdomain3.id);
+    assert.stringEquals("lmn.[hex].[hex].efg.eth", subdomain3Updated!.name!);
+  })
 })

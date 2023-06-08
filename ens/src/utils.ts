@@ -211,8 +211,8 @@ export function updateSubdomainNames(parentDomain: AirDomain, block: AirBlock): 
 export function getSubdomainIds(domainId: string): Array<string> {
   let subdomainIds = new Array<string>();
   let domain = airstack.domain.getAirDomain(domainId);
-  if (domain != null) {
-    return domain.subdomains;
+  if (domain != null && domain.subdomains != null) {
+    return domain.subdomains!;
   }
   return subdomainIds;
 }

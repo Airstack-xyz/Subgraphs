@@ -47,7 +47,7 @@ type AirDomain @entity {
   labelHash: String                                      # keccak256(labelName)
   tokenId: String                                      # dec(labelHash)
   parent: AirDomain                                        # The namehash (id) of the parent name
-  subdomains: [AirDomain!]! @derivedFrom(field: "parent")  # Can count domains from length of array
+  subdomains: [AirDomain!] @derivedFrom(field: "parent")  # Can count domains from length of array
   subdomainCount: BigInt!                                  # The number of subdomains
   resolvedAddress: AirAccount                           # Address logged from current resolver, if any
   owner: AirAccount!
