@@ -1,6 +1,9 @@
 import { assert, describe, test } from "matchstick-as";
-import { Bytes } from "@graphprotocol/graph-ts";
+import { Bytes, BigInt } from "@graphprotocol/graph-ts";
 import { decodeName } from "../src/utils";
+import { createAirDomain } from "./resolver-utils"
+import * as airstackCommon from "../modules/airstack/common"
+import * as airstack from "../modules/airstack/domain-name"
 
 describe("Unit tests for util functions", () => {
   test("test decodeName for firstwrappedname.eth", () => {

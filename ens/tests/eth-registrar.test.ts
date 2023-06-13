@@ -12,6 +12,7 @@ import { ETHEREUM_MAINNET_ID, ZERO_ADDRESS } from "../modules/airstack/domain-na
 import { uint256ToByteArray, byteArrayFromHex } from "../src/utils"
 import { BIGINT_ONE } from "../modules/airstack/common"
 import { AirDomain } from "../generated/schema"
+import { createAirDomain } from "./resolver-utils"
 
 const rootNode: ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae");
 
@@ -123,12 +124,15 @@ describe("Unit tests for eth registrar handlers", () => {
 
   test("test handleNameRegisteredByControllerOld", () => {
     let event = getHandleNameRegisteredByControllerOldEvent();
-    handleNameRegisteredByControllerOld(event)
     // given
     let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
     let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
     let reverseRegistrarId = crypto.keccak256(Bytes.fromUTF8(event.params.name.concat(".eth"))).toHexString();
-    // assert here
+    let subdomain = createAirDomain("0xea6cc843bbe16a18e678f7050e9183f09ccf900a3b4b74de12dae9ce1f95dff46")
+    subdomain.name = "def.[hex].[hex].eth"
+    subdomain.parent = domainId;
+    subdomain.save();
+    handleNameRegisteredByControllerOld(event)
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -151,11 +155,16 @@ describe("Unit tests for eth registrar handlers", () => {
 
   test("test handleNameRegisteredByController", () => {
     let event = getHandleNameRegisteredByControllerEvent();
-    handleNameRegisteredByController(event)
+    // create a subdomain and assign below domainId as its parent
     // assert here
     let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
     let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
     let reverseRegistrarId = crypto.keccak256(Bytes.fromUTF8(event.params.name.concat(".eth"))).toHexString();
+    let subdomain = createAirDomain("0xea6cc843bbe16a18e678f7050e9183f09ccf900a3b4b74de12dae9ce1f95dff46")
+    subdomain.name = "def.[hex].[hex].eth"
+    subdomain.parent = domainId;
+    subdomain.save();
+    handleNameRegisteredByController(event)
     // assert here
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
@@ -179,12 +188,15 @@ describe("Unit tests for eth registrar handlers", () => {
 
   test("test handleNameRenewedByController", () => {
     let event = getHandleNameRenewedByControllerEvent();
-    handleNameRenewedByController(event)
     // assert here
     let domainId = crypto.keccak256(rootNode.concat(event.params.label)).toHex();
     let blockId = ETHEREUM_MAINNET_ID.concat("-").concat(event.block.number.toString());
     let reverseRegistrarId = crypto.keccak256(Bytes.fromUTF8(event.params.name.concat(".eth"))).toHexString();
-    // assert here
+    let subdomain = createAirDomain("0xea6cc843bbe16a18e678f7050e9183f09ccf900a3b4b74de12dae9ce1f95dff46")
+    subdomain.name = "def.[hex].[hex].eth"
+    subdomain.parent = domainId;
+    subdomain.save();
+    handleNameRenewedByController(event)
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -206,7 +218,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirToken", airTokenId, "id", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
     assert.fieldEquals("AirToken", airTokenId, "address", ZERO_ADDRESS);
     // AirDomain
-    assert.fieldEquals("AirDomain", domainId, "registrationCost", "0");
+    assert.fieldEquals("AirDomain", domainId, "registrationCost", "1000000000000000000");
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);

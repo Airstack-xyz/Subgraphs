@@ -3,6 +3,7 @@ import {
   ReverseRegistrar,
   NameRegisteredTransactionVsRegistrant,
   AirBlock,
+  AirDomain,
   LabelhashToNameMapping,
 } from "../generated/schema";
 import {
@@ -13,8 +14,9 @@ import {
   BigInt,
   log,
 } from "@graphprotocol/graph-ts";
+import * as airstack from "../modules/airstack/domain-name";
 import {
-  checkValidLabel
+  checkValidLabel, saveDomainEntity
 } from "../modules/airstack/domain-name/utils";
 // ens constants
 export const TOKEN_ADDRESS_ENS = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";

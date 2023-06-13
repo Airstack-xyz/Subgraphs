@@ -1,6 +1,6 @@
 import { newMockEvent } from "matchstick-as"
 import { ethereum, Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
-import { AddrChanged, VersionChanged } from "../generated/Resolver1/Resolver"
+import { AddrChanged, VersionChanged } from "../generated/Resolver/Resolver"
 import { getTransactionHash } from "./common-utils"
 import { AirDomain } from "../generated/schema"
 import { BIGINT_ONE, BIG_INT_ZERO } from "../modules/airstack/common/index"

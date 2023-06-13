@@ -12,7 +12,7 @@ import {
   ens,
 } from "@graphprotocol/graph-ts";
 import { ETHEREUM_MAINNET_ID, ROOT_NODE } from "../modules/airstack/domain-name/utils";
-import { getChainId } from "../modules/airstack/common";
+import { getChainId, getOrCreateAirBlock } from "../modules/airstack/common";
 import {
   TOKEN_ADDRESS_ENS,
   getOrCreateIsMigratedMapping,
@@ -21,6 +21,7 @@ import {
   getNameByLabelHash,
 } from "./utils";
 import { AirDomain } from "../generated/schema";
+
 /**
  * @dev this functions maps the NewOwner event to airstack trackDomainOwnerChangedTransaction
  * @param event NewOwnerEvent from ENS Registry

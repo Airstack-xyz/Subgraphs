@@ -68,8 +68,10 @@ export namespace domain {
     if (domain.parent == null) {
       parentDomain.subdomainCount = parentDomain.subdomainCount.plus(BIGINT_ONE);
     }
-    domain.name = name;
-    domain.labelName = labelName;
+    if (domain.name == null || domain.name!.includes("]") || domain.name!.includes("[")) {
+      domain.name = name;
+      domain.labelName = labelName;
+    }
     let ownerAccount = getOrCreateAirAccount(chainId, newOwner, airBlock);
     ownerAccount.save();
     domain.owner = ownerAccount.id;
@@ -167,14 +169,26 @@ export namespace domain {
     let domain = getOrCreateAirDomain(new Domain(domainId, chainId, airBlock, tokenAddress));
     // get previous resolver
     let previousResolverId = domain.resolver;
-    // create new resolver
-    let resolverEntity = getOrCreateAirResolver(domain, chainId, airBlock, resolver);
-    resolverEntity.save();
-    // update domain resolver
-    domain.resolver = resolverEntity.id;
-    // update domain resolved address
-    if (resolverEntity.resolvedAddress) {
-      domain.resolvedAddress = resolverEntity.resolvedAddress;
+    // check if resolver is zero address
+    let resolverEntity = getAirResolver(resolver, domain);
+    if (resolver == ZERO_ADDRESS) {
+      // if yes, set domain.resolver = null
+      domain.resolvedAddress = null;
+      // do recursive subdomain count decrement
+      saveDomainEntity(domain, airBlock);
+      recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
+      return;
+    } else {
+      if (resolverEntity == null) {
+        // marking domain.resolvedAddress as null as the resolver entity will be created newly
+        domain.resolvedAddress = null;
+        // create new resolver entity
+        resolverEntity = getOrCreateAirResolver(domain, chainId, airBlock, resolver);
+        resolverEntity.save();
+      } else {
+        domain.resolvedAddress = resolverEntity.resolvedAddress;
+      }
+      domain.resolver = resolverEntity.id;
     }
     // do recursive subdomain count decrement
     saveDomainEntity(domain, airBlock);
@@ -394,39 +408,11 @@ export namespace domain {
       airBlock,
       tokenAddress,
     ));
-    // tracking registration cost in domain entity  - renewal cost is not being tracked yet
-    if (fromRegistrationEvent) {
-      domain.registrationCost = cost;
-      let airToken = getOrCreateAirToken(chainId, paymentToken);
-      airToken.save();
-      domain.paymentToken = airToken.id;
-      let txn = getOrCreateAirNameRegisteredTransaction(
-        chainId,
-        airBlock,
-        transactionHash,
-        domain,
-        cost,
-        paymentToken,
-        renewerOrRegistrant,
-        expiryTimestamp,
-      );
-      txn.save();
-    } else {
-      // name renewal event
-      // updating renewal cost in name renewed transaction entity
-      domain.expiryTimestamp = expiryTimestamp;
-      let txn = getOrCreateAirNameRenewedTransaction(
-        transactionHash,
-        chainId,
-        airBlock,
-        domain,
-        cost,
-        paymentToken,
-        renewerOrRegistrant,
-        expiryTimestamp,
-      );
-      txn.save();
-    }
+    domain.expiryTimestamp = expiryTimestamp; // tracking expiry timestamp in domain entity from renewal and registered events
+    domain.registrationCost = cost; // tracking registration cost in domain entity  - renewal cost is not being tracked yet
+    let airToken = getOrCreateAirToken(chainId, paymentToken);
+    airToken.save();
+    domain.paymentToken = airToken.id;
     if (domain.labelName !== labelName) {
       if (!checkValidLabel(labelName, transactionHash) && domain.labelHash) {
         const labelHash = domain.labelHash!;
@@ -441,7 +427,33 @@ export namespace domain {
       }
     }
     saveDomainEntity(domain, airBlock);
-    //new name registered event
+    if (fromRegistrationEvent) {
+      // name registration event
+      let txn = getOrCreateAirNameRegisteredTransaction(
+        chainId,
+        airBlock,
+        transactionHash,
+        domain,
+        cost,
+        paymentToken,
+        renewerOrRegistrant,
+        expiryTimestamp,
+      );
+      txn.save();
+    } else {
+      // name renewal event
+      let txn = getOrCreateAirNameRenewedTransaction(
+        transactionHash,
+        chainId,
+        airBlock,
+        domain,
+        cost,
+        paymentToken,
+        renewerOrRegistrant,
+        expiryTimestamp,
+      );
+      txn.save();
+    }
   }
 
   /**
@@ -974,6 +986,21 @@ export namespace domain {
     domainId: string,
   ): AirDomain | null {
     return AirDomain.load(domainId);
+  }
+
+  /**
+   * @dev this function gets a air resolver entity
+   * @param resolver resolver address
+   * @param domain air domain entity
+   * @returns AirResolver entity or null
+   */
+  export function getAirResolver(
+    resolver: string,
+    domain: AirDomain,
+  ): AirResolver | null {
+    let id = createResolverEntityId(resolver, domain.id);
+    let entity = AirResolver.load(id);
+    return entity;
   }
 
   /**
