@@ -218,7 +218,7 @@ describe("Unit tests for eth registrar handlers", () => {
     assert.fieldEquals("AirToken", airTokenId, "id", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
     assert.fieldEquals("AirToken", airTokenId, "address", ZERO_ADDRESS);
     // AirDomain
-    assert.fieldEquals("AirDomain", domainId, "registrationCost", "0");
+    assert.fieldEquals("AirDomain", domainId, "registrationCost", "1000000000000000000");
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", event.params.expires.toString());
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "labelName", event.params.name);

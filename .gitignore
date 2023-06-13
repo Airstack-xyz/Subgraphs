@@ -119,3 +119,4 @@ dist
 /generated
 /generated/
 /build
+/*/modules/airstack/*
