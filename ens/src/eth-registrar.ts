@@ -5,7 +5,7 @@ import {
   ens,
   crypto,
 } from '@graphprotocol/graph-ts'
-import { TOKEN_ADDRESS_ENS, createLabelhashToNameMapping, getNameByLabelHash, updateSubdomainNames } from "./utils";
+import { TOKEN_ADDRESS_ENS, createLabelhashToNameMapping, getNameByLabelHash } from "./utils";
 import { ZERO_ADDRESS } from '../modules/airstack/domain-name/utils';
 import * as airstack from "../modules/airstack/domain-name";
 import { checkValidLabel } from "../modules/airstack/domain-name/utils";
@@ -109,11 +109,6 @@ export function handleNameRegisteredByControllerOld(event: ControllerNameRegiste
     true,
     TOKEN_ADDRESS_ENS,
   )
-  // above func updates domain.name, then we can go and update subdomain names
-  let domain = airstack.domain.getAirDomain(domainId);
-  // assuming domain is not null
-  let airBlock = getOrCreateAirBlock(getChainId(), event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  updateSubdomainNames(domain!, airBlock);
 }
 
 /**
@@ -138,11 +133,6 @@ export function handleNameRegisteredByControllerNew(event: ControllerNameRegiste
     true,
     TOKEN_ADDRESS_ENS,
   )
-  // above func updates domain.name, then we can go and update subdomain names
-  let domain = airstack.domain.getAirDomain(domainId);
-  // assuming domain is not null
-  let airBlock = getOrCreateAirBlock(getChainId(), event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  updateSubdomainNames(domain!, airBlock);
 }
 
 /**
@@ -167,11 +157,6 @@ export function handleNameRegisteredByController(event: ControllerNameRegistered
     true,
     TOKEN_ADDRESS_ENS,
   )
-  // above func updates domain.name, then we can go and update subdomain names
-  let domain = airstack.domain.getAirDomain(domainId);
-  // assuming domain is not null
-  let airBlock = getOrCreateAirBlock(getChainId(), event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  updateSubdomainNames(domain!, airBlock);
 }
 
 /**
@@ -196,11 +181,6 @@ export function handleNameRenewedByController(event: ControllerNameRenewedEvent)
     false,
     TOKEN_ADDRESS_ENS,
   )
-  // above func updates domain.name, then we can go and update subdomain names
-  let domain = airstack.domain.getAirDomain(domainId);
-  // assuming domain is not null
-  let airBlock = getOrCreateAirBlock(getChainId(), event.block.number, event.block.hash.toHexString(), event.block.timestamp);
-  updateSubdomainNames(domain!, airBlock);
 }
 
 /**

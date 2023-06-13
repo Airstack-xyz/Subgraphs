@@ -197,7 +197,7 @@ export namespace domain {
     // create new resolver transaction
     let tnx = getOrCreateAirDomainNewResolverTransaction(
       previousResolverId,
-      resolverEntity!.address,
+      resolverEntity.address,
       airBlock,
       transactionHash,
       logOrCallIndex,

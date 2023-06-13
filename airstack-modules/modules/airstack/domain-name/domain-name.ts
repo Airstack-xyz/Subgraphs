@@ -174,6 +174,10 @@ export namespace domain {
     if (resolver == ZERO_ADDRESS) {
       // if yes, set domain.resolver = null
       domain.resolvedAddress = null;
+      // do recursive subdomain count decrement
+      saveDomainEntity(domain, airBlock);
+      recurseSubdomainCountDecrement(domain, chainId, airBlock, tokenAddress);
+      return;
     } else {
       if (resolverEntity == null) {
         // marking domain.resolvedAddress as null as the resolver entity will be created newly
@@ -193,7 +197,7 @@ export namespace domain {
     // create new resolver transaction
     let tnx = getOrCreateAirDomainNewResolverTransaction(
       previousResolverId,
-      resolverEntity!.address,
+      resolverEntity.address,
       airBlock,
       transactionHash,
       logOrCallIndex,
