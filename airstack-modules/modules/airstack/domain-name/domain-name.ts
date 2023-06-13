@@ -408,6 +408,25 @@ export namespace domain {
       airBlock,
       tokenAddress,
     ));
+    domain.expiryTimestamp = expiryTimestamp; // tracking expiry timestamp in domain entity from renewal and registered events
+    domain.registrationCost = cost; // tracking registration cost in domain entity  - renewal cost is not being tracked yet
+    let airToken = getOrCreateAirToken(chainId, paymentToken);
+    airToken.save();
+    domain.paymentToken = airToken.id;
+    if (domain.labelName !== labelName) {
+      if (!checkValidLabel(labelName, transactionHash) && domain.labelHash) {
+        const labelHash = domain.labelHash!;
+        labelName = '[' + labelHash.slice(2) + ']';
+      }
+      domain.labelName = labelName
+      domain.name = labelName + '.eth'
+      // creating reverse registrar to get domainId when setting primary domain
+      if (domain.name) {
+        let reverseRegistrar = createReverseRegistrar(domain.name!, domain.id, airBlock);
+        reverseRegistrar.save();
+      }
+    }
+    saveDomainEntity(domain, airBlock);
     if (fromRegistrationEvent) {
       // name registration event
       let txn = getOrCreateAirNameRegisteredTransaction(
@@ -435,26 +454,6 @@ export namespace domain {
       );
       txn.save();
     }
-    domain.expiryTimestamp = expiryTimestamp; // tracking expiry timestamp in domain entity from renewal and registered events
-    domain.registrationCost = cost; // tracking registration cost in domain entity  - renewal cost is not being tracked yet
-    let airToken = getOrCreateAirToken(chainId, paymentToken);
-    airToken.save();
-    domain.paymentToken = airToken.id;
-    if (domain.labelName !== labelName) {
-      if (!checkValidLabel(labelName, transactionHash) && domain.labelHash) {
-        const labelHash = domain.labelHash!;
-        labelName = '[' + labelHash.slice(2) + ']';
-      }
-      domain.labelName = labelName
-      domain.name = labelName + '.eth'
-      // creating reverse registrar to get domainId when setting primary domain
-      if (domain.name) {
-        let reverseRegistrar = createReverseRegistrar(domain.name!, domain.id, airBlock);
-        reverseRegistrar.save();
-      }
-    }
-    saveDomainEntity(domain, airBlock);
-    //new name registered event
   }
 
   /**
