@@ -119,3 +119,5 @@ dist
 /generated
 /generated/
 /build
+
+./node_modules
