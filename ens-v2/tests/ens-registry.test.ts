@@ -6,9 +6,7 @@ import {
     beforeAll,
     afterAll,
 } from "matchstick-as/assembly/index"
-import { Bytes, Address, BigInt } from "@graphprotocol/graph-ts"
-import { ExampleEntity } from "../generated/schema"
-import { Transfer } from "../generated/ENSRegistry/ENSRegistry"
+
 import {
     handleNewOwner,
     handleNewResolver,
@@ -22,8 +20,16 @@ import {
     createTransferEvent,
 } from "./ens-registry-utils"
 import { newOwner, newResolver, newTTL, transfer } from "./ens-registry-example"
+import { getNameHash } from "../src/utils"
+import { Bytes, log } from "@graphprotocol/graph-ts"
 
 describe("Testing ens registry", () => {
+    test("getNameHash", () => {
+        let nodeStr = "93CDEB708B7545DC668EB9280176169D1C33CFD8ED6F04690A0BCC88A93FC4AE"
+        let labelStr = "00000425B4462E19460BEDB4BCCFCF16D270975EF882F03831BF3D40F7342355"
+        let hash = getNameHash(Bytes.fromHexString(nodeStr), Bytes.fromHexString(labelStr))
+        log.debug("hash {}", [hash])
+    })
     test("testing Transfer", () => {
         const transferEvent = createTransferEvent(transfer)
         handleTransfer(transferEvent)

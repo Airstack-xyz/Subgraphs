@@ -1,6 +1,131 @@
-type ExampleEntity @entity {
-  id: ID!
-  count: BigInt!
-  node: Bytes! # bytes32
-  owner: Bytes! # address
+type AirBlock @entity {
+    id: ID! #chain-number
+    hash: String!
+    number: BigInt!
+    timestamp: BigInt!
+}
+
+type AirMeta @entity {
+    id: ID! # air_meta
+    network: String!
+    schemaVersion: String!
+    slug: String! #Opensea_V1
+    name: String! # Opeasea V1
+    version: String!
+}
+
+type AirEntityCounter @entity {
+    id: ID!
+    count: BigInt!
+    createdAt: AirBlock!
+    lastUpdatedAt: AirBlock!
+}
+
+type AirExtra @entity {
+    id: ID! # Concatenation of domainId and name
+    name: String!
+    value: String!
+}
+
+type AirAccount @entity {
+    id: ID!
+    address: String!
+    createdAt: AirBlock!
+}
+
+type AirToken @entity {
+    id: ID!
+    address: String!
+}
+
+type AirDomainAccount @entity {
+    "The unique identifier for the account"
+    id: ID!
+    address: AirAccount!
+    "domains resolved to this account"
+    resolved: [AirDomain!]! @derivedFrom(field: "resolvedAddress")
+    "The domains owned by the account / manager of domain"
+    domains: [AirDomain!]! @derivedFrom(field: "owner")
+    "domains registered under this account / actual owner of domain(nft)"
+    registered: [AirDomain!]! @derivedFrom(field: "registrant")
+    "The Registrations made by the account"
+    registrations: [AirDomainRegistration!] @derivedFrom(field: "registrant")
+}
+
+type AirDomain @entity {
+    "The namehash of the name"
+    id: ID!
+    "The human readable name, if known. Unknown portions replaced with hash in square brackets (eg, foo.[1234].eth)"
+    name: String
+    "The human readable label name (imported from CSV), if known"
+    labelName: String
+    " keccak256(labelName)"
+    labelHash: String
+    " dec(labelHash)"
+    tokenId: String
+    "The namehash (id) of the parent name"
+    parent: AirDomain
+    "Can count domains from length of array"
+    subdomains: [AirDomain!]! @derivedFrom(field: "parent")
+    "The number of subdomains"
+    subdomainCount: BigInt!
+    "Address logged from current resolver, if any"
+    resolvedAddress: AirDomainAccount
+    "The account that owns the domain"
+    owner: AirDomainAccount!
+    "The account that owns the ERC721 NFT for the domain"
+    registrant: AirDomainAccount
+    "The resolver that controls the domain's settings"
+    resolver: AirResolver
+    "The time-to-live (TTL) value of the domain's records"
+    ttl: BigInt
+    "Is the primary domain for the resolved address"
+    isPrimary: Boolean!
+    "The expiry date for the domain, from either the registration, or the wrapped domain if PCC is burned"
+    # expiryTimestamp: BigInt!
+    #registrationCost: BigInt! # Cost of domain registration in wei
+    #paymentToken: AirToken # Token used to pay for registration
+    tokenAddress: AirToken # Domain (eg: ens) token contract address
+    createdAt: AirBlock!
+    lastUpdatedBlock: AirBlock! #- NA
+    registration: AirDomainRegistration @derivedFrom(field: "domain")
+}
+
+type AirDomainRegistration @entity {
+    "The unique identifier of the registration"
+    id: ID!
+    "The domain name associated with the registration"
+    domain: AirDomain!
+    "The registration date of the domain"
+    registrationDate: BigInt
+    "The expiry date of the domain"
+    expiryDate: BigInt
+    "The cost associated with the domain registration"
+    cost: BigInt
+    "The account that registered the domain"
+    registrant: AirDomainAccount!
+    #"The human-readable label name associated with the domain registration"
+    #labelName: String
+    createdAt: AirBlock!
+
+    lastUpdatedBlock: AirBlock! #- NA
+}
+
+type AirResolver @entity {
+    "Concatenation of resolver address and namehash"
+    id: ID!
+    "The domain that this resolver is associated with"
+    domain: AirDomain
+    address: Bytes! # Address of resolver contract
+    "can save extra data like github,twitter,etc"
+    extras: [AirExtra!]
+    createdAt: AirBlock!
+}
+
+# mapping
+type NewOwnerHashLabelMap @entity {
+    "Concatenation of tx hash and label"
+    id: ID!
+    "The domain that this resolver is associated with"
+    domainId: String!
 }
