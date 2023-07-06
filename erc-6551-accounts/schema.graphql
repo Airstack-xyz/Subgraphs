@@ -7,6 +7,7 @@ type AirERC6551Account @entity(immutable: true) {
   tokenId: BigInt! # uint256
   salt: BigInt! # uint256
   transactionHash: Bytes!
+  registry: String! # Address of registry
   logIndex: BigInt
   createdAt: AirBlock!
   updatedAt: AirBlock!
