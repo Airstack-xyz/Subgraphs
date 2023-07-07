@@ -6,14 +6,6 @@ import { getAddressEventParam, getBigIntEventParam, getBytesEventParam } from ".
 export function createTransferEvent(transfer: TransferInput): Transfer {
     let transferEvent = changetype<Transfer>(newMockEvent())
 
-    // transferEvent.parameters = new Array()
-
-    // transferEvent.parameters.push(
-    //     new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(node))
-    // )
-    // transferEvent.parameters.push(
-    //     new ethereum.EventParam("owner", ethereum.Value.fromAddress(owner))
-    // )
     const nodeParam = getBytesEventParam("node", transfer.node)
     const ownerParam = getAddressEventParam("owner", transfer.owner)
     transferEvent.parameters = [nodeParam, ownerParam]
@@ -24,17 +16,6 @@ export function createTransferEvent(transfer: TransferInput): Transfer {
 export function createNewOwnerEvent(newOwner: NewOwnerInput): NewOwner {
     let newOwnerEvent = changetype<NewOwner>(newMockEvent())
 
-    // newOwnerEvent.parameters = new Array()
-
-    // newOwnerEvent.parameters.push(
-    //     new ethereum.EventParam("node", ethereum.Value.fromFixedBytes(node))
-    // )
-    // newOwnerEvent.parameters.push(
-    //     new ethereum.EventParam("label", ethereum.Value.fromFixedBytes(label))
-    // )
-    // newOwnerEvent.parameters.push(
-    //     new ethereum.EventParam("owner", ethereum.Value.fromAddress(owner))
-    // )
     const nodeParam = getBytesEventParam("node", newOwner.node)
     const labelParam = getBytesEventParam("label", newOwner.label)
     const ownerParam = getAddressEventParam("owner", newOwner.owner)

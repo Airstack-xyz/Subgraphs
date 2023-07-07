@@ -38,7 +38,7 @@ function handleHashRegistered(
     const hashlabelMap = NewOwnerHashLabelMap.load(hashStr + "-" + ensHashStr)
     if (!hashlabelMap) {
         log.error("hashlabelmap not found,hash {} label {}", [hashStr, ensHashStr])
-        throw new Error("hashlabelmap not found")
+        return
     }
     let domain = AirDomain.load(hashlabelMap.domainId)
     if (!domain) {

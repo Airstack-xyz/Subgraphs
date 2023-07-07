@@ -139,3 +139,15 @@ export const saveAirDomainRegistration = (
     registration.lastUpdatedBlock = airBlock.id
     registration.save()
 }
+
+export const saveAirResolver = (resolver: AirResolver, block: ethereum.Block): void => {
+    const chainId = getChainId()
+    const airBlock = getOrCreateAirBlock(
+        chainId,
+        block.number,
+        block.hash.toHexString(),
+        block.timestamp
+    )
+    resolver.lastUpdatedBlock = airBlock.id
+    resolver.save()
+}

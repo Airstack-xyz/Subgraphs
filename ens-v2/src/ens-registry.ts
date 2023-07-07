@@ -14,6 +14,7 @@ import {
     getOrCreateAirDomainAccount,
     getOrCreateAirResolver,
     getTokenId,
+    saveAirResolver,
     saveDomain,
 } from "./utils"
 import { BIGINT_ONE, getOrCreateAirAccount } from "./common"
@@ -64,8 +65,6 @@ export function handleNewOwner(event: NewOwner): void {
             parent.subdomainCount = parent.subdomainCount.plus(BIGINT_ONE)
             saveDomain(parent, event.block)
         }
-    } else {
-        throw new Error("empty parent received even though it's not root")
     }
 
     if (domain.name == null) {
@@ -116,13 +115,10 @@ export function handleNewResolver(event: NewResolver): void {
             resolver.toHexString(),
         ])
         throw new Error("Domain not found")
-    } else {
-        domain.resolver = airResolver.id
-        saveDomain(domain, event.block)
     }
     airResolver.domain = domain.id
     airResolver.address = resolver
-    airResolver.save()
+    saveAirResolver(airResolver, event.block)
 }
 
 export function handleNewTTL(event: NewTTL): void {
@@ -137,6 +133,4 @@ export function handleNewTTL(event: NewTTL): void {
         domain.ttl = ttl
         saveDomain(domain, event.block)
     }
-
-    log.debug("hash {} node {} ttl {}", [hash.toHexString(), node.toHexString(), ttl.toHexString()])
 }

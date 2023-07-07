@@ -43,7 +43,7 @@ type AirDomainAccount @entity {
     id: ID!
     address: AirAccount!
     "domains resolved to this account"
-    resolved: [AirDomain!]! @derivedFrom(field: "resolvedAddress")
+    resolved: [AirResolver!]! @derivedFrom(field: "resolvedAddress")
     "The domains owned by the account / manager of domain"
     domains: [AirDomain!]! @derivedFrom(field: "owner")
     "domains registered under this account / actual owner of domain(nft)"
@@ -69,14 +69,13 @@ type AirDomain @entity {
     subdomains: [AirDomain!]! @derivedFrom(field: "parent")
     "The number of subdomains"
     subdomainCount: BigInt!
-    "Address logged from current resolver, if any"
-    resolvedAddress: AirDomainAccount
+
     "The account that owns the domain"
     owner: AirDomainAccount!
     "The account that owns the ERC721 NFT for the domain"
     registrant: AirDomainAccount
     "The resolver that controls the domain's settings"
-    resolver: AirResolver
+    resolver: AirResolver @derivedFrom(field: "domain")
     "The time-to-live (TTL) value of the domain's records"
     ttl: BigInt
     "Is the primary domain for the resolved address"
@@ -115,11 +114,17 @@ type AirResolver @entity {
     "Concatenation of resolver address and namehash"
     id: ID!
     "The domain that this resolver is associated with"
-    domain: AirDomain
-    address: Bytes! # Address of resolver contract
+    domain: AirDomain!
+
+    "Address logged from current resolver, if any"
+    resolvedAddress: AirDomainAccount
+
     "can save extra data like github,twitter,etc"
     extras: [AirExtra!]
+
+    address: Bytes! # Address of resolver contract
     createdAt: AirBlock!
+    lastUpdatedBlock: AirBlock! #- NA
 }
 
 # mapping
