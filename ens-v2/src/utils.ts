@@ -41,6 +41,7 @@ export function getOrCreateAirDomainAccount(
         block.hash.toHexString(),
         block.timestamp
     )
+    airBlock.save()
     const airAccount = getOrCreateAirAccount(chainId, addrStr, airBlock)
     let airDomainAccount = AirDomainAccount.load(addrStr)
     if (!airDomainAccount) {
@@ -59,6 +60,7 @@ export const createAirDomain = (id: string, block: ethereum.Block): AirDomain =>
         block.hash.toHexString(),
         block.timestamp
     )
+    airBlock.save()
     airDomain.isPrimary = false
     airDomain.createdAt = airBlock.id
     airDomain.lastUpdatedBlock = airBlock.id
@@ -82,6 +84,7 @@ export const saveDomain = (domain: AirDomain, block: ethereum.Block): void => {
         block.hash.toHexString(),
         block.timestamp
     )
+    airBlock.save()
     domain.lastUpdatedBlock = airBlock.id
     domain.save()
 }
@@ -101,6 +104,7 @@ export const getOrCreateAirResolver = (
             block.hash.toHexString(),
             block.timestamp
         )
+        airBlock.save()
         airResolver = new AirResolver(id)
         airResolver.createdAt = airBlock.id
     }
@@ -120,6 +124,7 @@ export const getOrCreateAirDomainRegistration = (
             block.hash.toHexString(),
             block.timestamp
         )
+        airBlock.save()
         airDomainRegistration = new AirDomainRegistration(domainId)
         airDomainRegistration.createdAt = airBlock.id
     }
@@ -136,6 +141,7 @@ export const saveAirDomainRegistration = (
         block.hash.toHexString(),
         block.timestamp
     )
+    airBlock.save()
     registration.lastUpdatedBlock = airBlock.id
     registration.save()
 }
@@ -148,6 +154,7 @@ export const saveAirResolver = (resolver: AirResolver, block: ethereum.Block): v
         block.hash.toHexString(),
         block.timestamp
     )
+    airBlock.save()
     resolver.lastUpdatedBlock = airBlock.id
     resolver.save()
 }

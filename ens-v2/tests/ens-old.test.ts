@@ -94,7 +94,7 @@ describe("Testing ens old", () => {
             newResolverInput1.node
         )
     })
-    test("testing Tranfer", () => {
+    test("testing Transfer", () => {
         const rootNewOwnerEvent = createNewOwnerEvent(rootNewOwner)
         handleNewOwner(rootNewOwnerEvent)
         const newOwnerEvent = createNewOwnerEvent(newOwner1)
