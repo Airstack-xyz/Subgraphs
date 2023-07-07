@@ -21,6 +21,14 @@ export function concat(a: ByteArray, b: ByteArray): ByteArray {
     // return out as ByteArray
     return changetype<ByteArray>(out)
 }
+
+export function createEventID(event: ethereum.Event): string {
+    return event.block.number
+        .toString()
+        .concat("-")
+        .concat(event.logIndex.toString())
+}
+
 export function getNameHash(node: Bytes, label: Bytes): string {
     return crypto.keccak256(concat(node, label)).toHexString()
 }

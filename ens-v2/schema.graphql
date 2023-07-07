@@ -127,10 +127,76 @@ type AirResolver @entity {
     lastUpdatedBlock: AirBlock! #- NA
 }
 
-# mapping
+# mapping to fetch domainId of a label at a particular hash
 type NewOwnerHashLabelMap @entity {
     "Concatenation of tx hash and label"
     id: ID!
     "The domain that this resolver is associated with"
     domainId: String!
+}
+# book keeping entities
+
+interface DomainEvent {
+    "The unique identifier of the event"
+    id: ID!
+    "The domain name associated with the event"
+    domain: String!
+    "The block number at which the event occurred"
+    blockNumber: Int!
+    "The transaction hash of the transaction that triggered the event"
+    txHash: Bytes!
+}
+
+type Transfer implements DomainEvent @entity {
+    "The unique identifier of the event"
+    id: ID!
+    "The domain name associated with the event"
+    domain: String!
+    "The block number at which the event occurred"
+    blockNumber: Int!
+    "The transaction hash of the transaction that triggered the event"
+    txHash: Bytes!
+    "The account that owns the domain after the transfer"
+    owner: String!
+}
+
+type NewOwner implements DomainEvent @entity {
+    "The unique identifier of the event"
+    id: ID!
+    "The parent domain of the domain name associated with the event"
+    parentDomain: String!
+    "The domain name associated with the event"
+    domain: String!
+    "The block number at which the event occurred"
+    blockNumber: Int!
+    "The transaction hash of the transaction that triggered the event"
+    txHash: Bytes!
+    "The new account that owns the domain"
+    owner: String!
+}
+
+type NewResolver implements DomainEvent @entity {
+    "The unique identifier of the event"
+    id: ID!
+    "The domain name associated with the event"
+    domain: String!
+    "The block number at which the event occurred"
+    blockNumber: Int!
+    "The transaction hash of the transaction that triggered the event"
+    txHash: Bytes!
+    "The new resolver contract address associated with the domain"
+    resolver: String!
+}
+
+type NewTTL implements DomainEvent @entity {
+    "The unique identifier of the event"
+    id: ID!
+    "The domain name associated with the event"
+    domain: String!
+    "The block number at which the event occurred"
+    blockNumber: Int!
+    "The transaction hash of the transaction that triggered the event"
+    txHash: Bytes!
+    "The new TTL value (in seconds) associated with the domain"
+    ttl: BigInt!
 }

@@ -1,14 +1,15 @@
 import { Address, BigInt, dataSource, ens, ethereum, log } from "@graphprotocol/graph-ts"
 import {
     ENSRegistry,
-    Transfer,
-    NewOwner,
-    NewResolver,
-    NewTTL,
+    Transfer as TransferEvent,
+    NewOwner as NewOwnerEvent,
+    NewResolver as NewResolverEvent,
+    NewTTL as NewTTLEvent,
 } from "../generated/ENSRegistry/ENSRegistry"
 import {
     ROOT_NODE,
     createAirDomain,
+    createEventID,
     getNameHash,
     getOrCreateAirDomain,
     getOrCreateAirDomainAccount,
@@ -18,9 +19,17 @@ import {
     saveDomain,
 } from "./utils"
 import { BIGINT_ONE, getOrCreateAirAccount } from "./common"
-import { AirDomain, AirResolver, NewOwnerHashLabelMap } from "../generated/schema"
+import {
+    AirDomain,
+    AirResolver,
+    NewOwnerHashLabelMap,
+    NewOwner,
+    Transfer,
+    NewResolver,
+    NewTTL,
+} from "../generated/schema"
 
-export function handleTransfer(event: Transfer): void {
+export function handleTransfer(event: TransferEvent): void {
     const hash = event.transaction.hash
     const node = event.params.node
     const owner = event.params.owner
@@ -44,15 +53,22 @@ export function handleTransfer(event: Transfer): void {
     }
     domain.owner = account.id
     saveDomain(domain, event.block)
+
+    let domainEvent = new Transfer(createEventID(event))
+    domainEvent.blockNumber = event.block.number.toI32()
+    domainEvent.txHash = event.transaction.hash
+    domainEvent.domain = node.toHexString()
+    domainEvent.owner = event.params.owner.toHexString()
+    domainEvent.save()
 }
 
-export function handleNewOwner(event: NewOwner): void {
+export function handleNewOwner(event: NewOwnerEvent): void {
     const hash = event.transaction.hash
     const node = event.params.node
     const label = event.params.label
     const tokenId = getTokenId(label)
     const owner = event.params.owner
-    const nameHash = getNameHash(node, label)
+    const nameHash = getNameHash(node, label) // new node
     let account = getOrCreateAirDomainAccount(owner, event.block)
     account.save()
 
@@ -95,9 +111,17 @@ export function handleNewOwner(event: NewOwner): void {
     let hashlabelMap = new NewOwnerHashLabelMap(hash.toHexString() + "-" + label.toHexString())
     hashlabelMap.domainId = domain.id
     hashlabelMap.save()
+
+    let domainEvent = new NewOwner(createEventID(event))
+    domainEvent.blockNumber = event.block.number.toI32()
+    domainEvent.txHash = event.transaction.hash
+    domainEvent.parentDomain = event.params.node.toHexString()
+    domainEvent.domain = nameHash
+    domainEvent.owner = event.params.owner.toHexString()
+    domainEvent.save()
 }
 
-export function handleNewResolver(event: NewResolver): void {
+export function handleNewResolver(event: NewResolverEvent): void {
     const hash = event.transaction.hash
     const node = event.params.node
     const resolver = event.params.resolver
@@ -119,9 +143,16 @@ export function handleNewResolver(event: NewResolver): void {
     airResolver.domain = domain.id
     airResolver.address = resolver
     saveAirResolver(airResolver, event.block)
+
+    let domainEvent = new NewResolver(createEventID(event))
+    domainEvent.blockNumber = event.block.number.toI32()
+    domainEvent.txHash = event.transaction.hash
+    domainEvent.domain = node.toHexString()
+    domainEvent.resolver = resolver.toHexString()
+    domainEvent.save()
 }
 
-export function handleNewTTL(event: NewTTL): void {
+export function handleNewTTL(event: NewTTLEvent): void {
     const hash = event.transaction.hash
     const node = event.params.node
     const ttl = event.params.ttl
@@ -133,4 +164,11 @@ export function handleNewTTL(event: NewTTL): void {
         domain.ttl = ttl
         saveDomain(domain, event.block)
     }
+
+    let domainEvent = new NewTTL(createEventID(event))
+    domainEvent.blockNumber = event.block.number.toI32()
+    domainEvent.txHash = event.transaction.hash
+    domainEvent.domain = node.toHexString()
+    domainEvent.ttl = event.params.ttl
+    domainEvent.save()
 }
