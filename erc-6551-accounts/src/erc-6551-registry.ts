@@ -15,6 +15,7 @@ export function handleAccountCreated(event: AccountCreatedEvent): void {
   entity.tokenId = event.params.tokenId
   entity.salt = event.params.salt
   entity.registry = event.address.toHexString();
+  entity.deployer = event.transaction.from.toHexString();
 
   let chainId = getChainId();
   let block = event.block;
