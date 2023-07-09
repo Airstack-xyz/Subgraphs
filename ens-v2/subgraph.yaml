@@ -71,3 +71,60 @@ dataSources:
               - event: HashRegistered(indexed bytes32,indexed address,uint256,uint256)
                 handler: handleHashRegistered2
           file: ./src/registrar.ts
+    - kind: ethereum
+      name: BaseRegistrarImplementation
+      network: mainnet
+      source:
+          address: "0xFaC7BEA255a6990f749363002136aF6556b31e04"
+          abi: BaseRegistrarImplementation
+          startBlock: 7666399
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.6
+          language: wasm/assemblyscript
+          entities:
+              - ControllerAdded
+              - ControllerRemoved
+              - NameMigrated
+              - NameRegistered
+              - NameRenewed
+              - OwnershipTransferred
+              - Transfer
+          abis:
+              - name: BaseRegistrarImplementation
+                file: ./abis/BaseRegistrarImplementation.json
+          eventHandlers:
+              - event: ControllerAdded(indexed address)
+                handler: handleControllerAdded
+              - event: ControllerRemoved(indexed address)
+                handler: handleControllerRemoved
+              - event: NameRegistered(indexed uint256,indexed address,uint256)
+                handler: handleNameRegistered
+              - event: NameRenewed(indexed uint256,uint256)
+                handler: handleNameRenewed
+              - event: Transfer(indexed address,indexed address,indexed uint256)
+                handler: handleTransfer
+          file: ./src/base-registrar-implementation.ts
+templates:
+    - name: ETHRegistrarController
+      kind: ethereum/contract
+      network: mainnet
+      source:
+          abi: ETHRegistrarController
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.6
+          language: wasm/assemblyscript
+          entities:
+              - NameRegistered
+              - NameRenewed
+          abis:
+              - name: ETHRegistrarController
+                file: ./abis/ETHRegistrarController.json
+          eventHandlers:
+              - event: NameRegistered(string,indexed bytes32,indexed address,uint256,uint256)
+                handler: handleNameRegistered
+              - event: NameRenewed(string,indexed bytes32,uint256,uint256)
+                handler: handleNameRenewed
+
+          file: ./src/eth-registrar-controller.ts

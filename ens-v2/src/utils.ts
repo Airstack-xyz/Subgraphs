@@ -7,8 +7,11 @@ import {
     AirResolver,
 } from "../generated/schema"
 import { BIG_INT_ZERO, getChainId, getOrCreateAirAccount, getOrCreateAirBlock } from "./common"
-
+export const ETH_NODE = "93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae"
 export const ROOT_NODE = "0x0000000000000000000000000000000000000000000000000000000000000000"
+
+export const rootNode: ByteArray = byteArrayFromHex(ETH_NODE)
+
 // Helper for concatenating two byte arrays
 export function concat(a: ByteArray, b: ByteArray): ByteArray {
     let out = new Uint8Array(a.length + b.length)
@@ -32,7 +35,9 @@ export function createEventID(event: ethereum.Event): string {
 export function getNameHash(node: Bytes, label: Bytes): string {
     return crypto.keccak256(concat(node, label)).toHexString()
 }
-
+export function getNameHashFromBytesArr(node: ByteArray, label: ByteArray): string {
+    return crypto.keccak256(concat(node, label)).toHex()
+}
 export function getTokenId(label: Bytes): string {
     return BigInt.fromUnsignedBytes(label).toString()
 }
@@ -165,4 +170,23 @@ export const saveAirResolver = (resolver: AirResolver, block: ethereum.Block): v
     airBlock.save()
     resolver.lastUpdatedBlock = airBlock.id
     resolver.save()
+}
+
+export function uint256ToByteArray(i: BigInt): ByteArray {
+    let hex = i
+        .toHex()
+        .slice(2)
+        .padStart(64, "0")
+    return byteArrayFromHex(hex)
+}
+
+export function byteArrayFromHex(s: string): ByteArray {
+    if (s.length % 2 !== 0) {
+        throw new TypeError("Hex string must have an even number of characters")
+    }
+    let out = new Uint8Array(s.length / 2)
+    for (var i = 0; i < s.length; i += 2) {
+        out[i / 2] = parseInt(s.substring(i, i + 2), 16) as u32
+    }
+    return changetype<ByteArray>(out)
 }

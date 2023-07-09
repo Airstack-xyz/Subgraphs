@@ -134,6 +134,12 @@ type NewOwnerHashLabelMap @entity {
     "The domain that this resolver is associated with"
     domainId: String!
 }
+" mapping used to identify if the data from controller can be used or not"
+type RemovedController @entity {
+    "address of removed controller"
+    id: ID!
+}
+
 # book keeping entities
 
 interface DomainEvent {
@@ -199,4 +205,30 @@ type NewTTL implements DomainEvent @entity {
     txHash: Bytes!
     "The new TTL value (in seconds) associated with the domain"
     ttl: BigInt!
+}
+
+type ControllerAddedEvent @entity {
+    "The unique identifier of the event"
+    id: ID!
+    "controller from event params"
+    controller: Bytes!
+    "baseRegistrar address"
+    baseRegistrar: Bytes!
+    "The block number at which the event occurred"
+    blockNumber: Int!
+    "The transaction hash of the transaction that triggered the event"
+    txHash: Bytes!
+}
+
+type ControllerRemovedEvent @entity {
+    "The unique identifier of the event"
+    id: ID!
+    "controller from event params"
+    controller: Bytes!
+    "baseRegistrar address"
+    baseRegistrar: Bytes!
+    "The block number at which the event occurred"
+    blockNumber: Int!
+    "The transaction hash of the transaction that triggered the event"
+    txHash: Bytes!
 }
