@@ -105,6 +105,98 @@ dataSources:
               - event: Transfer(indexed address,indexed address,indexed uint256)
                 handler: handleTransfer
           file: ./src/base-registrar-implementation.ts
+    - kind: ethereum
+      name: ENSRegistryWithFallback
+      network: mainnet
+      source:
+          address: "0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e"
+          abi: ENSRegistryWithFallback
+          startBlock: 9380380
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.6
+          language: wasm/assemblyscript
+          entities:
+              - ApprovalForAll
+              - NewOwner
+              - NewResolver
+              - NewTTL
+              - Transfer
+          abis:
+              - name: ENSRegistryWithFallback
+                file: ./abis/ENSRegistryWithFallback.json
+          eventHandlers:
+              - event: NewOwner(indexed bytes32,indexed bytes32,address)
+                handler: handleNewOwner
+              - event: NewResolver(indexed bytes32,address)
+                handler: handleNewResolver
+              - event: NewTTL(indexed bytes32,uint64)
+                handler: handleNewTTL
+              - event: Transfer(indexed bytes32,address)
+                handler: handleTransfer
+          file: ./src/ens-registry-new.ts
+    - kind: ethereum
+      name: BaseRegistrarImplementationNew
+      network: mainnet
+      source:
+          address: "0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85"
+          abi: BaseRegistrarImplementationNew
+          startBlock: 9380410
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.6
+          language: wasm/assemblyscript
+          entities:
+              - Approval
+              - ApprovalForAll
+              - ControllerAdded
+              - ControllerRemoved
+              - NameMigrated
+              - NameRegistered
+              - NameRenewed
+              - OwnershipTransferred
+              - Transfer
+          abis:
+              - name: BaseRegistrarImplementationNew
+                file: ./abis/BaseRegistrarImplementation.json
+          eventHandlers:
+              - event: ControllerAdded(indexed address)
+                handler: handleControllerAdded
+              - event: ControllerRemoved(indexed address)
+                handler: handleControllerRemoved
+              - event: NameRegistered(indexed uint256,indexed address,uint256)
+                handler: handleNameRegistered
+              - event: NameRenewed(indexed uint256,uint256)
+                handler: handleNameRenewed
+              - event: Transfer(indexed address,indexed address,indexed uint256)
+                handler: handleTransfer
+          file: ./src/base-registrar-implementation.ts
+    - kind: ethereum
+      name: ETHRegistrarControllerNew
+      network: mainnet
+      source:
+          address: "0x253553366da8546fc250f225fe3d25d0c782303b"
+          abi: ETHRegistrarControllerNew
+          startBlock: 16925618
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.6
+          language: wasm/assemblyscript
+          entities:
+              - NameRegistered
+              - NameRenewed
+              - OwnershipTransferred
+          abis:
+              - name: ETHRegistrarControllerNew
+                file: ./abis/ETHRegistrarControllerNew.json
+          eventHandlers:
+              - event: NameRegistered(string,indexed bytes32,indexed address,uint256,uint256,uint256)
+                handler: handleNameRegistered
+              - event: NameRenewed(string,indexed bytes32,uint256,uint256)
+                handler: handleNameRenewed
+
+          file: ./src/eth-registrar-controller-new.ts
+
 templates:
     - name: ETHRegistrarController
       kind: ethereum/contract
@@ -126,5 +218,48 @@ templates:
                 handler: handleNameRegistered
               - event: NameRenewed(string,indexed bytes32,uint256,uint256)
                 handler: handleNameRenewed
-
           file: ./src/eth-registrar-controller.ts
+    - name: Resolver
+      kind: ethereum/contract
+      network: mainnet
+      source:
+          abi: Resolver
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.6
+          language: wasm/assemblyscript
+          entities:
+              - AddrChanged
+              - Textchanged
+              - TextchangedWithValue
+          abis:
+              - name: Resolver
+                file: ./abis/PublicResolver.json
+          eventHandlers:
+              - event: "AddrChanged(indexed bytes32,address)"
+                handler: handleAddrChanged
+              - event: "TextChanged(indexed bytes32,indexed string,string)"
+                handler: handleTextChanged
+              - event: "TextChanged(indexed bytes32,indexed string,string,string)"
+                handler: handleTextChangedWithValue
+          file: ./src/resolver.ts
+    - name: ReverseRegistrar
+      kind: ethereum/contract
+      network: mainnet
+      source:
+          abi: ReverseRegistrar
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.6
+          language: wasm/assemblyscript
+          file: ./src/reverse-registrar.ts
+          entities:
+              - AddrChanged
+              - Textchanged
+              - TextchangedWithValue
+          abis:
+              - name: ReverseRegistrar
+                file: ./abis/ReverseRegistrar.json
+          callHandlers:
+              - function: setName(string)
+                handler: handleSetName

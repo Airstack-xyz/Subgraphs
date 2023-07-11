@@ -4,12 +4,14 @@ import {
     AirDomain,
     AirDomainAccount,
     AirDomainRegistration,
+    AirExtra,
     AirResolver,
 } from "../generated/schema"
 import { BIG_INT_ZERO, getChainId, getOrCreateAirAccount, getOrCreateAirBlock } from "./common"
 export const ETH_NODE = "93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae"
 export const ROOT_NODE = "0x0000000000000000000000000000000000000000000000000000000000000000"
-
+export const ADDR_REVERSE_NODE =
+    "0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2"
 export const rootNode: ByteArray = byteArrayFromHex(ETH_NODE)
 
 // Helper for concatenating two byte arrays
@@ -56,6 +58,7 @@ export function getOrCreateAirDomainAccount(
     )
     airBlock.save()
     const airAccount = getOrCreateAirAccount(chainId, addrStr, airBlock)
+    airAccount.save()
     let airDomainAccount = AirDomainAccount.load(addrStr)
     if (!airDomainAccount) {
         airDomainAccount = new AirDomainAccount(addrStr)
@@ -170,6 +173,19 @@ export const saveAirResolver = (resolver: AirResolver, block: ethereum.Block): v
     airBlock.save()
     resolver.lastUpdatedBlock = airBlock.id
     resolver.save()
+}
+
+export const createOrUpdateAirExtra = (domainId: string, name: string, value: string): AirExtra => {
+    const id = domainId.concat("-").concat(name)
+
+    let airExtraEntity = AirExtra.load(id)
+    if (airExtraEntity == null) {
+        airExtraEntity = new AirExtra(id)
+    }
+    airExtraEntity.name = name
+    airExtraEntity.value = value
+    airExtraEntity.save()
+    return airExtraEntity
 }
 
 export function uint256ToByteArray(i: BigInt): ByteArray {

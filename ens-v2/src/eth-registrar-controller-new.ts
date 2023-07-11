@@ -2,7 +2,7 @@ import { BigInt, log } from "@graphprotocol/graph-ts"
 import {
     NameRegistered as NameRegisteredEvent,
     NameRenewed as NameRenewedEvent,
-} from "../generated/templates/ETHRegistrarController/ETHRegistrarController"
+} from "../generated/ETHRegistrarControllerNew/ETHRegistrarControllerNew"
 import { AirDomain, AirDomainRegistration, RemovedController } from "../generated/schema"
 import {
     getNameHash,
@@ -15,13 +15,13 @@ import {
 export function handleNameRegistered(event: NameRegisteredEvent): void {
     let shouldRemove = RemovedController.load(event.address.toHexString())
     if (!shouldRemove) {
-
         const hash = event.transaction.hash
 
         const name = event.params.name
         const label = event.params.label
         const owner = event.params.owner
-        const cost = event.params.cost
+        const baseCost = event.params.baseCost
+        const premium = event.params.premium
         const expires = event.params.expires
 
         const nameHash = getNameHashFromBytesArr(rootNode, label)
@@ -42,7 +42,7 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
                 hash.toHexString(),
             ])
         }
-        registration!.cost = cost
+        registration!.cost = baseCost.plus(premium)
         registration!.expiryDate = expires
         saveAirDomainRegistration(registration!, event.block)
     }

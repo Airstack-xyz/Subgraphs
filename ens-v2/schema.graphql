@@ -232,3 +232,13 @@ type ControllerRemovedEvent @entity {
     "The transaction hash of the transaction that triggered the event"
     txHash: Bytes!
 }
+
+type PrimarySet @entity {
+    id: ID!
+    hash: Bytes!
+    name: String!
+}
+
+type ReverseRegistrar @entity {
+    id: ID!
+}

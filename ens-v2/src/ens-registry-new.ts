@@ -1,11 +1,10 @@
 import { Address, BigInt, dataSource, ens, ethereum, log } from "@graphprotocol/graph-ts"
 import {
-    ENSRegistry,
     Transfer as TransferEvent,
     NewOwner as NewOwnerEvent,
     NewResolver as NewResolverEvent,
     NewTTL as NewTTLEvent,
-} from "../generated/ENSRegistry/ENSRegistry"
+} from "../generated/ENSRegistryWithFallback/ENSRegistryWithFallback"
 import {
     ADDR_REVERSE_NODE,
     ROOT_NODE,
@@ -19,6 +18,8 @@ import {
     saveAirResolver,
     saveDomain,
 } from "./utils"
+import { Resolver, ReverseRegistrar } from "../generated/templates"
+
 import { BIGINT_ONE, getOrCreateAirAccount } from "./common"
 import {
     AirDomain,
@@ -30,7 +31,6 @@ import {
     NewTTL,
     ReverseRegistrar as ReverseRegistrarEntity,
 } from "../generated/schema"
-import { Resolver, ReverseRegistrar } from "../generated/templates"
 
 export function handleTransfer(event: TransferEvent): void {
     const hash = event.transaction.hash
@@ -88,6 +88,7 @@ export function handleNewOwner(event: NewOwnerEvent): void {
         }
         rev.save()
     }
+
     let account = getOrCreateAirDomainAccount(owner, event.block)
     account.save()
 
