@@ -1,11 +1,5 @@
-import { BigInt, TypedMap, dataSource } from "@graphprotocol/graph-ts"
-import {
-    AirBlock,
-    AirEntityCounter,
-    AirMeta,
-    AirAccount,
-    AirToken,
-} from "../generated/schema"
+import { BigInt, TypedMap, dataSource, ethereum } from "@graphprotocol/graph-ts"
+import { AirBlock, AirEntityCounter, AirMeta, AirAccount, AirToken } from "../generated/schema"
 
 export const AIR_META_ID = "AIR_META"
 
@@ -15,9 +9,9 @@ export const BIG_INT_ZERO = BigInt.fromI32(0)
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0"
 
-export const SUBGRAPH_NAME = "AIRSTACK_SUBGRAPH"
-export const SUBGRAPH_VERSION = "AIRSTACK_SUBGRAPH"
-export const SUBGRAPH_SLUG = "AIRSTACK_SUBGRAPH"
+export const SUBGRAPH_NAME = "ens"
+export const SUBGRAPH_VERSION = "v2"
+export const SUBGRAPH_SLUG = "ens_v2"
 
 const AIR_CHAIN_ID_MAP = new TypedMap<string, string>()
 AIR_CHAIN_ID_MAP.set("arbitrum-one", "42161")
@@ -129,6 +123,18 @@ export function getOrCreateAirBlock(
     return block as AirBlock
 }
 
+export function getOrCreateAirBlock2(block: ethereum.Block): AirBlock {
+    const chainId = getChainId()
+    const id = chainId.concat("-").concat(block.number.toString())
+    let blockEntity = AirBlock.load(id)
+    if (blockEntity == null) {
+        blockEntity = new AirBlock(id)
+        blockEntity.hash = block.hash.toHexString()
+        blockEntity.number = block.number
+        blockEntity.timestamp = block.timestamp
+    }
+    return blockEntity as AirBlock
+}
 /**
  * @dev this function does not save the returned entity
  * @dev this function gets or creates a new air account entity

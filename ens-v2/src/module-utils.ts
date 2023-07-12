@@ -1,42 +1,24 @@
-import { Address, ByteArray, Bytes, BigInt, crypto, ethereum } from "@graphprotocol/graph-ts"
+import { Address, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import {
-    AirAccount,
     AirDomain,
     AirDomainAccount,
     AirDomainRegistration,
     AirResolver,
 } from "../generated/schema"
-import { BIG_INT_ZERO, getChainId, getOrCreateAirAccount, getOrCreateAirBlock } from "./common"
-
-export const ROOT_NODE = "0x0000000000000000000000000000000000000000000000000000000000000000"
-// Helper for concatenating two byte arrays
-export function concat(a: ByteArray, b: ByteArray): ByteArray {
-    let out = new Uint8Array(a.length + b.length)
-    for (let i = 0; i < a.length; i++) {
-        out[i] = a[i]
-    }
-    for (let j = 0; j < b.length; j++) {
-        out[a.length + j] = b[j]
-    }
-    // return out as ByteArray
-    return changetype<ByteArray>(out)
-}
-
+import {
+    BIG_INT_ZERO,
+    getChainId,
+    getOrCreateAirAccount,
+    getOrCreateAirBlock,
+    getOrCreateAirBlock2,
+    updateAirEntityCounter,
+} from "./common"
 export function createEventID(event: ethereum.Event): string {
     return event.block.number
         .toString()
         .concat("-")
         .concat(event.logIndex.toString())
 }
-
-export function getNameHash(node: Bytes, label: Bytes): string {
-    return crypto.keccak256(concat(node, label)).toHexString()
-}
-
-export function getTokenId(label: Bytes): string {
-    return BigInt.fromUnsignedBytes(label).toString()
-}
-
 export function getOrCreateAirDomainAccount(
     address: Address,
     block: ethereum.Block
@@ -51,10 +33,11 @@ export function getOrCreateAirDomainAccount(
     )
     airBlock.save()
     const airAccount = getOrCreateAirAccount(chainId, addrStr, airBlock)
-    let airDomainAccount = AirDomainAccount.load(addrStr)
+    airAccount.save()
+    let airDomainAccount = AirDomainAccount.load(airAccount.id)
     if (!airDomainAccount) {
-        airDomainAccount = new AirDomainAccount(addrStr)
-        airDomainAccount.address = airAccount.id
+        airDomainAccount = new AirDomainAccount(airAccount.id)
+        airDomainAccount.account = airAccount.id
     }
     return airDomainAccount
 }
@@ -73,18 +56,22 @@ export const createAirDomain = (id: string, block: ethereum.Block): AirDomain =>
     airDomain.createdAt = airBlock.id
     airDomain.lastUpdatedBlock = airBlock.id
     airDomain.subdomainCount = BIG_INT_ZERO
+    airDomain.fueses = BIG_INT_ZERO
     return airDomain
 }
 
 export const getOrCreateAirDomain = (id: string, block: ethereum.Block): AirDomain => {
+    let airBlock = getOrCreateAirBlock2(block)
+    airBlock.save()
     let airDomain = AirDomain.load(id)
     if (airDomain == null) {
         airDomain = createAirDomain(id, block)
     }
+    airDomain.lastUpdatedIndex = updateAirEntityCounter("AIR_DOMAIN", airBlock)
     return airDomain
 }
 
-export const saveDomain = (domain: AirDomain, block: ethereum.Block): void => {
+export const saveAirDomain = (domain: AirDomain, block: ethereum.Block): void => {
     const chainId = getChainId()
     const airBlock = getOrCreateAirBlock(
         chainId,
@@ -99,10 +86,11 @@ export const saveDomain = (domain: AirDomain, block: ethereum.Block): void => {
 
 export const getOrCreateAirResolver = (
     domainId: string,
-    resolverAddress: string,
+    resolverAddress: Bytes,
     block: ethereum.Block
 ): AirResolver => {
-    const id = domainId.concat("-").concat(resolverAddress)
+    let airBlock = getOrCreateAirBlock2(block)
+    const id = domainId.concat("-").concat(resolverAddress.toHexString())
     let airResolver = AirResolver.load(id)
     if (!airResolver) {
         const chainId = getChainId()
@@ -115,7 +103,10 @@ export const getOrCreateAirResolver = (
         airBlock.save()
         airResolver = new AirResolver(id)
         airResolver.createdAt = airBlock.id
+        airResolver.resolverAddress = resolverAddress
     }
+    airResolver.lastUpdatedIndex = updateAirEntityCounter("AIR_RESOLVER", airBlock)
+
     return airResolver
 }
 
@@ -123,6 +114,8 @@ export const getOrCreateAirDomainRegistration = (
     domainId: string,
     block: ethereum.Block
 ): AirDomainRegistration => {
+    let airBlock = getOrCreateAirBlock2(block)
+
     let airDomainRegistration = AirDomainRegistration.load(domainId)
     if (!airDomainRegistration) {
         const chainId = getChainId()
@@ -136,6 +129,11 @@ export const getOrCreateAirDomainRegistration = (
         airDomainRegistration = new AirDomainRegistration(domainId)
         airDomainRegistration.createdAt = airBlock.id
     }
+    airDomainRegistration.lastUpdatedIndex = updateAirEntityCounter(
+        "AIR_DOMAIN_REGISTRATION",
+        airBlock
+    )
+
     return airDomainRegistration
 }
 export const saveAirDomainRegistration = (

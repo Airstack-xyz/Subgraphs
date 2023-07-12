@@ -41,15 +41,13 @@ type AirToken @entity {
 type AirDomainAccount @entity {
     "The unique identifier for the account"
     id: ID!
-    address: AirAccount!
+    account: AirAccount!
     "domains resolved to this account"
-    resolved: [AirResolver!]! @derivedFrom(field: "resolvedAddress")
+    resolved: [AirDomain!] # this array will be used for isPrimary change
     "The domains owned by the account / manager of domain"
-    domains: [AirDomain!]! @derivedFrom(field: "owner")
+    manager: [AirDomain!]! @derivedFrom(field: "manager")
     "domains registered under this account / actual owner of domain(nft)"
-    registered: [AirDomain!]! @derivedFrom(field: "registrant")
-    "The Registrations made by the account"
-    registrations: [AirDomainRegistration!] @derivedFrom(field: "registrant")
+    owner: [AirDomain!]! @derivedFrom(field: "owner")
 }
 
 type AirDomain @entity {
@@ -69,45 +67,115 @@ type AirDomain @entity {
     subdomains: [AirDomain!]! @derivedFrom(field: "parent")
     "The number of subdomains"
     subdomainCount: BigInt!
-
-    "The account that owns the domain"
-    owner: AirDomainAccount!
+    "Address logged from current resolver, if any"
+    resolvedAddress: AirDomainAccount
+    "The account that manager the domain"
+    manager: AirDomainAccount!
     "The account that owns the ERC721 NFT for the domain"
-    registrant: AirDomainAccount
+    owner: AirDomainAccount!
     "The resolver that controls the domain's settings"
-    resolver: AirResolver @derivedFrom(field: "domain")
+    resolver: AirResolver
     "The time-to-live (TTL) value of the domain's records"
     ttl: BigInt
     "Is the primary domain for the resolved address"
     isPrimary: Boolean!
     "The expiry date for the domain, from either the registration, or the wrapped domain if PCC is burned"
-    # expiryTimestamp: BigInt!
+    #expiryTimestamp: BigInt!
     #registrationCost: BigInt! # Cost of domain registration in wei
     #paymentToken: AirToken # Token used to pay for registration
     tokenAddress: AirToken # Domain (eg: ens) token contract address
     createdAt: AirBlock!
-    lastUpdatedBlock: AirBlock! #- NA
+    lastUpdatedBlock: AirBlock #- NA
     registration: AirDomainRegistration @derivedFrom(field: "domain")
+    lastUpdatedIndex: BigInt!
+    "fuses set from namewrapper"
+    fueses: BigInt!
 }
 
 type AirDomainRegistration @entity {
-    "The unique identifier of the registration"
+    "The unique identifier of the registration(label ?)"
     id: ID!
     "The domain name associated with the registration"
     domain: AirDomain!
     "The registration date of the domain"
-    registrationDate: BigInt
+    registrationDate: BigInt!
     "The expiry date of the domain"
     expiryDate: BigInt
     "The cost associated with the domain registration"
     cost: BigInt
     "The account that registered the domain"
-    registrant: AirDomainAccount!
+    owner: AirDomainAccount!
     #"The human-readable label name associated with the domain registration"
     #labelName: String
     createdAt: AirBlock!
 
-    lastUpdatedBlock: AirBlock! #- NA
+    lastUpdatedBlock: AirBlock #- NA
+    lastUpdatedIndex: BigInt!
+
+    events: [AirDomainRegistrationEvent!]! @derivedFrom(field: "registration")
+}
+
+interface AirDomainRegistrationEvent {
+    "hash + logIndex"
+    id: ID!
+    "The registration associated with the event"
+    registration: AirDomainRegistration!
+    "The block number of the event"
+    lastUpdatedBlock: AirBlock
+
+    "The transaction hash associated with the event"
+    transactionHash: Bytes!
+}
+
+type AirDomainRegistered implements AirDomainRegistrationEvent @entity {
+    "hash + logIndex"
+    id: ID!
+    "The registration associated with the event"
+    registration: AirDomainRegistration!
+
+    "The account that registered the name"
+    registrant: AirDomainAccount!
+
+    "The block number of the event"
+    lastUpdatedBlock: AirBlock
+
+    "The transaction hash associated with the event"
+    transactionHash: Bytes!
+}
+
+type AirDomainRenewed implements AirDomainRegistrationEvent @entity {
+    "hash + logIndex"
+    id: ID!
+    "The registration associated with the event"
+    registration: AirDomainRegistration!
+
+    "The account that renewed the name"
+    renewer: AirDomainAccount!
+
+    "The block number of the event"
+    lastUpdatedBlock: AirBlock
+
+    "The transaction hash associated with the event"
+    transactionHash: Bytes!
+}
+
+type AirDomainTransferred implements AirDomainRegistrationEvent @entity {
+    "hash + logIndex"
+    id: ID!
+    "The registration associated with the event"
+    registration: AirDomainRegistration!
+
+    "The account of new owner"
+    newOwner: AirDomainAccount!
+
+    "The account of old owner"
+    oldOwner: AirDomainAccount!
+
+    "The block number of the event"
+    lastUpdatedBlock: AirBlock
+
+    "The transaction hash associated with the event"
+    transactionHash: Bytes!
 }
 
 type AirResolver @entity {
@@ -116,15 +184,33 @@ type AirResolver @entity {
     "The domain that this resolver is associated with"
     domain: AirDomain!
 
+    "Address of resolver"
+    resolverAddress: Bytes!
+
     "Address logged from current resolver, if any"
     resolvedAddress: AirDomainAccount
 
     "can save extra data like github,twitter,etc"
     extras: [AirExtra!]
 
+    "to track multi chain addresses this domain points to"
+    coinType: [AirDomainCoin!]! @derivedFrom(field: "resolver")
+
     address: Bytes! # Address of resolver contract
     createdAt: AirBlock!
     lastUpdatedBlock: AirBlock! #- NA
+    lastUpdatedIndex: BigInt!
+}
+
+type AirDomainCoin @entity {
+    "AirResolver id +-+coinType"
+    id: ID!
+
+    resolver: AirResolver!
+    "coinType"
+    coinType: BigInt!
+    "address it points to"
+    address: Bytes!
 }
 
 # mapping to fetch domainId of a label at a particular hash
