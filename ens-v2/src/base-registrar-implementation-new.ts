@@ -17,20 +17,19 @@ import {
     RemovedController,
 } from "../generated/schema"
 import { ETHRegistrarController } from "../generated/templates"
+
 import {
-    ETH_NODE,
     byteArrayFromHex,
     createEventID,
-    getNameHash,
-    getNameHashFromBytesArr,
     getOrCreateAirDomainAccount,
     getOrCreateAirDomainRegistration,
     rootNode,
     saveAirDomainRegistration,
-    saveDomain,
+    saveAirDomain,
     uint256ToByteArray,
-} from "./utils"
+} from "./module-utils"
 import { BIG_INT_ZERO } from "./common"
+import { getNameHashFromBytesArr } from "./ens-utils"
 
 export function handleControllerAdded(event: ControllerAdded): void {
     const controller = event.params.controller
@@ -101,7 +100,7 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
     registration.domain = domain.id
     registration.registrationDate = event.block.timestamp
     registration.cost = BIG_INT_ZERO
-    registration.registrant = account.id
+    registration.owner = account.id
     registration.expiryDate = expires
     saveAirDomainRegistration(registration, event.block)
 }
@@ -153,7 +152,7 @@ export function handleTransfer(event: TransferEvent): void {
         }
         let toAddress = getOrCreateAirDomainAccount(to, event.block)
         toAddress.save()
-        domain!.registrant = toAddress.id
-        saveDomain(domain!, event.block)
+        domain!.owner = toAddress.id
+        saveAirDomain(domain!, event.block)
     }
 }

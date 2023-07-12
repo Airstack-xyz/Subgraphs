@@ -4,18 +4,12 @@ import {
     NameRenewed as NameRenewedEvent,
 } from "../generated/templates/ETHRegistrarController/ETHRegistrarController"
 import { AirDomain, AirDomainRegistration, RemovedController } from "../generated/schema"
-import {
-    getNameHash,
-    getNameHashFromBytesArr,
-    rootNode,
-    saveAirDomainRegistration,
-    saveDomain,
-} from "./utils"
+import { rootNode, saveAirDomainRegistration, saveAirDomain } from "./module-utils"
+import { getNameHashFromBytesArr } from "./ens-utils"
 
 export function handleNameRegistered(event: NameRegisteredEvent): void {
     let shouldRemove = RemovedController.load(event.address.toHexString())
     if (!shouldRemove) {
-
         const hash = event.transaction.hash
 
         const name = event.params.name
@@ -33,7 +27,7 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
             ])
         }
         domain!.name = name
-        saveDomain(domain!, event.block)
+        saveAirDomain(domain!, event.block)
 
         let registration = AirDomainRegistration.load(label.toHexString())
         if (!registration) {
@@ -67,7 +61,7 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
             ])
         }
         domain!.name = name
-        saveDomain(domain!, event.block)
+        saveAirDomain(domain!, event.block)
 
         let registration = AirDomainRegistration.load(label.toHexString())
         if (!registration) {

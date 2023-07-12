@@ -11,7 +11,7 @@ import {
     getOrCreateAirDomainAccount,
     getOrCreateAirResolver,
     saveAirResolver,
-} from "./utils"
+} from "./module-utils"
 import { AirDomain, AirResolver } from "../generated/schema"
 
 export function handleAddrChanged(event: AddrChangedEvent): void {

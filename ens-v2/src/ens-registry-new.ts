@@ -5,19 +5,16 @@ import {
     NewResolver as NewResolverEvent,
     NewTTL as NewTTLEvent,
 } from "../generated/ENSRegistryWithFallback/ENSRegistryWithFallback"
+import { ADDR_REVERSE_NODE, ROOT_NODE, getNameHash, getTokenId } from "./ens-utils"
 import {
-    ADDR_REVERSE_NODE,
-    ROOT_NODE,
     createAirDomain,
     createEventID,
-    getNameHash,
     getOrCreateAirDomain,
     getOrCreateAirDomainAccount,
     getOrCreateAirResolver,
-    getTokenId,
     saveAirResolver,
-    saveDomain,
-} from "./utils"
+    saveAirDomain,
+} from "./module-utils"
 import { Resolver, ReverseRegistrar } from "../generated/templates"
 
 import { BIGINT_ONE, getOrCreateAirAccount } from "./common"
@@ -62,7 +59,7 @@ export function handleTransfer(event: TransferEvent): void {
         throw new Error("Domain not found")
     }
     domain.owner = account.id
-    saveDomain(domain, event.block)
+    saveAirDomain(domain, event.block)
 
     let domainEvent = new Transfer(createEventID(event))
     domainEvent.blockNumber = event.block.number.toI32()
@@ -99,7 +96,7 @@ export function handleNewOwner(event: NewOwnerEvent): void {
         if (!domain.parent) {
             domain.parent = parent.id
             parent.subdomainCount = parent.subdomainCount.plus(BIGINT_ONE)
-            saveDomain(parent, event.block)
+            saveAirDomain(parent, event.block)
         }
     }
 
@@ -126,7 +123,7 @@ export function handleNewOwner(event: NewOwnerEvent): void {
 
     domain.owner = account.id
     domain.labelHash = label.toHexString()
-    saveDomain(domain, event.block)
+    saveAirDomain(domain, event.block)
 
     let hashlabelMap = new NewOwnerHashLabelMap(hash.toHexString() + "-" + label.toHexString())
     hashlabelMap.domainId = domain.id
@@ -146,11 +143,7 @@ export function handleNewResolver(event: NewResolverEvent): void {
     const node = event.params.node
     const resolver = event.params.resolver
 
-    let airResolver = getOrCreateAirResolver(
-        node.toHexString(),
-        resolver.toHexString(),
-        event.block
-    )
+    let airResolver = getOrCreateAirResolver(node.toHexString(), resolver, event.block)
     const domain = AirDomain.load(node.toHexString())
     if (!domain) {
         log.error("Domain not found hash {} node {} resolver {}", [
@@ -185,7 +178,7 @@ export function handleNewTTL(event: NewTTLEvent): void {
     // in the same transaction as setting TTL
     if (domain) {
         domain.ttl = ttl
-        saveDomain(domain, event.block)
+        saveAirDomain(domain, event.block)
     }
 
     let domainEvent = new NewTTL(createEventID(event))

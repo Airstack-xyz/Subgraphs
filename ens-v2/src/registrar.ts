@@ -5,7 +5,7 @@ import {
     getOrCreateAirDomainAccount,
     getOrCreateAirDomainRegistration,
     saveAirDomainRegistration,
-} from "./utils"
+} from "./module-utils"
 import { AirDomain, NewOwnerHashLabelMap } from "../generated/schema"
 
 export function handleHashRegistered1(event: HashRegisteredEventOld1): void {
@@ -17,7 +17,7 @@ export function handleHashRegistered1(event: HashRegisteredEventOld1): void {
     handleHashRegistered(hash, ensHash, owner, value, registrationDate, event.block)
 }
 
-export function handleHashRegistered2(event: HashRegisteredEventOld1): void {
+export function handleHashRegistered2(event: HashRegisteredEventOld2): void {
     const hash = event.transaction.hash
     const ensHash = event.params.hash
     const owner = event.params.owner
@@ -25,6 +25,7 @@ export function handleHashRegistered2(event: HashRegisteredEventOld1): void {
     const registrationDate = event.params.registrationDate
     handleHashRegistered(hash, ensHash, owner, value, registrationDate, event.block)
 }
+
 function handleHashRegistered(
     hash: Bytes,
     ensHash: Bytes,
@@ -49,6 +50,6 @@ function handleHashRegistered(
     registration.domain = domain.id
     registration.registrationDate = registrationDate
     registration.cost = value
-    registration.registrant = account.id
+    registration.owner = account.id
     saveAirDomainRegistration(registration, block)
 }
