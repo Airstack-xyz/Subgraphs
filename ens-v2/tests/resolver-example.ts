@@ -6,7 +6,7 @@ import {
 } from "./resolver-utils"
 
 export const resolverAddressSet: AddrChangedInput = {
-    hash: "0x12f783f1a93611bdbd5121640763505d73bb5043e97424aae02233980e376c0a",
+    hash: "0x88bc13b084fea1313ee6f062087ae3bc20111b388f270c67f55bd107a166c667",
     resolverAddress: "0x19555A92A4C70B7CEb3b2B2b738d028A451DA85A",
     node: "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae",
     a: "0x1da022710dF5002339274AaDEe8D58218e9D6AB5",

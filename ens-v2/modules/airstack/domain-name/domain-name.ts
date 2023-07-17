@@ -191,6 +191,7 @@ export namespace domain {
         saveAirDomain(childDomain, block)
         // reverse mapping
         let airReverseRegistrar = getOrCreateAirReverseRegistrar(childName)
+
         airReverseRegistrar.domain = childDomain.id
         airReverseRegistrar.save()
         // book keeping

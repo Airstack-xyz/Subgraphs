@@ -7,7 +7,8 @@ import { SetNameCall as SetNameCall5 } from "../generated/templates/ReverseRegis
 import * as airstack from "../modules/airstack/domain-name"
 import { PrimarySet } from "../generated/schema"
 import { createEventID } from "./utils"
-const _handleSetName = (
+
+export const _handleSetName = (
     txHash: Bytes,
     block: ethereum.Block,
     from: Address,
