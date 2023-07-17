@@ -294,10 +294,6 @@ type PrimarySet @entity {
     name: String!
 }
 
-type ReverseRegistrar @entity {
-    id: ID!
-}
-
 type ResolverEntity @entity {
     # Resolver
     id: ID!
@@ -305,6 +301,12 @@ type ResolverEntity @entity {
 
 type ControllerEntity @entity {
     # Controller
+    id: ID!
+    txHash: Bytes!
+}
+
+type ReverseRegistrarEntity @entity {
+    # ReverseRegistrar
     id: ID!
     txHash: Bytes!
 }

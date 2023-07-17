@@ -8,11 +8,17 @@ import {
     crypto,
     log,
 } from "@graphprotocol/graph-ts"
-import { ControllerEntity, ControllerNameWrapperEntity, ResolverEntity } from "../generated/schema"
+import {
+    ControllerEntity,
+    ControllerNameWrapperEntity,
+    ResolverEntity,
+    ReverseRegistrarEntity,
+} from "../generated/schema"
 import {
     ETHRegistrarControllerNameWrapperTemplate,
     ETHRegistrarControllerTemplate,
     ResolverTemplate,
+    ReverseRegistrarTemplate,
 } from "../generated/templates"
 
 export const ROOT_NODE = "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -94,7 +100,6 @@ const ControllerArr = [
 export function createController(controller: Address, txHash: Bytes): void {
     let controllerStr = controller.toHexString().toLowerCase()
     let alreadyExist = ControllerArr.includes(controllerStr)
-    log.debug("alreadyExist {}", [alreadyExist.toString()])
     if (!alreadyExist) {
         let controllerEntity = ControllerEntity.load(controllerStr)
         if (!controllerEntity) {
@@ -106,6 +111,28 @@ export function createController(controller: Address, txHash: Bytes): void {
         }
     }
 }
+
+const ReverseRegistrarArr = [
+    "0x9062c0a6dbd6108336bcbe4593a3d1ce05512069",
+    "0x084b1c3c81545d370f3634392de611caabff8148",
+    "0xa58e81fe9b61b5c3fe2afd33cf304c454abfc7cb",
+    "0xda7fa6e0b04c76683f54c973931862d7fe474a85",
+]
+export function createReverse(reverseRegistrar: Address, txHash: Bytes): void {
+    let reverseRegistrarStr = reverseRegistrar.toHexString().toLowerCase()
+    let alreadyExist = ReverseRegistrarArr.includes(reverseRegistrarStr)
+    if (!alreadyExist) {
+        let reverseRegistrarEntity = ReverseRegistrarEntity.load(reverseRegistrarStr)
+        if (!reverseRegistrarEntity) {
+            reverseRegistrarEntity = new ReverseRegistrarEntity(reverseRegistrarStr)
+            reverseRegistrarEntity.txHash = txHash
+            reverseRegistrarEntity.save()
+            // create new datasource
+            ReverseRegistrarTemplate.create(reverseRegistrar)
+        }
+    }
+}
+
 const ControllerNameWrapperArr = ["0x253553366da8546fc250f225fe3d25d0c782303b"]
 export function createControllerNameWrapper(controller: Address, txHash: Bytes): void {
     let controllerStr = controller.toHexString().toLowerCase()

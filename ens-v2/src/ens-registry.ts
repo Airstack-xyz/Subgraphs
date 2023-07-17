@@ -14,9 +14,17 @@ import {
 } from "../generated/ENSRegistryWithFallback/ENSRegistry"
 import * as airstack from "../modules/airstack/domain-name"
 import { NewOwnerHashLabelMap } from "../generated/schema"
-import { createNewResolver, getNameHashFromBytes, tryFindName, ROOT_NODE } from "./utils"
+import {
+    createNewResolver,
+    getNameHashFromBytes,
+    tryFindName,
+    ROOT_NODE,
+    createReverse,
+} from "./utils"
 const ROOT_NODE_INITIAL_TRANSFER_HASH =
     "0xe120d656744084c3906a59013ec2bcaf35bda6b3cc770f2001acd4c15efbd353"
+const ADDR_REVERSE_NODE = "0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2"
+
 /**
  * Transfers ownership of a node to a new address. May only be called by the current owner of the node.
  * @param txHash
@@ -63,6 +71,9 @@ export const _handleNewOwner = (
     let parentDomainId = node.toHexString()
     let airParentDomain = airstack.domain.getAirDomain(parentDomainId)
     let childDomainId = getNameHashFromBytes(node, label)
+    if (childDomainId.toLowerCase() == ADDR_REVERSE_NODE.toLowerCase()) {
+        createReverse(owner, txHash)
+    }
     // attempt to build child name
     let labelName = tryFindName(label)
     if (labelName == "") {
