@@ -282,6 +282,7 @@ export namespace domain {
                 resolvedDomainArr = []
             }
             resolvedDomainArr.push(airDomain.id)
+            resolvedDomainAccount.resolved = resolvedDomainArr
             resolvedDomainAccount.save()
         }
     }
@@ -328,6 +329,7 @@ export namespace domain {
         airExtra.save()
         extras.push(airExtra.id)
         airResolver.extras = extras
+        log.debug("airResolver id {}", [airResolver.id])
         saveAirResolver(airResolver, block)
     }
     export function trackAirDomainRegistrationDateAndCost(

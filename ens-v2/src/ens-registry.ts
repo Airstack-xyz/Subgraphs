@@ -63,7 +63,7 @@ export const _handleNewOwner = (
     let parentDomainId = node.toHexString()
     let airParentDomain = airstack.domain.getAirDomain(parentDomainId)
     let childDomainId = getNameHashFromBytes(node, label)
-
+    log.debug(" childDomainId {}", [childDomainId])
     // attempt to build child name
     let labelName = tryFindName(label)
     if (labelName == "") {
@@ -73,7 +73,7 @@ export const _handleNewOwner = (
     if (airParentDomain.name != null) {
         parentName = airParentDomain.name!
     } else {
-        log.error("empty parent name, txHash {} parentnode {}", [
+        log.info("empty parent name, txHash {} parentnode {}", [
             txHash.toHexString(),
             parentDomainId,
         ])

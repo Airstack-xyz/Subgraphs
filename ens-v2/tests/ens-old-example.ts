@@ -24,6 +24,14 @@ export const rootNewOwner: NewOwnerInput = {
     logIndex: "1",
 }
 
+export const childNewOwner: NewOwnerInput = {
+    hash: "0x8184de99c6bcc93e408df23ff8fac56c4c948513de5ea6adf59af4668f0e4b5a",
+    node: "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae",
+    label: "0x0000d9107d07a44f64888c5ecc821b7a8f7059c5c2ee18edfd1c040103f291a4",
+    owner: "0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb",
+    logIndex: "1",
+}
+
 export const newTTL: NewTTLInput = {
     hash: "0x355db3c952387389054604d569d1a51cb5206256f6c4fbef3a1cd522c4c7126c",
     logIndex: "1",
@@ -37,32 +45,11 @@ export const newResolver: NewResolverInput = {
     node: "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae",
     resolver: "0x19555A92A4C70B7CEb3b2B2b738d028A451DA85A",
 }
-// export const newOwner1: NewOwnerInput = {
-//     hash: "0x0006246668fda03eba48f397d4264987dabbad20cf90327a2043a1e2a75a5d8e",
-//     node: "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae",
-//     owner: "0x94048Eb0dB0CcB7D38219F28ED6522937B339aaf",
-//     label: "0xacbbc8075afef36994c3c4c800de0a3beff1c651319b0aecb0211b4c5ef54ee8",
-// }
-// export const hashRegistered1: HashRegisteredInput = {
-//     hash: "0x0006246668fda03eba48f397d4264987dabbad20cf90327a2043a1e2a75a5d8e",
-//     ensHash: "0xacbbc8075afef36994c3c4c800de0a3beff1c651319b0aecb0211b4c5ef54ee8",
-//     owner: "0x94048Eb0dB0CcB7D38219F28ED6522937B339aaf",
-//     value: "10000000000000000",
-//     registrationDate: "1506556772",
-// }
-// export const newTTL1: NewTTLInput = {
-//     hash: "0x355db3c952387389054604d569d1a51cb5206256f6c4fbef3a1cd522c4c7126c",
-//     node: "0x3417e17f002e1553910afbbf73d445e8aca85be452df4b647762e7fc37e98b79",
-//     ttl: "43200",
-// }
 
-// export const newResolverInput1: NewResolverInput = {
-//     hash: "0x06eec6bcb07c316aa7c06235a04374fcb5c1f1ac82c910dd316cc087dd6b9887",
-//     node: "0x3417e17f002e1553910afbbf73d445e8aca85be452df4b647762e7fc37e98b79",
-//     resolver: "0x19555a92a4c70b7ceb3b2b2b738d028a451da85a",
-// }
-// export const transferInput1: TransferInput = {
-//     hash: "0x99f5671f2726d881c61679c13498e291f342abeb7d17f9843056a340efdd217d",
-//     node: "0x3417e17f002e1553910afbbf73d445e8aca85be452df4b647762e7fc37e98b79",
-//     owner: "0x6eb3adf37652b65facc2b84c278376cef77482a8",
-// }
+export const childNewResolver: NewResolverInput = {
+    hash: "0x355db3c952387389054604d569d1a51cb5206256f6c4fbef3a1cd522c4c7126d",
+    logIndex: "1",
+    node: "0xc62a5d9b5deabe6aa530dce528e6c8ae441d9862bd5f24a97414e2b5df24c16a",
+    resolver: "0x19555A92A4C70B7CEb3b2B2b738d028A451DA85A",
+}
+

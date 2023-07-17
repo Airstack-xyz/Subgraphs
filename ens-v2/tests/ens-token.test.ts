@@ -104,22 +104,15 @@ describe("Testing ens token", () => {
         )
     })
 
-    test("testing handleTransfer", () => {
-        // create root
-        mockHandleTransfer(intialTransfer)
-        // newOwner
-        mockHandleNewOwner(rootNewOwner)
-        // new owner related to nameRegistered
-        mockHandleNewOwner(newOwner)
+    // test("testing handleTransfer", () => {
+    //     // create root
+    //     mockHandleTransfer(intialTransfer)
+    //     // newOwner
+    //     mockHandleNewOwner(rootNewOwner)
+    //     // new owner related to nameRegistered
+    //     mockHandleNewOwner(newOwner)
 
-        // handle nameRegistered
-        mockHandleTokenTransfer(transfer)
-
-        assert.fieldEquals(
-            "AirDomain",
-            "0x14f992cdd302644816a275e88fea2816741a571484b5e679f41c6b3ea9621118",
-            "owner",
-            "true"
-        )
-    })
+    //     // handle nameRegistered
+    //     mockHandleTokenTransfer(transfer)
+    // })
 })

@@ -1,3 +1,4 @@
+import { log } from "@graphprotocol/graph-ts"
 import { MultiCoinTxn, ResolvedAddressTxn, TextChangedTxn } from "../generated/schema"
 import {
     AddrChanged,
@@ -35,6 +36,7 @@ export function handleAddressChanged(event: AddressChanged): void {
     const newAddress = event.params.newAddress
     const node = event.params.node
     const resolverAddress = event.address
+
     airstack.domain.trackMultiCoinAddress(node.toHexString(), resolverAddress, coinType, newAddress)
     let multiCoinTxn = new MultiCoinTxn(createEventID(block, event.logIndex))
     multiCoinTxn.txHash = txHash
