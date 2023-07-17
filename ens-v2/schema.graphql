@@ -57,6 +57,13 @@ type AirReverseRegistrar @entity {
     domain: AirDomain!
 }
 
+type AirPrimarySets @entity {
+    "resolvedAddress"
+    id: ID!
+    name: String!
+    domain: AirDomain!
+}
+
 type AirDomain @entity {
     "The namehash of the name"
     id: ID!

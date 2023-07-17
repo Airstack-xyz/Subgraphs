@@ -15,6 +15,7 @@ import {
     AirDomainNewResolver,
     AirDomainNewTTL,
     AirDomainNameUnwrapped,
+    AirPrimarySets,
 } from "../../../generated/schema"
 import {
     AIR_DOMAIN_CHANGED_ID,
@@ -275,6 +276,13 @@ export namespace domain {
         let airDomain = AirDomain.load(domainId)
         let resolverId = domainId.concat("-").concat(resolverAddress.toHexString())
         if (airDomain && airDomain.resolver == resolverId) {
+            airDomain.isPrimary = false
+            let airPrimarySet = AirPrimarySets.load(resolvedAddress.toHexString())
+            if (airPrimarySet) {
+                if (domainId == airPrimarySet.domain) {
+                    airDomain.isPrimary = true
+                }
+            }
             airDomain.resolvedAddress = resolvedDomainAccount.id
             saveAirDomain(airDomain, block)
             // update resolvedArray
@@ -637,7 +645,17 @@ export namespace domain {
         airDomainNameUnwrapped.owner = ownerDomainAccount.id
         airDomainNameUnwrapped.save()
     }
+
+    function getOrCreateAirPrimarySets(resolvedAddress: Address): AirPrimarySets {
+        let airPrimarySet = AirPrimarySets.load(resolvedAddress.toHexString())
+        if (!airPrimarySet) {
+            airPrimarySet = new AirPrimarySets(resolvedAddress.toHexString())
+        }
+        return airPrimarySet
+    }
+
     export function trackSetPrimaryDomain(
+        txHash: Bytes,
         name: string,
         resolvedAddress: Address,
         block: ethereum.Block
@@ -645,9 +663,15 @@ export namespace domain {
         let resolvedAddressDomainAccount = getOrCreateAirDomainAccount(resolvedAddress, block)
         let reverseRecord = getAirReverseRegistrar(name, false)
         if (!reverseRecord) {
-            log.debug("reverseRecord not found, name {}", [name])
+            log.debug("reverseRecord not found, name {}  hash {}", [name, txHash.toHexString()])
             return
         }
+
+        let airPrimarySets = getOrCreateAirPrimarySets(resolvedAddress)
+        airPrimarySets.name = name
+        airPrimarySets.domain = reverseRecord.domain
+        airPrimarySets.save()
+
         if (reverseRecord.domain.length > 0) {
             if (
                 resolvedAddressDomainAccount.resolved &&

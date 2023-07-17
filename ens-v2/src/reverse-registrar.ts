@@ -15,7 +15,7 @@ export const _handleSetName = (
     name: string,
     callIndex: BigInt
 ): void => {
-    airstack.domain.trackSetPrimaryDomain(name, from, block)
+    airstack.domain.trackSetPrimaryDomain(txHash, name, from, block)
     // book keeping
     let primarySet = new PrimarySet(createEventID(block, callIndex))
     primarySet.hash = txHash

@@ -37,7 +37,7 @@ describe("Testing Reverse registrar", () => {
     beforeEach(() => {
         clearStore() // <-- clear the store before each test in the file
     })
-    test("testing resolvedAddress change", () => {
+    test("testing primary set change", () => {
         // create root
         mockHandleTransfer(intialTransfer)
         // newOwner
