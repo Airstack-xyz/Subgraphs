@@ -1,191 +1,215 @@
-import { Address, BigInt, dataSource, ens, ethereum, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes, ens, ethereum, log } from "@graphprotocol/graph-ts"
 import {
-    ENSRegistry,
-    Transfer as TransferEvent,
-    NewOwner as NewOwnerEvent,
-    NewResolver as NewResolverEvent,
-    NewTTL as NewTTLEvent,
+    ENSRegistry as ENSRegistryOld,
+    Transfer as TransferOld,
+    NewOwner as NewOwnerOld,
+    NewResolver as NewResolverOld,
+    NewTTL as NewTTLOld,
 } from "../generated/ENSRegistry/ENSRegistry"
-import { ADDR_REVERSE_NODE, ROOT_NODE, getNameHash, getTokenId } from "./ens-utils"
-
 import {
-    createAirDomain,
-    createEventID,
-    getOrCreateAirDomain,
-    getOrCreateAirDomainAccount,
-    getOrCreateAirResolver,
-    saveAirResolver,
-    saveAirDomain,
-} from "./module-utils"
-import { BIGINT_ONE, getOrCreateAirAccount } from "./common"
-import {
-    AirDomain,
-    NewOwnerHashLabelMap,
-    NewOwner,
     Transfer,
+    NewOwner,
     NewResolver,
     NewTTL,
-    ReverseRegistrar as ReverseRegistrarEntity,
-} from "../generated/schema"
-import { Resolver, ReverseRegistrar } from "../generated/templates"
+} from "../generated/ENSRegistryWithFallback/ENSRegistry"
+import * as airstack from "../modules/airstack/domain-name"
+import { NewOwnerHashLabelMap } from "../generated/schema"
+import { createNewResolver, getNameHashFromBytes, tryFindName, ROOT_NODE } from "./utils"
+const ROOT_NODE_INITIAL_TRANSFER_HASH =
+    "0xe120d656744084c3906a59013ec2bcaf35bda6b3cc770f2001acd4c15efbd353"
+/**
+ * Transfers ownership of a node to a new address. May only be called by the current owner of the node.
+ * @param txHash
+ * @param node
+ * @param owner
+ * @param block
+ */
 
-export function handleTransfer(event: TransferEvent): void {
-    const hash = event.transaction.hash
-    const node = event.params.node
-    const owner = event.params.owner
-    if (node.toHexString() == ADDR_REVERSE_NODE) {
-        let rev = ReverseRegistrarEntity.load(owner.toHexString())
-        if (rev == null) {
-            rev = new ReverseRegistrarEntity(owner.toHexString())
-            ReverseRegistrar.create(owner)
-        }
-        rev.save()
-    }
-    let account = getOrCreateAirDomainAccount(owner, event.block)
-    account.save()
+export const _handleTransfer = (
+    txHash: Bytes,
+    block: ethereum.Block,
+    logIndex: BigInt,
+    from: Address,
+    node: Bytes,
+    owner: Address
+): void => {
+    // owner & manager will get transferred
+    // create account for newOwner
 
-    // Update the domain owner
-    let domain = AirDomain.load(node.toHexString())
-    if (node.toHexString() == ROOT_NODE) {
-        // added here because transfer happens before NewOwner
-        domain = getOrCreateAirDomain(node.toHexString(), event.block)
+    if (txHash.toHexString().toLowerCase() == ROOT_NODE_INITIAL_TRANSFER_HASH) {
+        // added here because root node transfer happens before NewOwner
+        // https://etherscan.io/tx/0xe120d656744084c3906a59013ec2bcaf35bda6b3cc770f2001acd4c15efbd353
+        airstack.domain.createAirDomainWithOwner(node.toHexString(), owner, block)
     }
-    if (!domain) {
-        log.error("Domain not found hash {} node {} owner {}", [
-            hash.toHexString(),
-            node.toHexString(),
-            owner.toHexString(),
-        ])
-        throw new Error("Domain not found")
-    }
-    domain.owner = account.id
-    domain.manager = account.id
-    saveAirDomain(domain, event.block)
-
-    let domainEvent = new Transfer(createEventID(event))
-    domainEvent.blockNumber = event.block.number.toI32()
-    domainEvent.txHash = event.transaction.hash
-    domainEvent.domain = node.toHexString()
-    domainEvent.owner = event.params.owner.toHexString()
-    domainEvent.save()
+    airstack.domain.trackDomainTransfer(txHash, logIndex, from, owner, node.toHexString(), block)
 }
 
-export function handleNewOwner(event: NewOwnerEvent): void {
-    const hash = event.transaction.hash
+/**
+ * Transfers ownership of a subnode keccak256(node, label) to a new address. May only be called by the owner of the parent node.
+ * @param txHash
+ * @param node
+ * @param label
+ * @param owner
+ * @param block
+ */
+export const _handleNewOwner = (
+    txHash: Bytes,
+    logIndex: BigInt,
+    node: Bytes,
+    label: Bytes,
+    owner: Address,
+    block: ethereum.Block
+): void => {
+    let parentDomainId = node.toHexString()
+    let airParentDomain = airstack.domain.getAirDomain(parentDomainId)
+    let childDomainId = getNameHashFromBytes(node, label)
+
+    // attempt to build child name
+    let labelName = tryFindName(label)
+    if (labelName == "") {
+        labelName = "[".concat(label.toHexString().slice(2)).concat("]")
+    }
+    let parentName = ""
+    if (airParentDomain.name != null) {
+        parentName = airParentDomain.name!
+    } else {
+        log.error("empty parent name, txHash {} parentnode {}", [
+            txHash.toHexString(),
+            parentDomainId,
+        ])
+    }
+    let childName = labelName
+    if (parentName.length != 0) {
+        childName = labelName.concat(".").concat(parentName)
+    }
+
+    airstack.domain.trackSubDomainNewOwner(
+        txHash,
+        logIndex,
+        parentDomainId,
+        childDomainId,
+        childName,
+        label.toHexString(),
+        labelName,
+        owner,
+        block
+    )
+
+    let hashlabelMap = new NewOwnerHashLabelMap(txHash.toHexString() + "-" + label.toHexString())
+    hashlabelMap.domainId = childDomainId
+    hashlabelMap.save()
+}
+
+/**
+ * Sets the resolver address for the specified node
+ * @param txHash
+ * @param node
+ * @param label
+ * @param block
+ */
+export const _handleNewResolver = (
+    txHash: Bytes,
+    logIndex: BigInt,
+    node: Bytes,
+    resolver: Address,
+    block: ethereum.Block
+): void => {
+    airstack.domain.trackDomainNewResolver(txHash, logIndex, node.toHexString(), resolver, block)
+
+    // create resolver datasource
+    createNewResolver(resolver)
+}
+
+/**
+ * Sets the TTL for the specified node.
+ * @param txHash
+ * @param node
+ * @param ttl
+ * @param block
+ */
+export const _handleNewTTL = (
+    txHash: Bytes,
+    logIndex: BigInt,
+    node: Bytes,
+    ttl: BigInt,
+    block: ethereum.Block
+): void => {
+    airstack.domain.trackDomainNewTTL(txHash, logIndex, node.toHexString(), ttl, block)
+}
+
+export function handleTransferOld(event: TransferOld): void {
+    const txHash = event.transaction.hash
+    const from = event.transaction.from
+    const node = event.params.node
+    const owner = event.params.owner
+    const block = event.block
+    const logIndex = event.logIndex
+
+    _handleTransfer(txHash, block, logIndex, from, node, owner)
+}
+export function handleTransfer(event: Transfer): void {
+    const txHash = event.transaction.hash
+    const from = event.transaction.from
+    const node = event.params.node
+    const owner = event.params.owner
+    const block = event.block
+    const logIndex = event.logIndex
+
+    _handleTransfer(txHash, block, logIndex, from, node, owner)
+}
+
+export function handleNewOwnerOld(event: NewOwnerOld): void {
+    const txHash = event.transaction.hash
+    const logIndex = event.logIndex
     const node = event.params.node
     const label = event.params.label
-    const tokenId = getTokenId(label)
     const owner = event.params.owner
-    const nameHash = getNameHash(node, label) // new node
-
-    if (nameHash == ADDR_REVERSE_NODE) {
-        let rev = ReverseRegistrarEntity.load(owner.toHexString())
-        if (rev == null) {
-            rev = new ReverseRegistrarEntity(owner.toHexString())
-            ReverseRegistrar.create(owner)
-        }
-        rev.save()
-    }
-    let account = getOrCreateAirDomainAccount(owner, event.block)
-    account.save()
-
-    let domain = getOrCreateAirDomain(nameHash, event.block)
-    let parent = AirDomain.load(node.toHexString())
-
-    if (parent) {
-        if (!domain.parent) {
-            domain.parent = parent.id
-            parent.subdomainCount = parent.subdomainCount.plus(BIGINT_ONE)
-            saveAirDomain(parent, event.block)
-        }
-    }
-
-    if (domain.name == null) {
-        // Get label and node names
-        let label = ens.nameByHash(event.params.label.toHexString())
-        if (label != null) {
-            domain.labelName = label
-        }
-
-        if (label === null) {
-            label = "[" + event.params.label.toHexString().slice(2) + "]"
-        }
-        if (event.params.node.toHexString() == ROOT_NODE) {
-            domain.name = label
-        } else {
-            parent = parent!
-            let name = parent.name
-            if (label && name) {
-                domain.name = label + "." + name
-            }
-        }
-    }
-
-    domain.owner = account.id
-    domain.manager = account.id
-    domain.labelHash = label.toHexString()
-    saveAirDomain(domain, event.block)
-
-    let hashlabelMap = new NewOwnerHashLabelMap(hash.toHexString() + "-" + label.toHexString())
-    hashlabelMap.domainId = domain.id
-    hashlabelMap.save()
-
-    let domainEvent = new NewOwner(createEventID(event))
-    domainEvent.blockNumber = event.block.number.toI32()
-    domainEvent.txHash = event.transaction.hash
-    domainEvent.parentDomain = event.params.node.toHexString()
-    domainEvent.domain = nameHash
-    domainEvent.owner = event.params.owner.toHexString()
-    domainEvent.save()
+    const block = event.block
+    _handleNewOwner(txHash, logIndex, node, label, owner, block)
 }
+export function handleNewOwner(event: NewOwner): void {
+    const txHash = event.transaction.hash
+    const logIndex = event.logIndex
 
-export function handleNewResolver(event: NewResolverEvent): void {
-    const hash = event.transaction.hash
+    const node = event.params.node
+    const label = event.params.label
+    const owner = event.params.owner
+    const block = event.block
+    _handleNewOwner(txHash, logIndex, node, label, owner, block)
+}
+export function handleNewResolverOld(event: NewResolverOld): void {
+    const txHash = event.transaction.hash
+    const logIndex = event.logIndex
+
     const node = event.params.node
     const resolver = event.params.resolver
-
-    let airResolver = getOrCreateAirResolver(node.toHexString(), resolver, event.block)
-    const domain = AirDomain.load(node.toHexString())
-    if (!domain) {
-        log.error("Domain not found hash {} node {} resolver {}", [
-            hash.toHexString(),
-            node.toHexString(),
-            resolver.toHexString(),
-        ])
-        throw new Error("Domain not found")
-    }
-    airResolver.domain = domain.id
-    airResolver.address = resolver
-    saveAirResolver(airResolver, event.block)
-
-    // create resolver using template
-    Resolver.create(resolver)
-
-    let domainEvent = new NewResolver(createEventID(event))
-    domainEvent.blockNumber = event.block.number.toI32()
-    domainEvent.txHash = event.transaction.hash
-    domainEvent.domain = node.toHexString()
-    domainEvent.resolver = resolver.toHexString()
-    domainEvent.save()
+    const block = event.block
+    _handleNewResolver(txHash, logIndex, node, resolver, block)
 }
+export function handleNewResolver(event: NewResolver): void {
+    const txHash = event.transaction.hash
+    const logIndex = event.logIndex
 
-export function handleNewTTL(event: NewTTLEvent): void {
-    const hash = event.transaction.hash
+    const node = event.params.node
+    const resolver = event.params.resolver
+    const block = event.block
+    _handleNewResolver(txHash, logIndex, node, resolver, block)
+}
+export function handleNewTTLOld(event: NewTTLOld): void {
+    const txHash = event.transaction.hash
+    const logIndex = event.logIndex
+
     const node = event.params.node
     const ttl = event.params.ttl
+    const block = event.block
+    _handleNewTTL(txHash, logIndex, node, ttl, block)
+}
+export function handleNewTTL(event: NewTTL): void {
+    const txHash = event.transaction.hash
+    const logIndex = event.logIndex
 
-    let domain = AirDomain.load(node.toHexString())
-    // For the edge case that a domain's owner and resolver are set to empty
-    // in the same transaction as setting TTL
-    if (domain) {
-        domain.ttl = ttl
-        saveAirDomain(domain, event.block)
-    }
-
-    let domainEvent = new NewTTL(createEventID(event))
-    domainEvent.blockNumber = event.block.number.toI32()
-    domainEvent.txHash = event.transaction.hash
-    domainEvent.domain = node.toHexString()
-    domainEvent.ttl = event.params.ttl
-    domainEvent.save()
+    const node = event.params.node
+    const ttl = event.params.ttl
+    const block = event.block
+    _handleNewTTL(txHash, logIndex, node, ttl, block)
 }

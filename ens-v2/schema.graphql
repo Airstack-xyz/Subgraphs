@@ -50,6 +50,13 @@ type AirDomainAccount @entity {
     owner: [AirDomain!]! @derivedFrom(field: "owner")
 }
 
+type AirReverseRegistrar @entity {
+    "ens name hash"
+    id: ID!
+    name: String!
+    domain: AirDomain!
+}
+
 type AirDomain @entity {
     "The namehash of the name"
     id: ID!
@@ -86,15 +93,23 @@ type AirDomain @entity {
     tokenAddress: AirToken # Domain (eg: ens) token contract address
     createdAt: AirBlock!
     lastUpdatedBlock: AirBlock #- NA
-    registration: AirDomainRegistration @derivedFrom(field: "domain")
+    registrationOrRenew: [AirDomainRegistrationOrRenew!]! @derivedFrom(field: "domain")
     lastUpdatedIndex: BigInt!
     "fuses set from namewrapper"
-    fueses: BigInt!
+    fuses: BigInt!
+    "name wrapped"
+    isNameWrapped: Boolean!
+
+    events: [AirDomainEvent!]! @derivedFrom(field: "domain")
 }
 
-type AirDomainRegistration @entity {
-    "The unique identifier of the registration(label ?)"
+type AirDomainRegistrationOrRenew @entity {
+    "domainId +-+ hash"
     id: ID!
+    "The unique identifier of the registration(label ?)"
+    isRenew: Boolean
+    "hash"
+    hash: Bytes!
     "The domain name associated with the registration"
     domain: AirDomain!
     "The registration date of the domain"
@@ -111,59 +126,104 @@ type AirDomainRegistration @entity {
 
     lastUpdatedBlock: AirBlock #- NA
     lastUpdatedIndex: BigInt!
-
-    events: [AirDomainRegistrationEvent!]! @derivedFrom(field: "registration")
 }
 
-interface AirDomainRegistrationEvent {
+interface AirDomainEvent {
     "hash + logIndex"
     id: ID!
     "The registration associated with the event"
-    registration: AirDomainRegistration!
+    domain: AirDomain!
     "The block number of the event"
-    lastUpdatedBlock: AirBlock
+    lastUpdatedBlock: AirBlock!
 
     "The transaction hash associated with the event"
-    transactionHash: Bytes!
+    hash: Bytes!
 }
 
-type AirDomainRegistered implements AirDomainRegistrationEvent @entity {
+type AirDomainNewResolver implements AirDomainEvent @entity {
     "hash + logIndex"
     id: ID!
     "The registration associated with the event"
-    registration: AirDomainRegistration!
+    domain: AirDomain!
+
+    "resolver"
+    resolver: AirResolver!
+
+    "The block number of the event"
+    lastUpdatedBlock: AirBlock!
+
+    "The transaction hash associated with the event"
+    hash: Bytes!
+}
+type AirDomainNewTTL implements AirDomainEvent @entity {
+    "hash + logIndex"
+    id: ID!
+    "The registration associated with the event"
+    domain: AirDomain!
+
+    "ttl"
+    ttl: BigInt!
+
+    "The block number of the event"
+    lastUpdatedBlock: AirBlock!
+
+    "The transaction hash associated with the event"
+    hash: Bytes!
+}
+
+type AirDomainRegistered implements AirDomainEvent @entity {
+    "hash + logIndex"
+    id: ID!
+    "The registration associated with the event"
+    domain: AirDomain!
+
+    "The account of new owner"
+    owner: AirDomainAccount!
+
+    "The block number of the event"
+    lastUpdatedBlock: AirBlock!
+
+    "The transaction hash associated with the event"
+    hash: Bytes!
+}
+
+type AirDomainNameWrapped implements AirDomainEvent @entity {
+    "hash + logIndex"
+    id: ID!
+    "The registration associated with the event"
+    domain: AirDomain!
 
     "The account that registered the name"
-    registrant: AirDomainAccount!
+    owner: AirDomainAccount!
 
     "The block number of the event"
-    lastUpdatedBlock: AirBlock
+    lastUpdatedBlock: AirBlock!
 
     "The transaction hash associated with the event"
-    transactionHash: Bytes!
+    hash: Bytes!
 }
 
-type AirDomainRenewed implements AirDomainRegistrationEvent @entity {
+type AirDomainNameUnwrapped implements AirDomainEvent @entity {
     "hash + logIndex"
     id: ID!
     "The registration associated with the event"
-    registration: AirDomainRegistration!
+    domain: AirDomain!
 
-    "The account that renewed the name"
-    renewer: AirDomainAccount!
+    "The account that registered the name"
+    owner: AirDomainAccount!
 
     "The block number of the event"
-    lastUpdatedBlock: AirBlock
+    lastUpdatedBlock: AirBlock!
 
     "The transaction hash associated with the event"
-    transactionHash: Bytes!
+    hash: Bytes!
 }
 
-type AirDomainTransferred implements AirDomainRegistrationEvent @entity {
+type AirDomainTransferred implements AirDomainEvent @entity {
     "hash + logIndex"
     id: ID!
     "The registration associated with the event"
-    registration: AirDomainRegistration!
+    domain: AirDomain!
 
     "The account of new owner"
     newOwner: AirDomainAccount!
@@ -172,10 +232,10 @@ type AirDomainTransferred implements AirDomainRegistrationEvent @entity {
     oldOwner: AirDomainAccount!
 
     "The block number of the event"
-    lastUpdatedBlock: AirBlock
+    lastUpdatedBlock: AirBlock!
 
     "The transaction hash associated with the event"
-    transactionHash: Bytes!
+    hash: Bytes!
 }
 
 type AirResolver @entity {
@@ -196,7 +256,6 @@ type AirResolver @entity {
     "to track multi chain addresses this domain points to"
     coinType: [AirDomainCoin!]! @derivedFrom(field: "resolver")
 
-    address: Bytes! # Address of resolver contract
     createdAt: AirBlock!
     lastUpdatedBlock: AirBlock! #- NA
     lastUpdatedIndex: BigInt!
@@ -228,103 +287,78 @@ type RemovedController @entity {
 
 # book keeping entities
 
-interface DomainEvent {
-    "The unique identifier of the event"
-    id: ID!
-    "The domain name associated with the event"
-    domain: String!
-    "The block number at which the event occurred"
-    blockNumber: Int!
-    "The transaction hash of the transaction that triggered the event"
-    txHash: Bytes!
-}
-
-type Transfer implements DomainEvent @entity {
-    "The unique identifier of the event"
-    id: ID!
-    "The domain name associated with the event"
-    domain: String!
-    "The block number at which the event occurred"
-    blockNumber: Int!
-    "The transaction hash of the transaction that triggered the event"
-    txHash: Bytes!
-    "The account that owns the domain after the transfer"
-    owner: String!
-}
-
-type NewOwner implements DomainEvent @entity {
-    "The unique identifier of the event"
-    id: ID!
-    "The parent domain of the domain name associated with the event"
-    parentDomain: String!
-    "The domain name associated with the event"
-    domain: String!
-    "The block number at which the event occurred"
-    blockNumber: Int!
-    "The transaction hash of the transaction that triggered the event"
-    txHash: Bytes!
-    "The new account that owns the domain"
-    owner: String!
-}
-
-type NewResolver implements DomainEvent @entity {
-    "The unique identifier of the event"
-    id: ID!
-    "The domain name associated with the event"
-    domain: String!
-    "The block number at which the event occurred"
-    blockNumber: Int!
-    "The transaction hash of the transaction that triggered the event"
-    txHash: Bytes!
-    "The new resolver contract address associated with the domain"
-    resolver: String!
-}
-
-type NewTTL implements DomainEvent @entity {
-    "The unique identifier of the event"
-    id: ID!
-    "The domain name associated with the event"
-    domain: String!
-    "The block number at which the event occurred"
-    blockNumber: Int!
-    "The transaction hash of the transaction that triggered the event"
-    txHash: Bytes!
-    "The new TTL value (in seconds) associated with the domain"
-    ttl: BigInt!
-}
-
-type ControllerAddedEvent @entity {
-    "The unique identifier of the event"
-    id: ID!
-    "controller from event params"
-    controller: Bytes!
-    "baseRegistrar address"
-    baseRegistrar: Bytes!
-    "The block number at which the event occurred"
-    blockNumber: Int!
-    "The transaction hash of the transaction that triggered the event"
-    txHash: Bytes!
-}
-
-type ControllerRemovedEvent @entity {
-    "The unique identifier of the event"
-    id: ID!
-    "controller from event params"
-    controller: Bytes!
-    "baseRegistrar address"
-    baseRegistrar: Bytes!
-    "The block number at which the event occurred"
-    blockNumber: Int!
-    "The transaction hash of the transaction that triggered the event"
-    txHash: Bytes!
-}
-
 type PrimarySet @entity {
     id: ID!
     hash: Bytes!
+    from: Bytes!
     name: String!
 }
 
 type ReverseRegistrar @entity {
     id: ID!
+}
+
+type ResolverEntity @entity {
+    # Resolver
+    id: ID!
+}
+
+type ControllerEntity @entity {
+    # Controller
+    id: ID!
+    txHash: Bytes!
+}
+
+type ControllerNameWrapperEntity @entity {
+    # Controller
+    id: ID!
+    txHash: Bytes!
+}
+
+type ControllerRemoved @entity {
+    # Controller
+    id: ID!
+}
+
+type ControllerNameWrapperRemoved @entity {
+    # Controller
+    id: ID!
+}
+
+type ResolvedAddressTxn @entity {
+    id: ID!
+    txHash: Bytes!
+    node: Bytes!
+    resolverAddress: Bytes!
+    resolvedAddress: Bytes!
+}
+
+type MultiCoinTxn @entity {
+    id: ID!
+    txHash: Bytes!
+    node: Bytes!
+    resolverAddress: Bytes!
+    newAddress: Bytes!
+    coinType: BigInt!
+}
+
+type TextChangedTxn @entity {
+    id: ID!
+    txHash: Bytes!
+    node: Bytes!
+    resolverAddress: Bytes!
+    key: String!
+    value: String!
+}
+type FusesSetTxn @entity {
+    id: ID!
+    txHash: Bytes!
+    node: Bytes!
+    fuses: BigInt!
+}
+type InvalidName @entity {
+    id: ID!
+    name: String!
+    label: Bytes!
+    txHash: Bytes!
 }

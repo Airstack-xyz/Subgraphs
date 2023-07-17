@@ -24,3 +24,27 @@ export function getBytesEventParam(eventName: string, arg: string): ethereum.Eve
     let eventParam = new ethereum.EventParam(eventName, bytesValue(arg))
     return eventParam
 }
+
+let defaultAddress = Address.fromString("0xA16081F360e3847006dB660bae1c6d1b2e17eC2A")
+let defaultAddressBytes = defaultAddress as Bytes
+let defaultBigInt = BigInt.fromI32(1)
+
+export function newBlock(): ethereum.Block {
+    return new ethereum.Block(
+        defaultAddressBytes,
+        defaultAddressBytes,
+        defaultAddressBytes,
+        defaultAddress,
+        defaultAddressBytes,
+        defaultAddressBytes,
+        defaultAddressBytes,
+        defaultBigInt,
+        defaultBigInt,
+        defaultBigInt,
+        defaultBigInt,
+        defaultBigInt,
+        defaultBigInt,
+        defaultBigInt,
+        defaultBigInt
+    )
+}

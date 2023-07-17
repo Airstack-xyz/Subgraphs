@@ -1,5 +1,5 @@
 import { newMockEvent } from "matchstick-as"
-import { HashRegistered } from "../generated/RegistrarOld1/Registrar"
+import { HashRegistered } from "../generated/RegistrarAuction1/Registrar"
 import { getAddressEventParam, getBigIntEventParam, getBytesEventParam } from "./utils"
 import { Bytes } from "@graphprotocol/graph-ts"
 

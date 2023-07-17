@@ -1,5 +1,11 @@
 import { BigInt, TypedMap, dataSource, ethereum } from "@graphprotocol/graph-ts"
-import { AirBlock, AirEntityCounter, AirMeta, AirAccount, AirToken } from "../generated/schema"
+import {
+    AirBlock,
+    AirEntityCounter,
+    AirMeta,
+    AirAccount,
+    AirToken,
+} from "../../../generated/schema"
 
 export const AIR_META_ID = "AIR_META"
 
@@ -123,18 +129,7 @@ export function getOrCreateAirBlock(
     return block as AirBlock
 }
 
-export function getOrCreateAirBlock2(block: ethereum.Block): AirBlock {
-    const chainId = getChainId()
-    const id = chainId.concat("-").concat(block.number.toString())
-    let blockEntity = AirBlock.load(id)
-    if (blockEntity == null) {
-        blockEntity = new AirBlock(id)
-        blockEntity.hash = block.hash.toHexString()
-        blockEntity.number = block.number
-        blockEntity.timestamp = block.timestamp
-    }
-    return blockEntity as AirBlock
-}
+
 /**
  * @dev this function does not save the returned entity
  * @dev this function gets or creates a new air account entity
