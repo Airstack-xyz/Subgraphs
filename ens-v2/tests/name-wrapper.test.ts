@@ -7,6 +7,8 @@ import {
 } from "./ens-registry-utils"
 import {
     handleControllerChanged,
+    handleExpiryExtended,
+    handleFusesSet,
     handleNameUnwrapped,
     handleNameWrapped,
 } from "../src/name-wrapper"
@@ -15,14 +17,18 @@ import {
     createControllerChangedEvent,
     createNameWrappedEvent,
     createNameUnwrappedEvent,
-} from "./name-wrapped-utils"
+    createFusesSetEvent,
+    createExpiryExtendedEvent,
+} from "./name-wrapper-utils"
 import {
     controllerAdded,
     controllerAdded2,
     controllerRemoved,
+    expiryExtended,
+    fusesSet,
     nameUnwrapped,
     nameWrapped,
-} from "./name-wrapped-example"
+} from "./name-wrapper-example"
 import { childNewOwner, intialTransfer, rootNewOwner } from "./ens-old-example"
 import { ETH_NODE } from "../src/utils"
 
@@ -50,7 +56,7 @@ describe("Testing namewrapper", () => {
         handleControllerChanged(controllerRemovedEvent)
         assert.entityCount("ControllerNameWrapperRemoved", 1)
     })
-    test("testing namewrapped", () => {
+    test("testing namewrapped,fusesSet,namewrapped", () => {
         // create root
         mockHandleTransfer(intialTransfer)
         // newOwner
@@ -96,6 +102,24 @@ describe("Testing namewrapper", () => {
             "0xc62a5d9b5deabe6aa530dce528e6c8ae441d9862bd5f24a97414e2b5df24c16a",
             "expiryDate",
             nameWrapped.expiry
+        )
+        // fusesSet
+        let fusesSetEvent = createFusesSetEvent(fusesSet)
+        handleFusesSet(fusesSetEvent)
+        assert.fieldEquals(
+            "AirDomain",
+            "0xc62a5d9b5deabe6aa530dce528e6c8ae441d9862bd5f24a97414e2b5df24c16a",
+            "fuses",
+            fusesSet.fuses
+        )
+        // expiry extended
+        let expiryExtendedEvent = createExpiryExtendedEvent(expiryExtended)
+        handleExpiryExtended(expiryExtendedEvent)
+        assert.fieldEquals(
+            "AirDomain",
+            "0xc62a5d9b5deabe6aa530dce528e6c8ae441d9862bd5f24a97414e2b5df24c16a",
+            "expiryDate",
+            expiryExtended.expiry
         )
         let nameUnwrappedEvent = createNameUnwrappedEvent(nameUnwrapped)
         handleNameUnwrapped(nameUnwrappedEvent)

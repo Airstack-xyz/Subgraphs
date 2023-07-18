@@ -1,4 +1,10 @@
-import { ControllerChangedInput, NameWrappedInput, NameUnwrappedInput } from "./name-wrapped-utils"
+import {
+    ControllerChangedInput,
+    NameWrappedInput,
+    NameUnwrappedInput,
+    FusesSetInput,
+    ExpiryExtendedInput,
+} from "./name-wrapper-utils"
 
 export const controllerAdded: ControllerChangedInput = {
     hash: "0x7417e9e1a03938bbc20ce99805e69d15690a864b6a7db14f8cbc982edc44e77e",
@@ -28,4 +34,16 @@ export const nameUnwrapped: NameUnwrappedInput = {
     hash: "0xcdfd894595e7d3b898cb9c58235f33e8286a46097c15ca18c1bffe59e6cc9a37",
     node: "0xc62a5d9b5deabe6aa530dce528e6c8ae441d9862bd5f24a97414e2b5df24c16a",
     owner: "0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb",
+}
+
+export const fusesSet: FusesSetInput = {
+    hash: "0x67d3275ac3a8e8449ee9a39980978b03bbe7a501ebc66c1c20b8aa24b61dfe7a",
+    node: "0xc62a5d9b5deabe6aa530dce528e6c8ae441d9862bd5f24a97414e2b5df24c16a",
+    fuses: "196609",
+}
+
+export const expiryExtended: ExpiryExtendedInput = {
+    hash: "0x67d3275ac3a8e8449ee9a39980978b03bbe7a501ebc66c1c20b8aa24b61dfe7a",
+    node: "0xc62a5d9b5deabe6aa530dce528e6c8ae441d9862bd5f24a97414e2b5df24c16a",
+    expiry: "1681544955",
 }

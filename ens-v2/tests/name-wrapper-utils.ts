@@ -1,5 +1,11 @@
 import { newMockEvent } from "matchstick-as"
-import { ControllerChanged, NameWrapped, NameUnwrapped } from "../generated/NameWrapper/NameWrapper"
+import {
+    ControllerChanged,
+    NameWrapped,
+    NameUnwrapped,
+    FusesSet,
+    ExpiryExtended,
+} from "../generated/NameWrapper/NameWrapper"
 import {
     getAddressEventParam,
     getBigIntEventParam,
@@ -64,4 +70,38 @@ export function createNameUnwrappedEvent(input: NameUnwrappedInput): NameUnwrapp
     nameUnwrappedEvent.parameters = [nodeParam, ownerParam]
     nameUnwrappedEvent.transaction.hash = Bytes.fromHexString(input.hash)
     return nameUnwrappedEvent
+}
+// FusesSet (index_topic_1 bytes32 node, uint32 fuses)
+export class FusesSetInput {
+    hash: string
+    node: string
+    fuses: string
+}
+
+export function createFusesSetEvent(input: FusesSetInput): FusesSet {
+    let fusesSetEvent = changetype<FusesSet>(newMockEvent())
+
+    const nodeParam = getBytesEventParam("node", input.node)
+    const fusesParam = getBigIntEventParam("fuses", input.fuses)
+
+    fusesSetEvent.parameters = [nodeParam, fusesParam]
+    fusesSetEvent.transaction.hash = Bytes.fromHexString(input.hash)
+    return fusesSetEvent
+}
+// ExpiryExtended (index_topic_1 bytes32 node, uint64 expiry)
+export class ExpiryExtendedInput {
+    hash: string
+    node: string
+    expiry: string
+}
+
+export function createExpiryExtendedEvent(input: ExpiryExtendedInput): ExpiryExtended {
+    let expiryExtended = changetype<ExpiryExtended>(newMockEvent())
+
+    const nodeParam = getBytesEventParam("node", input.node)
+    const expiryParam = getBigIntEventParam("expiry", input.expiry)
+
+    expiryExtended.parameters = [nodeParam, expiryParam]
+    expiryExtended.transaction.hash = Bytes.fromHexString(input.hash)
+    return expiryExtended
 }

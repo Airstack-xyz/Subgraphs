@@ -446,16 +446,8 @@ export namespace domain {
         let fromDomainAccount = getOrCreateAirDomainAccount(from, block)
         let toDomainAccount = getOrCreateAirDomainAccount(to, block)
 
-        if (from == Address.zero() || airDomain.owner == fromDomainAccount.id) {
-            airDomain.owner = toDomainAccount.id
-        } else {
-            throw new Error(
-                "from address: "
-                    .concat(from.toHexString())
-                    .concat(" is not owner of domain,transfer logic failed, domainId: ")
-                    .concat(domainId)
-            )
-        }
+        airDomain.owner = toDomainAccount.id
+
         saveAirDomain(airDomain, block)
 
         // book keeping
@@ -541,6 +533,9 @@ export namespace domain {
         airDomainRenew.isRenew = true
         airDomainRenew.domain = airDomain.id
         airDomainRenew.hash = txHash
+        let ownerDomainAccount = getOrCreateAirDomainAccount(from, block)
+        airDomainRenew.owner = ownerDomainAccount.id
+
         saveAirDomainRegistrationOrRenew(airDomainRenew, block)
     }
     export function trackAirDomainRenewalNameCostExpiry(

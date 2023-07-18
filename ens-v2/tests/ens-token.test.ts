@@ -104,15 +104,15 @@ describe("Testing ens token", () => {
         )
     })
 
-    // test("testing handleTransfer", () => {
-    //     // create root
-    //     mockHandleTransfer(intialTransfer)
-    //     // newOwner
-    //     mockHandleNewOwner(rootNewOwner)
-    //     // new owner related to nameRegistered
-    //     mockHandleNewOwner(newOwner)
+    test("testing handleTransfer", () => {
+        // create root
+        mockHandleTransfer(intialTransfer)
+        // newOwner
+        mockHandleNewOwner(rootNewOwner)
+        // new owner related to nameRegistered
+        mockHandleNewOwner(newOwner)
 
-    //     // handle nameRegistered
-    //     mockHandleTokenTransfer(transfer)
-    // })
+        // handle nameRegistered
+        mockHandleTokenTransfer(transfer)
+    })
 })
