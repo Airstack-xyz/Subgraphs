@@ -4,7 +4,7 @@ import { HashRegistered as HashRegistered2 } from "../generated/RegistrarAuction
 import { NewOwnerHashLabelMap } from "../generated/schema"
 import * as airstack from "../modules/airstack/domain-name"
 
-const _handleHashRegistered = (
+export const _handleHashRegistered = (
     txHash: Bytes,
     block: ethereum.Block,
     label: Bytes,
