@@ -56,7 +56,7 @@ describe("Testing namewrapper", () => {
         handleControllerChanged(controllerRemovedEvent)
         assert.entityCount("ControllerNameWrapperRemoved", 1)
     })
-    test("testing namewrapped,fusesSet,namewrapped", () => {
+    test("testing namewrapped,fusesSet,namewrapped,expiryExtended", () => {
         // create root
         mockHandleTransfer(intialTransfer)
         // newOwner

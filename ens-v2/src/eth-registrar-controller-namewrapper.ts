@@ -11,7 +11,7 @@ import { ControllerNameWrapperRemoved, InvalidName } from "../generated/schema"
 import { checkValidLabel, getNameHashFromByteArray, rootNode } from "./utils"
 import * as airstack from "../modules/airstack/domain-name"
 
-const _handleNameRegistered = (
+export const _handleNameRegistered = (
     controller: Address,
     txhash: Bytes,
     block: ethereum.Block,
@@ -47,7 +47,7 @@ const _handleNameRegistered = (
     )
 }
 
-const _handleNameRenewed = (
+export const _handleNameRenewed = (
     controller: Address,
     txhash: Bytes,
     block: ethereum.Block,
