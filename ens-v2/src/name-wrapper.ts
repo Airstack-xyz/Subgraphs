@@ -15,7 +15,7 @@ import {
     getNameHashFromTokenId,
 } from "./utils"
 import * as airstack from "../modules/airstack/domain-name"
-import { Bytes, ethereum } from "@graphprotocol/graph-ts"
+import { Bytes, ethereum, log } from "@graphprotocol/graph-ts"
 import { BIGINT_ONE } from "../modules/airstack/common"
 
 export function handleControllerChanged(event: ControllerChanged): void {
@@ -38,7 +38,6 @@ export function handleNameWrapped(event: NameWrapped): void {
     let fuses = event.params.fuses
     let node = event.params.node
     let owner = event.params.owner
-    let tokenAddress = event.address
     let decoded = decodeNameInBytes(event.params.name)
     let label = ""
     let name = ""

@@ -57,7 +57,7 @@ type AirReverseRegistrar @entity {
     domain: AirDomain!
 }
 
-type AirPrimarySets @entity {
+type AirDomainPrimarySets @entity {
     "resolvedAddress"
     id: ID!
     name: String!
@@ -93,10 +93,12 @@ type AirDomain @entity {
     ttl: BigInt
     "Is the primary domain for the resolved address"
     isPrimary: Boolean!
-    "The expiry date for the domain, from either the registration, or the wrapped domain if PCC is burned"
-    #expiryTimestamp: BigInt!
-    #registrationCost: BigInt! # Cost of domain registration in wei
-    #paymentToken: AirToken # Token used to pay for registration
+    "The registration date of the domain"
+    registrationDate: BigInt
+    "The expiry date of the domain"
+    expiryDate: BigInt
+    "The cost associated with the domain registration"
+    cost: BigInt
     tokenAddress: AirToken # Domain (eg: ens) token contract address
     createdAt: AirBlock!
     lastUpdatedBlock: AirBlock #- NA

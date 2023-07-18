@@ -15,7 +15,7 @@ import {
     AirDomainNewResolver,
     AirDomainNewTTL,
     AirDomainNameUnwrapped,
-    AirPrimarySets,
+    AirDomainPrimarySets,
 } from "../../../generated/schema"
 import {
     AIR_DOMAIN_CHANGED_ID,
@@ -42,6 +42,9 @@ export namespace domain {
     export function saveAirDomain(domain: AirDomain, block: ethereum.Block): void {
         const airBlock = getOrCreateAirBlock(block)
         airBlock.save()
+        if (!domain.registrationDate) {
+            domain.registrationDate = block.timestamp
+        }
         domain.lastUpdatedBlock = airBlock.id
         domain.lastUpdatedIndex = updateAirEntityCounter(AIR_DOMAIN_CHANGED_ID, airBlock)
 
@@ -277,7 +280,7 @@ export namespace domain {
         let resolverId = domainId.concat("-").concat(resolverAddress.toHexString())
         if (airDomain && airDomain.resolver == resolverId) {
             airDomain.isPrimary = false
-            let airPrimarySet = AirPrimarySets.load(resolvedAddress.toHexString())
+            let airPrimarySet = AirDomainPrimarySets.load(resolvedAddress.toHexString())
             if (airPrimarySet) {
                 if (domainId == airPrimarySet.domain) {
                     airDomain.isPrimary = true
@@ -349,6 +352,9 @@ export namespace domain {
         block: ethereum.Block
     ): void {
         let airDomain = getAirDomain(domainId)
+        airDomain.registrationDate = registrationDate
+        airDomain.cost = cost
+        saveAirDomain(airDomain, block)
         let airDomainRegistration = getOrCreateAirDomainRegistrationOrRenew(
             txHash,
             airDomain.id,
@@ -378,6 +384,7 @@ export namespace domain {
             airDomain.tokenAddress = tokenAddress.toHexString()
             airDomain.tokenId = tokenId.toString()
         }
+        airDomain.expiryDate = expiryDate
         saveAirDomain(airDomain, block)
         let airDomainRegistration = getOrCreateAirDomainRegistrationOrRenew(
             txHash,
@@ -408,6 +415,7 @@ export namespace domain {
             airDomain.tokenAddress = tokenAddress.toHexString()
             airDomain.tokenId = tokenId.toString()
         }
+        airDomain.expiryDate = expiryDate
         saveAirDomain(airDomain, block)
         let airDomainRenew = getOrCreateAirDomainRegistrationOrRenew(txHash, airDomain.id, block)
         airDomainRenew.expiryDate = expiryDate
@@ -487,6 +495,8 @@ export namespace domain {
             airReverseRegistrar.domain = airDomain.id
             airReverseRegistrar.save()
         }
+        airDomain.cost = cost
+        airDomain.expiryDate = expiryDate
         saveAirDomain(airDomain, block)
         let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
 
@@ -522,6 +532,9 @@ export namespace domain {
         block: ethereum.Block
     ): void {
         let airDomain = getAirDomain(domainId)
+        airDomain.expiryDate = expiry
+        saveAirDomain(airDomain, block)
+
         let airDomainRenew = getOrCreateAirDomainRegistrationOrRenew(txHash, airDomain.id, block)
         airDomainRenew.expiryDate = expiry
         airDomainRenew.registrationDate = block.timestamp
@@ -551,7 +564,10 @@ export namespace domain {
             airReverseRegistrar.domain = airDomain.id
             airReverseRegistrar.save()
         }
+        airDomain.expiryDate = expiryDate
+        airDomain.cost = cost
         saveAirDomain(airDomain, block)
+
         let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
         let airDomainRenew = getOrCreateAirDomainRegistrationOrRenew(txHash, airDomain.id, block)
         airDomainRenew.cost = cost
@@ -563,6 +579,7 @@ export namespace domain {
         airDomainRenew.registrationDate = block.timestamp
         saveAirDomainRegistrationOrRenew(airDomainRenew, block)
     }
+
     export function trackNameWrapped(
         domainId: string,
         name: string,
@@ -576,17 +593,20 @@ export namespace domain {
     ): void {
         let airDomain = getAirDomain(domainId)
         let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
-        if (!airDomain.name && name.length > 0) {
-            airDomain.name = name
-            let airReverseRegistrar = getOrCreateAirReverseRegistrar(name)
-            airReverseRegistrar.domain = airDomain.id
-            airReverseRegistrar.save()
+        if (name.length > 0) {
+            if (!airDomain.name || airDomain.name != name) {
+                airDomain.name = name
+                let airReverseRegistrar = getOrCreateAirReverseRegistrar(name)
+                airReverseRegistrar.domain = airDomain.id
+                airReverseRegistrar.save()
+            }
         }
         if (!airDomain.labelName && labelName.length > 0) {
             airDomain.labelName = labelName
         }
         airDomain.fuses = fuses
         airDomain.isNameWrapped = true
+        airDomain.expiryDate = expiryDate
         saveAirDomain(airDomain, block)
 
         let airDomainRegistration = getOrCreateAirDomainRegistrationOrRenew(
@@ -646,12 +666,12 @@ export namespace domain {
         airDomainNameUnwrapped.save()
     }
 
-    function getOrCreateAirPrimarySets(resolvedAddress: Address): AirPrimarySets {
-        let airPrimarySet = AirPrimarySets.load(resolvedAddress.toHexString())
-        if (!airPrimarySet) {
-            airPrimarySet = new AirPrimarySets(resolvedAddress.toHexString())
+    function getOrCreateAirDomainPrimarySets(resolvedAddress: Address): AirDomainPrimarySets {
+        let airDomainPrimarySet = AirDomainPrimarySets.load(resolvedAddress.toHexString())
+        if (!airDomainPrimarySet) {
+            airDomainPrimarySet = new AirDomainPrimarySets(resolvedAddress.toHexString())
         }
-        return airPrimarySet
+        return airDomainPrimarySet
     }
 
     export function trackSetPrimaryDomain(
@@ -667,7 +687,7 @@ export namespace domain {
             return
         }
 
-        let airPrimarySets = getOrCreateAirPrimarySets(resolvedAddress)
+        let airPrimarySets = getOrCreateAirDomainPrimarySets(resolvedAddress)
         airPrimarySets.name = name
         airPrimarySets.domain = reverseRecord.domain
         airPrimarySets.save()

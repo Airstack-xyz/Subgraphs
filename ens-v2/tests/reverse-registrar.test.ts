@@ -17,8 +17,8 @@ import {
 } from "./resolver-utils"
 import {
     multiCoin,
-    resolverAddressSet,
-    resolverAddressSetChild,
+    resolvedAddressSet,
+    resolvedAddressSetChild,
     trackExtra,
     trackExtraWithValue,
 } from "./resolver-example"
@@ -45,7 +45,7 @@ describe("Testing Reverse registrar", () => {
         // newResolver
         mockHandleNewResolver(newResolver)
         // address changed
-        let addressChanged = getAddrChangedEvent(resolverAddressSet)
+        let addressChanged = getAddrChangedEvent(resolvedAddressSet)
         handleAddrChanged(addressChanged)
         // checking resolvedAdddress of domain
 
@@ -55,7 +55,7 @@ describe("Testing Reverse registrar", () => {
         // newResolver for new Domain
         mockHandleNewResolver(childNewResolver)
         // resolver address changed
-        let childAddressChanged = getAddrChangedEvent(resolverAddressSetChild)
+        let childAddressChanged = getAddrChangedEvent(resolvedAddressSetChild)
         handleAddrChanged(childAddressChanged)
 
         // now 2 users Domain has same resolvedAddress,setting one as primary

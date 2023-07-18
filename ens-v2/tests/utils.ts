@@ -25,6 +25,14 @@ export function getBytesEventParam(eventName: string, arg: string): ethereum.Eve
     return eventParam
 }
 
+function boolValue(arg: boolean): ethereum.Value {
+    return ethereum.Value.fromBoolean(arg)
+}
+export function getBoolEventParam(eventName: string, arg: boolean): ethereum.EventParam {
+    let eventParam = new ethereum.EventParam(eventName, boolValue(arg))
+    return eventParam
+}
+
 let defaultAddress = Address.fromString("0xA16081F360e3847006dB660bae1c6d1b2e17eC2A")
 let defaultAddressBytes = defaultAddress as Bytes
 let defaultBigInt = BigInt.fromI32(1)

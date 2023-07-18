@@ -5,14 +5,21 @@ import {
     TextChangedWithValueInput,
 } from "./resolver-utils"
 
-export const resolverAddressSet: AddrChangedInput = {
+export const resolvedAddressSet: AddrChangedInput = {
     hash: "0x88bc13b084fea1313ee6f062087ae3bc20111b388f270c67f55bd107a166c667",
     resolverAddress: "0x19555A92A4C70B7CEb3b2B2b738d028A451DA85A",
     node: "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae",
     a: "0x1da022710dF5002339274AaDEe8D58218e9D6AB5",
 }
 
-export const resolverAddressSetChild: AddrChangedInput = {
+export const resolvedAddressSetSomethingElse: AddrChangedInput = {
+    hash: "0x12f783f1a93611bdbd5121640763505d73bb5043e97424aae02233980e376c0b",
+    resolverAddress: "0x19555A92A4C70B7CEb3b2B2b738d028A451DA85A",
+    node: "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae",
+    a: "0x012233B3C8177F0778d910ED88170b82DE3bfe57",
+}
+
+export const resolvedAddressSetChild: AddrChangedInput = {
     hash: "0x12f783f1a93611bdbd5121640763505d73bb5043e97424aae02233980e376c0b",
     resolverAddress: "0x19555A92A4C70B7CEb3b2B2b738d028A451DA85A",
     node: "0xc62a5d9b5deabe6aa530dce528e6c8ae441d9862bd5f24a97414e2b5df24c16a",

@@ -17,8 +17,8 @@ import {
 } from "./resolver-utils"
 import {
     multiCoin,
-    resolverAddressSet,
-    resolverAddressSetChild,
+    resolvedAddressSet,
+    resolvedAddressSetChild,
     trackExtra,
     trackExtraWithValue,
 } from "./resolver-example"
@@ -43,21 +43,21 @@ describe("Testing Resolver", () => {
         // newResolver
         mockHandleNewResolver(newResolver)
         // address changed
-        let addressChanged = getAddrChangedEvent(resolverAddressSet)
+        let addressChanged = getAddrChangedEvent(resolvedAddressSet)
         handleAddrChanged(addressChanged)
         // checking resolvedAdddress of domain
         assert.fieldEquals(
             "AirDomain",
-            resolverAddressSet.node,
+            resolvedAddressSet.node,
             "resolvedAddress",
-            chainIdPrefix.concat(resolverAddressSet.a.toLowerCase())
+            chainIdPrefix.concat(resolvedAddressSet.a.toLowerCase())
         )
         // checking resolved field of AirDomainAccount
         assert.fieldEquals(
             "AirDomainAccount",
-            chainIdPrefix.concat(resolverAddressSet.a.toLowerCase()),
+            chainIdPrefix.concat(resolvedAddressSet.a.toLowerCase()),
             "resolved",
-            "[" + resolverAddressSet.node + "]"
+            "[" + resolvedAddressSet.node + "]"
         )
         // newDomain 0xc62a5d9b5deabe6aa530dce528e6c8ae441d9862bd5f24a97414e2b5df24c16a
         mockHandleNewOwner(childNewOwner)
@@ -65,22 +65,22 @@ describe("Testing Resolver", () => {
         // newResolver for new Domain
         mockHandleNewResolver(childNewResolver)
         // resolver address changed
-        let childAddressChanged = getAddrChangedEvent(resolverAddressSetChild)
+        let childAddressChanged = getAddrChangedEvent(resolvedAddressSetChild)
         handleAddrChanged(childAddressChanged)
 
         // checking resolvedAdddress of domain
         assert.fieldEquals(
             "AirDomain",
-            resolverAddressSetChild.node,
+            resolvedAddressSetChild.node,
             "resolvedAddress",
-            chainIdPrefix.concat(resolverAddressSetChild.a.toLowerCase())
+            chainIdPrefix.concat(resolvedAddressSetChild.a.toLowerCase())
         )
         // checking resolved field of AirDomainAccount
         assert.fieldEquals(
             "AirDomainAccount",
-            chainIdPrefix.concat(resolverAddressSetChild.a.toLowerCase()),
+            chainIdPrefix.concat(resolvedAddressSetChild.a.toLowerCase()),
             "resolved",
-            "[" + resolverAddressSet.node + ", " + resolverAddressSetChild.node + "]"
+            "[" + resolvedAddressSet.node + ", " + resolvedAddressSetChild.node + "]"
         )
     })
     // Getting this: Mapping aborted at ~lib/@graphprotocol/graph-ts/chain/ethereum.ts, line 63, column 7, with message: Ethereum value is not bytes.
