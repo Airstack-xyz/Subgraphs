@@ -35,7 +35,6 @@ export function handleExchange(call: ExchangeCall): void {
 
     let nft = new airstack.nft.NFT(
       sellAsset.token,
-      sellAsset.assetType == 2 ? "ERC1155" : sellAsset.assetType == 3 ? "ERC721" : "UNKNOWN",
       sellAsset.tokenId,
       call.inputs.amount,
     )
@@ -82,7 +81,6 @@ export function handleExchange(call: ExchangeCall): void {
 
     let nft = new airstack.nft.NFT(
       buyAsset.token,
-      buyAsset.assetType == 2 ? "ERC1155" : sellAsset.assetType == 3 ? "ERC721" : "UNKNOWN",
       buyAsset.tokenId,
       call.inputs.amount,
     )
@@ -115,7 +113,6 @@ export function handleBuyTokenSaleErc721(event: BuyTokenSale721): void {
     event.params.seller,
     [new airstack.nft.NFT(
       event.params.token,
-      "ERC721",
       event.params.tokenId,
       BIGINT_ONE,
     )],
@@ -155,7 +152,6 @@ export function handleBuyErc1155Sale1(call: BuyCall1155Sale1): void {
     call.inputs.owner,
     [new airstack.nft.NFT(
       call.inputs.token,
-      "ERC1155",
       call.inputs.tokenId,
       call.inputs.buying,
     )],
@@ -203,7 +199,6 @@ export function handleBuyErc1155Sale2(call: BuyCall1155Sale2): void {
     call.inputs.owner,
     [new airstack.nft.NFT(
       call.inputs.token,
-      "ERC1155",
       call.inputs.tokenId,
       call.inputs.buying,
     )],
@@ -253,7 +248,6 @@ export function handleBuyErc721(event: Buy721Sale): void {
     event.params.seller,
     [new airstack.nft.NFT(
       event.params.token,
-      "ERC721",
       event.params.tokenId,
       BIGINT_ONE,
     )],
