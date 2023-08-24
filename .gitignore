@@ -49,6 +49,7 @@ build/Release
 
 build/
 generate/
+*/modules
 
 # Dependency directories
 node_modules/

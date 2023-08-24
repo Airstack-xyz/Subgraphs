@@ -1,0 +1,35 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: IdRegistry
+    network: optimism
+    source:
+      address: '0x189e66031e1d47bb3c5f9b99ee029f2a0d1b8593'
+      abi: IdRegistry
+      startBlock: 108570270
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtra
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
+      abis:
+        - name: IdRegistry
+          file: ./abis/IdRegistry.json
+      eventHandlers:
+        - event: ChangeRecoveryAddress(indexed uint256,indexed address)
+          handler: handleChangeRecoveryAddress
+        - event: Register(indexed address,indexed uint256,address)
+          handler: handleRegister
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/id-registry.ts
