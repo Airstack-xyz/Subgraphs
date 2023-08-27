@@ -44,7 +44,7 @@ export function handleRegister(event: RegisterEvent): void {
     zeroAddress.toHexString(),
     event.params.to.toHexString(),
     event.params.id.toString(),
-    FARCASTER_ID_REGISTRY_CONTRACT,
+    event.address.toHexString(),
     event.params.id.toString(),
     userExtras,
     "",
