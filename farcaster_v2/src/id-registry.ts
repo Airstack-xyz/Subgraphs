@@ -17,18 +17,25 @@ import {
 import { BIG_INT_ZERO } from "../modules/airstack/common";
 
 import * as airstack from "../modules/airstack/social/social";
-import { zeroAddress } from "../modules/airstack/social/utils";
+import { userRecoveryAddress, zeroAddress } from "../modules/airstack/social/utils";
 
 
-// export const SUBGRAPH_NAME = "farcaster-optimism";
+// export const SUBGRAPH_NAME = "farcaster_optimism";
 // export const SUBGRAPH_VERSION = "v2";
-// export const SUBGRAPH_SLUG = "farcaster-optimism";
+// export const SUBGRAPH_SLUG = "farcaster_optimism";
 
 const  FARCASTER_ID_REGISTRY_CONTRACT= "0x189E66031E1D47BB3c5F9b99ee029F2a0D1b8593"
 
 export function handleRegister(event: RegisterEvent): void {
   log.info("handleRegister to {} id {} contractAddress {} recovery {}", [event.params.to.toHexString(), event.params.id.toString(), event.address.toHexString(), event.params.recovery.toHexString()]);
 
+  let userExtras = new Array<airstack.social.AirExtraData>();
+    userExtras.push(
+      new airstack.social.AirExtraData(
+        userRecoveryAddress,
+        event.params.recovery.toHexString(),
+      )
+    );
 
   airstack.social.trackSocialUserAndProfileRegisteredTransaction(
     event.block,
@@ -39,7 +46,7 @@ export function handleRegister(event: RegisterEvent): void {
     event.params.id.toString(),
     FARCASTER_ID_REGISTRY_CONTRACT,
     event.params.id.toString(),
-    new Array<airstack.social.AirExtraData>(),
+    userExtras,
     "",
     new Array<airstack.social.AirExtraData>(),
     BIG_INT_ZERO,
