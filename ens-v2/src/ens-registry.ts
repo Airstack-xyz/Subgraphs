@@ -49,7 +49,7 @@ export const _handleTransfer = (
         // https://etherscan.io/tx/0xe120d656744084c3906a59013ec2bcaf35bda6b3cc770f2001acd4c15efbd353
         airstack.domain.createAirDomainWithOwner(node.toHexString(), owner, block)
     }
-    airstack.domain.trackDomainTransfer(txHash, logIndex, from, owner, node.toHexString(), block)
+    airstack.domain.trackAirDomainTransfer(txHash, logIndex, from, owner, node.toHexString(), block)
 }
 
 /**

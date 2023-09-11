@@ -107,7 +107,7 @@ export function handleTransferSingle(event: TransferSingle): void {
     if (value != BIGINT_ONE) {
         throw new Error("Transfer single value gt 1 found")
     }
-    airstack.domain.trackAirDomainTransfer(
+    airstack.domain.trackAirDomainOwnershipTransfer(
         event.address,
         id,
         node,
@@ -133,7 +133,7 @@ export function handleTransferBatch(event: TransferBatch): void {
             throw new Error("Transfer single value gt 1 found")
         }
         let node = getNameHashFromTokenId(id)
-        airstack.domain.trackAirDomainTransfer(
+        airstack.domain.trackAirDomainOwnershipTransfer(
             event.address,
             id,
             node,

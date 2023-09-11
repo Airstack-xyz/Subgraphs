@@ -90,7 +90,7 @@ export const _handleTransfer = (
 ): void => {
     const label = uint256ToByteArray(tokenId)
     const domainId = getNameHashFromByteArray(rootNode, label)
-    airstack.domain.trackAirDomainTransfer(
+    airstack.domain.trackAirDomainOwnershipTransfer(
         tokenAddress,
         tokenId,
         domainId,
