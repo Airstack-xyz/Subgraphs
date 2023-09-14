@@ -16,7 +16,6 @@ import {
   AirDomainNameWrapped,
   AirDomainRegistrationOrRenew,
   AirBlock,
-  AirDomainRegistered,
   AirDomainNewResolver,
   AirDomainNewTTL,
   AirDomainNameUnwrapped,
@@ -289,14 +288,14 @@ export namespace domain {
     saveAirDomain(domain, block)
 
     // book keeping
-    let airDomainRegistered = new AirDomainRegistered(
+    let airDomainRegistration = new AirDomainRegistrationOrRenew(
       createEventId(txHash, logIndex)
     )
-    airDomainRegistered.domain = domain.id
-    airDomainRegistered.owner = ownerAirDomainAccount.id
-    airDomainRegistered.createdAt = airBlock.id
-    airDomainRegistered.hash = txHash
-    airDomainRegistered.save()
+    airDomainRegistration.domain = domain.id
+    airDomainRegistration.owner = ownerAirDomainAccount.id
+    airDomainRegistration.createdAt = airBlock.id
+    airDomainRegistration.hash = txHash
+    airDomainRegistration.save()
   }
 
   export function trackDomainNewResolver(

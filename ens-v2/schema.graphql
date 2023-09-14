@@ -117,7 +117,7 @@ type AirDomainRegistrationOrRenew implements AirDomainEvent @entity {
   "The domain name associated with the registration"
   domain: AirDomain!
   "The registration date of the domain"
-  registrationDate: BigInt!
+  registrationDate: BigInt
   "The expiry date of the domain"
   expiryDate: BigInt
   "The cost associated with the domain registration"
@@ -179,22 +179,6 @@ type AirDomainNewTTL implements AirDomainEvent @entity {
 
   "ttl"
   ttl: BigInt!
-
-  "The block number of the event"
-  createdAt: AirBlock!
-
-  "The transaction hash associated with the event"
-  hash: Bytes!
-}
-
-type AirDomainRegistered implements AirDomainEvent @entity {
-  "hash + logIndex"
-  id: ID!
-  "The registration associated with the event"
-  domain: AirDomain!
-
-  "The account of new owner"
-  owner: AirDomainAccount!
 
   "The block number of the event"
   createdAt: AirBlock!
