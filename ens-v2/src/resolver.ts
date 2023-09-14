@@ -78,7 +78,7 @@ export function handleTextChangedWithValue(event: TextChangedWithValue): void {
     node.toHexString(),
     resolverAddress,
     key,
-    "",
+    value,
     block
   )
 }

@@ -43,6 +43,7 @@ export const _handleNameRegistered = (
         expires,
         owner,
         txhash,
+        logIndex,
         block
     )
 }
@@ -78,6 +79,7 @@ export const _handleNameRenewed = (
         expires,
         from,
         txhash,
+        logIndex,
         block
     )
 }

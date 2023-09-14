@@ -11,7 +11,6 @@ import {
   AirDomain,
   AirResolver,
   AirDomainAccount,
-  AirExtra,
   AirDomainTransferred,
   AirDomainNameWrapped,
   AirDomainRegistrationOrRenew,
@@ -27,19 +26,17 @@ import {
   AirMultiCoin,
   AirResolvedAddressChanged,
   AirDomainPrimarySet,
+  AirDomainFusesSet,
 } from "../../../generated/schema"
 import {
   AIR_DOMAIN_CHANGED_ID,
-  AIR_DOMAIN_REGISTRATION_OR_RENEW_CHANGED_ID,
   AIR_RESOLVER_CHANGED_ID,
   ROOT_NODE,
-  ZERO_ADDRESS,
 } from "./utils"
 import {
   BIG_INT_ZERO,
   getChainId,
   updateAirEntityCounter,
-  getOrCreateAirBlock,
   getOrCreateAirAccount,
   BIGINT_ONE,
 } from "../common"
@@ -361,7 +358,7 @@ export namespace domain {
     resolvedAddress: Address,
     block: ethereum.Block
   ): void {
-    log.debug("trackDomainNewTTL", [])
+    log.debug("trackResolvedAddress", [])
 
     let airDomain = AirDomain.load(domainId)
     let resolverId = domainId.concat("-").concat(resolverAddress.toHexString())
@@ -381,27 +378,18 @@ export namespace domain {
       saveAirResolver(airResolver, block)
       // book keeping
 
-      let aAirResolvedAddressChanged = new AirResolvedAddressChanged(
+      let airResolvedAddressChanged = new AirResolvedAddressChanged(
         txHash
           .toHexString()
           .concat("-")
           .concat(logIndex.toString())
       )
-      aAirResolvedAddressChanged.resolver = airResolver.id
+      airResolvedAddressChanged.resolver = airResolver.id
       let airBlock = getOrCreateAirBlock(block)
-      aAirResolvedAddressChanged.createdAt = airBlock.id
-      aAirResolvedAddressChanged.hash = txHash
-      aAirResolvedAddressChanged.resolvedAddress = resolvedDomainAccount.id
-      aAirResolvedAddressChanged.save()
-
-      // update resolvedArray
-      let resolvedDomainArr = resolvedDomainAccount.resolved
-      if (!resolvedDomainArr) {
-        resolvedDomainArr = []
-      }
-      resolvedDomainArr.push(airDomain.id)
-      resolvedDomainAccount.resolved = resolvedDomainArr
-      resolvedDomainAccount.save()
+      airResolvedAddressChanged.createdAt = airBlock.id
+      airResolvedAddressChanged.hash = txHash
+      airResolvedAddressChanged.resolvedAddress = resolvedDomainAccount.id
+      airResolvedAddressChanged.save()
 
       // update primary domain
       let airPrimarySet = AirDomainPrimary.load(resolvedAddress.toHexString())
@@ -418,6 +406,19 @@ export namespace domain {
             )
             airDomain.isPrimary = true
             saveAirDomain(airDomain, block)
+
+            // book keeping
+            let airDomainPrimarySet = new AirDomainPrimarySet(
+              createEventId(txHash, logIndex)
+                .concat("-")
+                .concat("AirDomainPrimarySet")
+            )
+            airDomainPrimarySet.domain = airDomain.id
+            let airBlock = getOrCreateAirBlock(block)
+            airDomainPrimarySet.createdAt = airBlock.id
+            airDomainPrimarySet.hash = txHash
+            airDomainPrimarySet.resolvedAddress = resolvedDomainAccount.id
+            airDomainPrimarySet.save()
           }
         }
       }
@@ -510,6 +511,7 @@ export namespace domain {
   }
   export function trackAirDomainRegistrationDateAndCost(
     txHash: Bytes,
+    logIndex: BigInt,
     domainId: string,
     registrationDate: BigInt,
     cost: BigInt,
@@ -526,21 +528,19 @@ export namespace domain {
     saveAirDomain(airDomain, block)
 
     // book keeping
-    let airDomainRegistration = getOrCreateAirDomainRegistrationOrRenew(
-      txHash,
-      airDomain.id,
-      block
+    let airBlock = getOrCreateAirBlock(block)
+    airBlock.save()
+    let airDomainRegistration = new AirDomainRegistrationOrRenew(
+      createEventId(txHash, logIndex)
     )
     airDomainRegistration.domain = airDomain.id
     let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
     airDomainRegistration.owner = ownerDomainAccount.id
+    airDomainRegistration.createdAt = airBlock.id
+    airDomainRegistration.hash = txHash
+    airDomainRegistration.isRenew = false
     airDomainRegistration.cost = cost
     airDomainRegistration.registrationDate = registrationDate
-    airDomainRegistration.isRenew = false
-    airDomainRegistration.hash = txHash
-    let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
-    airDomainRegistration.createdAt = airBlock.id
     airDomainRegistration.save()
   }
   export function trackAirDomainRegistrationExpiry(
@@ -564,21 +564,19 @@ export namespace domain {
     }
     airDomain.expiryDate = expiryDate
     saveAirDomain(airDomain, block)
-    let airDomainRegistration = getOrCreateAirDomainRegistrationOrRenew(
-      txHash,
-      airDomain.id,
-      block
-    )
-    airDomainRegistration.domain = airDomain.id
-    let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
-    airDomainRegistration.owner = ownerDomainAccount.id
-    airDomainRegistration.expiryDate = expiryDate
-    airDomainRegistration.isRenew = false
-    airDomainRegistration.hash = txHash
-    airDomainRegistration.registrationDate = block.timestamp
+
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
+    // book keeping
+    let airDomainRegistration = new AirDomainRegistrationOrRenew(
+      createEventId(txHash, logIndex)
+    )
+    let ownerAirDomainAccount = getOrCreateAirDomainAccount(owner, block)
+    airDomainRegistration.domain = airDomain.id
+    airDomainRegistration.owner = ownerAirDomainAccount.id
     airDomainRegistration.createdAt = airBlock.id
+    airDomainRegistration.hash = txHash
+    airDomainRegistration.isRenew = false
     airDomainRegistration.save()
   }
   export function trackAirDomainRegistrationNameRenewed(
@@ -602,23 +600,19 @@ export namespace domain {
     }
     airDomain.expiryDate = expiryDate
     saveAirDomain(airDomain, block)
-    let airDomainRenew = getOrCreateAirDomainRegistrationOrRenew(
-      txHash,
-      airDomain.id,
-      block
-    )
-    airDomainRenew.expiryDate = expiryDate
-    airDomainRenew.isRenew = true
-    airDomainRenew.hash = txHash
-    airDomainRenew.domain = airDomain.id
-    airDomainRenew.registrationDate = block.timestamp
 
     let renewerDomainAccount = getOrCreateAirDomainAccount(renewer, block)
-    airDomainRenew.owner = renewerDomainAccount.id
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
-    airDomainRenew.createdAt = airBlock.id
-    airDomainRenew.save()
+    let airDomainRegistration = new AirDomainRegistrationOrRenew(
+      createEventId(txHash, logIndex)
+    )
+    airDomainRegistration.domain = airDomain.id
+    airDomainRegistration.owner = renewerDomainAccount.id
+    airDomainRegistration.createdAt = airBlock.id
+    airDomainRegistration.hash = txHash
+    airDomainRegistration.isRenew = true
+    airDomainRegistration.save()
   }
   export function trackAirDomainOwnershipTransfer(
     tokenAddress: Address,
@@ -672,6 +666,7 @@ export namespace domain {
     expiryDate: BigInt,
     owner: Address,
     txHash: Bytes,
+    logIndex: BigInt,
     block: ethereum.Block
   ): void {
     const labelHashStr = label.toHexString()
@@ -687,24 +682,23 @@ export namespace domain {
     let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
 
     saveAirDomain(airDomain, block)
-    let airDomainRegistration = getOrCreateAirDomainRegistrationOrRenew(
-      txHash,
-      airDomain.id,
-      block
-    )
-    airDomainRegistration.cost = cost
-    airDomainRegistration.domain = airDomain.id
-    airDomainRegistration.owner = ownerDomainAccount.id
-    airDomainRegistration.expiryDate = expiryDate
-    airDomainRegistration.isRenew = false
-    airDomainRegistration.hash = txHash
-    airDomainRegistration.registrationDate = block.timestamp
+
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
+
+    let airDomainRegistration = new AirDomainRegistrationOrRenew(
+      createEventId(txHash, logIndex)
+    )
+    airDomainRegistration.domain = airDomain.id
+    airDomainRegistration.owner = ownerDomainAccount.id
     airDomainRegistration.createdAt = airBlock.id
+    airDomainRegistration.hash = txHash
+    airDomainRegistration.isRenew = false
     airDomainRegistration.save()
   }
   export function trackAirDomainFusesSet(
+    txHash: Bytes,
+    logIndex: BigInt,
     domainId: string,
     fuses: BigInt,
     block: ethereum.Block
@@ -712,9 +706,21 @@ export namespace domain {
     let airDomain = getAirDomain(domainId)
     airDomain.fuses = fuses
     saveAirDomain(airDomain, block)
+    let airBlock = getOrCreateAirBlock(block)
+    airBlock.save()
+    // book keeping
+    let airDomainFusesSet = new AirDomainFusesSet(
+      createEventId(txHash, logIndex)
+    )
+    airDomainFusesSet.domain = airDomain.id
+    airDomainFusesSet.createdAt = airBlock.id
+    airDomainFusesSet.hash = txHash
+    airDomainFusesSet.fuses = fuses
+    airDomainFusesSet.save()
   }
   export function trackAirDomainExpiryExtended(
     txHash: Bytes,
+    logIndex: BigInt,
     from: Address,
     domainId: string,
     expiry: BigInt,
@@ -724,22 +730,19 @@ export namespace domain {
     airDomain.expiryDate = expiry
     saveAirDomain(airDomain, block)
 
-    let airDomainRenew = getOrCreateAirDomainRegistrationOrRenew(
-      txHash,
-      airDomain.id,
-      block
-    )
-    airDomainRenew.expiryDate = expiry
-    airDomainRenew.registrationDate = block.timestamp
-    airDomainRenew.isRenew = true
-    airDomainRenew.domain = airDomain.id
-    airDomainRenew.hash = txHash
     let ownerDomainAccount = getOrCreateAirDomainAccount(from, block)
-    airDomainRenew.owner = ownerDomainAccount.id
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
-    airDomainRenew.createdAt = airBlock.id
-    airDomainRenew.save()
+
+    let airDomainRegistration = new AirDomainRegistrationOrRenew(
+      createEventId(txHash, logIndex)
+    )
+    airDomainRegistration.domain = airDomain.id
+    airDomainRegistration.owner = ownerDomainAccount.id
+    airDomainRegistration.createdAt = airBlock.id
+    airDomainRegistration.hash = txHash
+    airDomainRegistration.isRenew = true
+    airDomainRegistration.save()
   }
   export function trackAirDomainRenewalNameCostExpiry(
     domainId: string,
@@ -749,6 +752,7 @@ export namespace domain {
     expiryDate: BigInt,
     owner: Address,
     txHash: Bytes,
+    logIndex: BigInt,
     block: ethereum.Block
   ): void {
     const labelHashStr = label.toHexString()
@@ -764,27 +768,23 @@ export namespace domain {
     saveAirDomain(airDomain, block)
 
     let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
-    let airDomainRenew = getOrCreateAirDomainRegistrationOrRenew(
-      txHash,
-      airDomain.id,
-      block
-    )
-    airDomainRenew.cost = cost
-    airDomainRenew.domain = airDomain.id
-    airDomainRenew.owner = ownerDomainAccount.id
-    airDomainRenew.expiryDate = expiryDate
-    airDomainRenew.isRenew = true
-    airDomainRenew.hash = txHash
-    airDomainRenew.registrationDate = block.timestamp
+
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
-    airDomainRenew.createdAt = airBlock.id
-    airDomainRenew.save()
+
+    let airDomainRegistration = new AirDomainRegistrationOrRenew(
+      createEventId(txHash, logIndex)
+    )
+    airDomainRegistration.domain = airDomain.id
+    airDomainRegistration.owner = ownerDomainAccount.id
+    airDomainRegistration.createdAt = airBlock.id
+    airDomainRegistration.hash = txHash
+    airDomainRegistration.isRenew = true
+    airDomainRegistration.save()
   }
 
   export function trackNameWrapped(
     domainId: string,
-    name: string,
     labelName: string,
     expiryDate: BigInt,
     owner: Address,
@@ -808,20 +808,9 @@ export namespace domain {
     airDomain.expiryDate = expiryDate
     saveAirDomain(airDomain, block)
 
-    let airDomainRegistration = getOrCreateAirDomainRegistrationOrRenew(
-      txHash,
-      airDomain.id,
-      block
-    )
-    airDomainRegistration.domain = airDomain.id
-    airDomainRegistration.hash = txHash
-    airDomainRegistration.expiryDate = expiryDate
-    airDomainRegistration.registrationDate = block.timestamp
-    airDomainRegistration.owner = ownerDomainAccount.id
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
-    airDomainRegistration.createdAt = airBlock.id
-    airDomainRegistration.save()
+
     // book keeping
     let airDomainNameWrapped = new AirDomainNameWrapped(
       txHash
@@ -834,6 +823,8 @@ export namespace domain {
     airDomainNameWrapped.createdAt = airBlock.id
     airDomainNameWrapped.hash = txHash
     airDomainNameWrapped.owner = ownerDomainAccount.id
+    airDomainNameWrapped.expiryDate = expiryDate
+    airDomainNameWrapped.fuses = fuses
     airDomainNameWrapped.save()
   }
   export function trackNameUnwrapped(
@@ -916,6 +907,8 @@ export namespace domain {
     // book keeping
     let airDomainPrimarySet = new AirDomainPrimarySet(
       createEventId(txHash, logOrCallIndex)
+        .concat("-")
+        .concat("AirDomainPrimarySet")
     )
     airDomainPrimarySet.domain = airDomain.id
     let airBlock = getOrCreateAirBlock(block)
@@ -939,21 +932,6 @@ export namespace domain {
       airResolver.resolverAddress = resolverAddress
     }
     return airResolver
-  }
-  export function getOrCreateAirDomainRegistrationOrRenew(
-    hash: Bytes,
-    domainId: string,
-    block: ethereum.Block
-  ): AirDomainRegistrationOrRenew {
-    let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
-    let id = domainId.concat("-").concat(hash.toHexString())
-    let airDomainRegistration = AirDomainRegistrationOrRenew.load(id)
-    if (!airDomainRegistration) {
-      airDomainRegistration = new AirDomainRegistrationOrRenew(id)
-      airDomainRegistration.createdAt = airBlock.id
-    }
-    return airDomainRegistration
   }
 
   export function saveAirResolver(
@@ -986,18 +964,6 @@ export namespace domain {
       )
     }
     return airResolver
-  }
-  export function getAirDomainRegistrationOrRenew(
-    txHash: Bytes,
-    domainId: string,
-    throwErr: bool
-  ): AirDomainRegistrationOrRenew | null {
-    let id = domainId.concat(txHash.toHexString())
-    let airDomainRegistrationOrRenew = AirDomainRegistrationOrRenew.load(id)
-    if (!airDomainRegistrationOrRenew && throwErr) {
-      throw new Error("AirDomainRegistrationOrRenew not found,id: " + id)
-    }
-    return airDomainRegistrationOrRenew
   }
 
   function createEventId(txHash: Bytes, logIndex: BigInt): string {

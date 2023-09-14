@@ -42,8 +42,7 @@ type AirDomainAccount @entity {
   "The unique identifier for the account"
   id: ID!
   account: AirAccount!
-  "domains resolved to this account"
-  resolved: [AirDomain!] # this array will be used for isPrimary change
+
   "The domains owned by the account / manager of domain"
   manager: [AirDomain!]! @derivedFrom(field: "manager")
   "domains registered under this account / actual owner of domain(nft)"
@@ -141,6 +140,21 @@ interface AirDomainEvent {
   hash: Bytes!
 }
 
+type AirDomainFusesSet implements AirDomainEvent @entity {
+  "hash + logIndex"
+  id: ID!
+  "The registration associated with the event"
+  domain: AirDomain!
+  "The block number of the event"
+  createdAt: AirBlock!
+
+  "The transaction hash associated with the event"
+  hash: Bytes!
+
+  "fuses set from namewrapper"
+  fuses: BigInt!
+}
+
 type AirDomainPrimarySet implements AirDomainEvent @entity {
   "hash + logIndex"
   id: ID!
@@ -201,6 +215,10 @@ type AirDomainNameWrapped implements AirDomainEvent @entity {
 
   "The transaction hash associated with the event"
   hash: Bytes!
+
+  expiryDate: BigInt!
+
+  fuses: BigInt!
 }
 
 type AirDomainNameUnwrapped implements AirDomainEvent @entity {

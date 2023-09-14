@@ -57,7 +57,6 @@ export function handleNameWrapped(event: NameWrapped): void {
   }
   airstack.domain.trackNameWrapped(
     node.toHexString(),
-    name,
     label,
     expiry,
     owner,
@@ -86,7 +85,13 @@ export function handleFusesSet(event: FusesSet): void {
   const node = event.params.node
   const fuses = event.params.fuses
   const block = event.block
-  airstack.domain.trackAirDomainFusesSet(node.toHexString(), fuses, block)
+  airstack.domain.trackAirDomainFusesSet(
+    txHash,
+    event.logIndex,
+    node.toHexString(),
+    fuses,
+    block
+  )
   const logIndex = event.logIndex
 }
 
@@ -98,6 +103,7 @@ export function handleExpiryExtended(event: ExpiryExtended): void {
   const from = event.transaction.from
   airstack.domain.trackAirDomainExpiryExtended(
     txHash,
+    event.logIndex,
     from,
     node.toHexString(),
     expiry,
