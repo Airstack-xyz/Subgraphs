@@ -793,7 +793,7 @@ export namespace domain {
     logIndex: BigInt,
     fuses: BigInt
   ): void {
-    log.debug("trackAirDomainRenewalNameCostExpiry txHash {} logIndex {}", [
+    log.debug("trackNameWrapped txHash {} logIndex {}", [
       txHash.toHexString(),
       logIndex.toString(),
     ])
@@ -819,7 +819,6 @@ export namespace domain {
         .concat(logIndex.toString())
     )
     airDomainNameWrapped.domain = airDomain.id
-
     airDomainNameWrapped.createdAt = airBlock.id
     airDomainNameWrapped.hash = txHash
     airDomainNameWrapped.owner = ownerDomainAccount.id

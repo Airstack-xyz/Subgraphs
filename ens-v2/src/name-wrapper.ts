@@ -85,14 +85,14 @@ export function handleFusesSet(event: FusesSet): void {
   const node = event.params.node
   const fuses = event.params.fuses
   const block = event.block
+  const logIndex = event.logIndex
   airstack.domain.trackAirDomainFusesSet(
     txHash,
-    event.logIndex,
+    logIndex,
     node.toHexString(),
     fuses,
     block
   )
-  const logIndex = event.logIndex
 }
 
 export function handleExpiryExtended(event: ExpiryExtended): void {
