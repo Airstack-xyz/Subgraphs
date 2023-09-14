@@ -13,7 +13,12 @@ import {
     NameRenewed as NameRenewed2,
     Transfer as Transfer2,
 } from "../generated/EnsToken2/BaseRegistrarImplementation"
-import { createController, uint256ToByteArray, getNameHashFromByteArray, rootNode } from "./utils"
+import {
+  createController,
+  uint256ToByteArray,
+  getNameHashFromByteArray,
+  ethNode,
+} from "./utils"
 import { ControllerRemoved, NewOwnerHashLabelMap } from "../generated/schema"
 import * as airstack from "../modules/airstack/domain-name"
 
@@ -66,7 +71,7 @@ export const _handleNameRenewed = (
     logIndex: BigInt
 ): void => {
     const label = uint256ToByteArray(id)
-    const domainId = getNameHashFromByteArray(rootNode, label)
+    const domainId = getNameHashFromByteArray(ethNode, label)
     airstack.domain.trackAirDomainRegistrationNameRenewed(
         tokenAddress,
         id,
@@ -89,7 +94,7 @@ export const _handleTransfer = (
     logIndex: BigInt
 ): void => {
     const label = uint256ToByteArray(tokenId)
-    const domainId = getNameHashFromByteArray(rootNode, label)
+    const domainId = getNameHashFromByteArray(ethNode, label)
     airstack.domain.trackAirDomainOwnershipTransfer(
         tokenAddress,
         tokenId,

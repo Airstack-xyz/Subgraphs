@@ -18,7 +18,7 @@ import {
     NameRenewed as NameRenewedTemplate,
 } from "../generated/templates/ETHRegistrarControllerTemplate/ETHRegistrarController"
 import * as airstack from "../modules/airstack/domain-name"
-import { checkValidLabel, getNameHashFromByteArray, rootNode } from "./utils"
+import { checkValidLabel, getNameHashFromByteArray, ethNode } from "./utils"
 import { ControllerRemoved, InvalidName } from "../generated/schema"
 
 export const _handleNameRegistered = (
@@ -43,7 +43,7 @@ export const _handleNameRegistered = (
         invalidName.save()
         return
     }
-    const domainId = getNameHashFromByteArray(rootNode, label)
+    const domainId = getNameHashFromByteArray(ethNode, label)
     airstack.domain.trackAirDomainRegistrationNameCostExpiry(
         domainId,
         name,
@@ -78,7 +78,7 @@ export const _handleNameRenewed = (
         invalidName.save()
         return
     }
-    const domainId = getNameHashFromByteArray(rootNode, label)
+    const domainId = getNameHashFromByteArray(ethNode, label)
     airstack.domain.trackAirDomainRenewalNameCostExpiry(
         domainId,
         name,
