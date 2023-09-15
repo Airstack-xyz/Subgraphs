@@ -634,9 +634,8 @@ export namespace domain {
     }
     let fromDomainAccount = getOrCreateAirDomainAccount(from, block)
     let toDomainAccount = getOrCreateAirDomainAccount(to, block)
-
     airDomain.owner = toDomainAccount.id
-    if (airDomain.manager == "") {
+    if (from == Address.zero()) {
       airDomain.manager = toDomainAccount.id
     }
     saveAirDomain(airDomain, block)
