@@ -82,7 +82,7 @@ type AirDomain @entity {
   "The account that manager the domain"
   manager: AirDomainAccount!
   "The account that owns the ERC721 NFT for the domain"
-  owner: AirDomainAccount!
+  owner: AirDomainAccount
   "The resolver that controls the domain's settings"
   resolver: AirResolver
   "The time-to-live (TTL) value of the domain's records"

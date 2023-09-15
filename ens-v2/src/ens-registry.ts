@@ -83,7 +83,6 @@ export const _handleNewOwner = (
   block: ethereum.Block
 ): void => {
   let parentDomainId = node.toHexString()
-  let airParentDomain = airstack.domain.getAirDomain(parentDomainId)
   let childDomainId = getNameHashFromBytes(node, label)
   if (childDomainId.toLowerCase() == ADDR_REVERSE_NODE.toLowerCase()) {
     createReverse(owner, txHash)

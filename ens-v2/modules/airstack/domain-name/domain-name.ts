@@ -91,7 +91,6 @@ export namespace domain {
     domain.name = [labelName.id]
     domain.encodedName = ""
     saveAirLabelName(labelName, block)
-    domain.owner = ownerDomainAccount.id
     domain.manager = ownerDomainAccount.id
     saveAirDomain(domain, block)
   }
@@ -165,7 +164,6 @@ export namespace domain {
     if (!airDomain) {
       throw new Error("Domain not found,domainId: " + domainId)
     }
-    airDomain.owner = newOwnerDomainAccount.id
     airDomain.manager = newOwnerDomainAccount.id
     saveAirDomain(airDomain, block)
     // book keeping
@@ -277,7 +275,6 @@ export namespace domain {
     let ownerAirDomainAccount = getOrCreateAirDomainAccount(owner, block)
     ownerAirDomainAccount.save()
     domain.manager = ownerAirDomainAccount.id
-    domain.owner = ownerAirDomainAccount.id
     domain.isPrimary = false
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
@@ -631,6 +628,8 @@ export namespace domain {
     let airDomain = getOrCreateAirDomain(domainId, block)
     if (airDomain.tokenAddress != tokenAddress.toHexString()) {
       airDomain.tokenAddress = tokenAddress.toHexString()
+    }
+    if (airDomain.tokenId != tokenId.toString()) {
       airDomain.tokenId = tokenId.toString()
     }
     let fromDomainAccount = getOrCreateAirDomainAccount(from, block)

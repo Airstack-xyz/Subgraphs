@@ -17,6 +17,7 @@ import {
   handleFusesSet,
   handleNameUnwrapped,
   handleNameWrapped,
+  handleTransferSingle,
 } from "../src/name-wrapper"
 import { Bytes, crypto, BigInt, log } from "@graphprotocol/graph-ts"
 import {
@@ -29,6 +30,8 @@ import {
   NameUnwrappedInput,
   FusesSetInput,
   ExpiryExtendedInput,
+  TransferSingleInput,
+  createTransferSingleEvent,
 } from "./name-wrapper-utils"
 import {
   controllerAdded,
@@ -198,55 +201,7 @@ describe("Testing namewrapper", () => {
     )
     airLabelName2.save()
     let domainId =
-      "0xc44eec7fb870ae46d4ef4392d33fbbbdc164e7817a86289a1fe30e5f4d98ae85"
-    let airDomain = new AirDomain(domainId)
-
-    airDomain.encodedName =
-      "0x6472b4c739f6e46480609823a81b3f9445e39367a87cda58fef1366555b24337.0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0"
-    airDomain.name = [airLabelName1.id, airLabelName2.id]
-    airDomain.labelName = airLabelName2.id
-    airDomain.subdomainCount = BigInt.fromI32(0)
-    airDomain.fuses = BigInt.fromI32(0)
-    airDomain.fuses = BigInt.fromI32(0)
-    airDomain.manager = airDomainAccount.id
-    airDomain.owner = airDomainAccount.id
-    airDomain.isPrimary = false
-    airDomain.isNameWrapped = true
-    airDomain.createdAt = airBlock.id
-    airDomain.lastUpdatedIndex = BigInt.fromI32(0)
-    airDomain.save()
-    const fusesSet: FusesSetInput = {
-      hash:
-        "0x4f6d23687502000445f2bf233ab33fbf8ac29e0880dd6e4268bc044a880dc8bc",
-      node: domainId,
-      fuses: "300",
-    }
-    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "0")
-    let fuseSetEvent = createFusesSetEvent(fusesSet)
-    handleFusesSet(fuseSetEvent)
-    assert.fieldEquals("AirDomain", domainId, "fuses", "300")
-    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
-  })
-
-  test("testing fusesSet", () => {
-    let airDomainAccount = mockAirDomainAccount(
-      "0x911143d946ba5d467bfc476491fdb235fef4d667"
-    )
-
-    let airBlock = mockAirBlock()
-
-    let airLabelName1 = mockAirLabelName(
-      "0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0",
-      ""
-    )
-    airLabelName1.save()
-    let airLabelName2 = mockAirLabelName(
-      "0x6472b4c739f6e46480609823a81b3f9445e39367a87cda58fef1366555b24337",
-      ""
-    )
-    airLabelName2.save()
-    let domainId =
-      "0xc44eec7fb870ae46d4ef4392d33fbbbdc164e7817a86289a1fe30e5f4d98ae85"
+      "0x4f6d23687502000445f2bf233ab33fbf8ac29e0880dd6e4268bc044a880dc8bc"
     let airDomain = new AirDomain(domainId)
 
     airDomain.encodedName =
@@ -329,5 +284,62 @@ describe("Testing namewrapper", () => {
       "isRenew",
       "true"
     )
+  })
+
+  test("testing handleTransferSingle", () => {
+    let airDomainAccount = mockAirDomainAccount(
+      "0x911143d946ba5d467bfc476491fdb235fef4d667"
+    )
+
+    let airBlock = mockAirBlock()
+
+    let airLabelName1 = mockAirLabelName(
+      "0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0",
+      ""
+    )
+    airLabelName1.save()
+    let airLabelName2 = mockAirLabelName(
+      "0x6472b4c739f6e46480609823a81b3f9445e39367a87cda58fef1366555b24337",
+      ""
+    )
+    airLabelName2.save()
+    let domainId =
+      "0xc44eec7fb870ae46d4ef4392d33fbbbdc164e7817a86289a1fe30e5f4d98ae85"
+    let airDomain = new AirDomain(domainId)
+
+    airDomain.encodedName =
+      "0x6472b4c739f6e46480609823a81b3f9445e39367a87cda58fef1366555b24337.0x4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0"
+    airDomain.name = [airLabelName1.id, airLabelName2.id]
+    airDomain.labelName = airLabelName2.id
+    airDomain.subdomainCount = BigInt.fromI32(0)
+    airDomain.fuses = BigInt.fromI32(0)
+    airDomain.fuses = BigInt.fromI32(0)
+    airDomain.manager = airDomainAccount.id
+    airDomain.owner = airDomainAccount.id
+    airDomain.isPrimary = false
+    airDomain.isNameWrapped = true
+    airDomain.createdAt = airBlock.id
+    airDomain.lastUpdatedIndex = BigInt.fromI32(0)
+    airDomain.save()
+    const transferSingle: TransferSingleInput = {
+      hash:
+        "0x4f6d23687502000445f2bf233ab33fbf8ac29e0880dd6e4268bc044a880dc8bc",
+      operator: "0x911143d946ba5d467bfc476491fdb235fef4d667",
+      from: "0x0000000000000000000000000000000000000000",
+      to: "0x911143d946ba5d467bfc476491fdb235fef4d667",
+      id:
+        "88792764648847811246521601599422014651201701211481889599094841418054356217477",
+      value: "1",
+    }
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "0")
+    let event = createTransferSingleEvent(transferSingle)
+    handleTransferSingle(event)
+    assert.fieldEquals(
+      "AirDomain",
+      domainId,
+      "tokenId",
+      "88792764648847811246521601599422014651201701211481889599094841418054356217477"
+    )
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1")
   })
 })
