@@ -373,6 +373,9 @@ export namespace domain {
       }
       airResolver.resolvedAddress = resolvedDomainAccount.id
       saveAirResolver(airResolver, block)
+
+      // whenever AirResolver gets saved, airDomain lastUpdatedIndex gets updated
+      saveAirDomain(airDomain, block)
       // book keeping
 
       let airResolvedAddressChanged = new AirResolvedAddressChanged(
@@ -448,6 +451,10 @@ export namespace domain {
     airMultiCoin.address = newAddress
     airMultiCoin.save()
     saveAirResolver(airResolver, block)
+
+    // whenever AirResolver gets saved, airDomain lastUpdatedIndex gets updated
+    let airDomain = getAirDomain(domainId)
+    saveAirDomain(airDomain, block)
     // book keeping
 
     let airMultiCoinChanged = new AirMultiCoinChanged(
@@ -490,6 +497,10 @@ export namespace domain {
     airText.save()
 
     saveAirResolver(airResolver, block)
+
+    // whenever AirResolver gets saved, airDomain lastUpdatedIndex gets updated
+    let airDomain = getAirDomain(domainId)
+    saveAirDomain(airDomain, block)
 
     // book keeping
     let airTextChanged = new AirTextChanged(
