@@ -95,6 +95,14 @@ export const _handleTransfer = (
 ): void => {
     const label = uint256ToByteArray(tokenId)
     const domainId = getNameHashFromByteArray(ethNode, label)
+
+
+    let hashlabelMap = new NewOwnerHashLabelMap(
+        txHash.toHexString() + "-" + label.toHexString()
+    )
+    hashlabelMap.domainId = domainId
+    hashlabelMap.save()
+    
     airstack.domain.trackAirDomainOwnershipTransfer(
         tokenAddress,
         tokenId,

@@ -632,17 +632,13 @@ export namespace domain {
     block: ethereum.Block,
     logIndex: BigInt
   ): void {
-    log.debug("trackAirDomainOwnershipTransfer txHash {} logIndex {}", [
-      txHash.toHexString(),
-      logIndex.toString(),
-    ])
+    log.debug(
+      "trackAirDomainOwnershipTransfer txHash {} logIndex {}  tokenAddress {}",
+      [txHash.toHexString(), logIndex.toString(), tokenAddress.toHexString()]
+    )
     let airDomain = getOrCreateAirDomain(domainId, block)
-    if (airDomain.tokenAddress != tokenAddress.toHexString()) {
-      airDomain.tokenAddress = tokenAddress.toHexString()
-    }
-    if (airDomain.tokenId != tokenId.toString()) {
-      airDomain.tokenId = tokenId.toString()
-    }
+    airDomain.tokenAddress = tokenAddress.toHexString()
+    airDomain.tokenId = tokenId.toString()
     let fromDomainAccount = getOrCreateAirDomainAccount(from, block)
     let toDomainAccount = getOrCreateAirDomainAccount(to, block)
     airDomain.owner = toDomainAccount.id
