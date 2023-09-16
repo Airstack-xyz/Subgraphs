@@ -39,6 +39,7 @@ import {
   updateAirEntityCounter,
   getOrCreateAirAccount,
   BIGINT_ONE,
+  getOrCreateAirToken,
 } from "../common"
 
 export namespace domain {
@@ -566,10 +567,9 @@ export namespace domain {
       logIndex.toString(),
     ])
     let airDomain = getAirDomain(domainId)
-    if (airDomain.tokenAddress != tokenAddress.toHexString()) {
-      airDomain.tokenAddress = tokenAddress.toHexString()
-      airDomain.tokenId = tokenId.toString()
-    }
+    let airToken = getOrCreateAirToken(getChainId(), tokenAddress.toHexString())
+    airToken.save()
+    airDomain.tokenAddress = airToken.id
     airDomain.expiryDate = expiryDate
     saveAirDomain(airDomain, block)
 
@@ -602,10 +602,9 @@ export namespace domain {
       logIndex.toString(),
     ])
     let airDomain = getAirDomain(domainId)
-    if (airDomain.tokenAddress != tokenAddress.toHexString()) {
-      airDomain.tokenAddress = tokenAddress.toHexString()
-      airDomain.tokenId = tokenId.toString()
-    }
+    let airToken = getOrCreateAirToken(getChainId(), tokenAddress.toHexString())
+    airToken.save()
+    airDomain.tokenAddress = airToken.id
     airDomain.expiryDate = expiryDate
     saveAirDomain(airDomain, block)
 
@@ -637,7 +636,9 @@ export namespace domain {
       [txHash.toHexString(), logIndex.toString(), tokenAddress.toHexString()]
     )
     let airDomain = getOrCreateAirDomain(domainId, block)
-    airDomain.tokenAddress = tokenAddress.toHexString()
+    let airToken = getOrCreateAirToken(getChainId(), tokenAddress.toHexString())
+    airToken.save()
+    airDomain.tokenAddress = airToken.id
     airDomain.tokenId = tokenId.toString()
     let fromDomainAccount = getOrCreateAirDomainAccount(from, block)
     let toDomainAccount = getOrCreateAirDomainAccount(to, block)
