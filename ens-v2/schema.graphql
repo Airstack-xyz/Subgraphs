@@ -359,6 +359,10 @@ type AirText @entity {
   name: String!
   "address it points to"
   value: String!
+
+  createdAt: AirBlock!
+  lastUpdatedBlock: AirBlock! #- NA
+  lastUpdatedIndex: BigInt!
 }
 
 # mapping to fetch domainId of a label at a particular hash

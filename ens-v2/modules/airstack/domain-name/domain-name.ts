@@ -31,6 +31,7 @@ import {
 import {
   AIR_DOMAIN_CHANGED_ID,
   AIR_RESOLVER_CHANGED_ID,
+  AIR_TEXT_CHANGED_ID,
   ROOT_NODE,
 } from "./utils"
 import {
@@ -64,8 +65,19 @@ export namespace domain {
       AIR_DOMAIN_CHANGED_ID,
       airBlock
     )
-
     domain.save()
+  }
+
+  export function saveAirText(text: AirText, block: ethereum.Block): void {
+    const airBlock = getOrCreateAirBlock(block)
+    airBlock.save()
+
+    text.lastUpdatedBlock = airBlock.id
+    text.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_TEXT_CHANGED_ID,
+      airBlock
+    )
+    text.save()
   }
   export function getOrCreateAirBlock(block: ethereum.Block): AirBlock {
     const chainId = getChainId()
@@ -487,15 +499,16 @@ export namespace domain {
     if (!airResolver) {
       return
     }
-
+    let airBlock = getOrCreateAirBlock(block)
     let airText = AirText.load(airResolver.id.concat("-").concat(name))
     if (!airText) {
       airText = new AirText(airResolver.id.concat("-").concat(name))
+      airText.createdAt = airBlock.id
     }
     airText.resolver = airResolver.id
     airText.name = name
     airText.value = value
-    airText.save()
+    saveAirText(airText, block)
 
     saveAirResolver(airResolver, block)
 
@@ -511,7 +524,6 @@ export namespace domain {
         .concat(logIndex.toString())
     )
     airTextChanged.resolver = airResolver.id
-    let airBlock = getOrCreateAirBlock(block)
     airTextChanged.createdAt = airBlock.id
     airTextChanged.hash = txHash
     airTextChanged.name = name
