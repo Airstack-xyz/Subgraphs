@@ -10,7 +10,7 @@ import {
   AirAccount,
   AirToken,
 } from "../../../generated/schema";
-
+import { SUBGRAPH_NAME, SUBGRAPH_VERSION, SUBGRAPH_SLUG } from "./meta"
 export const AIR_META_ID = "AIR_META";
 
 export const EMPTY_STRING = "";
@@ -19,9 +19,6 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-export const SUBGRAPH_NAME = "AIRSTACK_SUBGRAPH";
-export const SUBGRAPH_VERSION = "AIRSTACK_SUBGRAPH";
-export const SUBGRAPH_SLUG = "AIRSTACK_SUBGRAPH";
 
 const AIR_CHAIN_ID_MAP = new TypedMap<string, string>();
 AIR_CHAIN_ID_MAP.set("arbitrum-one", "42161");
