@@ -394,7 +394,14 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     log.debug("trackResolvedAddress", [])
-    let airDomain = getOrCreateAirDomain(domainId, block)
+    let airDomain = AirDomain.load(domainId)
+    if (!airDomain) {
+      log.debug("trackResolvedAddress, domainId not found, {} txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      return
+    }
     saveAirDomain(airDomain, block)
     let resolvedDomainAccount = getOrCreateAirDomainAccount(
       resolvedAddress,
@@ -469,7 +476,14 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     log.debug("trackMultiCoinAddress", [])
-    let airDomain = getOrCreateAirDomain(domainId, block)
+    let airDomain = AirDomain.load(domainId)
+    if (!airDomain) {
+      log.debug("trackMultiCoinAddress, domainId not found, {} txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      return
+    }
     let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
     let airMultiCoin = AirMultiCoin.load(
       airResolver.id.concat("-").concat(coinType.toString())
@@ -516,7 +530,14 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     log.debug("trackAirTextChange", [])
-    let airDomain = getOrCreateAirDomain(domainId, block)
+    let airDomain = AirDomain.load(domainId)
+    if (!airDomain) {
+      log.debug("trackAirTextChange, domainId not found, {} txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      return
+    }
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
 
