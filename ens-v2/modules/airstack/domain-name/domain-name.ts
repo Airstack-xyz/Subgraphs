@@ -27,12 +27,24 @@ import {
   AirResolvedAddressChanged,
   AirDomainPrimarySet,
   AirDomainFusesSet,
+  AirEntityCounter,
 } from "../../../generated/schema"
 import {
   AIR_DOMAIN_CHANGED_ID,
+  AIR_DOMAIN_FUSES_SET_CHANGED_ID,
+  AIR_DOMAIN_NAME_UNWRAPPED_ID,
+  AIR_DOMAIN_NAME_WRAPPED_ID,
+  AIR_DOMAIN_NEW_TTL_CHANGED_ID,
+  AIR_DOMAIN_NEW_RESOLVER_ID,
+  AIR_DOMAIN_PRIMARY_SET_CHANGED_ID,
+  AIR_DOMAIN_REGISTRATION_OR_RENEW_CHANGED_ID,
+  AIR_RESOLVER_RESOLVED_ADDRESS_CHANGED_ID,
+  AIR_DOMAIN_TRANSFERED_ID,
   AIR_RESOLVER_CHANGED_ID,
   AIR_TEXT_CHANGED_ID,
   ROOT_NODE,
+  AIR_RESOLVER_TEXT_CHANGED_ID,
+  AIR_RESOLVER_MULTICOIN_ADDRESS_CHANGED_ID,
 } from "./utils"
 import {
   BIG_INT_ZERO,
@@ -190,6 +202,10 @@ export namespace domain {
     airBlock.save()
     airDomainTransferred.createdAt = airBlock.id
     airDomainTransferred.hash = txHash
+    airDomainTransferred.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_TRANSFERED_ID,
+      airBlock
+    )
     airDomainTransferred.save()
   }
 
@@ -295,14 +311,17 @@ export namespace domain {
     saveAirDomain(domain, block)
 
     // book keeping
-    let airDomainRegistration = new AirDomainRegistrationOrRenew(
-      createEventId(txHash, logIndex)
+    createAirDomainRegistrationOrRenew(
+      txHash,
+      logIndex,
+      false,
+      domain,
+      block.number,
+      BIG_INT_ZERO,
+      BIG_INT_ZERO,
+      ownerAirDomainAccount,
+      airBlock
     )
-    airDomainRegistration.domain = domain.id
-    airDomainRegistration.owner = ownerAirDomainAccount.id
-    airDomainRegistration.createdAt = airBlock.id
-    airDomainRegistration.hash = txHash
-    airDomainRegistration.save()
   }
 
   export function trackDomainNewResolver(
@@ -319,8 +338,6 @@ export namespace domain {
     let airDomain = getAirDomain(domainId)
     // create resolver
     let airResolver = getOrCreateAirResolver(domainId, resolver, block)
-    airResolver.domain = domainId
-    airResolver.resolverAddress = resolver
     saveAirResolver(airResolver, block)
     airDomain.resolver = airResolver.id
     saveAirDomain(airDomain, block)
@@ -334,6 +351,10 @@ export namespace domain {
     airDomainNewResolver.resolver = airResolver.id
     airDomainNewResolver.createdAt = airBlock.id
     airDomainNewResolver.hash = txHash
+    airDomainNewResolver.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_NEW_RESOLVER_ID,
+      airBlock
+    )
     airDomainNewResolver.save()
   }
   export function trackDomainNewTTL(
@@ -358,6 +379,10 @@ export namespace domain {
     airDomainNewTTL.ttl = ttl
     airDomainNewTTL.createdAt = airBlock.id
     airDomainNewTTL.hash = txHash
+    airDomainNewTTL.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_NEW_TTL_CHANGED_ID,
+      airBlock
+    )
     airDomainNewTTL.save()
   }
   export function trackResolvedAddress(
@@ -369,70 +394,67 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     log.debug("trackResolvedAddress", [])
+    let airDomain = getOrCreateAirDomain(domainId, block)
+    saveAirDomain(airDomain, block)
+    let resolvedDomainAccount = getOrCreateAirDomainAccount(
+      resolvedAddress,
+      block
+    )
+    let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
+    airResolver.resolvedAddress = resolvedDomainAccount.id
+    saveAirResolver(airResolver, block)
+    // whenever AirResolver gets saved, airDomain lastUpdatedIndex gets updated
+    // book keeping
 
-    let airDomain = AirDomain.load(domainId)
-    let resolverId = domainId.concat("-").concat(resolverAddress.toHexString())
-    if (airDomain && airDomain.resolver == resolverId) {
-      let resolvedDomainAccount = getOrCreateAirDomainAccount(
-        resolvedAddress,
-        block
-      )
+    let airResolvedAddressChanged = new AirResolvedAddressChanged(
+      txHash
+        .toHexString()
+        .concat("-")
+        .concat(logIndex.toString())
+    )
+    airResolvedAddressChanged.resolver = airResolver.id
+    let airBlock = getOrCreateAirBlock(block)
+    airResolvedAddressChanged.createdAt = airBlock.id
+    airResolvedAddressChanged.hash = txHash
+    airResolvedAddressChanged.resolvedAddress = resolvedDomainAccount.id
+    airResolvedAddressChanged.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_RESOLVER_RESOLVED_ADDRESS_CHANGED_ID,
+      airBlock
+    )
+    airResolvedAddressChanged.save()
 
-      let airResolver = AirResolver.load(resolverId)
-      if (!airResolver) {
-        throw new Error(
-          "AirResolver should not be empty,txHash +" + txHash.toHexString()
-        )
-      }
-      airResolver.resolvedAddress = resolvedDomainAccount.id
-      saveAirResolver(airResolver, block)
+    // update primary domain
+    let airPrimarySet = AirDomainPrimary.load(resolvedAddress.toHexString())
+    if (airPrimarySet) {
+      if (domainId == airPrimarySet.domain) {
+        if (!airDomain.isPrimary) {
+          log.debug(
+            "switching isPrimary back , resolverAddress {} resolvedAddress {} txHash {}",
+            [
+              resolverAddress.toHexString(),
+              resolvedAddress.toHexString(),
+              txHash.toHexString(),
+            ]
+          )
+          airDomain.isPrimary = true
+          saveAirDomain(airDomain, block)
 
-      // whenever AirResolver gets saved, airDomain lastUpdatedIndex gets updated
-      saveAirDomain(airDomain, block)
-      // book keeping
-
-      let airResolvedAddressChanged = new AirResolvedAddressChanged(
-        txHash
-          .toHexString()
-          .concat("-")
-          .concat(logIndex.toString())
-      )
-      airResolvedAddressChanged.resolver = airResolver.id
-      let airBlock = getOrCreateAirBlock(block)
-      airResolvedAddressChanged.createdAt = airBlock.id
-      airResolvedAddressChanged.hash = txHash
-      airResolvedAddressChanged.resolvedAddress = resolvedDomainAccount.id
-      airResolvedAddressChanged.save()
-
-      // update primary domain
-      let airPrimarySet = AirDomainPrimary.load(resolvedAddress.toHexString())
-      if (airPrimarySet) {
-        if (domainId == airPrimarySet.domain) {
-          if (!airDomain.isPrimary) {
-            log.debug(
-              "switching isPrimary back , resolverAddress {} resolvedAddress {} txHash {}",
-              [
-                resolverAddress.toHexString(),
-                resolvedAddress.toHexString(),
-                txHash.toHexString(),
-              ]
-            )
-            airDomain.isPrimary = true
-            saveAirDomain(airDomain, block)
-
-            // book keeping
-            let airDomainPrimarySet = new AirDomainPrimarySet(
-              createEventId(txHash, logIndex)
-                .concat("-")
-                .concat("AirDomainPrimarySet")
-            )
-            airDomainPrimarySet.domain = airDomain.id
-            let airBlock = getOrCreateAirBlock(block)
-            airDomainPrimarySet.createdAt = airBlock.id
-            airDomainPrimarySet.hash = txHash
-            airDomainPrimarySet.resolvedAddress = resolvedDomainAccount.id
-            airDomainPrimarySet.save()
-          }
+          // book keeping
+          let airDomainPrimarySet = new AirDomainPrimarySet(
+            createEventId(txHash, logIndex)
+              .concat("-")
+              .concat("AirDomainPrimarySet")
+          )
+          airDomainPrimarySet.domain = airDomain.id
+          let airBlock = getOrCreateAirBlock(block)
+          airDomainPrimarySet.createdAt = airBlock.id
+          airDomainPrimarySet.hash = txHash
+          airDomainPrimarySet.resolvedAddress = resolvedDomainAccount.id
+          airDomainPrimarySet.lastUpdatedIndex = updateAirEntityCounter(
+            AIR_DOMAIN_PRIMARY_SET_CHANGED_ID,
+            airBlock
+          )
+          airDomainPrimarySet.save()
         }
       }
     }
@@ -447,48 +469,42 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     log.debug("trackMultiCoinAddress", [])
-
-    let airDomain = AirDomain.load(domainId)
-    let resolverId = domainId.concat("-").concat(resolverAddress.toHexString())
-    if (airDomain && airDomain.resolver == resolverId) {
-      let airResolver = AirResolver.load(resolverId)
-      if (!airResolver) {
-        throw new Error(
-          "AirResolver should not be empty,txHash +" + txHash.toHexString()
-        )
-      }
-      let airMultiCoin = AirMultiCoin.load(
+    let airDomain = getOrCreateAirDomain(domainId, block)
+    let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
+    let airMultiCoin = AirMultiCoin.load(
+      airResolver.id.concat("-").concat(coinType.toString())
+    )
+    if (!airMultiCoin) {
+      airMultiCoin = new AirMultiCoin(
         airResolver.id.concat("-").concat(coinType.toString())
       )
-      if (!airMultiCoin) {
-        airMultiCoin = new AirMultiCoin(
-          airResolver.id.concat("-").concat(coinType.toString())
-        )
-      }
-      airMultiCoin.resolver = airResolver.id
-      airMultiCoin.coinType = coinType
-      airMultiCoin.address = newAddress
-      airMultiCoin.save()
-
-      saveAirResolver(airResolver, block)
-      saveAirDomain(airDomain, block)
-
-      // book keeping
-
-      let airMultiCoinChanged = new AirMultiCoinChanged(
-        txHash
-          .toHexString()
-          .concat("-")
-          .concat(logIndex.toString())
-      )
-      airMultiCoinChanged.resolver = airResolver.id
-      let airBlock = getOrCreateAirBlock(block)
-      airMultiCoinChanged.createdAt = airBlock.id
-      airMultiCoinChanged.hash = txHash
-      airMultiCoinChanged.coinType = coinType
-      airMultiCoinChanged.address = newAddress
-      airMultiCoinChanged.save()
     }
+    airMultiCoin.resolver = airResolver.id
+    airMultiCoin.coinType = coinType
+    airMultiCoin.address = newAddress
+    airMultiCoin.save()
+
+    saveAirResolver(airResolver, block)
+    saveAirDomain(airDomain, block)
+    // book keeping
+    let airMultiCoinChanged = new AirMultiCoinChanged(
+      txHash
+        .toHexString()
+        .concat("-")
+        .concat(logIndex.toString())
+    )
+    airMultiCoinChanged.resolver = airResolver.id
+    let airBlock = getOrCreateAirBlock(block)
+    airMultiCoinChanged.createdAt = airBlock.id
+    airMultiCoinChanged.hash = txHash
+    airMultiCoinChanged.coinType = coinType
+    airMultiCoinChanged.address = newAddress
+
+    airMultiCoinChanged.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_RESOLVER_MULTICOIN_ADDRESS_CHANGED_ID,
+      airBlock
+    )
+    airMultiCoinChanged.save()
   }
   export function trackAirTextChange(
     txHash: Bytes,
@@ -500,46 +516,42 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     log.debug("trackAirTextChange", [])
-    let airDomain = AirDomain.load(domainId)
-    let resolverId = domainId.concat("-").concat(resolverAddress.toHexString())
-    if (airDomain && airDomain.resolver == resolverId) {
-      let airBlock = getOrCreateAirBlock(block)
-      airBlock.save()
+    let airDomain = getOrCreateAirDomain(domainId, block)
+    let airBlock = getOrCreateAirBlock(block)
+    airBlock.save()
 
-      let airResolver = AirResolver.load(resolverId)
-      if (!airResolver) {
-        throw new Error(
-          "AirResolver should not be empty,txHash +" + txHash.toHexString()
-        )
-      }
-      let airText = AirText.load(airResolver.id.concat("-").concat(name))
-      if (!airText) {
-        airText = new AirText(airResolver.id.concat("-").concat(name))
-        airText.createdAt = airBlock.id
-      }
-      airText.resolver = airResolver.id
-      airText.name = name
-      airText.value = value
-      saveAirText(airText, block)
-
-      saveAirResolver(airResolver, block)
-
-      saveAirDomain(airDomain, block)
-
-      // book keeping
-      let airTextChanged = new AirTextChanged(
-        txHash
-          .toHexString()
-          .concat("-")
-          .concat(logIndex.toString())
-      )
-      airTextChanged.resolver = airResolver.id
-      airTextChanged.createdAt = airBlock.id
-      airTextChanged.hash = txHash
-      airTextChanged.name = name
-      airTextChanged.value = value
-      airTextChanged.save()
+    let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
+    let airText = AirText.load(airResolver.id.concat("-").concat(name))
+    if (!airText) {
+      airText = new AirText(airResolver.id.concat("-").concat(name))
+      airText.createdAt = airBlock.id
     }
+    airText.resolver = airResolver.id
+    airText.name = name
+    airText.value = value
+    saveAirText(airText, block)
+
+    saveAirResolver(airResolver, block)
+
+    saveAirDomain(airDomain, block)
+
+    // book keeping
+    let airTextChanged = new AirTextChanged(
+      txHash
+        .toHexString()
+        .concat("-")
+        .concat(logIndex.toString())
+    )
+    airTextChanged.resolver = airResolver.id
+    airTextChanged.createdAt = airBlock.id
+    airTextChanged.hash = txHash
+    airTextChanged.name = name
+    airTextChanged.value = value
+    airTextChanged.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_RESOLVER_TEXT_CHANGED_ID,
+      airBlock
+    )
+    airTextChanged.save()
   }
 
   export function trackAirDomainRegistrationDateAndCost(
@@ -563,18 +575,20 @@ export namespace domain {
     // book keeping
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
-    let airDomainRegistration = new AirDomainRegistrationOrRenew(
-      createEventId(txHash, logIndex)
-    )
-    airDomainRegistration.domain = airDomain.id
     let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
-    airDomainRegistration.owner = ownerDomainAccount.id
-    airDomainRegistration.createdAt = airBlock.id
-    airDomainRegistration.hash = txHash
-    airDomainRegistration.isRenew = false
-    airDomainRegistration.cost = cost
-    airDomainRegistration.registrationDate = registrationDate
-    airDomainRegistration.save()
+    ownerDomainAccount.save()
+
+    createAirDomainRegistrationOrRenew(
+      txHash,
+      logIndex,
+      false,
+      airDomain,
+      registrationDate,
+      BIG_INT_ZERO,
+      cost,
+      ownerDomainAccount,
+      airBlock
+    )
   }
   export function trackAirDomainRegistrationExpiry(
     tokenAddress: Address,
@@ -595,21 +609,26 @@ export namespace domain {
     airToken.save()
     airDomain.tokenAddress = airToken.id
     airDomain.expiryDate = expiryDate
+    airDomain.tokenId = tokenId.toString()
     saveAirDomain(airDomain, block)
 
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
     // book keeping
-    let airDomainRegistration = new AirDomainRegistrationOrRenew(
-      createEventId(txHash, logIndex)
-    )
+
     let ownerAirDomainAccount = getOrCreateAirDomainAccount(owner, block)
-    airDomainRegistration.domain = airDomain.id
-    airDomainRegistration.owner = ownerAirDomainAccount.id
-    airDomainRegistration.createdAt = airBlock.id
-    airDomainRegistration.hash = txHash
-    airDomainRegistration.isRenew = false
-    airDomainRegistration.save()
+    ownerAirDomainAccount.save()
+    createAirDomainRegistrationOrRenew(
+      txHash,
+      logIndex,
+      false,
+      airDomain,
+      block.number,
+      expiryDate,
+      BIG_INT_ZERO,
+      ownerAirDomainAccount,
+      airBlock
+    )
   }
   export function trackAirDomainRegistrationNameRenewed(
     tokenAddress: Address,
@@ -629,21 +648,24 @@ export namespace domain {
     let airToken = getOrCreateAirToken(getChainId(), tokenAddress.toHexString())
     airToken.save()
     airDomain.tokenAddress = airToken.id
+    airDomain.tokenId = tokenId.toString()
     airDomain.expiryDate = expiryDate
     saveAirDomain(airDomain, block)
 
     let renewerDomainAccount = getOrCreateAirDomainAccount(renewer, block)
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
-    let airDomainRegistration = new AirDomainRegistrationOrRenew(
-      createEventId(txHash, logIndex)
+    createAirDomainRegistrationOrRenew(
+      txHash,
+      logIndex,
+      true,
+      airDomain,
+      BIG_INT_ZERO,
+      expiryDate,
+      BIG_INT_ZERO,
+      renewerDomainAccount,
+      airBlock
     )
-    airDomainRegistration.domain = airDomain.id
-    airDomainRegistration.owner = renewerDomainAccount.id
-    airDomainRegistration.createdAt = airBlock.id
-    airDomainRegistration.hash = txHash
-    airDomainRegistration.isRenew = true
-    airDomainRegistration.save()
   }
   export function trackAirDomainOwnershipTransfer(
     tokenAddress: Address,
@@ -716,15 +738,17 @@ export namespace domain {
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
 
-    let airDomainRegistration = new AirDomainRegistrationOrRenew(
-      createEventId(txHash, logIndex)
+    createAirDomainRegistrationOrRenew(
+      txHash,
+      logIndex,
+      false,
+      airDomain,
+      BIG_INT_ZERO,
+      expiryDate,
+      cost,
+      ownerDomainAccount,
+      airBlock
     )
-    airDomainRegistration.domain = airDomain.id
-    airDomainRegistration.owner = ownerDomainAccount.id
-    airDomainRegistration.createdAt = airBlock.id
-    airDomainRegistration.hash = txHash
-    airDomainRegistration.isRenew = false
-    airDomainRegistration.save()
   }
   export function trackAirDomainFusesSet(
     txHash: Bytes,
@@ -746,6 +770,10 @@ export namespace domain {
     airDomainFusesSet.createdAt = airBlock.id
     airDomainFusesSet.hash = txHash
     airDomainFusesSet.fuses = fuses
+    airDomainFusesSet.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_FUSES_SET_CHANGED_ID,
+      airBlock
+    )
     airDomainFusesSet.save()
   }
   export function trackAirDomainExpiryExtended(
@@ -764,15 +792,17 @@ export namespace domain {
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
 
-    let airDomainRegistration = new AirDomainRegistrationOrRenew(
-      createEventId(txHash, logIndex)
+    createAirDomainRegistrationOrRenew(
+      txHash,
+      logIndex,
+      true,
+      airDomain,
+      block.timestamp,
+      expiry,
+      BIG_INT_ZERO,
+      ownerDomainAccount,
+      airBlock
     )
-    airDomainRegistration.domain = airDomain.id
-    airDomainRegistration.owner = ownerDomainAccount.id
-    airDomainRegistration.createdAt = airBlock.id
-    airDomainRegistration.hash = txHash
-    airDomainRegistration.isRenew = true
-    airDomainRegistration.save()
   }
   export function trackAirDomainRenewalNameCostExpiry(
     domainId: string,
@@ -802,15 +832,17 @@ export namespace domain {
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
 
-    let airDomainRegistration = new AirDomainRegistrationOrRenew(
-      createEventId(txHash, logIndex)
+    createAirDomainRegistrationOrRenew(
+      txHash,
+      logIndex,
+      true,
+      airDomain,
+      BIG_INT_ZERO,
+      expiryDate,
+      BIG_INT_ZERO,
+      ownerDomainAccount,
+      airBlock
     )
-    airDomainRegistration.domain = airDomain.id
-    airDomainRegistration.owner = ownerDomainAccount.id
-    airDomainRegistration.createdAt = airBlock.id
-    airDomainRegistration.hash = txHash
-    airDomainRegistration.isRenew = true
-    airDomainRegistration.save()
   }
 
   export function trackNameWrapped(
@@ -854,6 +886,10 @@ export namespace domain {
     airDomainNameWrapped.owner = ownerDomainAccount.id
     airDomainNameWrapped.expiryDate = expiryDate
     airDomainNameWrapped.fuses = fuses
+    airDomainNameWrapped.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_NAME_WRAPPED_ID,
+      airBlock
+    )
     airDomainNameWrapped.save()
   }
   export function trackNameUnwrapped(
@@ -885,6 +921,10 @@ export namespace domain {
     let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
 
     airDomainNameUnwrapped.owner = ownerDomainAccount.id
+    airDomainNameUnwrapped.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_NAME_UNWRAPPED_ID,
+      airBlock
+    )
     airDomainNameUnwrapped.save()
   }
 
@@ -944,6 +984,10 @@ export namespace domain {
     airDomainPrimarySet.createdAt = airBlock.id
     airDomainPrimarySet.hash = txHash
     airDomainPrimarySet.resolvedAddress = airDomainAccount.id
+    airDomainPrimarySet.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_PRIMARY_SET_CHANGED_ID,
+      airBlock
+    )
     airDomainPrimarySet.save()
   }
 
@@ -957,6 +1001,7 @@ export namespace domain {
     let airResolver = AirResolver.load(id)
     if (!airResolver) {
       airResolver = new AirResolver(id)
+      airResolver.domain = domainId
       airResolver.createdAt = airBlock.id
       airResolver.resolverAddress = resolverAddress
     }
@@ -977,28 +1022,39 @@ export namespace domain {
     resolver.save()
   }
 
-  export function getAirResolver(
-    domainId: string,
-    resolverAddress: Address,
-    throwErr: bool
-  ): AirResolver | null {
-    let resolverId = domainId.concat("-").concat(resolverAddress.toHexString())
-    let airResolver = AirResolver.load(resolverId)
-    if (!airResolver && throwErr) {
-      throw new Error(
-        "Resolver not found,domainId: " +
-          domainId +
-          ", resolverAdress: " +
-          resolverAddress.toHexString()
-      )
-    }
-    return airResolver
-  }
-
   function createEventId(txHash: Bytes, logIndex: BigInt): string {
     return txHash
       .toHexString()
       .concat("-")
       .concat(logIndex.toString())
+  }
+
+  function createAirDomainRegistrationOrRenew(
+    txHash: Bytes,
+    logIndex: BigInt,
+    isRenew: boolean,
+    domain: AirDomain,
+    registrationDate: BigInt,
+    expiryDate: BigInt,
+    cost: BigInt,
+    owner: AirDomainAccount,
+    block: AirBlock
+  ): void {
+    let airDomainRegistrationOrRenew = new AirDomainRegistrationOrRenew(
+      createEventId(txHash, logIndex)
+    )
+    airDomainRegistrationOrRenew.isRenew = isRenew
+    airDomainRegistrationOrRenew.hash = txHash
+    airDomainRegistrationOrRenew.domain = domain.id
+    airDomainRegistrationOrRenew.registrationDate = registrationDate
+    airDomainRegistrationOrRenew.expiryDate = expiryDate
+    airDomainRegistrationOrRenew.cost = cost
+    airDomainRegistrationOrRenew.owner = owner.id
+    airDomainRegistrationOrRenew.createdAt = block.id
+    airDomainRegistrationOrRenew.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_REGISTRATION_OR_RENEW_CHANGED_ID,
+      block
+    )
+    airDomainRegistrationOrRenew.save()
   }
 }

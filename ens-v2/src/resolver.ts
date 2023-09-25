@@ -6,7 +6,6 @@ import {
   AddressChanged,
 } from "../generated/templates/ResolverTemplate/Resolver"
 import * as airstack from "../modules/airstack/domain-name"
-import { createEventID } from "./utils"
 
 export function handleAddrChanged(event: AddrChanged): void {
   const txHash = event.transaction.hash
