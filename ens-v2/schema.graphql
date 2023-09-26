@@ -80,7 +80,7 @@ type AirDomain @entity {
   "The number of subdomains"
   subdomainCount: BigInt!
   "The account that manager the domain"
-  manager: AirDomainAccount!
+  manager: AirDomainAccount
   "The account that owns the ERC721 NFT for the domain"
   owner: AirDomainAccount
   "The resolver that controls the domain's settings"
@@ -110,7 +110,7 @@ type AirDomainRegistrationOrRenew implements AirDomainEvent @entity {
   "domainId +-+ hash"
   id: ID!
   "The unique identifier of the renewal or registration(label ?)"
-  isRenew: Boolean
+  isRenew: Boolean!
   "hash"
   hash: Bytes!
   "The domain name associated with the registration"
@@ -126,6 +126,7 @@ type AirDomainRegistrationOrRenew implements AirDomainEvent @entity {
   #"The human-readable label name associated with the domain registration"
   #labelName: String
   createdAt: AirBlock!
+  lastUpdatedIndex: BigInt!
 }
 
 interface AirDomainEvent {
@@ -138,6 +139,8 @@ interface AirDomainEvent {
 
   "The transaction hash associated with the event"
   hash: Bytes!
+
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainFusesSet implements AirDomainEvent @entity {
@@ -153,6 +156,8 @@ type AirDomainFusesSet implements AirDomainEvent @entity {
 
   "fuses set from namewrapper"
   fuses: BigInt!
+
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainPrimarySet implements AirDomainEvent @entity {
@@ -168,6 +173,8 @@ type AirDomainPrimarySet implements AirDomainEvent @entity {
 
   "resolvedAddress which sets it as primary"
   resolvedAddress: AirDomainAccount!
+
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainNewResolver implements AirDomainEvent @entity {
@@ -184,6 +191,8 @@ type AirDomainNewResolver implements AirDomainEvent @entity {
 
   "The transaction hash associated with the event"
   hash: Bytes!
+
+  lastUpdatedIndex: BigInt!
 }
 type AirDomainNewTTL implements AirDomainEvent @entity {
   "hash + logIndex"
@@ -199,6 +208,8 @@ type AirDomainNewTTL implements AirDomainEvent @entity {
 
   "The transaction hash associated with the event"
   hash: Bytes!
+
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainNameWrapped implements AirDomainEvent @entity {
@@ -219,6 +230,8 @@ type AirDomainNameWrapped implements AirDomainEvent @entity {
   expiryDate: BigInt!
 
   fuses: BigInt!
+
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainNameUnwrapped implements AirDomainEvent @entity {
@@ -235,9 +248,11 @@ type AirDomainNameUnwrapped implements AirDomainEvent @entity {
 
   "The transaction hash associated with the event"
   hash: Bytes!
+
+  lastUpdatedIndex: BigInt!
 }
 
-type AirDomainTransferred implements AirDomainEvent @entity {
+type AirDomainOwnershipChanged implements AirDomainEvent @entity {
   "hash + logIndex"
   id: ID!
   "The registration associated with the event"
@@ -254,6 +269,29 @@ type AirDomainTransferred implements AirDomainEvent @entity {
 
   "The transaction hash associated with the event"
   hash: Bytes!
+
+  lastUpdatedIndex: BigInt!
+}
+
+type AirDomainManagerChanged implements AirDomainEvent @entity {
+  "hash + logIndex"
+  id: ID!
+  "The registration associated with the event"
+  domain: AirDomain!
+
+  "The account of new owner"
+  newOwner: AirDomainAccount!
+
+  "The account of old owner"
+  oldOwner: AirDomainAccount!
+
+  "The block number of the event"
+  createdAt: AirBlock!
+
+  "The transaction hash associated with the event"
+  hash: Bytes!
+
+  lastUpdatedIndex: BigInt!
 }
 
 interface AirResolverEvent {
@@ -266,6 +304,8 @@ interface AirResolverEvent {
 
   "The transaction hash associated with the event"
   hash: Bytes!
+
+  lastUpdatedIndex: BigInt!
 }
 
 type AirResolvedAddressChanged implements AirResolverEvent @entity {
@@ -280,6 +320,8 @@ type AirResolvedAddressChanged implements AirResolverEvent @entity {
   hash: Bytes!
 
   resolvedAddress: AirDomainAccount!
+
+  lastUpdatedIndex: BigInt!
 }
 
 type AirTextChanged implements AirResolverEvent @entity {
@@ -296,6 +338,8 @@ type AirTextChanged implements AirResolverEvent @entity {
   name: String!
 
   value: String!
+
+  lastUpdatedIndex: BigInt!
 }
 
 type AirMultiCoinChanged implements AirResolverEvent @entity {
@@ -312,6 +356,8 @@ type AirMultiCoinChanged implements AirResolverEvent @entity {
   coinType: BigInt!
   "address it points to"
   address: Bytes!
+
+  lastUpdatedIndex: BigInt!
 }
 
 type AirResolver @entity {
