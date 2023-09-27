@@ -1,0 +1,27 @@
+name: Create subgraph
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install graph-cli
+      run: |
+        sudo yarn global add @graphprotocol/graph-cli
+        
+    - name: Install yq
+      run: |
+        sudo add-apt-repository ppa:rmescandon/yq
+        sudo apt update
+        sudo apt install yq -y
+        yq --version
+
+    - name: Read sub.folder.name from folder.yaml and create subgraph
+      run: |
+        FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
+        graph create --node http://graph-indexer-prod.airstack.xyz/$FOLDER_NAME
