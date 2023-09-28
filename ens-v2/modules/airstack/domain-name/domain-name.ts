@@ -368,13 +368,21 @@ export namespace domain {
       logIndex.toString(),
     ])
     let airDomain = getAirDomain(domainId)
+    let resolverId: string | null
     // create resolver
-    let airResolver = getOrCreateAirResolver(domainId, resolver, block)
-    airResolver.domain = domainId
-    airResolver.resolverAddress = resolver
-    saveAirResolver(airResolver, block)
-    airDomain.resolver = airResolver.id
-    saveAirDomain(airDomain, block)
+    if (resolver.equals(Address.zero())) {
+      resolverId = null
+      airDomain.resolver = null
+      saveAirDomain(airDomain, block)
+    } else {
+      let airResolver = getOrCreateAirResolver(domainId, resolver, block)
+      airResolver.domain = domainId
+      airResolver.resolverAddress = resolver
+      saveAirResolver(airResolver, block)
+      airDomain.resolver = airResolver.id
+      saveAirDomain(airDomain, block)
+      resolverId = airResolver.id
+    }
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
     // book keeping
@@ -382,7 +390,7 @@ export namespace domain {
       createEventId("AirDomainNewResolver", txHash, logIndex)
     )
     airDomainNewResolver.domain = airDomain.id
-    airDomainNewResolver.resolver = airResolver.id
+    airDomainNewResolver.resolver = resolverId
     airDomainNewResolver.createdAt = airBlock.id
     airDomainNewResolver.hash = txHash
     airDomainNewResolver.lastUpdatedIndex = updateAirEntityCounter(

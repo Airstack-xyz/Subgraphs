@@ -184,7 +184,7 @@ type AirDomainNewResolver implements AirDomainEvent @entity {
   domain: AirDomain!
 
   "resolver"
-  resolver: AirResolver!
+  resolver: AirResolver
 
   "The block number of the event"
   createdAt: AirBlock!
