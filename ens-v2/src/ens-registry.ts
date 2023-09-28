@@ -54,9 +54,15 @@ export const _handleTransfer = (
   if (txHash.toHexString().toLowerCase() == ROOT_NODE_INITIAL_TRANSFER_HASH) {
     // added here because root node transfer happens before NewOwner
     // https://etherscan.io/tx/0xe120d656744084c3906a59013ec2bcaf35bda6b3cc770f2001acd4c15efbd353
-    airstack.domain.createAirDomainWithOwner(node.toHexString(), owner, block)
+    airstack.domain.createAirDomainWithManager(
+      txHash,
+      logIndex,
+      node.toHexString(),
+      owner,
+      block
+    )
   }
-  airstack.domain.trackAirDomainTransfer(
+  airstack.domain.trackAirDomainManagerTransfer(
     txHash,
     logIndex,
     from,
@@ -89,7 +95,7 @@ export const _handleNewOwner = (
   }
   // attempt to build child name
   let labelName = tryFindNamebyHash(label)
-  airstack.domain.trackSubDomainNewOwner(
+  airstack.domain.trackSubDomainNewManager(
     txHash,
     logIndex,
     parentDomainId,

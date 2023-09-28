@@ -105,20 +105,38 @@ export namespace domain {
     return blockEntity as AirBlock
   }
 
-  export function createAirDomainWithOwner(
+  export function createAirDomainWithManager(
+    txHash: Bytes,
+    logIndex: BigInt,
     domainId: string,
-    owner: Address,
+    manager: Address,
     block: ethereum.Block
   ): void {
-    let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
+    let managerDomainAccount = getOrCreateAirDomainAccount(manager, block)
     let domain = getOrCreateAirDomain(domainId, block)
     let labelName = getOrCreateAirLabelName(ROOT_NODE, ROOT_NODE, block)
     domain.labelName = labelName.id
     domain.name = [labelName.id]
     domain.encodedName = ""
-    domain.manager = ownerDomainAccount.id
+    domain.manager = managerDomainAccount.id
     saveAirLabelName(labelName, block)
     saveAirDomain(domain, block)
+
+    // book keeping
+    let airDomainManagerChanged = new AirDomainManagerChanged(
+      createEventId("AirDomainManagerChanged", txHash, logIndex)
+    )
+    airDomainManagerChanged.domain = domain.id
+    airDomainManagerChanged.newManager = managerDomainAccount.id
+    let airBlock = getOrCreateAirBlock(block)
+    airBlock.save()
+    airDomainManagerChanged.createdAt = airBlock.id
+    airDomainManagerChanged.hash = txHash
+    airDomainManagerChanged.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_MANAGER_CHANGED_ID,
+      airBlock
+    )
+    airDomainManagerChanged.save()
   }
 
   export function getOrCreateAirDomain(
@@ -172,33 +190,33 @@ export namespace domain {
     return airDomainAccount
   }
 
-  export function trackAirDomainTransfer(
+  export function trackAirDomainManagerTransfer(
     txHash: Bytes,
     logIndex: BigInt,
-    oldOwner: Address,
-    newOwner: Address,
+    oldManager: Address,
+    newManager: Address,
     domainId: string,
     block: ethereum.Block
   ): void {
-    log.debug("trackAirDomainTransfer txHash {} logIndex {}", [
+    log.debug("trackAirDomainManagerTransfer txHash {} logIndex {}", [
       txHash.toHexString(),
       logIndex.toString(),
     ])
-    let oldOwnerDomainAccount = getOrCreateAirDomainAccount(oldOwner, block)
-    let newOwnerDomainAccount = getOrCreateAirDomainAccount(newOwner, block)
+    let oldManagerDomainAccount = getOrCreateAirDomainAccount(oldManager, block)
+    let newManagerDomainAccount = getOrCreateAirDomainAccount(newManager, block)
     let airDomain = AirDomain.load(domainId)
     if (!airDomain) {
       throw new Error("Domain not found,domainId: " + domainId)
     }
-    airDomain.manager = newOwnerDomainAccount.id
+    airDomain.manager = newManagerDomainAccount.id
     saveAirDomain(airDomain, block)
     // book keeping
     let airDomainManagerChanged = new AirDomainManagerChanged(
-      createEventId(txHash, logIndex)
+      createEventId("AirDomainManagerChanged", txHash, logIndex)
     )
     airDomainManagerChanged.domain = airDomain.id
-    airDomainManagerChanged.newOwner = newOwnerDomainAccount.id
-    airDomainManagerChanged.oldOwner = oldOwnerDomainAccount.id
+    airDomainManagerChanged.newManager = newManagerDomainAccount.id
+    airDomainManagerChanged.oldManager = oldManagerDomainAccount.id
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
     airDomainManagerChanged.createdAt = airBlock.id
@@ -262,17 +280,17 @@ export namespace domain {
   //  * @param block
   //  */
 
-  export function trackSubDomainNewOwner(
+  export function trackSubDomainNewManager(
     txHash: Bytes,
     logIndex: BigInt,
     parentDomainId: string,
     domainId: string,
     labelHash: string,
     labelName: string,
-    owner: Address,
+    manager: Address,
     block: ethereum.Block
   ): void {
-    log.debug("trackSubDomainNewOwner txHash {} logIndex {}", [
+    log.debug("trackSubDomainNewManager txHash {} logIndex {}", [
       txHash.toHexString(),
       logIndex.toString(),
     ])
@@ -302,13 +320,12 @@ export namespace domain {
     domain.labelName = airLabelName.id
     saveAirLabelName(airLabelName, block)
 
-    let ownerAirDomainAccount = getOrCreateAirDomainAccount(owner, block)
-    ownerAirDomainAccount.save()
-    domain.manager = ownerAirDomainAccount.id
+    let managerAirDomainAccount = getOrCreateAirDomainAccount(manager, block)
+    managerAirDomainAccount.save()
+    domain.manager = managerAirDomainAccount.id
     domain.isPrimary = false
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
-    domain.createdAt = airBlock.id
     saveAirDomain(domain, block)
 
     // book keeping
@@ -320,9 +337,22 @@ export namespace domain {
       BIG_INT_ZERO,
       BIG_INT_ZERO,
       BIG_INT_ZERO,
-      ownerAirDomainAccount,
+      managerAirDomainAccount,
       airBlock
     )
+    // book keeping
+    let airDomainManagerChanged = new AirDomainManagerChanged(
+      createEventId("AirDomainManagerChanged", txHash, logIndex)
+    )
+    airDomainManagerChanged.domain = domain.id
+    airDomainManagerChanged.newManager = managerAirDomainAccount.id
+    airDomainManagerChanged.createdAt = airBlock.id
+    airDomainManagerChanged.hash = txHash
+    airDomainManagerChanged.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_MANAGER_CHANGED_ID,
+      airBlock
+    )
+    airDomainManagerChanged.save()
   }
 
   export function trackDomainNewResolver(
@@ -348,7 +378,7 @@ export namespace domain {
     airBlock.save()
     // book keeping
     let airDomainNewResolver = new AirDomainNewResolver(
-      createEventId(txHash, logIndex)
+      createEventId("AirDomainNewResolver", txHash, logIndex)
     )
     airDomainNewResolver.domain = airDomain.id
     airDomainNewResolver.resolver = airResolver.id
@@ -377,7 +407,9 @@ export namespace domain {
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
     // book keeping
-    let airDomainNewTTL = new AirDomainNewTTL(createEventId(txHash, logIndex))
+    let airDomainNewTTL = new AirDomainNewTTL(
+      createEventId("AirDomainNewTTL", txHash, logIndex)
+    )
     airDomainNewTTL.domain = airDomain.id
     airDomainNewTTL.ttl = ttl
     airDomainNewTTL.createdAt = airBlock.id
@@ -454,9 +486,7 @@ export namespace domain {
 
             // book keeping
             let airDomainPrimarySet = new AirDomainPrimarySet(
-              createEventId(txHash, logIndex)
-                .concat("-")
-                .concat("AirDomainPrimarySet")
+              createEventId("AirDomainPrimarySet", txHash, logIndex)
             )
             airDomainPrimarySet.domain = airDomain.id
             let airBlock = getOrCreateAirBlock(block)
@@ -620,7 +650,7 @@ export namespace domain {
       airBlock
     )
   }
-  export function trackAirDomainRegistrationExpiry(
+  export function trackAirDomainOwnershipRegistrationAndExpiry(
     tokenAddress: Address,
     tokenId: BigInt,
     domainId: string,
@@ -634,9 +664,11 @@ export namespace domain {
       txHash.toHexString(),
       logIndex.toString(),
     ])
+    let ownerAirDomainAccount = getOrCreateAirDomainAccount(owner, block)
     let airDomain = getAirDomain(domainId)
     let airToken = getOrCreateAirToken(getChainId(), tokenAddress.toHexString())
     airToken.save()
+    airDomain.owner = ownerAirDomainAccount.id
     airDomain.tokenAddress = airToken.id
     airDomain.tokenId = tokenId.toString()
     airDomain.expiryDate = expiryDate
@@ -645,7 +677,6 @@ export namespace domain {
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
     // book keeping
-    let ownerAirDomainAccount = getOrCreateAirDomainAccount(owner, block)
     createAirDomainRegistrationOrRenew(
       txHash,
       logIndex,
@@ -793,7 +824,7 @@ export namespace domain {
     airBlock.save()
     // book keeping
     let airDomainFusesSet = new AirDomainFusesSet(
-      createEventId(txHash, logIndex)
+      createEventId("AirDomainFusesSet", txHash, logIndex)
     )
     airDomainFusesSet.domain = airDomain.id
     airDomainFusesSet.createdAt = airBlock.id
@@ -1004,9 +1035,7 @@ export namespace domain {
     let airDomainAccount = getOrCreateAirDomainAccount(resolvedAddress, block)
     // book keeping
     let airDomainPrimarySet = new AirDomainPrimarySet(
-      createEventId(txHash, logOrCallIndex)
-        .concat("-")
-        .concat("AirDomainPrimarySet")
+      createEventId("AirDomainPrimarySet", txHash, logOrCallIndex)
     )
     airDomainPrimarySet.domain = airDomain.id
     let airBlock = getOrCreateAirBlock(block)
@@ -1051,9 +1080,14 @@ export namespace domain {
     resolver.save()
   }
 
-  function createEventId(txHash: Bytes, logIndex: BigInt): string {
-    return txHash
-      .toHexString()
+  function createEventId(
+    entityName: string,
+    txHash: Bytes,
+    logIndex: BigInt
+  ): string {
+    return entityName
+      .concat("-")
+      .concat(txHash.toHexString())
       .concat("-")
       .concat(logIndex.toString())
   }
@@ -1070,7 +1104,7 @@ export namespace domain {
     block: AirBlock
   ): void {
     let airDomainRegistrationOrRenew = new AirDomainRegistrationOrRenew(
-      createEventId(txHash, logIndex)
+      createEventId("AirDomainRegistrationOrRenew", txHash, logIndex)
     )
     airDomainRegistrationOrRenew.isRenew = isRenew
     airDomainRegistrationOrRenew.hash = txHash

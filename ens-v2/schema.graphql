@@ -262,7 +262,7 @@ type AirDomainOwnershipChanged implements AirDomainEvent @entity {
   newOwner: AirDomainAccount!
 
   "The account of old owner"
-  oldOwner: AirDomainAccount!
+  oldOwner: AirDomainAccount
 
   "The block number of the event"
   createdAt: AirBlock!
@@ -279,11 +279,11 @@ type AirDomainManagerChanged implements AirDomainEvent @entity {
   "The registration associated with the event"
   domain: AirDomain!
 
-  "The account of new owner"
-  newOwner: AirDomainAccount!
+  "The account of new manager"
+  newManager: AirDomainAccount!
 
   "The account of old owner"
-  oldOwner: AirDomainAccount!
+  oldManager: AirDomainAccount
 
   "The block number of the event"
   createdAt: AirBlock!
