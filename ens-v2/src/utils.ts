@@ -30,6 +30,9 @@ export const ADDR_REVERSE_NODE =
   "0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2"
 export const ethNode: ByteArray = byteArrayFromHex(ETH_NODE)
 export const rootNode: ByteArray = byteArrayFromHex(ROOT_NODE)
+
+export const GRACE_PERIOD_SECONDS = BigInt.fromI32(7776000) // 90 days
+
 /**
  * Helper for concatenating two byte arrays
  * @param a ByteArray

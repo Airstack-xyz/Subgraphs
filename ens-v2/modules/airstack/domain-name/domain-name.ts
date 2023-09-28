@@ -55,7 +55,8 @@ import {
   BIGINT_ONE,
   getOrCreateAirToken,
 } from "../common"
-
+const ETH_NODE_STR =
+  "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae"
 export namespace domain {
   export function getAirDomain(domainId: string): AirDomain {
     let airDomain = AirDomain.load(domainId)
@@ -928,6 +929,7 @@ export namespace domain {
     airDomain.fuses = fuses
     airDomain.isNameWrapped = true
     airDomain.expiryDate = expiryDate
+
     saveAirDomain(airDomain, block)
 
     let airBlock = getOrCreateAirBlock(block)
@@ -962,6 +964,9 @@ export namespace domain {
     log.debug("trackNameUnwrapped ", [])
     let airDomain = getAirDomain(domainId)
     airDomain.isNameWrapped = false
+    if (airDomain.expiryDate && airDomain.parent !== ETH_NODE_STR) {
+      airDomain.expiryDate = null
+    }
     saveAirDomain(airDomain, block)
 
     // book keeping

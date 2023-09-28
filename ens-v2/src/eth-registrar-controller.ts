@@ -18,7 +18,12 @@ import {
   NameRenewed as NameRenewedTemplate,
 } from "../generated/templates/ETHRegistrarControllerTemplate/ETHRegistrarController"
 import * as airstack from "../modules/airstack/domain-name"
-import { checkValidLabel, getNameHashFromByteArray, ethNode } from "./utils"
+import {
+  checkValidLabel,
+  getNameHashFromByteArray,
+  ethNode,
+  GRACE_PERIOD_SECONDS,
+} from "./utils"
 import { ControllerRemoved, InvalidName } from "../generated/schema"
 
 export const _handleNameRegistered = (
@@ -49,7 +54,7 @@ export const _handleNameRegistered = (
     name,
     label,
     cost,
-    expires,
+    expires.plus(GRACE_PERIOD_SECONDS),
     owner,
     txHash,
     logIndex,
@@ -85,7 +90,7 @@ export const _handleNameRenewed = (
     name,
     label,
     cost,
-    expires,
+    expires.plus(GRACE_PERIOD_SECONDS),
     from,
     txHash,
     logIndex,

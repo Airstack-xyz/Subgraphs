@@ -18,6 +18,7 @@ import {
   uint256ToByteArray,
   getNameHashFromByteArray,
   ethNode,
+  GRACE_PERIOD_SECONDS,
 } from "./utils"
 import { ControllerRemoved, NewOwnerHashLabelMap } from "../generated/schema"
 import * as airstack from "../modules/airstack/domain-name"
@@ -58,7 +59,7 @@ export const _handleNameRegistered = (
     tokenAddress,
     id,
     hashlabelMap.domainId,
-    expires,
+    expires.plus(GRACE_PERIOD_SECONDS),
     txHash,
     owner,
     block,
@@ -81,7 +82,7 @@ export const _handleNameRenewed = (
     tokenAddress,
     id,
     domainId,
-    expires,
+    expires.plus(GRACE_PERIOD_SECONDS),
     txHash,
     from,
     block,
@@ -151,7 +152,7 @@ export function handleNameRegistered1(event: NameRegistered1): void {
     txHash,
     block,
     id,
-    expires,
+    expires.plus(GRACE_PERIOD_SECONDS),
     owner,
     event.logIndex
   )
