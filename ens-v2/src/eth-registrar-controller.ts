@@ -48,18 +48,9 @@ export const _handleNameRegistered = (
     invalidName.save()
     return
   }
+  airstack.domain.trackAirLabelName(name, label.toHexString(), block)
   const domainId = getNameHashFromByteArray(ethNode, label)
-  airstack.domain.trackAirDomainRegistrationNameCostExpiry(
-    domainId,
-    name,
-    label,
-    cost,
-    expires.plus(GRACE_PERIOD_SECONDS),
-    owner,
-    txHash,
-    logIndex,
-    block
-  )
+  airstack.domain.trackAirDomainCost(domainId, cost, txHash, logIndex, block)
 }
 
 export const _handleNameRenewed = (
@@ -84,18 +75,9 @@ export const _handleNameRenewed = (
     invalidName.save()
     return
   }
+  airstack.domain.trackAirLabelName(name, label.toHexString(), block)
   const domainId = getNameHashFromByteArray(ethNode, label)
-  airstack.domain.trackAirDomainRenewalNameCostExpiry(
-    domainId,
-    name,
-    label,
-    cost,
-    expires.plus(GRACE_PERIOD_SECONDS),
-    from,
-    txHash,
-    logIndex,
-    block
-  )
+  airstack.domain.trackAirDomainCost(domainId, cost, txHash, logIndex, block)
 }
 
 export function handleNameRegistered1(event: NameRegistered1): void {

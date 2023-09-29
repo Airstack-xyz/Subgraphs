@@ -39,14 +39,13 @@ export const _handleNameRegistered = (
     invalidName.save()
     return
   }
+  // saving airLabelName  fixing
+  airstack.domain.trackAirLabelName(name, label.toHexString(), block)
   const domainId = getNameHashFromByteArray(ethNode, label)
-  airstack.domain.trackAirDomainRegistrationNameCostExpiry(
+
+  airstack.domain.trackAirDomainCost(
     domainId,
-    name,
-    label,
     baseCost.plus(premium),
-    expires.plus(GRACE_PERIOD_SECONDS),
-    owner,
     txhash,
     logIndex,
     block
@@ -75,18 +74,10 @@ export const _handleNameRenewed = (
     invalidName.save()
     return
   }
+  // saving airLabelName  fixing
+  airstack.domain.trackAirLabelName(name, label.toHexString(), block)
   const domainId = getNameHashFromByteArray(ethNode, label)
-  airstack.domain.trackAirDomainRenewalNameCostExpiry(
-    domainId,
-    name,
-    label,
-    cost,
-    expires.plus(GRACE_PERIOD_SECONDS),
-    from,
-    txhash,
-    logIndex,
-    block
-  )
+  airstack.domain.trackAirDomainCost(domainId, cost, txhash, logIndex, block)
 }
 
 export function handleNameRegistered(event: NameRegistered): void {
@@ -107,7 +98,7 @@ export function handleNameRegistered(event: NameRegistered): void {
     owner,
     baseCost,
     premium,
-    expires.plus(GRACE_PERIOD_SECONDS),
+    expires,
     event.logIndex
   )
 }
@@ -131,7 +122,7 @@ export function handleNameRegisteredTemplate(
     owner,
     baseCost,
     premium,
-    expires.plus(GRACE_PERIOD_SECONDS),
+    expires,
     event.logIndex
   )
 }
@@ -150,7 +141,7 @@ export function handleNameRenewed(event: NameRenewed): void {
     name,
     label,
     cost,
-    expires.plus(GRACE_PERIOD_SECONDS),
+    expires,
     event.logIndex,
     event.transaction.from
   )
@@ -169,7 +160,7 @@ export function handleNameRenewedTemplate(event: NameRenewedTemplate): void {
     name,
     label,
     cost,
-    expires.plus(GRACE_PERIOD_SECONDS),
+    expires,
     event.logIndex,
     event.transaction.from
   )

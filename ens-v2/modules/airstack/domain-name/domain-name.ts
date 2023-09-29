@@ -779,45 +779,16 @@ export namespace domain {
     )
     airDomainOwnershipChanged.save()
   }
-  export function trackAirDomainRegistrationNameCostExpiry(
+  export function trackAirDomainCost(
     domainId: string,
-    name: string,
-    label: Bytes,
     cost: BigInt,
-    expiryDate: BigInt,
-    owner: Address,
     txHash: Bytes,
     logIndex: BigInt,
     block: ethereum.Block
   ): void {
-    const labelHashStr = label.toHexString()
-    log.debug(
-      "trackAirDomainRegistrationNameCostExpiry attempting to fix AirLabelName for hash {} with labelName {}",
-      [labelHashStr, name]
-    )
-    trackAirLabelName(name, labelHashStr, block)
     let airDomain = getAirDomain(domainId)
     airDomain.cost = cost
-    airDomain.expiryDate = expiryDate
     saveAirDomain(airDomain, block)
-    let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
-
-    saveAirDomain(airDomain, block)
-
-    let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
-
-    createAirDomainRegistrationOrRenew(
-      txHash,
-      logIndex,
-      false,
-      airDomain,
-      BIG_INT_ZERO,
-      expiryDate,
-      cost,
-      ownerDomainAccount,
-      airBlock
-    )
   }
   export function trackAirDomainFusesSet(
     txHash: Bytes,

@@ -9,7 +9,6 @@ import {
 } from "../generated/NameWrapper/NameWrapper"
 import { ControllerNameWrapperRemoved } from "../generated/schema"
 import {
-  GRACE_PERIOD_SECONDS,
   createControllerNameWrapper,
   createEventID,
   decodeNameInBytes,
@@ -107,7 +106,7 @@ export function handleExpiryExtended(event: ExpiryExtended): void {
     event.logIndex,
     from,
     node.toHexString(),
-    expiry.plus(GRACE_PERIOD_SECONDS),
+    expiry,
     block
   )
 }

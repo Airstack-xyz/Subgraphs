@@ -152,7 +152,7 @@ export function handleNameRegistered1(event: NameRegistered1): void {
     txHash,
     block,
     id,
-    expires.plus(GRACE_PERIOD_SECONDS),
+    expires,
     owner,
     event.logIndex
   )
