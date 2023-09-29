@@ -1,0 +1,34 @@
+name: Push subgraph
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    - name: Install yq
+      run: |
+        sudo add-apt-repository ppa:rmescandon/yq
+        sudo apt update
+        sudo apt install yq -y
+        yq --version
+
+    - name: Read sub.folder.name from folder.yaml and run npm
+      run: |
+        FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
+	      cd $FOLDER_NAME
+        npm i
+        npm run deploy
+        npm build
+
+    - name: Read sub.folder.name from folder.yaml and run graph deploy
+      run: |
+        FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
+	      cd $FOLDER_NAME
+        graph deploy --node ${{ secrets.INFURA_NODE }}"
+      env:
+        INFURA_URL: ${{ secrets.INFURA_NODE }}
