@@ -20,7 +20,7 @@ jobs:
     - name: Read sub.folder.name from folder.yaml and run npm
       run: |
         FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
-	      cd $FOLDER_NAME
+        cd $FOLDER_NAME
         npm i
         npm run deploy
         npm build
@@ -28,7 +28,7 @@ jobs:
     - name: Read sub.folder.name from folder.yaml and run graph deploy
       run: |
         FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
-	      cd $FOLDER_NAME
+        cd $FOLDER_NAME
         graph deploy --node ${{ secrets.INFURA_NODE }}"
       env:
         INFURA_URL: ${{ secrets.INFURA_NODE }}
