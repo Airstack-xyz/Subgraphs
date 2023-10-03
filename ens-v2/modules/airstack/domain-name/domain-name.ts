@@ -28,6 +28,7 @@ import {
   AirResolvedAddressChanged,
   AirDomainPrimarySet,
   AirDomainFusesSet,
+  AirDomainCostSet,
 } from "../../../generated/schema"
 import {
   AIR_DOMAIN_CHANGED_ID,
@@ -46,6 +47,7 @@ import {
   AIR_TEXT_CHANGED_ID,
   ROOT_NODE,
   AIR_DOMAIN_OWNERSHIP_CHANGED_ID,
+  AIR_DOMAIN_COST_CHANGED_ID,
 } from "./utils"
 import {
   BIG_INT_ZERO,
@@ -789,6 +791,20 @@ export namespace domain {
     let airDomain = getAirDomain(domainId)
     airDomain.cost = cost
     saveAirDomain(airDomain, block)
+    let airBlock = getOrCreateAirBlock(block)
+    airBlock.save()
+    let airDomainCostSet = new AirDomainCostSet(
+      createEventId("AirDomainCostSet", txHash, logIndex)
+    )
+    airDomainCostSet.domain = airDomain.id
+    airDomainCostSet.cost = cost
+    airDomainCostSet.hash = txHash
+    airDomainCostSet.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_COST_CHANGED_ID,
+      airBlock
+    )
+    airDomainCostSet.createdAt = airBlock.id
+    airDomainCostSet.save()
   }
   export function trackAirDomainFusesSet(
     txHash: Bytes,
@@ -884,6 +900,11 @@ export namespace domain {
       airBlock
     )
   }
+  const PARENT_CANNOT_CONTROL = BigInt.fromI32(65536)
+
+  function checkPccBurned(fuses: BigInt): boolean {
+    return fuses == PARENT_CANNOT_CONTROL
+  }
 
   export function trackNameWrapped(
     domainId: string,
@@ -907,8 +928,16 @@ export namespace domain {
     }
     airDomain.fuses = fuses
     airDomain.isNameWrapped = true
-    airDomain.expiryDate = expiryDate
-
+    if (
+      checkPccBurned(fuses) &&
+      (!airDomain.expiryDate || expiryDate > airDomain.expiryDate!)
+    ) {
+      log.debug("Updating expiryDate of nameWrapped airDomain {} txHash {} ", [
+        airDomain.id,
+        txHash.toHexString(),
+      ])
+      airDomain.expiryDate = expiryDate
+    }
     saveAirDomain(airDomain, block)
 
     let airBlock = getOrCreateAirBlock(block)

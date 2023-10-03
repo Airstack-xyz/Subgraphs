@@ -143,6 +143,21 @@ interface AirDomainEvent {
   lastUpdatedIndex: BigInt!
 }
 
+type AirDomainCostSet implements AirDomainEvent @entity {
+  "hash + logIndex"
+  id: ID!
+  "The registration associated with the event"
+  domain: AirDomain!
+  "The block number of the event"
+  createdAt: AirBlock!
+
+  cost: BigInt!
+  "The transaction hash associated with the event"
+  hash: Bytes!
+
+  lastUpdatedIndex: BigInt!
+}
+
 type AirDomainFusesSet implements AirDomainEvent @entity {
   "hash + logIndex"
   id: ID!
