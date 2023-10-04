@@ -1038,11 +1038,35 @@ export namespace domain {
       log.error(" airResolver not found ", [])
       return
     }
-    if (airResolver.resolvedAddress == resolvedAddressDomainAccount.id) {
-      airDomain.isPrimary = true
+    if (airResolver.resolvedAddress != resolvedAddressDomainAccount.account) {
+      log.error(
+        "resolvedAddress for domainId {} doesn't match with caller {} , txHash {}",
+        [
+          airDomain.id,
+          resolvedAddressDomainAccount.account,
+          txHash.toHexString(),
+        ]
+      )
+      return
     }
+    airDomain.isPrimary = true
     saveAirDomain(airDomain, block)
-    let airPrimarySets = getOrCreateAirDomainPrimary(resolvedAddress)
+    let airPrimarySets = AirDomainPrimary.load(resolvedAddress.toHexString())
+    if (airPrimarySets) {
+      let oldPrimaryDomain = AirDomain.load(airPrimarySets.domain)
+      if (oldPrimaryDomain == null) {
+        throw new Error("Domain does not exist " + airPrimarySets.domain)
+      }
+      oldPrimaryDomain.isPrimary = false
+      log.debug("primaryDomain changed from {} to {} , txHash {} ", [
+        oldPrimaryDomain.id,
+        airDomain.id,
+        txHash.toHexString(),
+      ])
+      saveAirDomain(oldPrimaryDomain, block)
+    } else {
+      airPrimarySets = new AirDomainPrimary(resolvedAddress.toHexString())
+    }
     airPrimarySets.domain = airDomain.id
     airPrimarySets.save()
     let airDomainAccount = getOrCreateAirDomainAccount(resolvedAddress, block)
