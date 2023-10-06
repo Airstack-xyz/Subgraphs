@@ -1,0 +1,45 @@
+type AirERC6551Account @entity(immutable: true) {
+  id: Bytes! #chainId+address
+  account: String! # address
+  implementation: String! # address
+  chainId: BigInt! # uint256
+  tokenContract: String! # address
+  tokenId: BigInt! # uint256
+  salt: BigInt! # uint256
+  transactionHash: Bytes!
+  registry: String! # Address of registry
+  deployer: String! #Address of deployer 
+  logIndex: BigInt
+  createdAt: AirBlock!
+  updatedAt: AirBlock!
+  lastUpdatedIndex: BigInt!
+}
+
+type AirEntityCounter @entity {
+    id: ID! #AIR_ERC6551Account_LAST_UPDATED_INDEX
+    count: BigInt!
+    createdAt: AirBlock!
+    lastUpdatedAt: AirBlock!
+}
+
+type AirMeta @entity {
+    id: ID! # air_meta
+    network: String!
+    schemaVersion: String!
+    slug: String! # mainnet-erc-6551 ??
+    name: String! # Mainnet ERC-6551
+    version: String!
+}
+
+type AirExtraData @entity {
+  id: ID!
+  name: String!
+  value: String!
+}
+
+type AirBlock @entity {
+ id: ID! #chain-number
+ hash: String!
+ number: BigInt!
+ timestamp: BigInt!
+}
