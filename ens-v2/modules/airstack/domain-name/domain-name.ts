@@ -59,6 +59,7 @@ import {
 } from "../common"
 const ETH_NODE_STR =
   "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae"
+
 export namespace domain {
   export function getAirDomain(domainId: string): AirDomain {
     let airDomain = AirDomain.load(domainId)
@@ -166,6 +167,7 @@ export namespace domain {
     airDomain.name = []
     airDomain.labelName = ""
     airDomain.isPrimary = false
+    airDomain.isMigrated = false
     airDomain.createdAt = airBlock.id
     airDomain.lastUpdatedBlock = airBlock.id
     airDomain.subdomainCount = BIG_INT_ZERO
@@ -199,18 +201,35 @@ export namespace domain {
     oldManager: Address,
     newManager: Address,
     domainId: string,
+    migrate: bool,
     block: ethereum.Block
   ): void {
     log.debug("trackAirDomainManagerTransfer txHash {} logIndex {}", [
       txHash.toHexString(),
       logIndex.toString(),
     ])
-    let oldManagerDomainAccount = getOrCreateAirDomainAccount(oldManager, block)
-    let newManagerDomainAccount = getOrCreateAirDomainAccount(newManager, block)
     let airDomain = AirDomain.load(domainId)
     if (!airDomain) {
       throw new Error("Domain not found,domainId: " + domainId)
     }
+    if (!migrate && airDomain.isMigrated) {
+      log.info("domainId {} is already migrated,txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      return
+    }
+    if (migrate && !airDomain.isMigrated) {
+      log.info("migrating domainId {} ,txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      airDomain.isMigrated = true
+    }
+
+    let oldManagerDomainAccount = getOrCreateAirDomainAccount(oldManager, block)
+    let newManagerDomainAccount = getOrCreateAirDomainAccount(newManager, block)
+
     airDomain.manager = newManagerDomainAccount.id
     saveAirDomain(airDomain, block)
     // book keeping
@@ -291,6 +310,7 @@ export namespace domain {
     labelHash: string,
     labelName: string,
     manager: Address,
+    migrate: bool,
     block: ethereum.Block
   ): void {
     log.debug("trackSubDomainNewManager txHash {} logIndex {}", [
@@ -302,9 +322,22 @@ export namespace domain {
       BIGINT_ONE
     )
     saveAirDomain(parentAirDomain, block)
-
     let airLabelName = getOrCreateAirLabelName(labelName, labelHash, block)
     let domain = getOrCreateAirDomain(domainId, block)
+    if (!migrate && domain.isMigrated) {
+      log.info("domainId {} is already migrated,txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      return
+    }
+    if (migrate && !domain.isMigrated) {
+      log.info("migrating domainId {} ,txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      domain.isMigrated = true
+    }
     domain.parent = parentAirDomain.id
     let domainName = parentAirDomain.name
     if (domainName.length == 1 && domainName[0] == ROOT_NODE) {
@@ -363,6 +396,7 @@ export namespace domain {
     logIndex: BigInt,
     domainId: string,
     resolver: Address,
+    migrate: bool,
     block: ethereum.Block
   ): void {
     log.debug("trackDomainNewResolver txHash {} logIndex {}", [
@@ -370,6 +404,20 @@ export namespace domain {
       logIndex.toString(),
     ])
     let airDomain = getAirDomain(domainId)
+    if (!migrate && airDomain.isMigrated) {
+      log.info("domainId {} is already migrated,txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      return
+    }
+    if (migrate && !airDomain.isMigrated) {
+      log.info("migrating domainId {} ,txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      airDomain.isMigrated = true
+    }
     let resolverId: string | null
     // create resolver
     if (resolver.equals(Address.zero())) {
@@ -406,6 +454,7 @@ export namespace domain {
     logIndex: BigInt,
     domainId: string,
     ttl: BigInt,
+    migrate: bool,
     block: ethereum.Block
   ): void {
     log.debug("trackDomainNewTTL txHash {} logIndex {}", [
@@ -413,6 +462,20 @@ export namespace domain {
       logIndex.toString(),
     ])
     let airDomain = getAirDomain(domainId)
+    if (!migrate && airDomain.isMigrated) {
+      log.info("domainId {} is already migrated,txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      return
+    }
+    if (migrate && !airDomain.isMigrated) {
+      log.info("migrating domainId {} ,txHash {}", [
+        domainId,
+        txHash.toHexString(),
+      ])
+      airDomain.isMigrated = true
+    }
     airDomain.ttl = ttl
     saveAirDomain(airDomain, block)
     let airBlock = getOrCreateAirBlock(block)
@@ -999,16 +1062,6 @@ export namespace domain {
       airBlock
     )
     airDomainNameUnwrapped.save()
-  }
-
-  function getOrCreateAirDomainPrimary(
-    resolvedAddress: Address
-  ): AirDomainPrimary {
-    let airDomainPrimary = AirDomainPrimary.load(resolvedAddress.toHexString())
-    if (!airDomainPrimary) {
-      airDomainPrimary = new AirDomainPrimary(resolvedAddress.toHexString())
-    }
-    return airDomainPrimary
   }
 
   export function trackSetPrimaryDomain(

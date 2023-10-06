@@ -103,6 +103,8 @@ type AirDomain @entity {
   fuses: BigInt!
   "name wrapped"
   isNameWrapped: Boolean!
+  "Indicates whether the domain has been migrated to a new registrar"
+  isMigrated: Boolean!
   events: [AirDomainEvent!]! @derivedFrom(field: "domain")
 }
 

@@ -46,6 +46,7 @@ export const _handleTransfer = (
   logIndex: BigInt,
   from: Address,
   node: Bytes,
+  migrate: bool,
   owner: Address
 ): void => {
   // owner & manager will get transferred
@@ -68,6 +69,7 @@ export const _handleTransfer = (
     from,
     owner,
     node.toHexString(),
+    migrate,
     block
   )
 }
@@ -86,6 +88,7 @@ export const _handleNewOwner = (
   node: Bytes,
   label: Bytes,
   owner: Address,
+  migrate: bool,
   block: ethereum.Block
 ): void => {
   let parentDomainId = node.toHexString()
@@ -103,6 +106,7 @@ export const _handleNewOwner = (
     label.toHexString(),
     labelName,
     owner,
+    migrate,
     block
   )
 
@@ -125,6 +129,7 @@ export const _handleNewResolver = (
   logIndex: BigInt,
   node: Bytes,
   resolver: Address,
+  migrate: bool,
   block: ethereum.Block
 ): void => {
   airstack.domain.trackDomainNewResolver(
@@ -132,6 +137,7 @@ export const _handleNewResolver = (
     logIndex,
     node.toHexString(),
     resolver,
+    migrate,
     block
   )
 
@@ -151,6 +157,7 @@ export const _handleNewTTL = (
   logIndex: BigInt,
   node: Bytes,
   ttl: BigInt,
+  migrate: bool,
   block: ethereum.Block
 ): void => {
   airstack.domain.trackDomainNewTTL(
@@ -158,6 +165,7 @@ export const _handleNewTTL = (
     logIndex,
     node.toHexString(),
     ttl,
+    migrate,
     block
   )
 }
@@ -170,7 +178,7 @@ export function handleTransferOld(event: TransferOld): void {
   const block = event.block
   const logIndex = event.logIndex
 
-  _handleTransfer(txHash, block, logIndex, from, node, owner)
+  _handleTransfer(txHash, block, logIndex, from, node, false, owner)
 }
 export function handleTransfer(event: Transfer): void {
   const txHash = event.transaction.hash
@@ -180,7 +188,7 @@ export function handleTransfer(event: Transfer): void {
   const block = event.block
   const logIndex = event.logIndex
 
-  _handleTransfer(txHash, block, logIndex, from, node, owner)
+  _handleTransfer(txHash, block, logIndex, from, node, true, owner)
 }
 
 export function handleNewOwnerOld(event: NewOwnerOld): void {
@@ -190,7 +198,7 @@ export function handleNewOwnerOld(event: NewOwnerOld): void {
   const label = event.params.label
   const owner = event.params.owner
   const block = event.block
-  _handleNewOwner(txHash, logIndex, node, label, owner, block)
+  _handleNewOwner(txHash, logIndex, node, label, owner, false, block)
 }
 export function handleNewOwner(event: NewOwner): void {
   const txHash = event.transaction.hash
@@ -200,7 +208,7 @@ export function handleNewOwner(event: NewOwner): void {
   const label = event.params.label
   const owner = event.params.owner
   const block = event.block
-  _handleNewOwner(txHash, logIndex, node, label, owner, block)
+  _handleNewOwner(txHash, logIndex, node, label, owner, true, block)
 }
 export function handleNewResolverOld(event: NewResolverOld): void {
   const txHash = event.transaction.hash
@@ -209,7 +217,7 @@ export function handleNewResolverOld(event: NewResolverOld): void {
   const node = event.params.node
   const resolver = event.params.resolver
   const block = event.block
-  _handleNewResolver(txHash, logIndex, node, resolver, block)
+  _handleNewResolver(txHash, logIndex, node, resolver, false, block)
 }
 export function handleNewResolver(event: NewResolver): void {
   const txHash = event.transaction.hash
@@ -218,7 +226,7 @@ export function handleNewResolver(event: NewResolver): void {
   const node = event.params.node
   const resolver = event.params.resolver
   const block = event.block
-  _handleNewResolver(txHash, logIndex, node, resolver, block)
+  _handleNewResolver(txHash, logIndex, node, resolver, true, block)
 }
 export function handleNewTTLOld(event: NewTTLOld): void {
   const txHash = event.transaction.hash
@@ -227,7 +235,7 @@ export function handleNewTTLOld(event: NewTTLOld): void {
   const node = event.params.node
   const ttl = event.params.ttl
   const block = event.block
-  _handleNewTTL(txHash, logIndex, node, ttl, block)
+  _handleNewTTL(txHash, logIndex, node, ttl, false, block)
 }
 export function handleNewTTL(event: NewTTL): void {
   const txHash = event.transaction.hash
@@ -236,5 +244,5 @@ export function handleNewTTL(event: NewTTL): void {
   const node = event.params.node
   const ttl = event.params.ttl
   const block = event.block
-  _handleNewTTL(txHash, logIndex, node, ttl, block)
+  _handleNewTTL(txHash, logIndex, node, ttl, true, block)
 }
