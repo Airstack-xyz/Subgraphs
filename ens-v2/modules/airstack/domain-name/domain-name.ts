@@ -425,9 +425,19 @@ export namespace domain {
       airDomain.resolver = null
       saveAirDomain(airDomain, block)
     } else {
+      // if already existed, mark it as inactive
+      let oldResolver = airDomain.resolver
+      if (oldResolver) {
+        let oldResolverEntity = AirResolver.load(oldResolver)
+        if (oldResolverEntity) {
+          oldResolverEntity.isActive = false
+          saveAirResolver(oldResolverEntity, block)
+        }
+      }
       let airResolver = getOrCreateAirResolver(domainId, resolver, block)
       airResolver.domain = domainId
       airResolver.resolverAddress = resolver
+      airResolver.isActive = true
       saveAirResolver(airResolver, block)
       airDomain.resolver = airResolver.id
       saveAirDomain(airDomain, block)
@@ -504,43 +514,37 @@ export namespace domain {
   ): void {
     log.debug("trackResolvedAddress", [])
 
+    // update resolver only
+    let resolvedDomainAccount = getOrCreateAirDomainAccount(
+      resolvedAddress,
+      block
+    )
+
+    let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
+    airResolver.resolvedAddress = resolvedDomainAccount.id
+    saveAirResolver(airResolver, block)
+    let airResolvedAddressChanged = new AirResolvedAddressChanged(
+      txHash
+        .toHexString()
+        .concat("-")
+        .concat(logIndex.toString())
+    )
+    airResolvedAddressChanged.resolver = airResolver.id
+    let airBlock = getOrCreateAirBlock(block)
+    airResolvedAddressChanged.createdAt = airBlock.id
+    airResolvedAddressChanged.hash = txHash
+    airResolvedAddressChanged.resolvedAddress = resolvedDomainAccount.id
+    airResolvedAddressChanged.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_RESOLVER_RESOLVED_ADDRESS_CHANGED_ID,
+      airBlock
+    )
+    airResolvedAddressChanged.save()
+
     let airDomain = AirDomain.load(domainId)
-    let resolverId = domainId.concat("-").concat(resolverAddress.toHexString())
-    if (airDomain && airDomain.resolver == resolverId) {
-      let resolvedDomainAccount = getOrCreateAirDomainAccount(
-        resolvedAddress,
-        block
-      )
-
-      let airResolver = AirResolver.load(resolverId)
-      if (!airResolver) {
-        throw new Error(
-          "AirResolver should not be empty,txHash +" + txHash.toHexString()
-        )
-      }
-      airResolver.resolvedAddress = resolvedDomainAccount.id
-      saveAirResolver(airResolver, block)
-
-      // whenever AirResolver gets saved, airDomain lastUpdatedIndex gets updated
+    if (airDomain && airDomain.resolver == airResolver.id) {
+      // whenever AirResolver gets saved && airDomain's resolver matches lastUpdatedIndex gets updated
       saveAirDomain(airDomain, block)
       // book keeping
-
-      let airResolvedAddressChanged = new AirResolvedAddressChanged(
-        txHash
-          .toHexString()
-          .concat("-")
-          .concat(logIndex.toString())
-      )
-      airResolvedAddressChanged.resolver = airResolver.id
-      let airBlock = getOrCreateAirBlock(block)
-      airResolvedAddressChanged.createdAt = airBlock.id
-      airResolvedAddressChanged.hash = txHash
-      airResolvedAddressChanged.resolvedAddress = resolvedDomainAccount.id
-      airResolvedAddressChanged.lastUpdatedIndex = updateAirEntityCounter(
-        AIR_RESOLVER_RESOLVED_ADDRESS_CHANGED_ID,
-        airBlock
-      )
-      airResolvedAddressChanged.save()
 
       // update primary domain
       let airPrimarySet = AirDomainPrimary.load(resolvedAddress.toHexString())
@@ -588,51 +592,41 @@ export namespace domain {
   ): void {
     log.debug("trackMultiCoinAddress", [])
 
-    let airDomain = AirDomain.load(domainId)
-    let resolverId = domainId.concat("-").concat(resolverAddress.toHexString())
-    if (airDomain && airDomain.resolver == resolverId) {
-      let airResolver = AirResolver.load(resolverId)
-      if (!airResolver) {
-        throw new Error(
-          "AirResolver should not be empty,txHash +" + txHash.toHexString()
-        )
-      }
-      let airMultiCoin = AirMultiCoin.load(
+    let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
+    let airMultiCoin = AirMultiCoin.load(
+      airResolver.id.concat("-").concat(coinType.toString())
+    )
+    if (!airMultiCoin) {
+      airMultiCoin = new AirMultiCoin(
         airResolver.id.concat("-").concat(coinType.toString())
       )
-      if (!airMultiCoin) {
-        airMultiCoin = new AirMultiCoin(
-          airResolver.id.concat("-").concat(coinType.toString())
-        )
-      }
-      airMultiCoin.resolver = airResolver.id
-      airMultiCoin.coinType = coinType
-      airMultiCoin.address = newAddress
-      airMultiCoin.save()
-
-      saveAirResolver(airResolver, block)
-      saveAirDomain(airDomain, block)
-
-      // book keeping
-
-      let airMultiCoinChanged = new AirMultiCoinChanged(
-        txHash
-          .toHexString()
-          .concat("-")
-          .concat(logIndex.toString())
-      )
-      airMultiCoinChanged.resolver = airResolver.id
-      let airBlock = getOrCreateAirBlock(block)
-      airMultiCoinChanged.createdAt = airBlock.id
-      airMultiCoinChanged.hash = txHash
-      airMultiCoinChanged.coinType = coinType
-      airMultiCoinChanged.address = newAddress
-      airMultiCoinChanged.lastUpdatedIndex = updateAirEntityCounter(
-        AIR_RESOLVER_MULTICOIN_ADDRESS_CHANGED_ID,
-        airBlock
-      )
-      airMultiCoinChanged.save()
     }
+    airMultiCoin.resolver = airResolver.id
+    airMultiCoin.coinType = coinType
+    airMultiCoin.address = newAddress
+    airMultiCoin.save()
+
+    saveAirResolver(airResolver, block)
+
+    // book keeping
+
+    let airMultiCoinChanged = new AirMultiCoinChanged(
+      txHash
+        .toHexString()
+        .concat("-")
+        .concat(logIndex.toString())
+    )
+    airMultiCoinChanged.resolver = airResolver.id
+    let airBlock = getOrCreateAirBlock(block)
+    airMultiCoinChanged.createdAt = airBlock.id
+    airMultiCoinChanged.hash = txHash
+    airMultiCoinChanged.coinType = coinType
+    airMultiCoinChanged.address = newAddress
+    airMultiCoinChanged.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_RESOLVER_MULTICOIN_ADDRESS_CHANGED_ID,
+      airBlock
+    )
+    airMultiCoinChanged.save()
   }
   export function trackAirTextChange(
     txHash: Bytes,
@@ -644,50 +638,39 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     log.debug("trackAirTextChange", [])
-    let airDomain = AirDomain.load(domainId)
-    let resolverId = domainId.concat("-").concat(resolverAddress.toHexString())
-    if (airDomain && airDomain.resolver == resolverId) {
-      let airBlock = getOrCreateAirBlock(block)
-      airBlock.save()
+    let airBlock = getOrCreateAirBlock(block)
+    airBlock.save()
 
-      let airResolver = AirResolver.load(resolverId)
-      if (!airResolver) {
-        throw new Error(
-          "AirResolver should not be empty,txHash +" + txHash.toHexString()
-        )
-      }
-      let airText = AirText.load(airResolver.id.concat("-").concat(name))
-      if (!airText) {
-        airText = new AirText(airResolver.id.concat("-").concat(name))
-        airText.createdAt = airBlock.id
-      }
-      airText.resolver = airResolver.id
-      airText.name = name
-      airText.value = value
-      saveAirText(airText, block)
-
-      saveAirResolver(airResolver, block)
-
-      saveAirDomain(airDomain, block)
-
-      // book keeping
-      let airTextChanged = new AirTextChanged(
-        txHash
-          .toHexString()
-          .concat("-")
-          .concat(logIndex.toString())
-      )
-      airTextChanged.resolver = airResolver.id
-      airTextChanged.createdAt = airBlock.id
-      airTextChanged.hash = txHash
-      airTextChanged.name = name
-      airTextChanged.value = value
-      airTextChanged.lastUpdatedIndex = updateAirEntityCounter(
-        AIR_RESOLVER_TEXT_CHANGED_ID,
-        airBlock
-      )
-      airTextChanged.save()
+    let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
+    let airText = AirText.load(airResolver.id.concat("-").concat(name))
+    if (!airText) {
+      airText = new AirText(airResolver.id.concat("-").concat(name))
+      airText.createdAt = airBlock.id
     }
+    airText.resolver = airResolver.id
+    airText.name = name
+    airText.value = value
+    saveAirText(airText, block)
+
+    saveAirResolver(airResolver, block)
+
+    // book keeping
+    let airTextChanged = new AirTextChanged(
+      txHash
+        .toHexString()
+        .concat("-")
+        .concat(logIndex.toString())
+    )
+    airTextChanged.resolver = airResolver.id
+    airTextChanged.createdAt = airBlock.id
+    airTextChanged.hash = txHash
+    airTextChanged.name = name
+    airTextChanged.value = value
+    airTextChanged.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_RESOLVER_TEXT_CHANGED_ID,
+      airBlock
+    )
+    airTextChanged.save()
   }
 
   export function trackAirDomainRegistrationDateAndCost(
@@ -1149,6 +1132,7 @@ export namespace domain {
     let airResolver = AirResolver.load(id)
     if (!airResolver) {
       airResolver = new AirResolver(id)
+      airResolver.isActive = true
       airResolver.domain = domainId
       airResolver.createdAt = airBlock.id
       airResolver.resolverAddress = resolverAddress

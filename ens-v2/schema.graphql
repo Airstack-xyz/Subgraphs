@@ -380,6 +380,9 @@ type AirMultiCoinChanged implements AirResolverEvent @entity {
 type AirResolver @entity {
   "Concatenation of resolver address and namehash"
   id: ID!
+  "marks if the resolver is active or not"
+  isActive: Boolean!
+
   "The domain that this resolver is associated with"
   domain: AirDomain!
 
