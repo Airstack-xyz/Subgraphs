@@ -1,0 +1,28 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: LensHub
+    network: matic
+    source:
+      address: '0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d'
+      abi: LensHub
+      startBlock: 28384641
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+    
+      abis:
+        - name: LensHub
+          file: ./abis/LensHub.json
+      eventHandlers:
+        - event: ProfileCreated(indexed uint256,indexed address,indexed address,string,string,address,bytes,string,uint256)
+          handler: handleProfileCreated
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: DefaultProfileSet(indexed address,indexed uint256,uint256)
+          handler: handleDefaultProfileSet
+      file: ./src/mappings/index.ts

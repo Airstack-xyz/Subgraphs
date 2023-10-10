@@ -1,0 +1,25 @@
+type UserToProfileMap @entity {
+  id: ID!
+  user: Bytes!
+  profile: [BigInt!]
+  lensNames: [String!]
+  hashes: [String!]
+  count: BigInt!
+}
+type TransferEntity @entity {
+  id: ID!
+  hashes: [String!]
+  fromTo: [String!]
+  tokenId: BigInt
+  count: BigInt!
+}
+type DefaultProfileSet @entity {
+  id: ID! # hash+logIndex
+  hash: String
+  wallet: Bytes
+  profileId: BigInt
+}
+type UserToDefaultProfileIdMap @entity {
+  id: ID! #User Address
+  profileId: BigInt!
+}
