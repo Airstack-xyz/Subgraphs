@@ -418,6 +418,15 @@ export namespace domain {
       ])
       airDomain.isMigrated = true
     }
+    // if already existed, mark it as inactive
+    let oldResolver = airDomain.resolver
+    if (oldResolver) {
+      let oldResolverEntity = AirResolver.load(oldResolver)
+      if (oldResolverEntity) {
+        oldResolverEntity.isActive = false
+        saveAirResolver(oldResolverEntity, block)
+      }
+    }
     let resolverId: string | null
     // create resolver
     if (resolver.equals(Address.zero())) {
@@ -425,15 +434,6 @@ export namespace domain {
       airDomain.resolver = null
       saveAirDomain(airDomain, block)
     } else {
-      // if already existed, mark it as inactive
-      let oldResolver = airDomain.resolver
-      if (oldResolver) {
-        let oldResolverEntity = AirResolver.load(oldResolver)
-        if (oldResolverEntity) {
-          oldResolverEntity.isActive = false
-          saveAirResolver(oldResolverEntity, block)
-        }
-      }
       let airResolver = getOrCreateAirResolver(domainId, resolver, block)
       airResolver.domain = domainId
       airResolver.resolverAddress = resolver
