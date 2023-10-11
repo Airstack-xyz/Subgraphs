@@ -24,4 +24,6 @@ jobs:
     - name: Read sub.folder.name from folder.yaml and create subgraph
       run: |
         FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
-        graph create --node http://graph-indexer-prod.airstack.xyz/$FOLDER_NAME
+        graph create --node ${{ secrets.INTERNAL_INDEXER_URL }}/$FOLDER_NAME
+      env:
+        INFURA_URL: ${{ secrets.INTERNAL_INDEXER_URL }}
