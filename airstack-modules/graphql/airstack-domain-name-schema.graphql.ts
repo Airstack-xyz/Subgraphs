@@ -60,6 +60,7 @@ type AirDomain @entity {
   createdAt: AirBlock!
 	lastUpdatedBlock: AirBlock #- NA
   extras: [AirExtra!]
+  lastUpdatedIndex: BigInt!
 }
 
 type AirDomainTransferTransaction implements AirDomainEvent @entity {
@@ -167,6 +168,7 @@ type AirNameRenewedTransaction implements AirDomainEvent & AirDomainRegistration
 
 type AirPrimaryDomainTransaction implements AirDomainEvent @entity {
   id: ID!
+  previousDomain: AirDomain
   block: AirBlock!
   transactionHash: String!
   tokenId: String # dec(labelhash) # - NA

@@ -113,31 +113,19 @@ interface AirTransaction {
   protocolActionType: AirProtocolActionType!
 }
 
-type AirNftTransaction implements AirTransaction @entity {
+type Erc721GenCollection @entity {
   id: ID!
-  from: AirAccount!
-  to: AirAccount!
-  hash: String!
-  block: AirBlock!
-  index: BigInt!
-  protocolType: AirProtocolType!
-  protocolActionType: AirProtocolActionType!
-	tokenId: BigInt! #nft
-  tokenAmount:BigInt!   #nft 
-	transactionToken: AirToken!   #nft
-	paymentToken: AirToken #payment
-  paymentAmount: BigInt #payment
-  royalties: [AirNftSaleRoyalty!] @derivedFrom(field: "nftTransaction")
-  feeAmount: BigInt
-  feeBeneficiary: AirAccount
-  extraData: AirExtraData
+  contractAddress: String!
+  transactionHash: String!
+  createdAtBlock: BigInt!
 }
 
-type AirNftSaleRoyalty @entity{
-  id: ID! #AirNftTransaction(ID) + royalty beneficiary
-  amount: BigInt!
-  beneficiary: AirAccount!
-  nftTransaction: AirNftTransaction!
+type TxnHashVsTokenIdMapping @entity {
+  id: ID!
+  transactionHash: String!
+  tokenIds: [BigInt!]
+  createdAtBlock: BigInt!
+  updatedAtBlock: BigInt!
 }
 
 type AirExtraData @entity {

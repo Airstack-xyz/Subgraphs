@@ -1,6 +1,9 @@
 import {
   DomainVsIsMigratedMapping,
   ReverseRegistrar,
+  NameRegisteredTransactionVsRegistrant,
+  AirBlock,
+  LabelhashToNameMapping,
 } from "../generated/schema";
 import {
   Bytes,
@@ -8,8 +11,11 @@ import {
   ethereum,
   ByteArray,
   BigInt,
+  log,
 } from "@graphprotocol/graph-ts";
-
+import {
+  checkValidLabel
+} from "../modules/airstack/domain-name/utils";
 // ens constants
 export const TOKEN_ADDRESS_ENS = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
 
@@ -66,6 +72,55 @@ export function createReverseRegistrar(
   return entity as ReverseRegistrar;
 }
 
+/**
+ * @dev this function creates a new NameRegisteredTransactionVsRegistrant entity
+ * @param transactionHash transaction hash
+ * @param block air block entity
+ * @param id domainId-transactionHash
+ * @param tokenId transferred token id
+ * @param oldRegistrantId name registered txn old registrant id
+ * @param newRegistrantId name registered txn new registrant id
+ * @returns NameRegisteredTransactionVsRegistrant entity
+ */
+export function createNameRegisteredTransactionVsRegistrant(
+  transactionHash: string,
+  block: AirBlock,
+  id: string,
+  tokenId: string,
+  oldRegistrantId: string,
+  newRegistrantId: string,
+): NameRegisteredTransactionVsRegistrant {
+  let entity = NameRegisteredTransactionVsRegistrant.load(id);
+  if (entity == null) {
+    entity = new NameRegisteredTransactionVsRegistrant(id);
+    entity.oldRegistrant = oldRegistrantId;
+    entity.newRegistrant = newRegistrantId;
+    entity.transactionHash = transactionHash;
+    entity.tokenId = tokenId;
+    entity.createdAt = block.id;
+    entity.save();
+  }
+  return entity as NameRegisteredTransactionVsRegistrant;
+}
+
+export function createLabelhashToNameMapping(labelhash: string, name: string, createdAt: string): void {
+  let entity = LabelhashToNameMapping.load(labelhash);
+  if (entity == null) {
+    entity = new LabelhashToNameMapping(labelhash);
+    entity.name = name;
+    entity.createdAt = createdAt;
+    entity.save();
+  }
+}
+
+export function getNameByLabelHash(labelhash: string): string | null {
+  let entity = LabelhashToNameMapping.load(labelhash);
+  if (entity == null) {
+    return null;
+  }
+  return entity.name;
+}
+
 // specific to ens
 export function byteArrayFromHex(s: string): ByteArray {
   if (s.length % 2 !== 0) {
@@ -81,4 +136,35 @@ export function byteArrayFromHex(s: string): ByteArray {
 export function uint256ToByteArray(i: BigInt): ByteArray {
   let hex = i.toHex().slice(2).padStart(64, '0')
   return byteArrayFromHex(hex)
+}
+
+export function decodeName(buf: Bytes, txHash: string): Array<string> | null {
+  let offset = 0;
+  let list = new ByteArray(0);
+  let dot = Bytes.fromHexString("2e");
+  let len = buf[offset++];
+  let hex = buf.toHexString();
+  let firstLabel = "";
+  if (len === 0) {
+    return [firstLabel, "."];
+  }
+
+  while (len) {
+    let label = hex.slice((offset + 1) * 2, (offset + 1 + len) * 2);
+    let labelBytes = Bytes.fromHexString(label);
+
+    if (!checkValidLabel(labelBytes.toString(), txHash)) {
+      return null;
+    }
+
+    if (offset > 1) {
+      list = list.concat(dot);
+    } else {
+      firstLabel = labelBytes.toString();
+    }
+    list = list.concat(labelBytes);
+    offset += len;
+    len = buf[offset++];
+  }
+  return [firstLabel, list.toString()];
 }

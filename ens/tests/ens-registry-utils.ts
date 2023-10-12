@@ -1,7 +1,7 @@
 import { newMockEvent } from "matchstick-as"
 import { ethereum, Address, Bytes, BigInt, ens } from "@graphprotocol/graph-ts"
 import { getTransactionHash } from "./common-utils"
-import { BIG_INT_ZERO } from "../modules/airstack/common/index"
+import { BIGINT_ONE, BIG_INT_ZERO } from "../modules/airstack/common/index"
 import {
   NewOwner as NewOwnerEvent,
   NewResolver as NewResolverEvent,
@@ -154,5 +154,6 @@ export function createParentDomain(parentDomainId: string): void {
   entity.registrationCost = BIG_INT_ZERO;
   entity.createdAt = "1-472668903";
   entity.lastUpdatedBlock = "1-472668903";
+  entity.lastUpdatedIndex = BIGINT_ONE;
   entity.save();
 }

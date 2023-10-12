@@ -3,7 +3,7 @@ import { ethereum, Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
 import { AddrChanged, VersionChanged } from "../generated/Resolver1/Resolver"
 import { getTransactionHash } from "./common-utils"
 import { AirDomain } from "../generated/schema"
-import { BIG_INT_ZERO } from "../modules/airstack/common/index"
+import { BIGINT_ONE, BIG_INT_ZERO } from "../modules/airstack/common/index"
 
 export function getHandleAddrChangedEvent(): AddrChanged {
   return createHandleAddrChangedEvent(
@@ -70,6 +70,7 @@ export function createAirDomain(domainId: string): AirDomain {
   entity.registrationCost = BIG_INT_ZERO;
   entity.createdAt = "1-472668903";
   entity.lastUpdatedBlock = "1-472668903";
+  entity.lastUpdatedIndex = BIGINT_ONE;
   entity.save();
   return entity as AirDomain;
 }

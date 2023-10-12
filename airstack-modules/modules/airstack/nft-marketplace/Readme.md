@@ -5,11 +5,11 @@
 ```
 1. Track NFT trade transaction
   trackNFTSaleTransactions(
-    block: string,                      #block ethereum block
+    block: ethereum.Block,              #block ethereum block
     transactionHash: string,            #transaction hash
     logOrCallIndex: BigInt,             #transaction index - call or log index
     sale: Sale,                         #sale object
-    protocolType: string                #protocol type (eg: NFT_MARKET_PLACE)
+    protocolType: string,               #protocol type (eg: NFT_MARKET_PLACE)
     protocolActionType: string,         #protocol action type - ["BUY", "SELL"]
   )
 ```

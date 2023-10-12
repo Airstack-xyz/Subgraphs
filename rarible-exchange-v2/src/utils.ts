@@ -166,6 +166,30 @@ export class Asset {
 }
 
 /**
+ * @dev this is a temp mapping for txn hash and tokenId
+ * @param transactionHash transaction hash
+ * @param tokenId nft token id
+ */
+export function createTxnHashVsTokenIdMapping(transactionHash: Bytes, tokenId: BigInt, block: ethereum.Block): void {
+  let txnHashVsTokenId = TxnHashVsTokenIdMapping.load(transactionHash.toHexString());
+  if (txnHashVsTokenId == null) {
+    txnHashVsTokenId = new TxnHashVsTokenIdMapping(transactionHash.toHexString());
+    txnHashVsTokenId.transactionHash = transactionHash.toHexString();
+    let tokenIds = new Array<BigInt>();
+    tokenIds.push(tokenId);
+    txnHashVsTokenId.tokenIds = tokenIds;
+    txnHashVsTokenId.createdAtBlock = block.number;
+    txnHashVsTokenId.updatedAtBlock = block.number;
+  } else {
+    let temp = txnHashVsTokenId.tokenIds!;
+    temp.push(tokenId);
+    txnHashVsTokenId.tokenIds = temp;
+    txnHashVsTokenId.updatedAtBlock = block.number;
+  }
+  txnHashVsTokenId.save();
+}
+
+/**
  * @dev decodes asset data
  * @param data encoded asset data
  * @param type asset type

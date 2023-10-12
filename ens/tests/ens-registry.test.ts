@@ -31,10 +31,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -76,6 +76,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "registrationCost", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "isPrimary", "false");
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "2");
     assert.fieldEquals("AirDomain", domainId, "tokenAddress", ETHEREUM_MAINNET_ID.concat("-").concat(TOKEN_ADDRESS_ENS));
     // AirDomainOwnerChangedTransaction
     let domainOwnerChangedEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
@@ -101,10 +102,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -146,6 +147,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "registrationCost", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "expiryTimestamp", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "isPrimary", "false");
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "2");
     assert.fieldEquals("AirDomain", domainId, "tokenAddress", ETHEREUM_MAINNET_ID.concat("-").concat(TOKEN_ADDRESS_ENS));
     // AirDomainOwnerChangedTransaction
     let domainOwnerChangedEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
@@ -167,10 +169,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -197,6 +199,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "owner", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirDomainTransferTransaction
     let domainOwnerChangedEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainTransferTransaction", domainOwnerChangedEntityId, "from", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
@@ -217,10 +220,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -247,6 +250,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirEntityCounter", airEntityCounterId, "lastUpdatedAt", blockId);
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "owner", ETHEREUM_MAINNET_ID.concat("-").concat(event.params.owner.toHexString()));
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirDomainTransferTransaction
     let domainOwnerChangedEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainTransferTransaction", domainOwnerChangedEntityId, "from", ETHEREUM_MAINNET_ID.concat("-").concat(ZERO_ADDRESS));
@@ -268,10 +272,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -304,6 +308,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "resolver", resolverId);
     assert.fieldEquals("AirDomain", domainId, "subdomainCount", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirDomainNewResolverTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "previousResolver", "null");
@@ -325,10 +330,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -361,6 +366,7 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomain", domainId, "resolver", resolverId);
     assert.fieldEquals("AirDomain", domainId, "subdomainCount", BIG_INT_ZERO.toString());
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirDomainNewResolverTransaction
     let domainNewResolverEntityId = event.transaction.hash.toHexString().concat("-").concat(event.block.number.toString()).concat("-").concat(event.logIndex.toString());
     assert.fieldEquals("AirDomainNewResolverTransaction", domainNewResolverEntityId, "previousResolver", "null");
@@ -381,10 +387,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -408,6 +414,7 @@ describe("Unit tests for ens registry handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "extras", "[0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407-ttl]");
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirExtra
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
@@ -427,10 +434,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event1.block.number.toString());
@@ -454,6 +461,7 @@ describe("Unit tests for ens registry handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "extras", "[0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407-ttl]");
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "2");
     // AirExtra
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
@@ -478,10 +486,10 @@ describe("Unit tests for ens registry handlers", () => {
     // assert here
     // AirMeta
     assert.fieldEquals("AirMeta", "AIR_META", "name", "ens")
-    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens-v1")
+    assert.fieldEquals("AirMeta", "AIR_META", "slug", "ens_v1")
     assert.fieldEquals("AirMeta", "AIR_META", "version", "v1")
     assert.fieldEquals("AirMeta", "AIR_META", "schemaVersion", "1.0.0")
-    assert.fieldEquals("AirMeta", "AIR_META", "network", "MAINNET")
+    assert.fieldEquals("AirMeta", "AIR_META", "network", "mainnet")
     // AirBlock
     assert.fieldEquals("AirBlock", blockId, "id", blockId);
     assert.fieldEquals("AirBlock", blockId, "number", event.block.number.toString());
@@ -505,6 +513,7 @@ describe("Unit tests for ens registry handlers", () => {
     // AirDomain
     assert.fieldEquals("AirDomain", domainId, "lastUpdatedBlock", blockId);
     assert.fieldEquals("AirDomain", domainId, "extras", "[0xad3988d642ba25a8ca9d8889e0cfd6c550060e35455c55c936be87f9cfb97407-ttl]");
+    assert.fieldEquals("AirDomain", domainId, "lastUpdatedIndex", "1");
     // AirExtra
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "id", domainId.concat("-").concat('ttl'));
     assert.fieldEquals("AirExtra", domainId.concat("-").concat('ttl'), "name", "ttl");
@@ -518,5 +527,11 @@ describe("Unit tests for ens registry handlers", () => {
     assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "tokenId", "null");
     assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "domain", domainId);
     assert.fieldEquals("AirDomainNewTTLTransaction", domainNewResolverEntityId, "index", BIGINT_ONE.toString());
+  })
+
+  test("ens name by hash", () => {
+    const labelHash = "0x8e60bd7bd6a2886831b6d6ef4b70051b734b9caab02b0edca7b63f8385600063";
+    let labelName = ens.nameByHash(labelHash);
+    log.info("labelName: {}", [labelName!]);
   })
 })
