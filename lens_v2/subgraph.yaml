@@ -4,17 +4,24 @@ schema:
 dataSources:
   - kind: ethereum
     name: LensHub
-    network: matic
+    network: mumbai
     source:
-      address: '0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d'
+      address: '0xC1E77eE73403B8a7478884915aA599932A677870'
       abi: LensHub
-      startBlock: 28384641
+      startBlock: 40185861
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-    
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtra
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: LensHub
           file: ./abis/LensHub.json
@@ -26,3 +33,61 @@ dataSources:
         - event: DefaultProfileSet(indexed address,indexed uint256,uint256)
           handler: handleDefaultProfileSet
       file: ./src/mappings/index.ts
+  - kind: ethereum
+    name: LensHandle
+    network: mumbai
+    source:
+      address: '0xc3a1fabd7f8d290f7b0C45AA88af6e9c9E267843'
+      abi: LensHandle
+      startBlock: 40185868
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtra
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
+      abis:
+        - name: LensHandle
+          file: ./abis/LensHandle.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: HandleMinted(string,string,uint256,address,uint256)
+          handler: handleHandleMinted
+      file: ./src/lens-handle.ts
+  - kind: ethereum
+    name: TokenHandleRegistry
+    network: mumbai
+    source:
+      address: '0x9cD0d07AB772e42ed3497DD379360daBcD94352A'
+      abi: TokenHandleRegistry
+      startBlock: 40185878
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtra
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
+      abis:
+        - name: TokenHandleRegistry
+          file: ./abis/TokenHandleRegistry.json
+      eventHandlers:
+        - event: HandleLinked((uint256,address),(uint256,address),address,uint256)
+          handler: handleHandleLinked
+        - event: HandleUnlinked((uint256,address),(uint256,address),address,uint256)
+          handler: handleHandleUnlinked
+      file: ./src/token-handle-registry.ts
