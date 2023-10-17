@@ -75,7 +75,22 @@ type AirSocialProfile @entity {
   renewalCost: BigInt
   tokenAddress: AirToken!
   user: AirSocialUser!
+  handle: AirSocialProfileHandle
   isDefault: Boolean!
+  extras: [AirExtra!] #Store tokenUri
+  createdAt: AirBlock!
+  lastUpdatedIndex: BigInt!
+  lastUpdatedAt: AirBlock!
+}
+
+type AirSocialProfileHandle @entity {
+  id: ID!
+  name: String!
+  namespace: String
+  owner: AirAccount!
+  tokenAddress: AirToken!
+  tokenId: String!
+  profile: AirSocialProfile
   extras: [AirExtra!] #Store tokenUri
   createdAt: AirBlock!
   lastUpdatedIndex: BigInt!
