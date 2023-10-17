@@ -45,7 +45,8 @@ AIR_CHAIN_ID_MAP.set("near-mainnet", "1313161554");
 AIR_CHAIN_ID_MAP.set("optimism", "10");
 AIR_CHAIN_ID_MAP.set("osmosis", "osmosis-1");
 AIR_CHAIN_ID_MAP.set("matic", "137");
-AIR_CHAIN_ID_MAP.set("gnosis", "100")
+AIR_CHAIN_ID_MAP.set("gnosis", "100");
+AIR_CHAIN_ID_MAP.set("mumbai", "80001");
 
 export function getChainId(): string {
   const network = dataSource.network();

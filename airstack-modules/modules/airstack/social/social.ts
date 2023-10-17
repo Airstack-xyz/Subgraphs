@@ -831,7 +831,7 @@ export function trackSocialProfileHandleTransferTransaction(
   }
   saveProfileHandle(entity, airBlock)
   if(profile != null) {
-    saveAirSocialProfile(profile, block);
+    saveAirSocialProfile(profile, airBlock);
   }
   
 }
