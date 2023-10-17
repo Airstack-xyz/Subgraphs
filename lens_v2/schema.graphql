@@ -23,3 +23,59 @@ type UserToDefaultProfileIdMap @entity {
   id: ID! #User Address
   profileId: BigInt!
 }
+
+type Transfer @entity(immutable: true) {
+  id: Bytes!
+  from: Bytes! # address
+  to: Bytes! # address
+  tokenId: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type HandleMinted @entity(immutable: true) {
+  id: Bytes!
+  handle: String! # string
+  namespace: String! # string
+  handleId: BigInt! # uint256
+  to: Bytes! # address
+  timestamp: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type TokenGuardianStateChanged @entity(immutable: true) {
+  id: Bytes!
+  wallet: Bytes! # address
+  enabled: Boolean! # bool
+  tokenGuardianDisablingTimestamp: BigInt! # uint256
+  timestamp: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+type HandleLinked @entity(immutable: true) {
+  id: Bytes!
+  handle_id: BigInt! # uint256
+  handle_collection: Bytes! # address
+  token_id: BigInt! # uint256
+  token_collection: Bytes! # address
+  timestamp: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type HandleUnlinked @entity(immutable: true) {
+  id: Bytes!
+  handle_id: BigInt! # uint256
+  handle_collection: Bytes! # address
+  token_id: BigInt! # uint256
+  token_collection: Bytes! # address
+  timestamp: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
