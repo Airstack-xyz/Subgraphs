@@ -1,8 +1,9 @@
 import { ADDRESS_ZERO, integer, ZERO_ADDRESS } from "@protofire/subgraph-toolkit"
 import { log } from "@graphprotocol/graph-ts"
-import { DefaultProfileSet, ProfileCreated, Transfer } from "../../generated/LensHub/LensHub"
+import { DefaultProfileSet, ProfileCreated, ProfileImageURISet, Transfer, ProfileMetadataSet as ProfileMetadataSetV1 } from "../../generated/LensHub/LensHub"
+import {  ProfileMetadataSet as ProfileMetadataSetV2 } from "../../generated/LensPeriphery/LensPeriphery"
 import * as airstack from "../../modules/airstack/social/social"
-import { LENSHUB_ADDRESS } from "../constants"
+import { LENSHUB_ADDRESS, LENSPERIPHERY_ADDRESS } from "../constants"
 import { BIG_INT_ZERO, BIGINT_ONE } from "../../modules/airstack/common"
 import {
   TransferEntity,
@@ -165,5 +166,32 @@ export function handleDefaultProfileSet(event: DefaultProfileSet): void {
     event.params.profileId.toString(),
     LENSHUB_ADDRESS.toHexString(),
     event.params.wallet.toHexString()
+  )
+}
+
+export function handleProfileImageURISet(event: ProfileImageURISet): void {
+  airstack.social.trackSocialProfileImageURITransaction(
+    event.block,
+    event.address.toHexString(),
+    event.params.profileId.toString(),
+    event.params.imageURI,
+  )
+}
+
+export function handleProfileMetadataSetV2(event: ProfileMetadataSetV2): void {
+  airstack.social.trackSocialProfileMetadataURITransaction(
+    event.block,
+    event.address.toHexString(),
+    event.params.profileId.toString(),
+    event.params.metadata,
+  )
+}
+
+export function handleProfileMetadataSetV1(event: ProfileMetadataSetV1): void {
+  airstack.social.trackSocialProfileMetadataURITransaction(
+    event.block,
+    event.address.toHexString(),
+    event.params.profileId.toString(),
+    event.params.metadata,
   )
 }

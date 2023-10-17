@@ -4,9 +4,9 @@ schema:
 dataSources:
   - kind: ethereum
     name: LensHub
-    network: matic
+    network: mumbai
     source:
-      address: '0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d'
+      address: '0xC1E77eE73403B8a7478884915aA599932A677870'
       abi: LensHub
       startBlock: 28384641
     mapping:
@@ -14,7 +14,14 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-    
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtra
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
       abis:
         - name: LensHub
           file: ./abis/LensHub.json
@@ -25,4 +32,35 @@ dataSources:
           handler: handleTransfer
         - event: DefaultProfileSet(indexed address,indexed uint256,uint256)
           handler: handleDefaultProfileSet
+        - event: ProfileImageURISet(indexed uint256,string,uint256)
+          handler: handleProfileImageURISet
+        - event: ProfileMetadataSet(indexed uint256,string,address,uint256)
+          handler: handleProfileMetadataSetV2
+      file: ./src/mappings/index.ts
+  - kind: ethereum
+    name: LensPeriphery
+    network: mumbai
+    source:
+      address: '0xD5037d72877808cdE7F669563e9389930AF404E8'
+      abi: LensPeriphery
+      startBlock: 26267723 
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtra
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
+      abis:
+        - name: LensPeriphery
+          file: ./abis/LensPeriphery.json
+      eventHandlers:
+        - event: ProfileMetadataSet(indexed uint256,string,uint256)
+          handler: handleProfileMetadataSetV1
       file: ./src/mappings/index.ts

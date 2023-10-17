@@ -78,6 +78,8 @@ type AirSocialProfile @entity {
   handle: AirSocialProfileHandle
   isDefault: Boolean!
   extras: [AirExtra!] #Store tokenUri
+  metadataURI: String
+  imageURI: String
   createdAt: AirBlock!
   lastUpdatedIndex: BigInt!
   lastUpdatedAt: AirBlock!
