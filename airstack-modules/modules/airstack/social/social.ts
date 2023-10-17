@@ -331,6 +331,78 @@ export namespace social {
     )
   }
   /**
+ * @dev This function updates the Profile MetadataURI
+ * @param block EVM block at which transaction happend
+ * @param profileTokenAddress  Profile NFT Token Address
+ * @param profileTokenId Profile NFT TokenId
+ * @param metadataURI Profile Metadata URI
+ */
+ export function trackSocialProfileMetadataURITransaction(
+  block: ethereum.Block,
+  profileTokenAddress: string,
+  profileTokenId: string,
+  metadataURI: string,
+ ):void {
+
+  const chainId = getChainId()
+  const profileId = getProfileId(chainId, profileTokenAddress, profileTokenId);
+
+  const profile = AirSocialProfile.load(profileId);
+
+  if(profile == null) {
+    throw new Error("air social handle not found")
+  }
+
+  const airBlock = getOrCreateAirBlock(
+    chainId,
+    block.number,
+    block.hash.toHexString(),
+    block.timestamp
+  )
+  airBlock.save();
+
+  profile.metadataURI = metadataURI;
+
+  saveAirSocialProfile(profile, airBlock);
+ }
+
+
+   /**
+ * @dev This function updates the Profile ImageURI
+ * @param block EVM block at which transaction happend
+ * @param profileTokenAddress  Profile NFT Token Address
+ * @param profileTokenId Profile NFT TokenId
+ * @param imageURI Profile Image URI
+ */
+   export function trackSocialProfileImageURITransaction(
+    block: ethereum.Block,
+    profileTokenAddress: string,
+    profileTokenId: string,
+    imageURI: string,
+   ):void {
+  
+    const chainId = getChainId()
+    const profileId = getProfileId(chainId, profileTokenAddress, profileTokenId);
+  
+    const profile = AirSocialProfile.load(profileId);
+  
+    if(profile == null) {
+      throw new Error("air social handle not found")
+    }
+  
+    const airBlock = getOrCreateAirBlock(
+      chainId,
+      block.number,
+      block.hash.toHexString(),
+      block.timestamp
+    )
+    airBlock.save();
+  
+    profile.imageURI = imageURI;
+  
+    saveAirSocialProfile(profile, airBlock);
+   }
+  /**
    * @dev this function creates a AirSocialUserDefaultProfileChangeTransaction entity
    * @param chainId chain id
    * @param block air block entity
