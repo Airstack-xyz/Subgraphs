@@ -8,7 +8,7 @@ dataSources:
     source:
       address: '0xC1E77eE73403B8a7478884915aA599932A677870'
       abi: LensHub
-      startBlock: 28384641
+      startBlock: 40185861
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
