@@ -18,7 +18,10 @@ jobs:
         with:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
-      - run: npm install --legacy-peer-deps
-      - run: npm run publish-package --provenance --access public
+      - run: |
+          cd airstack-modules
+          npm install --legacy-peer-deps
+          npm run build:package
+      - run: npm run publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
