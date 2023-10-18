@@ -151,7 +151,7 @@ export function handleTransfer(event: Transfer): void {
     ADDRESS_ZERO,
     to,
     event.params.tokenId.toString(),
-    LENSHUB_ADDRESS.toHexString(),
+    event.address.toHexString(),
     to,
     new Array<airstack.social.AirExtraData>(),
     "", //lens v2 doesn't have handle 
@@ -217,7 +217,7 @@ export function handleProfileMetadataSetV2(event: ProfileMetadataSetV2): void {
 export function handleProfileMetadataSetV1(event: ProfileMetadataSetV1): void {
   airstack.social.trackSocialProfileMetadataURITransaction(
     event.block,
-    event.address.toHexString(),
+    LENSHUB_ADDRESS.toHexString(),
     event.params.profileId.toString(),
     event.params.metadata,
   )

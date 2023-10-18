@@ -11,7 +11,6 @@ import {
   HandleMinted,
 
 } from "../generated/schema"
-import { LENSHANDLE_ADDRESS } from "./constants"
 import { ZERO_ADDRESS } from "@protofire/subgraph-toolkit"
 
 export function handleTransfer(event: TransferEvent): void {
@@ -35,14 +34,9 @@ export function handleTransfer(event: TransferEvent): void {
       event.params.from.toHexString(),
       event.params.to.toHexString(),
       event.params.tokenId.toString(),
-      LENSHANDLE_ADDRESS.toHexString(),
+      event.address.toHexString(),
     )
   }
-// if handle is burned, make sure to un-link it.
-if(event.params.to.toHexString() == ZERO_ADDRESS) {
-
-
-}
 }
 
 export function handleHandleMinted(event: HandleMintedEvent): void {
@@ -65,27 +59,9 @@ export function handleHandleMinted(event: HandleMintedEvent): void {
     event.block,
     event.params.to.toHexString(),
     event.params.handleId.toString(),
-    LENSHANDLE_ADDRESS.toHexString(),
+    event.address.toHexString(),
     event.params.handle,
     event.params.namespace,
   )
 }
 
-// export function handleTokenGuardianStateChanged(
-//   event: TokenGuardianStateChangedEvent
-// ): void {
-//   let entity = new TokenGuardianStateChanged(
-//     event.transaction.hash.concatI32(event.logIndex.toI32())
-//   )
-//   entity.wallet = event.params.wallet
-//   entity.enabled = event.params.enabled
-//   entity.tokenGuardianDisablingTimestamp =
-//     event.params.tokenGuardianDisablingTimestamp
-//   entity.timestamp = event.params.timestamp
-
-//   entity.blockNumber = event.block.number
-//   entity.blockTimestamp = event.block.timestamp
-//   entity.transactionHash = event.transaction.hash
-
-//   entity.save()
-// }
