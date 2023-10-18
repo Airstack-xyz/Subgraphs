@@ -22,6 +22,6 @@ jobs:
           cd airstack-modules
           npm install --legacy-peer-deps
           npm run build:package
-      - run: npm run publish --provenance --access public
+      - run: npm run publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
