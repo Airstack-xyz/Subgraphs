@@ -1,0 +1,29 @@
+name: Create subgraph
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    environment: development
+    runs on: self-hosted
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install graph-cli
+      run: |
+        sudo yarn global add @graphprotocol/graph-cli
+        
+    - name: Install yq
+      run: |
+        sudo add-apt-repository ppa:rmescandon/yq
+        sudo apt update
+        sudo apt install yq -y
+        yq --version
+
+    - name: Read sub.folder.name from folder.yaml and create subgraph
+      run: |
+        SUBGRAPH_NAME=$(yq eval '.sub.subgraph.name' folder.yaml)
+        graph create --node ${{ secrets.INTERNAL_INDEXER_URL }} $SUBGRAPH_NAME
+      env:
+        INFURA_URL: ${{ secrets.INTERNAL_INDEXER_URL }}
