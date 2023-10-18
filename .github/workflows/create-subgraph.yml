@@ -23,7 +23,7 @@ jobs:
 
     - name: Read sub.folder.name from folder.yaml and create subgraph
       run: |
-        FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
-        graph create --node ${{ secrets.INTERNAL_INDEXER_URL }} $FOLDER_NAME
+        SUBGRAPH_NAME=$(yq eval '.sub.subgraph.name' folder.yaml)
+        graph create --node ${{ secrets.INTERNAL_INDEXER_URL }} $SUBGRAPH_NAME
       env:
         INFURA_URL: ${{ secrets.INTERNAL_INDEXER_URL }}

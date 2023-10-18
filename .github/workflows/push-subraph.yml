@@ -25,13 +25,24 @@ jobs:
         npm run deploy
         npm build
 
-    - name: Read sub.folder.name from folder.yaml and run graph deploy
+    - name: Read sub.folder.name from folder.yaml and run graph deploy on public IPFS node
       run: |
         FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
+        SUBGRAPH_NAME=$(yq eval '.sub.subgraph.name' folder.yaml)
         cd $FOLDER_NAME
-        graph deploy --node ${{ secrets.INFURA_NODE }}" --ipfs ${{ secrets.IPFS_NODE }} ---headers '{\"Authorization\": \"Basic ${{ secrets.INFURA_AUTH_HEADERS }}\"}' $FOLDER_NAME
+        graph deploy --node ${{ secrets.INTERNAL_INDEXER_URL }} --ipfs ${{ secrets.IPFS_NODE }} $SUBGRAPH_NAME
+      env:
+        IPFS_URL: ${{ secrets.IPFS_NODE }}
+        INTERNAL_URL: ${{ INTERNAL_INDEXER_URL }}
+
+    - name: Read sub.folder.name from folder.yaml and run graph deploy on public Infura node
+      run: |
+        FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
+        SUBGRAPH_NAME=$(yq eval '.sub.subgraph.name' folder.yaml)
+        cd $FOLDER_NAME
+        graph deploy --node ${{ secrets.INTERNAL_INDEXER_URL }} --ipfs ${{ secrets.INFURA_NODE }} ---headers '{\"Authorization\": \"Basic ${{ secrets.INFURA_AUTH_HEADERS }}\"}' $SUBGRAPH_NAME
       env:
         INFURA_URL: ${{ secrets.INFURA_NODE }}
-        IPFS_URL: ${{ secrets.IPFS_NODE }}
-        AUTH_HASH: ${{secrets.INFURA_AUTH_HEADERS }}
+        AUTH_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
+        INTERNAL_URL: ${{ INTERNAL_INDEXER_URL }}
 

@@ -2,3 +2,5 @@
 sub:
   folder:
     name: subgraph_folder
+  subgraph:
+    name: subgraph_name
