@@ -2,6 +2,38 @@ name: Push subgraph
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'dev/prod env'
+        default: 'development'
+        type: choice
+        required: true
+        options:
+          - development
+          - production
+      folder:
+        description: 'choose folder'
+        default: 'ens'
+        type: choice
+        required: true
+        options:
+          - blur
+          - enn
+          - erc-6551-accounts
+          - farcaster
+          - farcaster_v2
+          - lens
+          - looksrare
+          - poap
+          - quickswap
+          - rarible-exchange-v1
+          - rarible-exchange-v2
+          - seaport-subgraph
+          - uniswap-v3
+      subgraph_name:
+        description: 'subgraph name'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -37,10 +69,7 @@ jobs:
 
     - name: Read sub.folder.name from folder.yaml and run graph deploy on public Infura node
       run: |
-        FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
-        SUBGRAPH_NAME=$(yq eval '.sub.subgraph.name' folder.yaml)
-        cd $FOLDER_NAME
-        graph deploy --node ${{ secrets.INTERNAL_INDEXER_URL }} --ipfs ${{ secrets.INFURA_NODE }} ---headers '{\"Authorization\": \"Basic ${{ secrets.INFURA_AUTH_HEADERS }}\"}' $SUBGRAPH_NAME
+        graph deploy --node ${{ secrets.INTERNAL_INDEXER_URL }} --ipfs ${{ secrets.INFURA_NODE }} ---headers '{\"Authorization\": \"Basic ${{ secrets.INFURA_AUTH_HEADERS }}\"}' ${{ github.event.inputs.subgraph_name }}
       env:
         INFURA_URL: ${{ secrets.INFURA_NODE }}
         AUTH_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}

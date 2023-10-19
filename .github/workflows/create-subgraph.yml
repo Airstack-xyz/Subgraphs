@@ -2,7 +2,19 @@ name: Create subgraph
 
 on:
   workflow_dispatch:
-
+    inputs:
+      environment:
+        description: 'dev/prod env'
+        default: 'development'
+        type: choice
+        required: true
+        options:
+          - development
+          - production
+      subgraph_name:
+        description: 'subgraph name'
+        required: true
+        type: string
 jobs:
   build:
     environment: development
@@ -24,6 +36,6 @@ jobs:
     - name: Read sub.folder.name from folder.yaml and create subgraph
       run: |
         SUBGRAPH_NAME=$(yq eval '.sub.subgraph.name' folder.yaml)
-        graph create --node ${{ secrets.INTERNAL_INDEXER_URL }} $SUBGRAPH_NAME
+        graph create --node ${{ secrets.INTERNAL_INDEXER_URL }} ${{ github.event.inputs.subgraph_name }}
       env:
         INFURA_URL: ${{ secrets.INTERNAL_INDEXER_URL }}
