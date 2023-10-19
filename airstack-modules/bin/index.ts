@@ -2,7 +2,7 @@
 
 import { Vertical } from "../src/constants";
 import { integrate } from "../src/integrate";
-
+import { AirMetatypes } from "../src/types"
 const args = process.argv.slice(2);
 
 if (args.length == 0) {
@@ -11,6 +11,21 @@ if (args.length == 0) {
 }
 
 const vertical: string = args[0];
+let params: AirMetatypes = {
+  name: "",
+  version: "",
+  slug: "",
+}
+
+for (let i = 1; i < args.length; i++) {
+  if (args[i] === "--name") {
+    params.name = args[i + 1]
+  } else if (args[i] === "--version") {
+    params.version = args[i + 1]
+  } else if (args[i] === "--slug") {
+    params.slug = args[i + 1]
+  }
+}
 let graphql: string = "./schema.graphql";
 let yaml: string = "./subgraph.yaml";
 let dataSources: Array<string> | undefined = undefined;
@@ -66,7 +81,7 @@ for (let index = START_INDEX; index < args.length; index++) {
   }
 }
 
-integrate(vertical, yaml, graphql, dataSources, templates)
+integrate(vertical,params, yaml, graphql, dataSources, templates)
   .then(() => {
     switch (vertical) {
 

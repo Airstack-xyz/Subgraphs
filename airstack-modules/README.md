@@ -175,5 +175,6 @@ airstack.nft.trackNFTSaleTransactions(
 If you want to build the module yourself, please follow there steps.
 
 1. Clone the repo
-2. Run the command
+2. Run command`npx @airstack/subgraph-generator <vertical> --name <subgraph_name> --slug <subgraph_slug> --version <subgraph_version>`
+3. Run the command
    `npm run build`

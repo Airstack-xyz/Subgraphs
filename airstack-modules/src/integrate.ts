@@ -5,10 +5,12 @@ import * as yaml from "js-yaml";
 import fse from "fs-extra";
 import path from "path";
 import mustache from "mustache";
+import {AirMetatypes}from "./types"
 var readlineSync = require('readline-sync');
 
 export async function integrate(
   vertical: string,
+  params: AirMetatypes,
   yamlPath: string,
   graphql: string,
   dataSources?: Array<string>,
@@ -35,7 +37,7 @@ export async function integrate(
         writeSubgraphGraphql(vertical as Vertical, graphql)
           .then(() => {
             const { targetDir, commontTargetDir } = copyAirstackModules(vertical as Vertical);
-            getAirMetaDetails(vertical as Vertical);
+            getAirMetaDetails(params)
             const arrayOfFiles: Array<string> = []
             const arrayOfCommonFiles: Array<string> = []
             getAllFiles(targetDir, arrayOfFiles)
@@ -298,28 +300,13 @@ function getAllFiles(dirPath: string, arrayOfFiles: Array<string>) {
   return arrayOfFiles
 }
 
-export var SUBGRAPH_NAME = "";
-export var SUBGRAPH_VERSION = "";
-export var SUBGRAPH_SLUG = "";
 
-function getAirMetaDetails(vertical: Vertical) {
-  while (SUBGRAPH_NAME.trim() === "") {
-    let subgraphName: string = readlineSync.question("Enter the name of the subgraph: ");
-    SUBGRAPH_NAME = subgraphName;
-  }
-  while (SUBGRAPH_VERSION.trim() === "") {
-    let subgraphVersion: string = readlineSync.question("Enter the version of the subgraph: ");
-    SUBGRAPH_VERSION = subgraphVersion;
-  }
-  while (SUBGRAPH_SLUG.trim() === "") {
-    let subgraphSlug: string = readlineSync.question("Enter the slug of the subgraph: ");
-    SUBGRAPH_SLUG = subgraphSlug;
-  }
+function getAirMetaDetails(params:AirMetatypes) {
   let targetFile = path.resolve(__dirname, '../../../../../modules/airstack/common/index.ts');
   let fileContent = fs.readFileSync(targetFile, { encoding: "utf8" });
-  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, `export const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";`);
-  fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, `export const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";`);
-  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, `export const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_NAME = ".*";/g, `export const SUBGRAPH_NAME = "${params.name}";`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_VERSION = ".*";/g, `export const SUBGRAPH_VERSION = "${params.version}";`);
+  fileContent = fileContent.replace(/export const SUBGRAPH_SLUG = ".*";/g, `export const SUBGRAPH_SLUG = "${params.slug}";`);
   // fileContent += `\nexport const SUBGRAPH_NAME = "${SUBGRAPH_NAME}";\nexport const SUBGRAPH_VERSION = "${SUBGRAPH_VERSION}";\nexport const SUBGRAPH_SLUG = "${SUBGRAPH_SLUG}";\n`
   fs.writeFileSync(targetFile, fileContent, { encoding: "utf8" });
 }
