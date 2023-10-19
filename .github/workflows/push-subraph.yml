@@ -51,7 +51,6 @@ jobs:
 
     - name: Read sub.folder.name from folder.yaml and run npm
       run: |
-        FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
         cd $FOLDER_NAME
         npm i
         npm run deploy
@@ -59,19 +58,30 @@ jobs:
 
     - name: Read sub.folder.name from folder.yaml and run graph deploy on public IPFS node
       run: |
-        FOLDER_NAME=$(yq eval '.sub.folder.name' folder.yaml)
-        SUBGRAPH_NAME=$(yq eval '.sub.subgraph.name' folder.yaml)
-        cd $FOLDER_NAME
-        graph deploy --node ${{ secrets.INTERNAL_INDEXER_URL }} --ipfs ${{ secrets.IPFS_NODE }} $SUBGRAPH_NAME
-      env:
-        IPFS_URL: ${{ secrets.IPFS_NODE }}
-        INTERNAL_URL: ${{ INTERNAL_INDEXER_URL }}
+        if [ "${{ github.event.inputs.environment }}" == "development" ]; then
+          NODE_URL="${{ secrets.DEV_NODE_URL }}"
+        else
+          NODE_URL="${{ secrets.PROD_NODE_URL }}"
+        fi
+        graph deploy --node $NODE_URL --ipfs $IPFS_NODE $SUBGRAPH_NAME
 
     - name: Read sub.folder.name from folder.yaml and run graph deploy on public Infura node
       run: |
-        graph deploy --node ${{ secrets.INTERNAL_INDEXER_URL }} --ipfs ${{ secrets.INFURA_NODE }} ---headers '{\"Authorization\": \"Basic ${{ secrets.INFURA_AUTH_HEADERS }}\"}' ${{ github.event.inputs.subgraph_name }}
+        if [ "${{ github.event.inputs.environment }}" == "development" ]; then
+          NODE_URL="${{ secrets.DEV_NODE_URL }}"
+        else
+          NODE_URL="${{ secrets.PROD_NODE_URL }}"
+        fi
+        graph deploy --node $NODE_URL --ipfs $IPFS_NODE ---headers '{\"Authorization\": \"Basic $AUTH_HASH\"}' $SUBGRAPH_NAME
+      
       env:
+        ENVIRONMENT: ${{ github.event.inputs.environment }}
+        SUBGRAPH_NAME: ${{ github.events.inputs.subgraph_name }}
+        FOLDER_NAME: ${{ github.events.inputs.folder }}
+        DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
+        PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
         INFURA_URL: ${{ secrets.INFURA_NODE }}
         AUTH_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
         INTERNAL_URL: ${{ INTERNAL_INDEXER_URL }}
+        IPFS_URL: ${{ secrets.IPFS_NODE }}
 
