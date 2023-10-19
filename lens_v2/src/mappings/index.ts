@@ -1,5 +1,5 @@
 import { ADDRESS_ZERO, integer, ZERO_ADDRESS } from "@protofire/subgraph-toolkit"
-import { log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 import { DefaultProfileSet, ProfileCreated, ProfileImageURISet, Transfer, ProfileMetadataSet as ProfileMetadataSetV1 } from "../../generated/LensHub/LensHub"
 import {  ProfileMetadataSet as ProfileMetadataSetV2 } from "../../generated/LensPeriphery/LensPeriphery"
 import * as airstack from "../../modules/airstack/social/social"
@@ -65,7 +65,15 @@ export function handleProfileCreated(event: ProfileCreated): void {
     BIG_INT_ZERO
   )
 }
+
+
+//v2 
+
+
+
+// v1 +  v2
 export function handleTransfer(event: Transfer): void {
+
   let txHash = event.transaction.hash
   let transferEntity = TransferEntity.load(event.params.tokenId.toString())
   if (transferEntity == null) {
@@ -120,6 +128,7 @@ export function handleTransfer(event: Transfer): void {
       // removing from mapping
       createOrUpdateUserToDefaultProfileIdMap(event.params.from, BIG_INT_ZERO)
     }
+    
     airstack.social.trackSocialProfileOwnershipChangeTransaction(
       event.block,
       txHash.toHexString(),
@@ -131,6 +140,24 @@ export function handleTransfer(event: Transfer): void {
       event.params.from.toHexString(),
       event.params.to.toHexString()
     )
+  } else {
+   //create profile as per V2, Mint from 0x00..00 address is triggered first. 
+   //https://dashboard.tenderly.co/tx/polygon-mumbai/0x01a4f0b701152305eda043940bdd0e9947c9e931e7fae39a473a6b865d9af664/logs
+   let to = event.params.to.toHexString()
+   airstack.social.trackSocialUserAndProfileRegisteredTransaction(
+    event.block,
+    txHash.toHexString(),
+    event.logIndex,
+    ADDRESS_ZERO,
+    to,
+    event.params.tokenId.toString(),
+    event.address.toHexString(),
+    to,
+    new Array<airstack.social.AirExtraData>(),
+    "", //lens v2 doesn't have handle 
+    new Array<airstack.social.AirExtraData>(),
+    BIG_INT_ZERO
+  )
   }
 }
 export function handleDefaultProfileSet(event: DefaultProfileSet): void {
@@ -190,7 +217,7 @@ export function handleProfileMetadataSetV2(event: ProfileMetadataSetV2): void {
 export function handleProfileMetadataSetV1(event: ProfileMetadataSetV1): void {
   airstack.social.trackSocialProfileMetadataURITransaction(
     event.block,
-    event.address.toHexString(),
+    LENSHUB_ADDRESS.toHexString(),
     event.params.profileId.toString(),
     event.params.metadata,
   )

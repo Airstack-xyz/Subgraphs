@@ -350,7 +350,7 @@ export namespace social {
   const profile = AirSocialProfile.load(profileId);
 
   if(profile == null) {
-    throw new Error("air social handle not found")
+    throw new Error("air social profile not found")
   }
 
   const airBlock = getOrCreateAirBlock(
@@ -387,7 +387,7 @@ export namespace social {
     const profile = AirSocialProfile.load(profileId);
   
     if(profile == null) {
-      throw new Error("air social handle not found")
+      throw new Error("air social profile not found")
     }
   
     const airBlock = getOrCreateAirBlock(
@@ -933,7 +933,7 @@ export function trackSocialProfileHandleTransferTransaction(
   const handle = AirSocialProfileHandle.load(handleId);
 
   if(profile == null) {
-    throw new Error("air social handle not found")
+    throw new Error("air social profile not found")
   }
 
   if(handle == null) {
@@ -979,7 +979,7 @@ export function trackSocialProfileHandleTransferTransaction(
   const handle = AirSocialProfileHandle.load(handleId);
 
   if(profile == null) {
-    throw new Error("air social handle not found")
+    throw new Error("air social profile not found")
   }
 
   if(handle == null) {
