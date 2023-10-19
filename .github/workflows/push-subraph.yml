@@ -18,7 +18,7 @@ on:
         required: true
         options:
           - blur
-          - enn
+          - ens
           - erc-6551-accounts
           - farcaster
           - farcaster_v2
@@ -63,7 +63,7 @@ jobs:
         else
           NODE_URL="$PROD_NODE_URL"
         fi
-        graph deploy --node $NODE_URL --ipfs $IPFS_NODE $SUBGRAPH_NAME
+        graph deploy --node $NODE_URL --ipfs $IPFS_PUBLIC_NODE $SUBGRAPH_NAME
 
     - name: Read sub.folder.name from folder.yaml and run graph deploy on public Infura node
       run: |
@@ -72,7 +72,7 @@ jobs:
         else
           NODE_URL="$PROD_NODE_URL"
         fi
-        graph deploy --node $NODE_URL --ipfs $IPFS_NODE ---headers '{\"Authorization\": \"Basic $AUTH_HASH\"}' $SUBGRAPH_NAME
+        graph deploy --node $NODE_URL --ipfs $IPFS_INFURA_NODE ---headers '{\"Authorization\": \"Basic $INFURA_HASH\"}' $SUBGRAPH_NAME
       
       env:
         ENVIRONMENT: ${{ github.event.inputs.environment }}
@@ -80,8 +80,7 @@ jobs:
         FOLDER_NAME: ${{ github.events.inputs.folder }}
         DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
         PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
-        INFURA_URL: ${{ secrets.INFURA_NODE }}
-        AUTH_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
-        INTERNAL_URL: ${{ INTERNAL_INDEXER_URL }}
-        IPFS_URL: ${{ secrets.IPFS_NODE }}
+        INFURA_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
+        IPFS_PUBLIC_NODE: ${{ secrets.IPFS_PUBLIC_NODE }}
+        IPFS_INFURA_NODE: ${{ secrets.IPFS_INFURA_NODE }}
 
