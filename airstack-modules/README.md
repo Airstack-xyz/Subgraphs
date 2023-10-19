@@ -175,6 +175,7 @@ airstack.nft.trackNFTSaleTransactions(
 If you want to build the module yourself, please follow there steps.
 
 1. Clone the repo
+2. Update `config.json` with appropriate name,slug & version
 2. Run 
 `"mustache config.json meta.template > modules/airstack/common/meta.ts"`
 3. Run the command
