@@ -35,7 +35,15 @@ jobs:
 
     - name: Read sub.folder.name from folder.yaml and create subgraph
       run: |
-        SUBGRAPH_NAME=$(yq eval '.sub.subgraph.name' folder.yaml)
-        graph create --node ${{ secrets.INTERNAL_INDEXER_URL }} ${{ github.event.inputs.subgraph_name }}
+        if [ "${{ github.event.inputs.environment }}" == "development" ]; then
+          NODE_URL="$DEV_NODE_URL"
+        else
+          NODE_URL="$PROD_NODE_URL"
+        fi
+        graph create --node $NODE_URL $SUBGRAPH_NAME
       env:
         INFURA_URL: ${{ secrets.INTERNAL_INDEXER_URL }}
+        DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
+        PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
+        SUBGRAPH_NAME: ${{ github.events.inputs.subgraph_name }}
+
