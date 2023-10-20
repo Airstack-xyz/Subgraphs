@@ -53,8 +53,10 @@ jobs:
       run: |
         cd $FOLDER_NAME
         npm i
+        npm run codegen
+        npm run build
         npm run deploy
-        npm build
+        
 
     - name: Read sub.folder.name from folder.yaml and run graph deploy on public IPFS node
       run: |
