@@ -1,6 +1,6 @@
 {
   "name": "@airstack/subgraph-generator",
-  "version": "1.0.0-alpha.6",
+  "version": "1.0.0-alpha.7",
   "description": "Integrate Airstack schemas in any subgraph.",
   "main": "modules/airstack/index",
   "scripts": {
