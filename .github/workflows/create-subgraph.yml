@@ -44,5 +44,3 @@ jobs:
       env:
         DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
         PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
-        SUBGRAPH_NAME: ${{ github.events.inputs.subgraph_name }}
-
