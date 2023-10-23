@@ -2,12 +2,12 @@
   "name": "lens-subgraph",
   "license": "MIT",
   "scripts": {
-    "codegen": "graph codegen",
+    "codegen": "npx @airstack/subgraph-generator social --version polygon --slug lens_polygon --name lens && graph codegen",
     "build": "graph build",
-    "test": "graph test"
+    "deploy": "graph deploy --product hosted-service sharathkrml/lens-test"
   },
   "dependencies": {
-    "@airstack/subgraph-generator": "file:airstack-subgraph-generator-1.0.0-alpha.3.tgz",
+    "@airstack/subgraph-generator": "^1.0.0-alpha.7",
     "@graphprotocol/graph-cli": "^0.47.0",
     "@graphprotocol/graph-ts": "^0.29.3",
     "@protofire/subgraph-toolkit": "^0.1.2"
