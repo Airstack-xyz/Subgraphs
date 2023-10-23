@@ -41,15 +41,8 @@ jobs:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Install yq
-      run: |
-        sudo add-apt-repository ppa:rmescandon/yq
-        sudo apt update
-        sudo apt install yq -y
-        yq --version
 
-    - name: Read sub.folder.name from folder.yaml and run npm
+    - name: Run npm
       run: |
         cd $FOLDER_NAME
         npm i
@@ -58,7 +51,7 @@ jobs:
         npm run deploy
         
 
-    - name: Read sub.folder.name from folder.yaml and run graph deploy on public IPFS node
+    - name: Run graph deploy on public IPFS node
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
           NODE_URL="$DEV_NODE_URL"
@@ -67,7 +60,7 @@ jobs:
         fi
         graph deploy --node $NODE_URL --ipfs $IPFS_PUBLIC_NODE $SUBGRAPH_NAME
 
-    - name: Read sub.folder.name from folder.yaml and run graph deploy on public Infura node
+    - name: Run graph deploy on public Infura node
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
           NODE_URL="$DEV_NODE_URL"
