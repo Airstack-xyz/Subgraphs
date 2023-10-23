@@ -37,14 +37,8 @@ jobs:
       run: |
         sudo yarn global add @graphprotocol/graph-cli
         
-    - name: Install yq
-      run: |
-        sudo add-apt-repository ppa:rmescandon/yq
-        sudo apt update
-        sudo apt install yq -y
-        yq --version
 
-    - name: Read sub.folder.name from folder.yaml and create subgraph
+    - name: Create subgraph based on environment
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
           NODE_URL="$DEV_NODE_URL"
