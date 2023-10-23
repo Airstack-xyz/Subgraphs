@@ -40,7 +40,8 @@ jobs:
         else
           NODE_URL="$PROD_NODE_URL"
         fi
-        graph create --node $NODE_URL ${{ github.events.inputs.subgraph_name }}
+        graph create --node $NODE_URL $SUBGRAPH_NAME
       env:
         DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
         PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
+        SUBGRAPH_NAME: ${{ github.event.inputs.subgraph_name }}
