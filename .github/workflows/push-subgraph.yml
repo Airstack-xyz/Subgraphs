@@ -47,7 +47,12 @@ jobs:
       with:
         node-version: '16'
 
-    - name: Read sub.folder.name from folder.yaml and run npm
+    - name: Operations
+      run: |
+        git config --global url."https://${{ secrets.ACCESS_TOKEN_USR }}:${{ secrets.ACCESS_TOKEN_PWD }}@github.com/".insteadOf "git@github.com:"
+        git config --global url."https://${{ secrets.ACCESS_TOKEN_USR }}:${{ secrets.ACCESS_TOKEN_PWD }}@github.com/".insteadOf "https://github.com/"
+
+    - name: Run npm
       working-directory: ${{ github.event.inputs.folder }}
       run: |
         cd $FOLDER_NAME
@@ -59,7 +64,7 @@ jobs:
         npm run deploy
         
 
-    - name: Read sub.folder.name from folder.yaml and run graph deploy on public IPFS node
+    - name: Run graph deploy on public IPFS node
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
           NODE_URL="$DEV_NODE_URL"
@@ -68,7 +73,7 @@ jobs:
         fi
         graph deploy --node $NODE_URL --ipfs $IPFS_PUBLIC_NODE $SUBGRAPH_NAME
 
-    - name: Read sub.folder.name from folder.yaml and run graph deploy on public Infura node
+    - name: Run graph deploy on public Infura node
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
           NODE_URL="$DEV_NODE_URL"
@@ -86,4 +91,4 @@ jobs:
         INFURA_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
         IPFS_PUBLIC_NODE: ${{ secrets.IPFS_PUBLIC_NODE }}
         IPFS_INFURA_NODE: ${{ secrets.IPFS_INFURA_NODE }}
-
+      
