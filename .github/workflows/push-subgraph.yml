@@ -51,6 +51,7 @@ jobs:
       working-directory: ${{ github.event.inputs.folder }}
       run: |
         cd $FOLDER_NAME
+        pwd
         ls -lah
         npm i
         npm run codegen
