@@ -86,7 +86,7 @@ jobs:
       env:
         ENVIRONMENT: ${{ github.event.inputs.environment }}
         SUBGRAPH_NAME: ${{ github.event.inputs.subgraph_name }}
-        FOLDER_NAME: ${{ github.events.inputs.folder }}
+        FOLDER_NAME: ${{ github.event.inputs.folder }}
         DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
         PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
         INFURA_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
