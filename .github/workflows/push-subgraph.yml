@@ -38,16 +38,14 @@ on:
 jobs:
   build:
     environment: development
-    runs on: self-hosted
+    runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
     
-    - name: Install yq
-      run: |
-        sudo add-apt-repository ppa:rmescandon/yq
-        sudo apt update
-        sudo apt install yq -y
-        yq --version
+    - name: Set up Node.js 16
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
 
     - name: Read sub.folder.name from folder.yaml and run npm
       run: |
