@@ -55,6 +55,7 @@ jobs:
     - name: Run npm
       working-directory: ${{ github.event.inputs.folder }}
       run: |
+        echo $FOLDER_NAME
         cd $FOLDER_NAME
         pwd
         ls -lah
