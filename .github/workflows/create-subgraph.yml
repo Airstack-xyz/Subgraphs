@@ -16,24 +16,29 @@ on:
         required: true
         type: string
 jobs:
-  build:
+  create-subgraph:
     environment: development
-    runs on: self-hosted
+    runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
+
+    - name: Set up Node.js 16
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install Yarn
+      run: |
+        curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+        echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+        sudo apt-get update && sudo apt-get install -y yarn
 
     - name: Install graph-cli
       run: |
         sudo yarn global add @graphprotocol/graph-cli
         
-    - name: Install yq
-      run: |
-        sudo add-apt-repository ppa:rmescandon/yq
-        sudo apt update
-        sudo apt install yq -y
-        yq --version
 
-    - name: Read sub.folder.name from folder.yaml and create subgraph
+    - name: Create subgraph based on environment
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
           NODE_URL="$DEV_NODE_URL"
@@ -44,5 +49,4 @@ jobs:
       env:
         DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
         PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
-        SUBGRAPH_NAME: ${{ github.events.inputs.subgraph_name }}
-
+        SUBGRAPH_NAME: ${{ github.event.inputs.subgraph_name }}
