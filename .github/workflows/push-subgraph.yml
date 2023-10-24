@@ -47,11 +47,16 @@ jobs:
       with:
         node-version: '16'
 
-    - name: Operations
+    - name: Install Yarn
       run: |
-        git config --global url."https://${{ secrets.ACCESS_TOKEN_USR }}:${{ secrets.ACCESS_TOKEN_PWD }}@github.com/".insteadOf "git@github.com:"
-        git config --global url."https://${{ secrets.ACCESS_TOKEN_USR }}:${{ secrets.ACCESS_TOKEN_PWD }}@github.com/".insteadOf "https://github.com/"
+        curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+        echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+        sudo apt-get update && sudo apt-get install -y yarn
 
+    - name: Install graph-cli
+      run: |
+        sudo yarn global add @graphprotocol/graph-cli
+        
     - name: Run npm
       working-directory: ${{ github.event.inputs.folder }}
       run: |
