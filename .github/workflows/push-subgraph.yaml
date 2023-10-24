@@ -1,4 +1,4 @@
-name: Deploy subgraph
+name: Push subgraph
 on:
   workflow_dispatch:
     inputs:
@@ -34,7 +34,7 @@ on:
         required: true
         type: string
 jobs:
-  deploy-subgraph:
+  push-subgraph:
     environment: development
     runs-on: self-hosted
     steps:
