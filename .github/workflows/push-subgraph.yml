@@ -85,6 +85,7 @@ jobs:
           NODE_URL="$PROD_NODE_URL"
         fi
         graph deploy --node $NODE_URL --ipfs $IPFS_INFURA_NODE --headers '{"Authorization": "Basic '$INFURA_HASH'"}' $SUBGRAPH_NAME
+        echo $SUBGRAPH_NAME
       
       env:
         ENVIRONMENT: ${{ github.event.inputs.environment }}
