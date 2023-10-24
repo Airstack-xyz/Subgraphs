@@ -48,6 +48,7 @@ jobs:
         node-version: '16'
 
     - name: Read sub.folder.name from folder.yaml and run npm
+      working-directory: ${{ github.event.inputs.folder }}
       run: |
         cd $FOLDER_NAME
         npm i
@@ -76,7 +77,7 @@ jobs:
       
       env:
         ENVIRONMENT: ${{ github.event.inputs.environment }}
-        SUBGRAPH_NAME: ${{ github.events.inputs.subgraph_name }}
+        SUBGRAPH_NAME: ${{ github.event.inputs.subgraph_name }}
         FOLDER_NAME: ${{ github.events.inputs.folder }}
         DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
         PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
