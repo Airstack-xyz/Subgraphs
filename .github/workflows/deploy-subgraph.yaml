@@ -1,5 +1,3 @@
-
-```
 name: Deploy subgraph
 on:
   workflow_dispatch:
@@ -74,5 +72,4 @@ jobs:
         PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
         INFURA_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
         IPFS_PUBLIC_NODE: ${{ secrets.IPFS_PUBLIC_NODE }}
-        IPFS_INFURA_NODE: ${{ secrets.IPFS_INFURA_NODE }}     
-```
+        IPFS_INFURA_NODE: ${{ secrets.IPFS_INFURA_NODE }}
