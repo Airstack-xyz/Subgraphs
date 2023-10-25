@@ -12,6 +12,7 @@ import {
   AirSocialUserHomeUrlChangeTransaction,
   AirSocialProfileRenewalTransaction,
   AirSocialUserDefaultProfileChangeTransaction,
+  AirSocialProfileHandle,
 } from "../../../generated/schema"
 import {
   getOrCreateAirAccount,
@@ -40,7 +41,9 @@ import {
   AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
   AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
   AIR_USER_DEFAULT_PROFILE_CHANGE_TRANSACTION_ENTITY_COUNTER_ID,
+  AIR_SOCIAL_PROFILE_HANDLE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
 } from "./utils"
+import { ZERO_ADDRESS } from "@protofire/subgraph-toolkit"
 
 export namespace social {
   // start of track functions
@@ -327,6 +330,78 @@ export namespace social {
       currDefaultProfileId
     )
   }
+  /**
+ * @dev This function updates the Profile MetadataURI
+ * @param block EVM block at which transaction happend
+ * @param profileTokenAddress  Profile NFT Token Address
+ * @param profileTokenId Profile NFT TokenId
+ * @param metadataURI Profile Metadata URI
+ */
+ export function trackSocialProfileMetadataURITransaction(
+  block: ethereum.Block,
+  profileTokenAddress: string,
+  profileTokenId: string,
+  metadataURI: string,
+ ):void {
+
+  const chainId = getChainId()
+  const profileId = getProfileId(chainId, profileTokenAddress, profileTokenId);
+
+  const profile = AirSocialProfile.load(profileId);
+
+  if(profile == null) {
+    throw new Error("air social profile not found")
+  }
+
+  const airBlock = getOrCreateAirBlock(
+    chainId,
+    block.number,
+    block.hash.toHexString(),
+    block.timestamp
+  )
+  airBlock.save();
+
+  profile.metadataURI = metadataURI;
+
+  saveAirSocialProfile(profile, airBlock);
+ }
+
+
+   /**
+ * @dev This function updates the Profile ImageURI
+ * @param block EVM block at which transaction happend
+ * @param profileTokenAddress  Profile NFT Token Address
+ * @param profileTokenId Profile NFT TokenId
+ * @param imageURI Profile Image URI
+ */
+   export function trackSocialProfileImageURITransaction(
+    block: ethereum.Block,
+    profileTokenAddress: string,
+    profileTokenId: string,
+    imageURI: string,
+   ):void {
+  
+    const chainId = getChainId()
+    const profileId = getProfileId(chainId, profileTokenAddress, profileTokenId);
+  
+    const profile = AirSocialProfile.load(profileId);
+  
+    if(profile == null) {
+      throw new Error("air social profile not found")
+    }
+  
+    const airBlock = getOrCreateAirBlock(
+      chainId,
+      block.number,
+      block.hash.toHexString(),
+      block.timestamp
+    )
+    airBlock.save();
+  
+    profile.imageURI = imageURI;
+  
+    saveAirSocialProfile(profile, airBlock);
+   }
   /**
    * @dev this function creates a AirSocialUserDefaultProfileChangeTransaction entity
    * @param chainId chain id
@@ -723,8 +798,228 @@ export namespace social {
       airSocialProfile
     )
   }
+
+/**
+ * @dev This function tracks profile Handle registration transaction
+ * @param block ethereum block
+ * @param handleId Id of handle
+ * @param to Owner of handle
+ * @param tokenId TokenId of Handle
+ * @param tokenAddress  TokenAddress of Handle
+ * @param name  Name of Handle
+ * @param nameSpace Name space of Handle
+ */
+export function trackSocialProfileHandleRegistrationTransaction(
+  block: ethereum.Block,
+  to: string,
+  tokenId: string,
+  tokenAddress: string,
+  name: string,
+  nameSpace: string,
+): void {
+
+  const chainId = getChainId()
+  const id = getProfileHandleId(chainId,tokenAddress, tokenId);
+  let entity = AirSocialProfileHandle.load(id);
+
+  if(entity == null) {
+    entity = new AirSocialProfileHandle(id);
+  }
+
+  const airBlock = getOrCreateAirBlock(
+    chainId,
+    block.number,
+    block.hash.toHexString(),
+    block.timestamp
+  )
+  airBlock.save();
+  const airAccount = getOrCreateAirAccount(chainId, to, airBlock)
+  airAccount.save();
+
+  const token = getOrCreateAirToken(chainId, tokenAddress);
+  token.save();
+
+  entity.createdAt = airBlock.id;
+  entity.owner = airAccount.id;
+  entity.name = name;
+  entity.namespace = nameSpace;
+  entity.tokenAddress = token.id;
+  entity.tokenId = tokenId;
+  saveProfileHandle(entity, airBlock)
+}
+
+/**
+ * @dev This function tracks profile Handle transfer transaction
+ * @param block ethereum block
+ * @param handleId Id of handle
+ * @param from current Owner of handle
+ * @param to New owner of handle
+ * @param tokenId TokenId of Handle
+ * @param tokenAddress  TokenAddress of Handle
+ 
+ */
+export function trackSocialProfileHandleTransferTransaction(
+  block: ethereum.Block,
+  from: string,
+  to: string,
+  tokenId: string,
+  tokenAddress: string,
+  
+): void {
+
+  const chainId = getChainId()
+  const id = getProfileHandleId(chainId, tokenAddress, tokenId);
+  let entity = AirSocialProfileHandle.load(id);
+
+  if(entity == null) {
+    throw new Error("air social profile handle not found")
+  }
+
+  const airBlock = getOrCreateAirBlock(
+    chainId,
+    block.number,
+    block.hash.toHexString(),
+    block.timestamp
+  )
+  airBlock.save();
+  const airAccount = getOrCreateAirAccount(chainId, to, airBlock)
+  airAccount.save();
+
+  entity.owner = airAccount.id;  
+
+  const profile = AirSocialProfile.load(entity.profile!);
+  // if handle is burned, unlink it with profile if already linked
+  if(to == ZERO_ADDRESS && entity.profile != null) {
+
+    if(profile != null) {
+      trackSocialProfileHandleUnlinkTransaction(
+        block,
+        tokenAddress,
+        tokenId,
+        profile.tokenAddress,
+        tokenId
+      )
+    }
+  }
+  saveProfileHandle(entity, airBlock)
+  if(profile != null) {
+    saveAirSocialProfile(profile, airBlock);
+  }
+  
+}
+
+
+/**
+ * @dev This function links a handle with profile
+ * @param block EVM block at which transaction happend
+ * @param handleTokenAddress  Handle NFT Token address
+ * @param handleTokenId  Handle NFT Token If
+ * @param profileTokenAddress  Profile NFT Token Address
+ * @param profileTokenId Profile NFT TokenId
+ */
+ export function trackSocialProfileHandleLinkTransaction(
+  block: ethereum.Block,
+  handleTokenAddress: string,
+  handleTokenId: string,
+  profileTokenAddress: string,
+  profileTokenId: string
+ ):void {
+
+  const chainId = getChainId()
+  const handleId = getProfileHandleId(chainId, handleTokenAddress, handleTokenId);
+  const profileId = getProfileId(chainId, profileTokenAddress, profileTokenId);
+
+  const profile = AirSocialProfile.load(profileId);
+  const handle = AirSocialProfileHandle.load(handleId);
+
+  if(profile == null) {
+    throw new Error("air social profile not found")
+  }
+
+  if(handle == null) {
+    throw new Error("air social profile handle not found")
+  }
+
+  const airBlock = getOrCreateAirBlock(
+    chainId,
+    block.number,
+    block.hash.toHexString(),
+    block.timestamp
+  )
+  airBlock.save();
+
+  profile.handle = handle.id;
+  handle.profile = profile.id;
+
+  saveProfileHandle(handle, airBlock);
+  saveAirSocialProfile(profile, airBlock);
+ }
+
+ /**
+ * @dev This function Unlinks a handle with profile
+ * @param block EVM block at which transaction happend
+ * @param handleTokenAddress  Handle NFT Token address
+ * @param handleTokenId  Handle NFT Token If
+ * @param profileTokenAddress  Profile NFT Token Address
+ * @param profileTokenId Profile NFT TokenId
+ */
+ export function trackSocialProfileHandleUnlinkTransaction(
+  block: ethereum.Block,
+  handleTokenAddress: string,
+  handleTokenId: string,
+  profileTokenAddress: string,
+  profileTokenId: string
+ ):void {
+
+  const chainId = getChainId()
+  const handleId = getProfileHandleId(chainId, handleTokenAddress, handleTokenId);
+  const profileId = getProfileId(chainId, profileTokenAddress, profileTokenId);
+
+  const profile = AirSocialProfile.load(profileId);
+  const handle = AirSocialProfileHandle.load(handleId);
+
+  if(profile == null) {
+    throw new Error("air social profile not found")
+  }
+
+  if(handle == null) {
+    throw new Error("air social profile handle not found")
+  }
+
+  const airBlock = getOrCreateAirBlock(
+    chainId,
+    block.number,
+    block.hash.toHexString(),
+    block.timestamp
+  )
+  airBlock.save();
+
+  profile.handle = null;
+  handle.profile = null;
+
+  saveProfileHandle(handle, airBlock);
+  saveAirSocialProfile(profile, airBlock);
+ }
+ 
+
   //end of track functions
 
+  function saveProfileHandle(profileHandle: AirSocialProfileHandle, airBlock: AirBlock):void {
+    profileHandle.lastUpdatedAt = airBlock.id;
+    profileHandle.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_SOCIAL_PROFILE_HANDLE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
+      airBlock
+    )
+    profileHandle.save()
+  }
+
+  function getProfileHandleId(chainId: string, tokenAddress: string, tokenId: string):string {
+    return chainId
+    .concat("-")
+    .concat(tokenAddress)
+    .concat("-")
+    .concat(tokenId)
+  }
   /**
    * @dev this function gets or creates a AirSocialUser entity
    * @param chainId chain id
@@ -766,6 +1061,13 @@ export namespace social {
     return entity as AirSocialUser
   }
 
+  function getProfileId(chainId: string, tokenAddress: string, tokenId: string): string {
+    return chainId
+    .concat("-")
+    .concat(tokenAddress)
+    .concat("-")
+    .concat(tokenId);
+  }
   /**
    * @dev this function creates a AirSocialProfile entity
    * @param block ethereum block
@@ -787,11 +1089,7 @@ export namespace social {
     extraIds: string[],
     profileExpiryTimestamp: BigInt
   ): AirSocialProfile {
-    const id = chainId
-      .concat("-")
-      .concat(tokenAddress)
-      .concat("-")
-      .concat(tokenId)
+    const id = getProfileId(chainId, tokenAddress, tokenId);
     let entity = AirSocialProfile.load(id)
     if (entity == null) {
       entity = new AirSocialProfile(id)

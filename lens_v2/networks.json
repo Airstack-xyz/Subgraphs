@@ -1,0 +1,24 @@
+{
+  "matic": {
+    "LensHub": {
+      "address": "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d"
+    },
+    "LensHandle": {
+      "address": ""
+    },
+    "TokenHandleRegistry": {
+      "address": ""
+    }
+  },
+  "mumbai": {
+    "LensHub": {
+      "address": "0xC1E77eE73403B8a7478884915aA599932A677870"
+    },
+    "LensHandle": {
+      "address": "0xc3a1fabd7f8d290f7b0C45AA88af6e9c9E267843"
+    },
+    "TokenHandleRegistry": {
+      "address": "0x9cD0d07AB772e42ed3497DD379360daBcD94352A"
+    }
+  }
+}
