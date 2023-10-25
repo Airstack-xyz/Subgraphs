@@ -1,9 +1,9 @@
 import { ADDRESS_ZERO, integer, ZERO_ADDRESS } from "@protofire/subgraph-toolkit"
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 import { DefaultProfileSet, ProfileCreated, ProfileImageURISet, Transfer, ProfileMetadataSet as ProfileMetadataSetV1 } from "../../generated/LensHub/LensHub"
-import {  ProfileMetadataSet as ProfileMetadataSetV2 } from "../../generated/LensPeriphery/LensPeriphery"
+import { ProfileMetadataSet as ProfileMetadataSetV2 } from "../../generated/LensPeriphery/LensPeriphery"
 import * as airstack from "../../modules/airstack/social/social"
-import { LENSHUB_ADDRESS, LENSPERIPHERY_ADDRESS } from "../constants"
+import { LENSHUB_ADDRESS } from "../constants"
 import { BIG_INT_ZERO, BIGINT_ONE } from "../../modules/airstack/common"
 import {
   TransferEntity,
@@ -57,7 +57,7 @@ export function handleProfileCreated(event: ProfileCreated): void {
     ADDRESS_ZERO,
     to.toHexString(),
     profileId.toString(),
-    LENSHUB_ADDRESS.toHexString(),
+    event.address.toHexString(),
     to.toHexString(),
     new Array<airstack.social.AirExtraData>(),
     event.params.handle,
