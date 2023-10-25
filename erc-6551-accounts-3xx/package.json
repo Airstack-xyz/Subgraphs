@@ -1,0 +1,18 @@
+{
+  "name": "erc-6551-accounts",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --product hosted-service sharathkrml/erc6551-v3",
+    "create-local": "graph create --node https://api.studio.thegraph.com/deploy erc-6551-accounts-mainnet",
+    "remove-local": "graph remove --node  https://api.studio.thegraph.com/deploy erc-6551-accounts-mainnet",
+    "deploy-local": "graph deploy --node  https://api.studio.thegraph.com/deploy --ipfs  https://api.thegraph.com/ipfs erc-6551-accounts-mainnet",
+    "test": "graph test"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.51.2",
+    "@graphprotocol/graph-ts": "0.30.0"
+  },
+  "devDependencies": { "matchstick-as": "0.5.0" }
+}
