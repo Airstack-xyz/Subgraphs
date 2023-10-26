@@ -47,6 +47,7 @@ jobs:
         fi
         echo $NODE_URL 
         echo $SUBGRAPH_NAME
+        graph create --node $NODE_URL $SUBGRAPH_NAME
       env:
         DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
         PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
