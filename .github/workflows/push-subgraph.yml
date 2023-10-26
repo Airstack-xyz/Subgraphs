@@ -88,13 +88,13 @@ jobs:
         graph deploy --node $NODE_URL --ipfs $IPFS_INFURA_NODE --headers '{"Authorization": "Basic '$INFURA_HASH'"}' $SUBGRAPH_NAME:v0.0.1
         echo $SUBGRAPH_NAME
       
-      env:
-        ENVIRONMENT: ${{ github.event.inputs.environment }}
-        SUBGRAPH_NAME: ${{ github.event.inputs.subgraph_name }}
-        FOLDER_NAME: ${{ github.event.inputs.folder }}
-        DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
-        PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
-        INFURA_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
-        IPFS_PUBLIC_NODE: ${{ secrets.IPFS_PUBLIC_NODE }}
-        IPFS_INFURA_NODE: ${{ secrets.IPFS_INFURA_NODE }}
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment }}
+      SUBGRAPH_NAME: ${{ github.event.inputs.subgraph_name }}
+      FOLDER_NAME: ${{ github.event.inputs.folder }}
+      DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
+      PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
+      INFURA_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
+      IPFS_PUBLIC_NODE: ${{ secrets.IPFS_PUBLIC_NODE }}
+      IPFS_INFURA_NODE: ${{ secrets.IPFS_INFURA_NODE }}
       
