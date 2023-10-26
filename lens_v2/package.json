@@ -3,8 +3,7 @@
   "license": "MIT",
   "scripts": {
     "codegen": "npx @airstack/subgraph-generator social --version v2.0.0 --slug lens_v2_polygon --name lens && graph codegen",
-    "build": "npm run codegen & graph build",
-    "graph:build": "graph build", 
+    "build": "graph build",
     "test": "graph test"
   },
   "dependencies": {
