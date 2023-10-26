@@ -18,7 +18,7 @@ on:
 jobs:
   create-subgraph:
     environment: development
-    runs-on: ${{ (github.event.inputs.environment == 'development' && 'self-hosted development') || (github.event.inputs.environment == 'production' && 'self-hosted production') }}
+    runs-on: self-hosted development
     steps:
     - uses: actions/checkout@v3
 
