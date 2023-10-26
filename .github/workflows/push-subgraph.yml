@@ -69,6 +69,7 @@ jobs:
         
 
     - name: Run graph deploy on public IPFS node
+      working-directory: ${{ github.event.inputs.folder }}
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
           NODE_URL="$DEV_NODE_URL"
@@ -80,6 +81,7 @@ jobs:
         graph deploy --node $NODE_URL --ipfs $IPFS_PUBLIC_NODE --version-label v0.0.1 $SUBGRAPH_NAME
         
     - name: Run graph deploy on public Infura node
+      working-directory: ${{ github.event.inputs.folder }}
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
           NODE_URL="$DEV_NODE_URL"
