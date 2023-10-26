@@ -38,7 +38,7 @@ on:
 jobs:
   build:
     environment: development
-    runs-on: self-hosted
+    runs-on: [self-hosted, development]
     steps:
     - uses: actions/checkout@v3
     
