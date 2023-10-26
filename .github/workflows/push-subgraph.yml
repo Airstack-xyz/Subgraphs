@@ -40,7 +40,7 @@ jobs:
     environment: development
     runs-on: 
     - self-hosted
-    - ${{ (github.event.inputs.environment == 'development' && 'subgraphs-dev') || (github.event.inputs.environment == 'production' && 'subgraphs-prod') }}]
+    - ${{ (github.event.inputs.environment == 'development' && 'subgraphs-dev') || (github.event.inputs.environment == 'production' && 'subgraphs-prod') }}
     steps:
     - uses: actions/checkout@v3
     
