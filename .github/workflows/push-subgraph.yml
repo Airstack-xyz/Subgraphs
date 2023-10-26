@@ -77,8 +77,7 @@ jobs:
         fi
         echo $IPFS_PUBLIC_NODE
         echo $SUBGRAPH_NAME
-        graph deploy --node $NODE_URL --ipfs $IPFS_PUBLIC_NODE $SUBGRAPH_NAME:v0.0.1
-
+        
     - name: Run graph deploy on public Infura node
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
