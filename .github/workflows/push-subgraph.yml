@@ -75,7 +75,7 @@ jobs:
         else
           NODE_URL="$PROD_NODE_URL"
         fi
-        graph deploy --node $NODE_URL --ipfs $IPFS_PUBLIC_NODE $SUBGRAPH_NAME
+        graph deploy --node $NODE_URL --ipfs $IPFS_PUBLIC_NODE $SUBGRAPH_NAME:v0.0.1
 
     - name: Run graph deploy on public Infura node
       run: |
@@ -84,7 +84,7 @@ jobs:
         else
           NODE_URL="$PROD_NODE_URL"
         fi
-        graph deploy --node $NODE_URL --ipfs $IPFS_INFURA_NODE --headers '{"Authorization": "Basic '$INFURA_HASH'"}' $SUBGRAPH_NAME
+        graph deploy --node $NODE_URL --ipfs $IPFS_INFURA_NODE --headers '{"Authorization": "Basic '$INFURA_HASH'"}' $SUBGRAPH_NAME:v0.0.1
         echo $SUBGRAPH_NAME
       
       env:
