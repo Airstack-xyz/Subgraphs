@@ -1,4 +1,5 @@
 name: Push subgraph
+
 on:
   workflow_dispatch:
     inputs:
@@ -33,49 +34,69 @@ on:
         description: 'subgraph name'
         required: true
         type: string
+
 jobs:
-  push-subgraph:
+  build:
     environment: development
-    runs-on: self-hosted
+    runs-on: 
+    - self-hosted
+    - ${{ (github.event.inputs.environment == 'development' && 'subgraphs-dev') || (github.event.inputs.environment == 'production' && 'subgraphs-prod') }}
     steps:
     - uses: actions/checkout@v3
-
+    
     - name: Set up Node.js 16
       uses: actions/setup-node@v3
       with:
         node-version: '16'
-    
-    - name: Run npm
+
+    - name: Install Yarn
       run: |
-        cd $FOLDER_NAME
+        curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+        echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+        sudo apt-get update && sudo apt-get install -y yarn
+
+    - name: Install graph-cli
+      run: |
+        sudo yarn global add @graphprotocol/graph-cli
+        
+    - name: Run npm
+      working-directory: ${{ github.event.inputs.folder }}
+      run: |
+        echo $FOLDER_NAME
+        echo $SUBGRAPH_NAME
         npm i
         npm run codegen
         npm run build
         npm run deploy
         
+
     - name: Run graph deploy on public IPFS node
+      working-directory: ${{ github.event.inputs.folder }}
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
           NODE_URL="$DEV_NODE_URL"
         else
           NODE_URL="$PROD_NODE_URL"
         fi
-        graph deploy --node $NODE_URL --ipfs $IPFS_PUBLIC_NODE $SUBGRAPH_NAME
+        graph deploy --node $NODE_URL --ipfs $IPFS_PUBLIC_NODE --version-label v0.0.1 $SUBGRAPH_NAME
+        
     - name: Run graph deploy on public Infura node
+      working-directory: ${{ github.event.inputs.folder }}
       run: |
         if [ "${{ github.event.inputs.environment }}" == "development" ]; then
           NODE_URL="$DEV_NODE_URL"
         else
           NODE_URL="$PROD_NODE_URL"
         fi
-        graph deploy --node $NODE_URL --ipfs $IPFS_INFURA_NODE ---headers '{\"Authorization\": \"Basic $INFURA_HASH\"}' $SUBGRAPH_NAME
+        graph deploy --node $NODE_URL --ipfs $IPFS_INFURA_NODE --headers '{"Authorization": "Basic '$INFURA_HASH'"}' --version-label v0.0.1 $SUBGRAPH_NAME
       
-      env:
-        ENVIRONMENT: ${{ github.event.inputs.environment }}
-        SUBGRAPH_NAME: ${{ github.events.inputs.subgraph_name }}
-        FOLDER_NAME: ${{ github.events.inputs.folder }}
-        DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
-        PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
-        INFURA_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
-        IPFS_PUBLIC_NODE: ${{ secrets.IPFS_PUBLIC_NODE }}
-        IPFS_INFURA_NODE: ${{ secrets.IPFS_INFURA_NODE }}
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment }}
+      SUBGRAPH_NAME: ${{ github.event.inputs.subgraph_name }}
+      FOLDER_NAME: ${{ github.event.inputs.folder }}
+      DEV_NODE_URL: ${{ secrets.DEV_NODE_URL }}
+      PROD_NODE_URL: ${{ secrets.PROD_NODE_URL }}
+      INFURA_HASH: ${{ secrets.INFURA_AUTH_HEADERS }}
+      IPFS_PUBLIC_NODE: ${{ secrets.IPFS_PUBLIC_NODE }}
+      IPFS_INFURA_NODE: ${{ secrets.IPFS_INFURA_NODE }}
+      
