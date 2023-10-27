@@ -62,8 +62,6 @@ jobs:
     - name: Run npm
       working-directory: ${{ github.event.inputs.folder }}
       run: |
-        echo $FOLDER_NAME
-        echo $SUBGRAPH_NAME
         npm i
         npm run codegen
         npm run build
