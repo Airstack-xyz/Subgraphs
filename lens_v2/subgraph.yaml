@@ -1,6 +1,9 @@
 specVersion: 0.0.4
 schema:
   file: ./schema.graphql
+  graft:
+    base: QmQev6pDDsZ9nse1sNQTc9Sfz36heAEnHJY3BYXs4DniPP
+    block: 49312390 
 dataSources:
   - kind: ethereum
     name: LensHub
