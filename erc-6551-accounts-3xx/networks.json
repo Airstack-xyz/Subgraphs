@@ -1,0 +1,32 @@
+{
+  "ethereum": {
+    "ERC6551Registry3": {
+      "address": "0x284be69BaC8C983a749956D7320729EB24bc75f9",
+      "startBlock": 18382829
+    },
+    "ERC6551Registry3.1": {
+      "address": "0x000000006551c19487814612e58FE06813775758",
+      "startBlock": 18429101
+    }
+  },
+  "polygon": {
+    "ERC6551Registry3": {
+      "address": "0x284be69BaC8C983a749956D7320729EB24bc75f9",
+      "startBlock": 48894807
+    },
+    "ERC6551Registry3.1": {
+      "address": "0x000000006551c19487814612e58FE06813775758",
+      "startBlock": 49144500
+    }
+  },
+  "base": {
+    "ERC6551Registry3": {
+      "address": "0x284be69BaC8C983a749956D7320729EB24bc75f9",
+      "startBlock": 5454866
+    },
+    "ERC6551Registry3.1": {
+      "address": "0x000000006551c19487814612e58FE06813775758",
+      "startBlock": 5733915 
+    }
+  }
+}
