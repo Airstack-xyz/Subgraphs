@@ -11,7 +11,7 @@ export const SUBGRAPH_SCHEMA_VERSION = "1.0.0"
 
 export const SUBGRAPH_NAME = "Mainnet ERC-6551"
 export const SUBGRAPH_VERSION = "v1"
-export const SUBGRAPH_SLUG = "mainnet-erc-6551"
+export const SUBGRAPH_SLUG = "mainnet-erc-6551-3xx"
 
 const AIR_CHAIN_ID_MAP = new TypedMap<string, string>()
 AIR_CHAIN_ID_MAP.set("arbitrum-one", "42161")

@@ -3,12 +3,32 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: ERC6551Registry
-    network: sepolia
+    name: ERC6551Registry3
+    network: matic
     source:
       address: "0x000000006551c19487814612e58FE06813775758"
       abi: ERC6551Registry
-      startBlock: 4528419
+      startBlock: 49144500
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AccountCreated
+      abis:
+        - name: ERC6551Registry
+          file: ./abis/ERC6551Registry.json
+      eventHandlers:
+        - event: ERC6551AccountCreated(address,indexed address,bytes32,uint256,indexed address,indexed uint256)
+          handler: handleAccountCreated
+      file: ./src/erc-6551-registry.ts
+  - kind: ethereum
+    name: ERC6551Registry3.1
+    network: matic
+    source:
+      address: "0x284be69BaC8C983a749956D7320729EB24bc75f9"
+      abi: ERC6551Registry
+      startBlock: 48894807
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

@@ -1,4 +1,4 @@
-import { ERC6551AccountCreated as AccountCreatedEvent } from "../generated/ERC6551Registry/ERC6551Registry"
+import { ERC6551AccountCreated as AccountCreatedEvent } from "../generated/ERC6551Registry3/ERC6551Registry"
 import { getChainId, updateAirEntityCounter, getOrCreateAirBlock } from "./common";
 import { AirBlock, AirERC6551Account } from "../generated/schema";
 
