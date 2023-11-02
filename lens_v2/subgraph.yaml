@@ -3,7 +3,7 @@ schema:
   file: ./schema.graphql
   graft:
     base: QmQev6pDDsZ9nse1sNQTc9Sfz36heAEnHJY3BYXs4DniPP
-    block: 49312390 
+    block: 49424860 
 dataSources:
   - kind: ethereum
     name: LensHub
@@ -67,61 +67,61 @@ dataSources:
         - event: ProfileMetadataSet(indexed uint256,string,uint256)
           handler: handleProfileMetadataSetV1
       file: ./src/mappings/index.ts
-  # - kind: ethereum
-  #   name: LensHandle
-  #   network: matic
-  #   source:
-  #     address: '0xc3a1fabd7f8d290f7b0C45AA88af6e9c9E267843'
-  #     abi: LensHandle
-  #     startBlock: 40185868
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.7
-  #     language: wasm/assemblyscript
-  #     entities:
-  #       - AirBlock
-  #       - AirMeta
-  #       - AirEntityCounter
-  #       - AirAccount
-  #       - AirExtra
-  #       - AirUser
-  #       - AirProfile
-  #       - AirUserRegisteredTransaction
-  #     abis:
-  #       - name: LensHandle
-  #         file: ./abis/LensHandle.json
-  #     eventHandlers:
-  #       - event: Transfer(indexed address,indexed address,indexed uint256)
-  #         handler: handleTransfer
-  #       - event: HandleMinted(string,string,uint256,address,uint256)
-  #         handler: handleHandleMinted
-  #     file: ./src/lens-handle.ts
-  # - kind: ethereum
-  #   name: TokenHandleRegistry
-  #   network: matic
-  #   source:
-  #     address: '0x9cD0d07AB772e42ed3497DD379360daBcD94352A'
-  #     abi: TokenHandleRegistry
-  #     startBlock: 40185878
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.7
-  #     language: wasm/assemblyscript
-  #     entities:
-  #       - AirBlock
-  #       - AirMeta
-  #       - AirEntityCounter
-  #       - AirAccount
-  #       - AirExtra
-  #       - AirUser
-  #       - AirProfile
-  #       - AirUserRegisteredTransaction
-  #     abis:
-  #       - name: TokenHandleRegistry
-  #         file: ./abis/TokenHandleRegistry.json
-  #     eventHandlers:
-  #       - event: HandleLinked((uint256,address),(uint256,address),address,uint256)
-  #         handler: handleHandleLinked
-  #       - event: HandleUnlinked((uint256,address),(uint256,address),address,uint256)
-  #         handler: handleHandleUnlinked
-  #     file: ./src/token-handle-registry.ts
+  - kind: ethereum
+    name: LensHandle
+    network: matic
+    source:
+      address: '0xe7E7EaD361f3AaCD73A61A9bD6C10cA17F38E945'
+      abi: LensHandle
+      startBlock: 49424860
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtra
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
+      abis:
+        - name: LensHandle
+          file: ./abis/LensHandle.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: HandleMinted(string,string,uint256,address,uint256)
+          handler: handleHandleMinted
+      file: ./src/lens-handle.ts
+  - kind: ethereum
+    name: TokenHandleRegistry
+    network: matic
+    source:
+      address: '0xD4F2F33680FCCb36748FA9831851643781608844'
+      abi: TokenHandleRegistry
+      startBlock: 49424866
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirAccount
+        - AirExtra
+        - AirUser
+        - AirProfile
+        - AirUserRegisteredTransaction
+      abis:
+        - name: TokenHandleRegistry
+          file: ./abis/TokenHandleRegistry.json
+      eventHandlers:
+        - event: HandleLinked((uint256,address),(uint256,address),address,uint256)
+          handler: handleHandleLinked
+        - event: HandleUnlinked((uint256,address),(uint256,address),address,uint256)
+          handler: handleHandleUnlinked
+      file: ./src/token-handle-registry.ts
