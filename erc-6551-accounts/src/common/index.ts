@@ -17,9 +17,9 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-export const SUBGRAPH_NAME = "Mainnet ERC-6551";
+export const SUBGRAPH_NAME = "Base ERC-6551";
 export const SUBGRAPH_VERSION = "v1";
-export const SUBGRAPH_SLUG = "mainnet-erc-6551";
+export const SUBGRAPH_SLUG = "base-erc-6551";
 
 const AIR_CHAIN_ID_MAP = new TypedMap<string, string>();
 AIR_CHAIN_ID_MAP.set("arbitrum-one", "42161");
@@ -44,6 +44,7 @@ AIR_CHAIN_ID_MAP.set("optimism", "10");
 AIR_CHAIN_ID_MAP.set("osmosis", "osmosis-1");
 AIR_CHAIN_ID_MAP.set("matic", "137");
 AIR_CHAIN_ID_MAP.set("gnosis", "100")
+AIR_CHAIN_ID_MAP.set("base", "8453")
 
 export function getChainId(): string {
   const network = dataSource.network();
