@@ -899,15 +899,10 @@ export function trackSocialProfileHandleTransferTransaction(
           tokenAddress,
           tokenId,
           profile.tokenAddress,
-          tokenId
+          profile.tokenId
         )
       }
     }
-
-    if (profile != null) {
-      saveAirSocialProfile(profile, airBlock);
-    }
-
   }
   saveProfileHandle(entity, airBlock)
 
