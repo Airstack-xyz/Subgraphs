@@ -4,8 +4,8 @@ schema:
 features:
   - grafting # feature name
 graft:
-  base: QmQev6pDDsZ9nse1sNQTc9Sfz36heAEnHJY3BYXs4DniPP
-  block: 49424860 
+  base: QmZ4jvr6t9wytVPy6qq3K34moV7U2vAqxMVysARkPeme6b
+  block: 50380822 
 dataSources:
   - kind: ethereum
     name: LensHub

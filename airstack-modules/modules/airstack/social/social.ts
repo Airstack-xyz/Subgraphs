@@ -887,25 +887,25 @@ export function trackSocialProfileHandleTransferTransaction(
 
   entity.owner = airAccount.id;  
 
-  const profile = AirSocialProfile.load(entity.profile!);
-  // if handle is burned, unlink it with profile if already linked
-  if(to == ZERO_ADDRESS && entity.profile != null) {
+  if (entity.profile) {
 
-    if(profile != null) {
-      trackSocialProfileHandleUnlinkTransaction(
-        block,
-        tokenAddress,
-        tokenId,
-        profile.tokenAddress,
-        tokenId
-      )
+    const profile = AirSocialProfile.load(entity.profile!);
+    // if handle is burned, unlink it with profile if already linked
+    if (to == ZERO_ADDRESS && entity.profile != null) {
+
+      if (profile != null) {
+        trackSocialProfileHandleUnlinkTransaction(
+          block,
+          tokenAddress,
+          tokenId,
+          profile.tokenAddress,
+          profile.tokenId
+        )
+      }
     }
   }
   saveProfileHandle(entity, airBlock)
-  if(profile != null) {
-    saveAirSocialProfile(profile, airBlock);
-  }
-  
+
 }
 
 
