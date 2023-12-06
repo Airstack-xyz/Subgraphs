@@ -19,14 +19,13 @@ import {
   AirDomainNewResolver,
   AirDomainNewTTL,
   AirDomainNameUnwrapped,
-  AirDomainPrimary,
+  AirNameSet,
   AirLabelName,
   AirText,
   AirTextChanged,
   AirMultiCoinChanged,
   AirMultiCoin,
   AirResolvedAddressChanged,
-  AirDomainPrimarySet,
   AirDomainFusesSet,
   AirDomainCostSet,
 } from "../../../generated/schema"
@@ -37,7 +36,7 @@ import {
   AIR_DOMAIN_NAME_WRAPPED_ID,
   AIR_DOMAIN_NEW_RESOLVER_ID,
   AIR_DOMAIN_NEW_TTL_CHANGED_ID,
-  AIR_DOMAIN_PRIMARY_SET_CHANGED_ID,
+  AIR_NAME_SET_ID,
   AIR_DOMAIN_REGISTRATION_OR_RENEW_CHANGED_ID,
   AIR_DOMAIN_MANAGER_CHANGED_ID,
   AIR_RESOLVER_CHANGED_ID,
@@ -166,7 +165,6 @@ export namespace domain {
     airDomain.encodedName = ""
     airDomain.name = []
     airDomain.labelName = ""
-    airDomain.isPrimary = false
     airDomain.isMigrated = false
     airDomain.createdAt = airBlock.id
     airDomain.lastUpdatedBlock = airBlock.id
@@ -359,7 +357,6 @@ export namespace domain {
     let managerAirDomainAccount = getOrCreateAirDomainAccount(manager, block)
     managerAirDomainAccount.save()
     domain.manager = managerAirDomainAccount.id
-    domain.isPrimary = false
     let airBlock = getOrCreateAirBlock(block)
     airBlock.save()
     saveAirDomain(domain, block)
@@ -432,7 +429,6 @@ export namespace domain {
     if (resolver.equals(Address.zero())) {
       resolverId = null
       airDomain.resolver = null
-      airDomain.isPrimary = false
       log.debug(
         "setting isPrimary false from Resolver Change,domainId {} hash {} ",
         [airDomain.id, txHash.toHexString()]
@@ -445,34 +441,6 @@ export namespace domain {
       airResolver.isActive = true
       saveAirResolver(airResolver, block)
       airDomain.resolver = airResolver.id
-      let resolvedAddressId = airResolver.resolvedAddress
-      airDomain.isPrimary = false
-      if (resolvedAddressId) {
-        let airPrimary = AirDomainPrimary.load(resolvedAddressId)
-        if (airPrimary) {
-          if (airPrimary.domain == airDomain.id) {
-            log.debug(
-              "setting isPrimary from Resolver Change,domainId {} hash {} ",
-              [airDomain.id, txHash.toHexString()]
-            )
-            airDomain.isPrimary = true
-            // book keeping
-            let airDomainPrimarySet = new AirDomainPrimarySet(
-              createEventId("AirDomainPrimarySet", txHash, logIndex)
-            )
-            airDomainPrimarySet.domain = airDomain.id
-            let airBlock = getOrCreateAirBlock(block)
-            airDomainPrimarySet.createdAt = airBlock.id
-            airDomainPrimarySet.hash = txHash
-            airDomainPrimarySet.resolvedAddress = resolvedAddressId
-            airDomainPrimarySet.lastUpdatedIndex = updateAirEntityCounter(
-              AIR_DOMAIN_PRIMARY_SET_CHANGED_ID,
-              airBlock
-            )
-            airDomainPrimarySet.save()
-          }
-        }
-      }
       saveAirDomain(airDomain, block)
       resolverId = airResolver.id
     }
@@ -572,37 +540,6 @@ export namespace domain {
       airBlock
     )
     airResolvedAddressChanged.save()
-
-    let airDomain = AirDomain.load(domainId)
-    if (airDomain && airDomain.resolver == airResolver.id) {
-      // update primary domain
-      airDomain.isPrimary = false
-      const chainId = getChainId()
-      let airPrimarySet = AirDomainPrimary.load(
-        chainId.concat("-").concat(resolvedAddress.toHexString())
-      )
-      if (airPrimarySet) {
-        if (domainId == airPrimarySet.domain) {
-          airDomain.isPrimary = true
-          // book keeping
-          let airDomainPrimarySet = new AirDomainPrimarySet(
-            createEventId("AirDomainPrimarySet", txHash, logIndex)
-          )
-          airDomainPrimarySet.domain = airDomain.id
-          let airBlock = getOrCreateAirBlock(block)
-          airDomainPrimarySet.createdAt = airBlock.id
-          airDomainPrimarySet.hash = txHash
-          airDomainPrimarySet.resolvedAddress = resolvedDomainAccount.id
-          airDomainPrimarySet.lastUpdatedIndex = updateAirEntityCounter(
-            AIR_DOMAIN_PRIMARY_SET_CHANGED_ID,
-            airBlock
-          )
-          airDomainPrimarySet.save()
-        }
-      }
-
-      saveAirDomain(airDomain, block)
-    }
   }
   export function trackMultiCoinAddress(
     txHash: Bytes,
@@ -1073,6 +1010,7 @@ export namespace domain {
   export function trackSetPrimaryDomain(
     txHash: Bytes,
     logOrCallIndex: BigInt,
+    name: string,
     domainId: string,
     resolvedAddress: Address,
     block: ethereum.Block
@@ -1080,6 +1018,12 @@ export namespace domain {
     log.debug("trackSetPrimaryDomain txHash {}", [txHash.toHexString()])
     let resolvedAddressDomainAccount = getOrCreateAirDomainAccount(
       resolvedAddress,
+      block
+    )
+    let airNameSet = createOrUpdateAirNameSet(
+      resolvedAddressDomainAccount.id,
+      name,
+      domainId,
       block
     )
     let airDomain = AirDomain.load(domainId)
@@ -1108,46 +1052,7 @@ export namespace domain {
       )
       return
     }
-    airDomain.isPrimary = true
     saveAirDomain(airDomain, block)
-    const chainId = getChainId()
-    let airPrimarySets = AirDomainPrimary.load(
-      chainId.concat("-").concat(resolvedAddress.toHexString())
-    )
-    if (airPrimarySets) {
-      let oldPrimaryDomain = AirDomain.load(airPrimarySets.domain)
-      if (oldPrimaryDomain == null) {
-        throw new Error("Domain does not exist " + airPrimarySets.domain)
-      }
-      oldPrimaryDomain.isPrimary = false
-      log.debug("primaryDomain changed from {} to {} , txHash {} ", [
-        oldPrimaryDomain.id,
-        airDomain.id,
-        txHash.toHexString(),
-      ])
-      saveAirDomain(oldPrimaryDomain, block)
-    } else {
-      airPrimarySets = new AirDomainPrimary(
-        chainId.concat("-").concat(resolvedAddress.toHexString())
-      )
-    }
-    airPrimarySets.domain = airDomain.id
-    airPrimarySets.save()
-    let airDomainAccount = getOrCreateAirDomainAccount(resolvedAddress, block)
-    // book keeping
-    let airDomainPrimarySet = new AirDomainPrimarySet(
-      createEventId("AirDomainPrimarySet", txHash, logOrCallIndex)
-    )
-    airDomainPrimarySet.domain = airDomain.id
-    let airBlock = getOrCreateAirBlock(block)
-    airDomainPrimarySet.createdAt = airBlock.id
-    airDomainPrimarySet.hash = txHash
-    airDomainPrimarySet.resolvedAddress = airDomainAccount.id
-    airDomainPrimarySet.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_DOMAIN_PRIMARY_SET_CHANGED_ID,
-      airBlock
-    )
-    airDomainPrimarySet.save()
   }
 
   export function getOrCreateAirResolver(
@@ -1221,5 +1126,27 @@ export namespace domain {
       block
     )
     airDomainRegistrationOrRenew.save()
+  }
+  function createOrUpdateAirNameSet(
+    id: string,
+    name: string,
+    domainId: string,
+    block: ethereum.Block
+  ): AirNameSet {
+    let airBlock = getOrCreateAirBlock(block)
+    let airNameSet = AirNameSet.load(id)
+    if (!airNameSet) {
+      airNameSet = new AirNameSet(id)
+      airNameSet.createdAt = airBlock.id
+    }
+    airNameSet.name = name
+    airNameSet.domain = domainId
+    airNameSet.lastUpdatedBlock = airBlock.id
+    airNameSet.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_NAME_SET_ID,
+      airBlock
+    )
+    airNameSet.save()
+    return airNameSet
   }
 }

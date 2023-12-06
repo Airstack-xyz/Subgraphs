@@ -14,10 +14,8 @@ export const _handleSetName = (
   name: string,
   callIndex: BigInt
 ): void => {
-  const lowercaseName = name.toLowerCase()
-
   // fixing labelNames
-  let labelNamesArr = lowercaseName.split(".")
+  let labelNamesArr = name.split(".")
   for (let index = 0; index < labelNamesArr.length; index++) {
     const labelName = labelNamesArr[index]
     const labelHash = getLabelHash(labelName)
@@ -25,10 +23,11 @@ export const _handleSetName = (
   }
 
   // verify https://etherscan.io/tx/0x7b599aa8fce32b580c7af99e45ce29c1c69621618a7f54ad0a518e67f5c58481
-  let domainId = getNameHashFromName(lowercaseName)
+  let domainId = getNameHashFromName(name)
   airstack.domain.trackSetPrimaryDomain(
     txHash,
     callIndex,
+    name,
     domainId,
     from,
     block

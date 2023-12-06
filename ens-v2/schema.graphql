@@ -47,12 +47,17 @@ type AirDomainAccount @entity {
   manager: [AirDomain!]! @derivedFrom(field: "manager")
   "domains registered under this account / actual owner of domain(nft)"
   owner: [AirDomain!]! @derivedFrom(field: "owner")
-}
 
-type AirDomainPrimary @entity {
-  "resolvedAddress"
+  nameSet: AirNameSet
+}
+type AirNameSet @entity {
+  "The unique identifier for the account"
   id: ID!
-  domain: AirDomain!
+  name: String!
+  domain: AirDomain
+  createdAt: AirBlock!
+  lastUpdatedBlock: AirBlock #- NA
+  lastUpdatedIndex: BigInt!
 }
 
 type AirLabelName @entity {
@@ -87,8 +92,6 @@ type AirDomain @entity {
   resolver: AirResolver
   "The time-to-live (TTL) value of the domain's records"
   ttl: BigInt
-  "Is the primary domain for the resolved address"
-  isPrimary: Boolean!
   "The registration date of the domain"
   registrationDate: BigInt
   "The expiry date of the domain"
@@ -173,23 +176,6 @@ type AirDomainFusesSet implements AirDomainEvent @entity {
 
   "fuses set from namewrapper"
   fuses: BigInt!
-
-  lastUpdatedIndex: BigInt!
-}
-
-type AirDomainPrimarySet implements AirDomainEvent @entity {
-  "hash + logIndex"
-  id: ID!
-  "The registration associated with the event"
-  domain: AirDomain!
-  "The block number of the event"
-  createdAt: AirBlock!
-
-  "The transaction hash associated with the event"
-  hash: Bytes!
-
-  "resolvedAddress which sets it as primary"
-  resolvedAddress: AirDomainAccount!
 
   lastUpdatedIndex: BigInt!
 }
