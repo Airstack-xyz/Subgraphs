@@ -62,6 +62,49 @@ const ETH_NODE_STR =
   "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae"
 
 export namespace domain {
+  // Getter functions
+  export function getOrCreateAirDomain(
+    id: string,
+    block: ethereum.Block
+  ): AirDomain {
+    let airDomain = AirDomain.load(id)
+    if (airDomain == null) {
+      airDomain = createAirDomain(id, block)
+    }
+    return airDomain
+  }
+
+  export function getOrCreateAirDomainAccount(
+    address: Address,
+    block: ethereum.Block
+  ): AirDomainAccount {
+    const addrStr = address.toHexString()
+    const chainId = getChainId()
+    const airBlock = getOrCreateAirBlock(block)
+    airBlock.save()
+    const airAccount = getOrCreateAirAccount(chainId, addrStr, airBlock)
+    airAccount.save()
+    let airDomainAccount = AirDomainAccount.load(airAccount.id)
+    if (!airDomainAccount) {
+      airDomainAccount = new AirDomainAccount(airAccount.id)
+      airDomainAccount.account = airAccount.id
+    }
+    airDomainAccount.save()
+    return airDomainAccount
+  }
+  export function getOrCreateAirBlock(block: ethereum.Block): AirBlock {
+    const chainId = getChainId()
+    const id = chainId.concat("-").concat(block.number.toString())
+    let blockEntity = AirBlock.load(id)
+    if (blockEntity == null) {
+      blockEntity = new AirBlock(id)
+      blockEntity.hash = block.hash.toHexString()
+      blockEntity.number = block.number
+      blockEntity.timestamp = block.timestamp
+    }
+    blockEntity.save()
+    return blockEntity as AirBlock
+  }
   export function getAirDomain(domainId: string): AirDomain {
     let airDomain = AirDomain.load(domainId)
     if (!airDomain) {
@@ -75,7 +118,6 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     const airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     if (!domain.registrationDate) {
       domain.registrationDate = block.timestamp
     }
@@ -97,18 +139,6 @@ export namespace domain {
       airBlock
     )
     text.save()
-  }
-  export function getOrCreateAirBlock(block: ethereum.Block): AirBlock {
-    const chainId = getChainId()
-    const id = chainId.concat("-").concat(block.number.toString())
-    let blockEntity = AirBlock.load(id)
-    if (blockEntity == null) {
-      blockEntity = new AirBlock(id)
-      blockEntity.hash = block.hash.toHexString()
-      blockEntity.number = block.number
-      blockEntity.timestamp = block.timestamp
-    }
-    return blockEntity as AirBlock
   }
 
   export function createAirDomainWithManager(
@@ -135,7 +165,6 @@ export namespace domain {
     airDomainManagerChanged.domain = domain.id
     airDomainManagerChanged.newManager = managerDomainAccount.id
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     airDomainManagerChanged.createdAt = airBlock.id
     airDomainManagerChanged.hash = txHash
     airDomainManagerChanged.lastUpdatedIndex = updateAirEntityCounter(
@@ -145,26 +174,12 @@ export namespace domain {
     airDomainManagerChanged.save()
   }
 
-  export function getOrCreateAirDomain(
-    id: string,
-    block: ethereum.Block
-  ): AirDomain {
-    let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
-    let airDomain = AirDomain.load(id)
-    if (airDomain == null) {
-      airDomain = createAirDomain(id, block)
-    }
-    return airDomain
-  }
-
   export function createAirDomain(
     id: string,
     block: ethereum.Block
   ): AirDomain {
     const airDomain = new AirDomain(id)
     const airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     airDomain.encodedName = ""
     airDomain.name = []
     airDomain.labelName = ""
@@ -175,25 +190,6 @@ export namespace domain {
     airDomain.fuses = BIG_INT_ZERO
     airDomain.isNameWrapped = false
     return airDomain
-  }
-
-  export function getOrCreateAirDomainAccount(
-    address: Address,
-    block: ethereum.Block
-  ): AirDomainAccount {
-    const addrStr = address.toHexString()
-    const chainId = getChainId()
-    const airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
-    const airAccount = getOrCreateAirAccount(chainId, addrStr, airBlock)
-    airAccount.save()
-    let airDomainAccount = AirDomainAccount.load(airAccount.id)
-    if (!airDomainAccount) {
-      airDomainAccount = new AirDomainAccount(airAccount.id)
-      airDomainAccount.account = airAccount.id
-    }
-    airDomainAccount.save()
-    return airDomainAccount
   }
 
   export function trackAirDomainManagerTransfer(
@@ -209,10 +205,7 @@ export namespace domain {
       txHash.toHexString(),
       logIndex.toString(),
     ])
-    let airDomain = AirDomain.load(domainId)
-    if (!airDomain) {
-      throw new Error("Domain not found,domainId: " + domainId)
-    }
+    let airDomain = getAirDomain(domainId)
     if (!migrate && airDomain.isMigrated) {
       log.info("domainId {} is already migrated,txHash {}", [
         domainId,
@@ -230,7 +223,6 @@ export namespace domain {
 
     let oldManagerDomainAccount = getOrCreateAirDomainAccount(oldManager, block)
     let newManagerDomainAccount = getOrCreateAirDomainAccount(newManager, block)
-
     airDomain.manager = newManagerDomainAccount.id
     saveAirDomain(airDomain, block)
     // book keeping
@@ -241,7 +233,6 @@ export namespace domain {
     airDomainManagerChanged.newManager = newManagerDomainAccount.id
     airDomainManagerChanged.oldManager = oldManagerDomainAccount.id
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     airDomainManagerChanged.createdAt = airBlock.id
     airDomainManagerChanged.hash = txHash
     airDomainManagerChanged.lastUpdatedIndex = updateAirEntityCounter(
@@ -257,8 +248,6 @@ export namespace domain {
     block: ethereum.Block
   ): AirLabelName {
     const airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
-
     let airLabelName = AirLabelName.load(labelHash)
     if (!airLabelName) {
       airLabelName = new AirLabelName(labelHash)
@@ -273,7 +262,6 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     const airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     airLabelName.lastUpdatedBlock = airBlock.id
     airLabelName.save()
   }
@@ -361,7 +349,6 @@ export namespace domain {
     managerAirDomainAccount.save()
     domain.manager = managerAirDomainAccount.id
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     saveAirDomain(domain, block)
 
     // book keeping
@@ -418,37 +405,22 @@ export namespace domain {
       ])
       airDomain.isMigrated = true
     }
-    // if already existed, mark it as inactive
-    let oldResolver = airDomain.resolver
-    if (oldResolver) {
-      let oldResolverEntity = AirResolver.load(oldResolver)
-      if (oldResolverEntity) {
-        oldResolverEntity.isActive = false
-        saveAirResolver(oldResolverEntity, block)
-      }
-    }
     let resolverId: string | null
     // create resolver
     if (resolver.equals(Address.zero())) {
       resolverId = null
       airDomain.resolver = null
-      log.debug(
-        "setting isPrimary false from Resolver Change,domainId {} hash {} ",
-        [airDomain.id, txHash.toHexString()]
-      )
       saveAirDomain(airDomain, block)
     } else {
       let airResolver = getOrCreateAirResolver(domainId, resolver, block)
       airResolver.domain = domainId
       airResolver.resolverAddress = resolver
-      airResolver.isActive = true
       saveAirResolver(airResolver, block)
       airDomain.resolver = airResolver.id
       saveAirDomain(airDomain, block)
       resolverId = airResolver.id
     }
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     // book keeping
     let airDomainNewResolver = new AirDomainNewResolver(
       createEventId("AirDomainNewResolver", txHash, logIndex)
@@ -493,7 +465,6 @@ export namespace domain {
     airDomain.ttl = ttl
     saveAirDomain(airDomain, block)
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     // book keeping
     let airDomainNewTTL = new AirDomainNewTTL(
       createEventId("AirDomainNewTTL", txHash, logIndex)
@@ -508,6 +479,20 @@ export namespace domain {
     )
     airDomainNewTTL.save()
   }
+
+  // resolver functions
+
+  // this function updates lastUpdatedIndex of AirDomain if AirDomain & AirResolver are connected
+  export function updateAirDomainLastUpdatedIndex(
+    airDomain: AirDomain,
+    airResolver: AirResolver,
+    block: ethereum.Block
+  ): void {
+    if (airDomain.resolver == airResolver.id) {
+      saveAirDomain(airDomain, block)
+    }
+  }
+
   export function trackResolvedAddress(
     txHash: Bytes,
     logIndex: BigInt,
@@ -516,7 +501,11 @@ export namespace domain {
     resolvedAddress: Address,
     block: ethereum.Block
   ): void {
-    log.debug("trackResolvedAddress", [])
+    let airDomain = getAirDomain(domainId)
+    log.debug("trackResolvedAddress txHash {} logIndex {}", [
+      txHash.toHexString(),
+      logIndex.toString(),
+    ])
 
     // update resolver only
     let resolvedDomainAccount = getOrCreateAirDomainAccount(
@@ -543,6 +532,7 @@ export namespace domain {
       airBlock
     )
     airResolvedAddressChanged.save()
+    updateAirDomainLastUpdatedIndex(airDomain, airResolver, block)
   }
   export function trackMultiCoinAddress(
     txHash: Bytes,
@@ -553,8 +543,12 @@ export namespace domain {
     newAddress: Bytes,
     block: ethereum.Block
   ): void {
-    log.debug("trackMultiCoinAddress", [])
+    log.debug("trackMultiCoinAddress txHash {} logIndex {}", [
+      txHash.toHexString(),
+      logIndex.toString(),
+    ])
 
+    let airDomain = getAirDomain(domainId)
     let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
     let airMultiCoin = AirMultiCoin.load(
       airResolver.id.concat("-").concat(coinType.toString())
@@ -570,7 +564,7 @@ export namespace domain {
     airMultiCoin.save()
 
     saveAirResolver(airResolver, block)
-
+    updateAirDomainLastUpdatedIndex(airDomain, airResolver, block)
     // book keeping
 
     let airMultiCoinChanged = new AirMultiCoinChanged(
@@ -600,10 +594,13 @@ export namespace domain {
     value: string,
     block: ethereum.Block
   ): void {
-    log.debug("trackAirTextChange", [])
-    let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
+    log.debug("trackAirTextChange txHash {} logIndex {}", [
+      txHash.toHexString(),
+      logIndex.toString(),
+    ])
 
+    let airDomain = getAirDomain(domainId)
+    let airBlock = getOrCreateAirBlock(block)
     let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
     let airText = AirText.load(airResolver.id.concat("-").concat(name))
     if (!airText) {
@@ -616,7 +613,7 @@ export namespace domain {
     saveAirText(airText, block)
 
     saveAirResolver(airResolver, block)
-
+    updateAirDomainLastUpdatedIndex(airDomain, airResolver, block)
     // book keeping
     let airTextChanged = new AirTextChanged(
       txHash
@@ -656,7 +653,6 @@ export namespace domain {
 
     // book keeping
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
     createAirDomainRegistrationOrRenew(
       txHash,
@@ -695,7 +691,6 @@ export namespace domain {
     saveAirDomain(airDomain, block)
 
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     // book keeping
     createAirDomainRegistrationOrRenew(
       txHash,
@@ -733,7 +728,6 @@ export namespace domain {
 
     let renewerDomainAccount = getOrCreateAirDomainAccount(renewer, block)
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     createAirDomainRegistrationOrRenew(
       txHash,
       logIndex,
@@ -779,7 +773,6 @@ export namespace domain {
     )
     airDomainOwnershipChanged.domain = airDomain.id
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     airDomainOwnershipChanged.createdAt = airBlock.id
     airDomainOwnershipChanged.hash = txHash
     airDomainOwnershipChanged.newOwner = toDomainAccount.id
@@ -801,7 +794,6 @@ export namespace domain {
     airDomain.cost = cost
     saveAirDomain(airDomain, block)
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     let airDomainCostSet = new AirDomainCostSet(
       createEventId("AirDomainCostSet", txHash, logIndex)
     )
@@ -826,7 +818,6 @@ export namespace domain {
     airDomain.fuses = fuses
     saveAirDomain(airDomain, block)
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     // book keeping
     let airDomainFusesSet = new AirDomainFusesSet(
       createEventId("AirDomainFusesSet", txHash, logIndex)
@@ -855,8 +846,6 @@ export namespace domain {
 
     let ownerDomainAccount = getOrCreateAirDomainAccount(from, block)
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
-
     createAirDomainRegistrationOrRenew(
       txHash,
       logIndex,
@@ -895,7 +884,6 @@ export namespace domain {
     let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
 
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
 
     createAirDomainRegistrationOrRenew(
       txHash,
@@ -950,7 +938,6 @@ export namespace domain {
     saveAirDomain(airDomain, block)
 
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
 
     // book keeping
     let airDomainNameWrapped = new AirDomainNameWrapped(
@@ -996,7 +983,6 @@ export namespace domain {
     airDomainNameUnwrapped.domain = airDomain.id
 
     let airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
 
     airDomainNameUnwrapped.createdAt = airBlock.id
     airDomainNameUnwrapped.hash = txHash
@@ -1056,7 +1042,6 @@ export namespace domain {
     let airResolver = AirResolver.load(id)
     if (!airResolver) {
       airResolver = new AirResolver(id)
-      airResolver.isActive = true
       airResolver.domain = domainId
       airResolver.createdAt = airBlock.id
       airResolver.resolverAddress = resolverAddress
@@ -1069,7 +1054,6 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     const airBlock = getOrCreateAirBlock(block)
-    airBlock.save()
     resolver.lastUpdatedBlock = airBlock.id
     resolver.lastUpdatedIndex = updateAirEntityCounter(
       AIR_RESOLVER_CHANGED_ID,
@@ -1141,7 +1125,11 @@ export namespace domain {
       airBlock
     )
     airNameSet.save()
-
+    // updates lastUpdatedIndex only if it's connected to AirDomain
+    let airDomain = AirDomain.load(domainId)
+    if (airDomain) {
+      saveAirDomain(airDomain, block)
+    }
     return airNameSet
   }
 }

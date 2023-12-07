@@ -7,7 +7,6 @@ import {
   log,
 } from "@graphprotocol/graph-ts"
 import {
-  ENSRegistry as ENSRegistryOld,
   Transfer as TransferOld,
   NewOwner as NewOwnerOld,
   NewResolver as NewResolverOld,
