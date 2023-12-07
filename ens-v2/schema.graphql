@@ -54,9 +54,24 @@ type AirNameSet @entity {
   "The unique identifier for the account"
   id: ID!
   name: String!
+  domainId: String!
   domain: AirDomain
   createdAt: AirBlock!
-  lastUpdatedBlock: AirBlock #- NA
+  lastUpdatedBlock: AirBlock! #- NA
+  lastUpdatedIndex: BigInt!
+}
+
+type AirNameSetEvent @entity {
+  "hash + logIndex"
+  id: ID!
+  "nameSet associated with the event"
+  nameSet: AirNameSet!
+  "The block number of the event"
+  createdAt: AirBlock!
+
+  "The transaction hash associated with the event"
+  hash: Bytes!
+
   lastUpdatedIndex: BigInt!
 }
 

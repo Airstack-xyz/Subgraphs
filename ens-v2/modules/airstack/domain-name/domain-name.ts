@@ -28,6 +28,7 @@ import {
   AirResolvedAddressChanged,
   AirDomainFusesSet,
   AirDomainCostSet,
+  AirNameSetEvent,
 } from "../../../generated/schema"
 import {
   AIR_DOMAIN_CHANGED_ID,
@@ -47,6 +48,7 @@ import {
   ROOT_NODE,
   AIR_DOMAIN_OWNERSHIP_CHANGED_ID,
   AIR_DOMAIN_COST_CHANGED_ID,
+  AIR_DOMAIN_NAME_SET_EVENT_ID,
 } from "./utils"
 import {
   BIG_INT_ZERO,
@@ -1020,39 +1022,25 @@ export namespace domain {
       resolvedAddress,
       block
     )
+    let airBlock = getOrCreateAirBlock(block)
     let airNameSet = createOrUpdateAirNameSet(
       resolvedAddressDomainAccount.id,
       name,
       domainId,
       block
     )
-    let airDomain = AirDomain.load(domainId)
-    if (!airDomain) {
-      log.error(" airDomain not found , domainId {}", [domainId])
-      return
-    }
-    let airResolverId = airDomain.resolver
-    if (!airResolverId) {
-      log.error(" airResolverId not found ", [])
-      return
-    }
-    let airResolver = AirResolver.load(airResolverId!)
-    if (!airResolver) {
-      log.error(" airResolver not found ", [])
-      return
-    }
-    if (airResolver.resolvedAddress != resolvedAddressDomainAccount.account) {
-      log.error(
-        "resolvedAddress for domainId {} doesn't match with caller {} , txHash {}",
-        [
-          airDomain.id,
-          resolvedAddressDomainAccount.account,
-          txHash.toHexString(),
-        ]
-      )
-      return
-    }
-    saveAirDomain(airDomain, block)
+    // book keeping
+    let airNameSetEvent = new AirNameSetEvent(
+      createEventId("AirNameSetEvent", txHash, logOrCallIndex)
+    )
+    airNameSetEvent.nameSet = airNameSet.id
+    airNameSetEvent.createdAt = airNameSet.lastUpdatedBlock
+    airNameSetEvent.hash = txHash
+    airNameSetEvent.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_NAME_SET_EVENT_ID,
+      airBlock
+    )
+    airNameSetEvent.save()
   }
 
   export function getOrCreateAirResolver(
@@ -1141,12 +1129,14 @@ export namespace domain {
     }
     airNameSet.name = name
     airNameSet.domain = domainId
+    airNameSet.domainId = domainId
     airNameSet.lastUpdatedBlock = airBlock.id
     airNameSet.lastUpdatedIndex = updateAirEntityCounter(
       AIR_NAME_SET_ID,
       airBlock
     )
     airNameSet.save()
+
     return airNameSet
   }
 }
