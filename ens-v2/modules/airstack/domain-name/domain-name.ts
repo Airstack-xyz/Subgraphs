@@ -69,6 +69,7 @@ export namespace domain {
     }
     return airDomain
   }
+
   export function saveAirDomain(
     domain: AirDomain,
     block: ethereum.Block
@@ -1024,11 +1025,13 @@ export namespace domain {
     )
     let airBlock = getOrCreateAirBlock(block)
     let airNameSet = createOrUpdateAirNameSet(
-      resolvedAddressDomainAccount.id,
+      resolvedAddressDomainAccount,
       name,
       domainId,
       block
     )
+    resolvedAddressDomainAccount.nameSet = airNameSet.id
+    resolvedAddressDomainAccount.save()
     // book keeping
     let airNameSetEvent = new AirNameSetEvent(
       createEventId("AirNameSetEvent", txHash, logOrCallIndex)
@@ -1116,17 +1119,19 @@ export namespace domain {
     airDomainRegistrationOrRenew.save()
   }
   function createOrUpdateAirNameSet(
-    id: string,
+    from: AirDomainAccount,
     name: string,
     domainId: string,
     block: ethereum.Block
   ): AirNameSet {
+    let airNameSetId = from.id.concat("-").concat(domainId)
     let airBlock = getOrCreateAirBlock(block)
-    let airNameSet = AirNameSet.load(id)
+    let airNameSet = AirNameSet.load(airNameSetId)
     if (!airNameSet) {
-      airNameSet = new AirNameSet(id)
+      airNameSet = new AirNameSet(airNameSetId)
       airNameSet.createdAt = airBlock.id
     }
+    airNameSet.from = from.id
     airNameSet.name = name
     airNameSet.domain = domainId
     airNameSet.domainId = domainId

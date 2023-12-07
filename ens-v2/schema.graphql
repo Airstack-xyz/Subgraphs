@@ -1,3 +1,4 @@
+# Basic  entities
 type AirBlock @entity {
   id: ID! #chain-number
   hash: String!
@@ -9,8 +10,8 @@ type AirMeta @entity {
   id: ID! # air_meta
   network: String!
   schemaVersion: String!
-  slug: String! #Opensea_V1
-  name: String! # Opeasea V1
+  slug: String! # ENS_V2
+  name: String! # ENV
   version: String!
 }
 
@@ -19,12 +20,6 @@ type AirEntityCounter @entity {
   count: BigInt!
   createdAt: AirBlock!
   lastUpdatedAt: AirBlock!
-}
-
-type AirExtra @entity {
-  id: ID! # Concatenation of domainId and name
-  name: String!
-  value: String!
 }
 
 type AirAccount @entity {
@@ -51,8 +46,9 @@ type AirDomainAccount @entity {
   nameSet: AirNameSet
 }
 type AirNameSet @entity {
-  "The unique identifier for the account"
+  "concatenation of resolvedAddress and domainId"
   id: ID!
+  from: AirDomainAccount!
   name: String!
   domainId: String!
   domain: AirDomain
@@ -126,6 +122,20 @@ type AirDomain @entity {
   events: [AirDomainEvent!]! @derivedFrom(field: "domain")
 }
 
+interface AirDomainEvent {
+  "hash + logIndex"
+  id: ID!
+  "The registration associated with the event"
+  domain: AirDomain!
+  "The block number of the event"
+  createdAt: AirBlock!
+
+  "The transaction hash associated with the event"
+  hash: Bytes!
+
+  lastUpdatedIndex: BigInt!
+}
+
 type AirDomainRegistrationOrRenew implements AirDomainEvent @entity {
   "domainId +-+ hash"
   id: ID!
@@ -146,20 +156,6 @@ type AirDomainRegistrationOrRenew implements AirDomainEvent @entity {
   #"The human-readable label name associated with the domain registration"
   #labelName: String
   createdAt: AirBlock!
-  lastUpdatedIndex: BigInt!
-}
-
-interface AirDomainEvent {
-  "hash + logIndex"
-  id: ID!
-  "The registration associated with the event"
-  domain: AirDomain!
-  "The block number of the event"
-  createdAt: AirBlock!
-
-  "The transaction hash associated with the event"
-  hash: Bytes!
-
   lastUpdatedIndex: BigInt!
 }
 
@@ -212,6 +208,7 @@ type AirDomainNewResolver implements AirDomainEvent @entity {
 
   lastUpdatedIndex: BigInt!
 }
+
 type AirDomainNewTTL implements AirDomainEvent @entity {
   "hash + logIndex"
   id: ID!
@@ -439,6 +436,7 @@ type NewOwnerHashLabelMap @entity {
   "The domain that this resolver is associated with"
   domainId: String!
 }
+
 " mapping used to identify if the data from controller can be used or not"
 type RemovedController @entity {
   "address of removed controller"
