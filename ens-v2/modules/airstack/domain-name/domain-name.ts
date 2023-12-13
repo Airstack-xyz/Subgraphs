@@ -501,11 +501,18 @@ export namespace domain {
     resolvedAddress: Address,
     block: ethereum.Block
   ): void {
-    let airDomain = getAirDomain(domainId)
     log.debug("trackResolvedAddress txHash {} logIndex {}", [
       txHash.toHexString(),
       logIndex.toString(),
     ])
+    let airDomain = AirDomain.load(domainId)
+    if (!airDomain) {
+      log.debug(
+        "trackResolvedAddress txHash {} logIndex {} domainId {} not found",
+        [txHash.toHexString(), logIndex.toString(), domainId]
+      )
+      return
+    }
 
     // update resolver only
     let resolvedDomainAccount = getOrCreateAirDomainAccount(
@@ -547,8 +554,14 @@ export namespace domain {
       txHash.toHexString(),
       logIndex.toString(),
     ])
-
-    let airDomain = getAirDomain(domainId)
+    let airDomain = AirDomain.load(domainId)
+    if (!airDomain) {
+      log.debug(
+        "trackMultiCoinAddress txHash {} logIndex {} domainId {} not found",
+        [txHash.toHexString(), logIndex.toString(), domainId]
+      )
+      return
+    }
     let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
     let airMultiCoin = AirMultiCoin.load(
       airResolver.id.concat("-").concat(coinType.toString())
@@ -598,8 +611,14 @@ export namespace domain {
       txHash.toHexString(),
       logIndex.toString(),
     ])
-
-    let airDomain = getAirDomain(domainId)
+    let airDomain = AirDomain.load(domainId)
+    if (!airDomain) {
+      log.debug(
+        "trackAirTextChange txHash {} logIndex {} domainId {} not found",
+        [txHash.toHexString(), logIndex.toString(), domainId]
+      )
+      return
+    }
     let airBlock = getOrCreateAirBlock(block)
     let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
     let airText = AirText.load(airResolver.id.concat("-").concat(name))
@@ -1025,7 +1044,8 @@ export namespace domain {
     airNameSetEvent.nameSet = airNameSet.id
     airNameSetEvent.createdAt = airNameSet.lastUpdatedBlock
     airNameSetEvent.hash = txHash
-    airNameSetEvent.resolvedAddressDomainAccount = resolvedAddressDomainAccount.id
+    airNameSetEvent.resolvedAddressDomainAccount =
+      resolvedAddressDomainAccount.id
     airNameSetEvent.lastUpdatedIndex = updateAirEntityCounter(
       AIR_DOMAIN_NAME_SET_EVENT_ID,
       airBlock
