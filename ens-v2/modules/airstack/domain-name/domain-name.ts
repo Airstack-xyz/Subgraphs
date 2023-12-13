@@ -1025,6 +1025,7 @@ export namespace domain {
     airNameSetEvent.nameSet = airNameSet.id
     airNameSetEvent.createdAt = airNameSet.lastUpdatedBlock
     airNameSetEvent.hash = txHash
+    airNameSetEvent.resolvedAddressDomainAccount = resolvedAddressDomainAccount.id
     airNameSetEvent.lastUpdatedIndex = updateAirEntityCounter(
       AIR_DOMAIN_NAME_SET_EVENT_ID,
       airBlock

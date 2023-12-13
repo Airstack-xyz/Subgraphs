@@ -64,7 +64,7 @@ type AirNameSetEvent @entity {
   nameSet: AirNameSet!
   "The block number of the event"
   createdAt: AirBlock!
-
+  resolvedAddressDomainAccount: AirDomainAccount!
   "The transaction hash associated with the event"
   hash: Bytes!
 
