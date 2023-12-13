@@ -996,7 +996,7 @@ export namespace domain {
     airDomainNameUnwrapped.save()
   }
 
-  export function trackSetPrimaryDomain(
+  export function trackSetName(
     txHash: Bytes,
     logOrCallIndex: BigInt,
     name: string,
@@ -1004,7 +1004,7 @@ export namespace domain {
     resolvedAddress: Address,
     block: ethereum.Block
   ): void {
-    log.debug("trackSetPrimaryDomain txHash {}", [txHash.toHexString()])
+    log.debug("trackSetName txHash {}", [txHash.toHexString()])
     let resolvedAddressDomainAccount = getOrCreateAirDomainAccount(
       resolvedAddress,
       block

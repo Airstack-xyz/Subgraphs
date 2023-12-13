@@ -24,14 +24,7 @@ export const _handleSetName = (
 
   // verify https://etherscan.io/tx/0x7b599aa8fce32b580c7af99e45ce29c1c69621618a7f54ad0a518e67f5c58481
   let domainId = getNameHashFromName(name)
-  airstack.domain.trackSetPrimaryDomain(
-    txHash,
-    callIndex,
-    name,
-    domainId,
-    from,
-    block
-  )
+  airstack.domain.trackSetName(txHash, callIndex, name, domainId, from, block)
 }
 
 export function handleSetName1(call: SetNameCall1): void {
