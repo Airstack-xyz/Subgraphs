@@ -84,9 +84,9 @@ type AirDomain @entity {
   "this is to keep labelHashes in dot separated format"
   encodedName: String!
   "The human readable labelnames as array"
-  name: [AirLabelName!]!
+  name: [AirLabelName!]
   "The human readable label name (imported from CSV), if known"
-  labelName: AirLabelName!
+  labelName: AirLabelName
   " dec(labelHash)"
   tokenId: String
   "The namehash (id) of the parent name"

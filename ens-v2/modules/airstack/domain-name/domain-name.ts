@@ -150,9 +150,8 @@ export namespace domain {
   ): void {
     let managerDomainAccount = getOrCreateAirDomainAccount(manager, block)
     let domain = getOrCreateAirDomain(domainId, block)
-    let labelName = getOrCreateAirLabelName(ROOT_NODE, ROOT_NODE, block)
-    domain.labelName = labelName.id
-    domain.name = [labelName.id]
+    let labelName = getOrCreateAirLabelName("", ROOT_NODE, block)
+    domain.name = []
     domain.encodedName = ""
     domain.manager = managerDomainAccount.id
     saveAirLabelName(labelName, block)
@@ -272,7 +271,7 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     let airLabelName = getOrCreateAirLabelName(labelName, labelHash, block)
-    if (airLabelName.name.length == 0 && labelName.length > 0) {
+    if (airLabelName.name != "" && labelName != "") {
       log.debug("fixing labelHash {} 's labelname {}", [labelHash, labelName])
       airLabelName.name = labelName
       saveAirLabelName(airLabelName, block)
@@ -329,7 +328,7 @@ export namespace domain {
     }
     domain.parent = parentAirDomain.id
     let domainName = parentAirDomain.name
-    if (domainName.length == 1 && domainName[0] == ROOT_NODE) {
+    if (!domainName) {
       domainName = []
     }
     if (parentAirDomain.encodedName.length == 0) {
@@ -339,8 +338,8 @@ export namespace domain {
         .concat(".")
         .concat(parentAirDomain.encodedName)
     }
-    let status = domainName.push(airLabelName.id)
-    log.debug("pushStatus {}", [status.toString()])
+    // pushing to array
+    domainName.push(airLabelName.id)
     domain.name = domainName
     domain.labelName = airLabelName.id
     saveAirLabelName(airLabelName, block)
