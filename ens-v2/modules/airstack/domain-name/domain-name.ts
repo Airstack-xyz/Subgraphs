@@ -266,16 +266,26 @@ export namespace domain {
   }
 
   export function trackAirLabelName(
+    txHash: Bytes,
     labelName: string,
     labelHash: string,
     block: ethereum.Block
   ): void {
+    log.debug("trackAirLabelName txHash {} labelHash {} labelName {}", [
+      txHash.toHexString(),
+      labelHash,
+      labelName,
+    ])
     let airLabelName = getOrCreateAirLabelName(labelName, labelHash, block)
     if (airLabelName.name != "" && labelName != "") {
-      log.debug("fixing labelHash {} 's labelname {}", [labelHash, labelName])
+      log.debug("fixing labelHash {} 's labelname {} txHash {}", [
+        labelHash,
+        labelName,
+        txHash.toHexString(),
+      ])
       airLabelName.name = labelName
-      saveAirLabelName(airLabelName, block)
     }
+    saveAirLabelName(airLabelName, block)
   }
   // /**
   //  *
@@ -892,7 +902,7 @@ export namespace domain {
       "trackAirDomainRenewalNameCostExpiry attempting to fix AirLabelName for hash {} with labelName {}",
       [labelHashStr, name]
     )
-    trackAirLabelName(name, labelHashStr, block)
+    trackAirLabelName(txHash, name, labelHashStr, block)
     let airDomain = getAirDomain(domainId)
 
     airDomain.expiryDate = expiryDate

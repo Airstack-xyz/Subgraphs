@@ -40,7 +40,7 @@ export const _handleNameRegistered = (
     return
   }
   // saving airLabelName  fixing
-  airstack.domain.trackAirLabelName(name, label.toHexString(), block)
+  airstack.domain.trackAirLabelName(txhash, name, label.toHexString(), block)
   const domainId = getNameHashFromByteArray(ethNode, label)
 
   airstack.domain.trackAirDomainCost(
@@ -75,7 +75,7 @@ export const _handleNameRenewed = (
     return
   }
   // saving airLabelName  fixing
-  airstack.domain.trackAirLabelName(name, label.toHexString(), block)
+  airstack.domain.trackAirLabelName(txhash, name, label.toHexString(), block)
   const domainId = getNameHashFromByteArray(ethNode, label)
   airstack.domain.trackAirDomainCost(domainId, cost, txhash, logIndex, block)
 }
