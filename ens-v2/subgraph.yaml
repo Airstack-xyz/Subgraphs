@@ -381,6 +381,32 @@ dataSources:
                 handler: handleTransferSingle
               - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
                 handler: handleTransferBatch
+    - kind: ethereum/contract
+      name: Resolver
+      network: mainnet
+      source:
+          abi: Resolver
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.7
+          language: wasm/assemblyscript
+          entities:
+              - AddrChanged
+              - Textchanged
+              - TextchangedWithValue
+          abis:
+              - name: Resolver
+                file: ./abis/PublicResolver.json
+          eventHandlers:
+              - event: "AddrChanged(indexed bytes32,address)"
+                handler: handleAddrChanged
+              - event: "AddressChanged(indexed bytes32,uint256,bytes)"
+                handler: handleAddressChanged
+              - event: "TextChanged(indexed bytes32,indexed string,string)"
+                handler: handleTextChanged
+              - event: "TextChanged(indexed bytes32,indexed string,string,string)"
+                handler: handleTextChangedWithValue
+          file: ./src/resolver.ts
 templates:
     - name: ETHRegistrarControllerTemplate
       kind: ethereum/contract
@@ -424,32 +450,7 @@ templates:
               - event: NameRenewed(string,indexed bytes32,uint256,uint256)
                 handler: handleNameRenewedTemplate
           file: ./src/eth-registrar-controller-namewrapper.ts
-    - name: ResolverTemplate
-      kind: ethereum/contract
-      network: mainnet
-      source:
-          abi: Resolver
-      mapping:
-          kind: ethereum/events
-          apiVersion: 0.0.7
-          language: wasm/assemblyscript
-          entities:
-              - AddrChanged
-              - Textchanged
-              - TextchangedWithValue
-          abis:
-              - name: Resolver
-                file: ./abis/PublicResolver.json
-          eventHandlers:
-              - event: "AddrChanged(indexed bytes32,address)"
-                handler: handleAddrChanged
-              - event: "AddressChanged(indexed bytes32,uint256,bytes)"
-                handler: handleAddressChanged
-              - event: "TextChanged(indexed bytes32,indexed string,string)"
-                handler: handleTextChanged
-              - event: "TextChanged(indexed bytes32,indexed string,string,string)"
-                handler: handleTextChangedWithValue
-          file: ./src/resolver.ts
+
     - name: ReverseRegistrarTemplate
       kind: ethereum/contract
       network: mainnet

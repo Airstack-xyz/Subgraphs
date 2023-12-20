@@ -21,7 +21,6 @@ import {
 import * as airstack from "../modules/airstack/domain-name"
 import { NewOwnerHashLabelMap } from "../generated/schema"
 import {
-  createNewResolver,
   getNameHashFromBytes,
   ROOT_NODE,
   createReverse,
@@ -139,9 +138,6 @@ export const _handleNewResolver = (
     migrate,
     block
   )
-
-  // create resolver datasource
-  createNewResolver(resolver)
 }
 
 /**

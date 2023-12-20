@@ -50,7 +50,7 @@ export function handleNameWrapped(event: NameWrapped): void {
   if (name.length > 0) {
     let labelNamesArr = name.split(".")
     for (let index = 0; index < labelNamesArr.length; index++) {
-      const labelName = labelNamesArr[index].toLowerCase()
+      const labelName = labelNamesArr[index]
       const labelHash = getLabelHash(labelName)
       airstack.domain.trackAirLabelName(txHash, labelName, labelHash, block)
     }

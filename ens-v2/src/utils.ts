@@ -17,7 +17,6 @@ import {
 import {
   ETHRegistrarControllerNameWrapperTemplate,
   ETHRegistrarControllerTemplate,
-  ResolverTemplate,
   ReverseRegistrarTemplate,
 } from "../generated/templates"
 
@@ -222,15 +221,6 @@ export function decodeNameInBytes(buf: Bytes): Array<string> {
     len = buf[offset++]
   }
   return [firstLabel, list.toString()]
-}
-
-export function createNewResolver(resolver: Address): void {
-  let resolverEntity = ResolverEntity.load(resolver.toHexString())
-  if (!resolverEntity) {
-    resolverEntity = new ResolverEntity(resolver.toHexString())
-    ResolverTemplate.create(resolver)
-  }
-  resolverEntity.save()
 }
 
 export function getLabelHash(labelName: string): string {
