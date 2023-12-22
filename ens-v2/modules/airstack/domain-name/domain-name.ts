@@ -150,8 +150,10 @@ export namespace domain {
   ): void {
     let managerDomainAccount = getOrCreateAirDomainAccount(manager, block)
     let domain = getOrCreateAirDomain(domainId, block)
-    let labelName = getOrCreateAirLabelName(ROOT_NODE, block)
+    const airBlock = getOrCreateAirBlock(block)
+    let labelName = new AirLabelName(ROOT_NODE)
     labelName.name = ""
+    labelName.createdAt = airBlock.id
     saveAirLabelName(labelName, block)
     domain.name = []
     domain.encodedName = ""
@@ -164,7 +166,6 @@ export namespace domain {
     )
     airDomainManagerChanged.domain = domain.id
     airDomainManagerChanged.newManager = managerDomainAccount.id
-    let airBlock = getOrCreateAirBlock(block)
     airDomainManagerChanged.createdAt = airBlock.id
     airDomainManagerChanged.hash = txHash
     airDomainManagerChanged.lastUpdatedIndex = updateAirEntityCounter(
@@ -242,18 +243,6 @@ export namespace domain {
     airDomainManagerChanged.save()
   }
 
-  export function getOrCreateAirLabelName(
-    labelHash: string,
-    block: ethereum.Block
-  ): AirLabelName {
-    const airBlock = getOrCreateAirBlock(block)
-    let airLabelName = AirLabelName.load(labelHash)
-    if (!airLabelName) {
-      airLabelName = new AirLabelName(labelHash)
-      airLabelName.createdAt = airBlock.id
-    }
-    return airLabelName
-  }
 
   export function saveAirLabelName(
     airLabelName: AirLabelName,
@@ -276,12 +265,20 @@ export namespace domain {
       labelName,
     ])
     if (labelName.length > 0) {
-      let airLabelName = getOrCreateAirLabelName(labelHash, block)
-      log.debug(
-        "fixing labelHash {} 's labelname {} , new labelName {} txHash {}",
-        [labelHash, airLabelName.name, labelName, txHash.toHexString()]
-      )
-      airLabelName.name = labelName
+      let airLabelName = AirLabelName.load(labelHash)
+      if (!airLabelName) {
+        airLabelName = new AirLabelName(labelHash)
+        airLabelName.name = labelName
+        airLabelName.createdAt = block.number.toString()
+      } else {
+        if (airLabelName.name != labelName) {
+          log.debug(
+            "fixing labelHash {} 's labelname {} , new labelName {} txHash {}",
+            [labelHash, airLabelName.name, labelName, txHash.toHexString()]
+          )
+          airLabelName.name = labelName
+        }
+      }
       saveAirLabelName(airLabelName, block)
     }
   }
@@ -318,9 +315,20 @@ export namespace domain {
       BIGINT_ONE
     )
     saveAirDomain(parentAirDomain, block)
-    let airLabelName = getOrCreateAirLabelName(labelHash, block)
-    airLabelName.name = labelName
-    saveAirLabelName(airLabelName, block)
+    let airBlock = getOrCreateAirBlock(block)
+    let airLabelName = AirLabelName.load(labelHash)
+    if (!airLabelName) {
+      airLabelName = new AirLabelName(labelHash)
+      airLabelName.name = labelName
+      airLabelName.createdAt = airBlock.id
+      saveAirLabelName(airLabelName, block)
+    } else {
+      if (labelName != "" && airLabelName.name == "") {
+        // sets only if airLabelName.name empty and input have value
+        airLabelName.name = labelName
+        saveAirLabelName(airLabelName, block)
+      }
+    }
     let domain = getOrCreateAirDomain(domainId, block)
     if (!migrate && domain.isMigrated) {
       log.info("domainId {} is already migrated,txHash {}", [
@@ -356,7 +364,6 @@ export namespace domain {
     let managerAirDomainAccount = getOrCreateAirDomainAccount(manager, block)
     managerAirDomainAccount.save()
     domain.manager = managerAirDomainAccount.id
-    let airBlock = getOrCreateAirBlock(block)
     saveAirDomain(domain, block)
 
     // book keeping
