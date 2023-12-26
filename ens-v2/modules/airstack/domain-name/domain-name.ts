@@ -875,7 +875,17 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     let airDomain = getAirDomain(domainId)
-    airDomain.expiryDate = expiry
+    if (!airDomain.expiryDate) {
+      airDomain.expiryDate = expiry
+    } else if (checkPccBurned(airDomain.fuses.toI32())) {
+      if (expiry > airDomain.expiryDate!) {
+         log.debug(
+           "Updating expiryDate of nameWrapped airDomain {} txHash {} ",
+           [airDomain.id, txHash.toHexString()]
+         )
+        airDomain.expiryDate = expiry
+      }
+    }
     saveAirDomain(airDomain, block)
 
     let ownerDomainAccount = getOrCreateAirDomainAccount(from, block)
@@ -931,10 +941,10 @@ export namespace domain {
       airBlock
     )
   }
-  const PARENT_CANNOT_CONTROL = BigInt.fromI32(65536)
+  const PARENT_CANNOT_CONTROL: i32 = 65536
 
-  function checkPccBurned(fuses: BigInt): boolean {
-    return fuses == PARENT_CANNOT_CONTROL
+  function checkPccBurned(fuses: i32): boolean {
+    return (fuses & PARENT_CANNOT_CONTROL) == PARENT_CANNOT_CONTROL
   }
 
   export function trackNameWrapped(
@@ -960,7 +970,7 @@ export namespace domain {
     airDomain.fuses = fuses
     airDomain.isNameWrapped = true
     if (
-      checkPccBurned(fuses) &&
+      checkPccBurned(fuses.toI32()) &&
       (!airDomain.expiryDate || expiryDate > airDomain.expiryDate!)
     ) {
       log.debug("Updating expiryDate of nameWrapped airDomain {} txHash {} ", [
