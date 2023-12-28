@@ -78,6 +78,13 @@ type AirLabelName @entity {
   lastUpdatedBlock: AirBlock!
 }
 
+type AirDomainCost @entity {
+  id: ID! #domainId
+  cost: BigInt!
+  createdAt: AirBlock!
+  lastUpdatedBlock: AirBlock!
+}
+
 type AirDomain @entity {
   "The namehash of the name"
   id: ID!
@@ -109,6 +116,7 @@ type AirDomain @entity {
   expiryDate: BigInt
   "The cost associated with the domain registration"
   cost: BigInt
+  costInfo: AirDomainCost
   tokenAddress: AirToken # Domain (eg: ens) token contract address
   createdAt: AirBlock!
   lastUpdatedBlock: AirBlock #- NA

@@ -29,6 +29,7 @@ import {
   AirDomainFusesSet,
   AirDomainCostSet,
   AirNameSetEvent,
+  AirDomainCost,
 } from "../../../generated/schema"
 import {
   AIR_DOMAIN_CHANGED_ID,
@@ -111,6 +112,38 @@ export namespace domain {
       throw new Error("Domain not found")
     }
     return airDomain
+  }
+  export function getOrUpdateAirDomainCost(
+    domainId: string,
+    cost: BigInt,
+    txHash: Bytes,
+    logIndex: BigInt,
+    block: ethereum.Block
+  ): AirDomainCost {
+    let airBlock = getOrCreateAirBlock(block)
+    let airDomainCost = AirDomainCost.load(domainId)
+    if (!airDomainCost) {
+      airDomainCost = new AirDomainCost(domainId)
+      airDomainCost.createdAt = airBlock.id
+    }
+    airDomainCost.cost = cost
+    airDomainCost.lastUpdatedBlock = airBlock.id
+    airDomainCost.save()
+    // book keeping
+    let airDomainCostSet = new AirDomainCostSet(
+      createEventId("AirDomainCostSet", txHash, logIndex)
+    )
+    airDomainCostSet.domain = domainId
+    airDomainCostSet.cost = cost
+    airDomainCostSet.hash = txHash
+    airDomainCostSet.lastUpdatedIndex = updateAirEntityCounter(
+      AIR_DOMAIN_COST_CHANGED_ID,
+      airBlock
+    )
+    airDomainCostSet.createdAt = airBlock.id
+    airDomainCostSet.save()
+
+    return airDomainCost as AirDomainCost
   }
 
   export function saveAirDomain(
@@ -242,7 +275,6 @@ export namespace domain {
     )
     airDomainManagerChanged.save()
   }
-
 
   export function saveAirLabelName(
     airLabelName: AirLabelName,
@@ -679,14 +711,22 @@ export namespace domain {
     log.debug("trackAirDomainRegistrationDateAndCost txHash {}", [
       txHash.toHexString(),
     ])
+    let airBlock = getOrCreateAirBlock(block)
 
     let airDomain = getAirDomain(domainId)
     airDomain.registrationDate = registrationDate
+    let airDomainCost = getOrUpdateAirDomainCost(
+      airDomain.id,
+      cost,
+      txHash,
+      logIndex,
+      block
+    )
     airDomain.cost = cost
+    airDomain.costInfo = airDomainCost.id
     saveAirDomain(airDomain, block)
 
     // book keeping
-    let airBlock = getOrCreateAirBlock(block)
     let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
     createAirDomainRegistrationOrRenew(
       txHash,
@@ -825,21 +865,16 @@ export namespace domain {
     block: ethereum.Block
   ): void {
     let airDomain = getAirDomain(domainId)
+    let airDomainCost = getOrUpdateAirDomainCost(
+      domainId,
+      cost,
+      txHash,
+      logIndex,
+      block
+    )
     airDomain.cost = cost
+    airDomain.costInfo = airDomainCost.id
     saveAirDomain(airDomain, block)
-    let airBlock = getOrCreateAirBlock(block)
-    let airDomainCostSet = new AirDomainCostSet(
-      createEventId("AirDomainCostSet", txHash, logIndex)
-    )
-    airDomainCostSet.domain = airDomain.id
-    airDomainCostSet.cost = cost
-    airDomainCostSet.hash = txHash
-    airDomainCostSet.lastUpdatedIndex = updateAirEntityCounter(
-      AIR_DOMAIN_COST_CHANGED_ID,
-      airBlock
-    )
-    airDomainCostSet.createdAt = airBlock.id
-    airDomainCostSet.save()
   }
   export function trackAirDomainFusesSet(
     txHash: Bytes,
@@ -879,10 +914,10 @@ export namespace domain {
       airDomain.expiryDate = expiry
     } else if (checkPccBurned(airDomain.fuses.toI32())) {
       if (expiry > airDomain.expiryDate!) {
-         log.debug(
-           "Updating expiryDate of nameWrapped airDomain {} txHash {} ",
-           [airDomain.id, txHash.toHexString()]
-         )
+        log.debug(
+          "Updating expiryDate of nameWrapped airDomain {} txHash {} ",
+          [airDomain.id, txHash.toHexString()]
+        )
         airDomain.expiryDate = expiry
       }
     }
@@ -922,7 +957,15 @@ export namespace domain {
     let airDomain = getAirDomain(domainId)
 
     airDomain.expiryDate = expiryDate
+    let airDomainCost = getOrUpdateAirDomainCost(
+      domainId,
+      cost,
+      txHash,
+      logIndex,
+      block
+    )
     airDomain.cost = cost
+    airDomain.costInfo = airDomainCost.id
     saveAirDomain(airDomain, block)
 
     let ownerDomainAccount = getOrCreateAirDomainAccount(owner, block)
