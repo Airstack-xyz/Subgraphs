@@ -1036,7 +1036,10 @@ export namespace domain {
     domainId: string,
     block: ethereum.Block
   ): void {
-    log.debug("trackNameUnwrapped ", [])
+    log.debug("trackNameUnwrapped txHash {} logIndex {}", [
+      txHash.toHexString(),
+      logIndex.toString(),
+    ])
     let airDomain = getAirDomain(domainId)
     airDomain.fuses = BIG_INT_ZERO
     airDomain.isNameWrapped = false
