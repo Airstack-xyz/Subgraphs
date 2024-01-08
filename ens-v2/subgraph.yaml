@@ -282,6 +282,8 @@ dataSources:
           callHandlers:
               - function: setName(string)
                 handler: handleSetName1
+              - function: setNameForAddr(address,address,address,string)
+                handler: handleSetNameForAddrCall1
           file: ./src/reverse-registrar.ts
     - kind: ethereum
       name: ReverseRegistrar2
@@ -304,6 +306,8 @@ dataSources:
           callHandlers:
               - function: setName(string)
                 handler: handleSetName2
+              - function: setNameForAddr(address,address,address,string)
+                handler: handleSetNameForAddrCall2
           file: ./src/reverse-registrar.ts
     - kind: ethereum
       name: ReverseRegistrar3
@@ -326,6 +330,8 @@ dataSources:
           callHandlers:
               - function: setName(string)
                 handler: handleSetName3
+              - function: setNameForAddr(address,address,address,string)
+                handler: handleSetNameForAddrCall3
           file: ./src/reverse-registrar.ts
     - kind: ethereum
       name: ReverseRegistrar4
@@ -348,6 +354,8 @@ dataSources:
           callHandlers:
               - function: setName(string)
                 handler: handleSetName4
+              - function: setNameForAddr(address,address,address,string)
+                handler: handleSetNameForAddrCall4
           file: ./src/reverse-registrar.ts
     - kind: ethereum/contract
       name: NameWrapper
@@ -471,3 +479,5 @@ templates:
           callHandlers:
               - function: setName(string)
                 handler: handleSetNameTemplate
+              - function: setNameForAddr(address,address,address,string)
+                handler: handleSetNameForAddrCallTemplate
