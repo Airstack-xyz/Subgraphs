@@ -1015,10 +1015,7 @@ export namespace domain {
 
     // book keeping
     let airDomainNameWrapped = new AirDomainNameWrapped(
-      txHash
-        .toHexString()
-        .concat("-")
-        .concat(logIndex.toString())
+      createEventId("AirDomainNameWrapped", txHash, logIndex)
     )
     airDomainNameWrapped.domain = airDomain.id
     airDomainNameWrapped.createdAt = airBlock.id
@@ -1041,6 +1038,7 @@ export namespace domain {
   ): void {
     log.debug("trackNameUnwrapped ", [])
     let airDomain = getAirDomain(domainId)
+    airDomain.fuses = BIG_INT_ZERO
     airDomain.isNameWrapped = false
     if (airDomain.expiryDate && airDomain.parent !== ETH_NODE_STR) {
       airDomain.expiryDate = null
@@ -1049,10 +1047,7 @@ export namespace domain {
 
     // book keeping
     let airDomainNameUnwrapped = new AirDomainNameUnwrapped(
-      txHash
-        .toHexString()
-        .concat("-")
-        .concat(logIndex.toString())
+      createEventId("AirDomainNameUnwrapped", txHash, logIndex)
     )
     airDomainNameUnwrapped.domain = airDomain.id
 
