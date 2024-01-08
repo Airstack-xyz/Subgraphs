@@ -552,15 +552,6 @@ export namespace domain {
       txHash.toHexString(),
       logIndex.toString(),
     ])
-    let airDomain = AirDomain.load(domainId)
-    if (!airDomain) {
-      log.debug(
-        "trackResolvedAddress txHash {} logIndex {} domainId {} not found",
-        [txHash.toHexString(), logIndex.toString(), domainId]
-      )
-      return
-    }
-
     // update resolver only
     let resolvedDomainAccount = getOrCreateAirDomainAccount(
       resolvedAddress,
@@ -586,8 +577,12 @@ export namespace domain {
       airBlock
     )
     airResolvedAddressChanged.save()
-    updateAirDomainLastUpdatedIndex(airDomain, airResolver, block)
+    let airDomain = AirDomain.load(domainId)
+    if (airDomain) {
+      updateAirDomainLastUpdatedIndex(airDomain, airResolver, block)
+    }
   }
+
   export function trackMultiCoinAddress(
     txHash: Bytes,
     logIndex: BigInt,
@@ -601,14 +596,7 @@ export namespace domain {
       txHash.toHexString(),
       logIndex.toString(),
     ])
-    let airDomain = AirDomain.load(domainId)
-    if (!airDomain) {
-      log.debug(
-        "trackMultiCoinAddress txHash {} logIndex {} domainId {} not found",
-        [txHash.toHexString(), logIndex.toString(), domainId]
-      )
-      return
-    }
+
     let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
     let airMultiCoin = AirMultiCoin.load(
       airResolver.id.concat("-").concat(coinType.toString())
@@ -624,7 +612,10 @@ export namespace domain {
     airMultiCoin.save()
 
     saveAirResolver(airResolver, block)
-    updateAirDomainLastUpdatedIndex(airDomain, airResolver, block)
+    let airDomain = AirDomain.load(domainId)
+    if (airDomain) {
+      updateAirDomainLastUpdatedIndex(airDomain, airResolver, block)
+    }
     // book keeping
 
     let airMultiCoinChanged = new AirMultiCoinChanged(
@@ -658,14 +649,7 @@ export namespace domain {
       txHash.toHexString(),
       logIndex.toString(),
     ])
-    let airDomain = AirDomain.load(domainId)
-    if (!airDomain) {
-      log.debug(
-        "trackAirTextChange txHash {} logIndex {} domainId {} not found",
-        [txHash.toHexString(), logIndex.toString(), domainId]
-      )
-      return
-    }
+
     let airBlock = getOrCreateAirBlock(block)
     let airResolver = getOrCreateAirResolver(domainId, resolverAddress, block)
     let airText = AirText.load(airResolver.id.concat("-").concat(name))
@@ -679,7 +663,10 @@ export namespace domain {
     saveAirText(airText, block)
 
     saveAirResolver(airResolver, block)
-    updateAirDomainLastUpdatedIndex(airDomain, airResolver, block)
+    let airDomain = AirDomain.load(domainId)
+    if (airDomain) {
+      updateAirDomainLastUpdatedIndex(airDomain, airResolver, block)
+    }
     // book keeping
     let airTextChanged = new AirTextChanged(
       txHash
