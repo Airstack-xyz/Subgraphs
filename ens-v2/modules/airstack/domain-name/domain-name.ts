@@ -999,10 +999,21 @@ export namespace domain {
     }
     airDomain.fuses = fuses
     airDomain.isNameWrapped = true
-    if (
-      checkPccBurned(fuses.toI32()) &&
-      (!airDomain.expiryDate || expiryDate > airDomain.expiryDate!)
-    ) {
+    let pccBurned = checkPccBurned(fuses.toI32())
+    let noExpiryDate = !airDomain.expiryDate
+    let expiryDateIsGreater =
+      !noExpiryDate && expiryDate > airDomain.expiryDate!
+    log.debug(
+      "txhash {} domainId {} pccBurned {} noExpiryDate {} expiryDateIsGreater {}",
+      [
+        txHash.toHexString(),
+        airDomain.id,
+        pccBurned.toString(),
+        noExpiryDate.toString(),
+        expiryDateIsGreater.toString(),
+      ]
+    )
+    if (pccBurned && (noExpiryDate || expiryDateIsGreater)) {
       log.debug("Updating expiryDate of nameWrapped airDomain {} txHash {} ", [
         airDomain.id,
         txHash.toHexString(),
