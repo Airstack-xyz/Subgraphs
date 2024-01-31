@@ -1013,7 +1013,7 @@ export namespace domain {
         expiryDateIsGreater.toString(),
       ]
     )
-    if (pccBurned && (noExpiryDate || expiryDateIsGreater)) {
+    if (noExpiryDate || expiryDateIsGreater) {
       log.debug("Updating expiryDate of nameWrapped airDomain {} txHash {} ", [
         airDomain.id,
         txHash.toHexString(),
