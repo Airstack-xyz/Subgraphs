@@ -1611,6 +1611,7 @@ export function trackSocialProfileHandleTransferTransaction(
     constructor(public name: string, public value: string) {}
   }
   function saveAirSocialProfile(airSocialProfile: AirSocialProfile, airBlock: AirBlock): void {
+    airSocialProfile.lastUpdatedAt = airBlock.id
     airSocialProfile.lastUpdatedIndex = updateAirEntityCounter(
       AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
       airBlock
@@ -1618,6 +1619,7 @@ export function trackSocialProfileHandleTransferTransaction(
     airSocialProfile.save()
   }
   function saveAirSocialUser(airSocialUser: AirSocialUser, airBlock: AirBlock): void {
+    airSocialUser.lastUpdatedAt = airBlock.id
     airSocialUser.lastUpdatedIndex = updateAirEntityCounter(
       AIR_SOCIAL_USER_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
       airBlock
