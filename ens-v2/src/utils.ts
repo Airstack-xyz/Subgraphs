@@ -20,15 +20,14 @@ import {
   ReverseRegistrarTemplate,
 } from "../generated/templates"
 
-export const ROOT_NODE =
-  "0000000000000000000000000000000000000000000000000000000000000000"
-
 export const ETH_NODE =
-  "93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae"
+  "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae"
+export const ROOT_NODE =
+  "0x0000000000000000000000000000000000000000000000000000000000000000"
 export const ADDR_REVERSE_NODE =
   "0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2"
-export const ethNode: ByteArray = byteArrayFromHex(ETH_NODE)
-export const rootNode: ByteArray = byteArrayFromHex(ROOT_NODE)
+export const ethNode = ByteArray.fromHexString(ETH_NODE)
+export const rootNode = ByteArray.fromHexString(ROOT_NODE)
 
 export const GRACE_PERIOD_SECONDS = BigInt.fromI32(7776000) // 90 days
 
