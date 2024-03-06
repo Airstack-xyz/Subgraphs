@@ -59,9 +59,7 @@ import {
   BIGINT_ONE,
   getOrCreateAirToken,
 } from "../common"
-const ETH_NODE_STR =
-  "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae"
-
+import { ETH_NODE } from "../../../src/utils"
 export namespace domain {
   // Getter functions
   export function getOrCreateAirDomain(
@@ -1054,7 +1052,13 @@ export namespace domain {
     let airDomain = getAirDomain(domainId)
     airDomain.fuses = BIG_INT_ZERO
     airDomain.isNameWrapped = false
-    if (airDomain.expiryDate && airDomain.parent !== ETH_NODE_STR) {
+    let parentIsNotEthNode = airDomain.parent != ETH_NODE
+    log.debug("NameUnwrapped domainId {} parentIsNotEthNode {}", [
+      domainId,
+      parentIsNotEthNode.toString(),
+    ])
+    if (airDomain.expiryDate && parentIsNotEthNode) {
+      log.debug("NameUnwrapped domainId {} expiryDate set as null", [domainId])
       airDomain.expiryDate = null
     }
     saveAirDomain(airDomain, block)

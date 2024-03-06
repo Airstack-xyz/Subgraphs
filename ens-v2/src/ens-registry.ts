@@ -22,7 +22,6 @@ import * as airstack from "../modules/airstack/domain-name"
 import { NewOwnerHashLabelMap } from "../generated/schema"
 import {
   getNameHashFromBytes,
-  ROOT_NODE,
   createReverse,
   ADDR_REVERSE_NODE,
   tryFindNamebyHash,
