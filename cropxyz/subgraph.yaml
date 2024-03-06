@@ -1,0 +1,36 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: PlotActions
+    network: matic
+    source:
+      address: '0xC9B265c10840A24230cf103818baeABaF31518AB'
+      abi: PlotActions
+      startBlock: 26024654
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AirBlock
+        - AirMeta
+        - AirEntityCounter
+        - AirToken
+        - AirDynamicNFT
+        - AirAccount
+        - AirDynamicNftUpdateTransaction
+      abis:
+        - name: PlotActions
+          file: ./abis/PlotActions.json
+      eventHandlers:
+        - event: StakedCrop(indexed address,indexed uint256,indexed uint256,uint16,uint64,uint64,uint64)
+          handler: handleStaked
+        - event: HarvestedPlot(indexed address,indexed uint256,indexed uint256,uint256,uint16,uint16,uint24)
+          handler: handleHarvestPlot
+        - event: ClearedDiedHarvest(indexed address,indexed uint256,indexed uint256,uint256,uint16,uint24)
+          handler: handleClearDiedHarvest
+        - event: ClearedHarvest(indexed address,indexed uint256,indexed uint256,uint256,uint16,uint24)
+          handler: handleClearedHarvest
+      file: ./src/mappings/index.ts

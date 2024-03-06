@@ -47,6 +47,7 @@ AIR_CHAIN_ID_MAP.set("osmosis", "osmosis-1");
 AIR_CHAIN_ID_MAP.set("matic", "137");
 AIR_CHAIN_ID_MAP.set("gnosis", "100");
 AIR_CHAIN_ID_MAP.set("mumbai", "80001");
+AIR_CHAIN_ID_MAP.set("gold", "4653");
 
 export function getChainId(): string {
   const network = dataSource.network();
