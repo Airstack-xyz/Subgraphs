@@ -20,7 +20,8 @@ dataSources:
         - AirToken
         - AirDynamicNFT
         - AirAccount
-        - AirDynamicNftUpdateTransaction
+        - AirNftTokenURIUpdateTransaction
+        - AirNFT
       abis:
         - name: PlotActions
           file: ./abis/PlotActions.json

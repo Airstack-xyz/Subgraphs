@@ -5,8 +5,8 @@ entities:
   - AirToken
   - AirEntityCounter
   - AirAccount
-  - AirDynamicNftUpdateTransaction
-  - AirDynamicNFT
+  - AirNftTokenURIUpdateTransaction
+  - AirNFT
 `;
 
 export default yamlString;

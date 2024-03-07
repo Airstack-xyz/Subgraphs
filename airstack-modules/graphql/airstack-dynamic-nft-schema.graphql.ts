@@ -8,6 +8,12 @@ enum AirProtocolActionType {
     UPDATE
 }
 
+enum AirTokenStandardType {
+    ERC1155
+    ERC721
+    ERC20
+}
+
 type AirBlock @entity {
     id: ID! #chain-number
     hash: String!
@@ -31,7 +37,7 @@ type AirToken @entity {
 
 
 type AirEntityCounter @entity {
-    id: ID! #AIR_DYNAMIC_NFT_UPDATE_LAST_UPDATED_INDEX
+    id: ID!
     count: BigInt!
     createdAt: AirBlock!
     lastUpdatedAt: AirBlock!
@@ -47,9 +53,9 @@ interface AirTransaction {
     protocolActionType: AirProtocolActionType!  #REGISTRATION
 }
 
-type AirDynamicNftUpdateTransaction implements AirTransaction @entity {
-    id: ID! #<chainId>-<transactionHash>-<logOrCallIndex>
-    nft: AirDynamicNFT!
+type AirNftTokenURIUpdateTransaction implements AirTransaction @entity {
+    id: ID!
+    nft: AirNFT!
     tokenId: String!
     tokenAddress: AirToken!
     logOrCallIndex: BigInt!
@@ -60,10 +66,11 @@ type AirDynamicNftUpdateTransaction implements AirTransaction @entity {
     protocolActionType: AirProtocolActionType!  #SOCIAL_REGISTRATION
   }
 
-type AirDynamicNFT @entity {
+type AirNFT @entity {
     id: ID!
     tokenId: String!
     tokenAddress: AirToken!
+    tokenStandard: AirTokenStandardType!
     createdAt: AirBlock!
     lastUpdatedAt: AirBlock!
     lastUpdatedIndex: BigInt! # gets updated on each update
