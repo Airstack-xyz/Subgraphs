@@ -6,12 +6,14 @@ import nftMarketPlaceSchema from "../graphql/airstack-nft-marketplace-schema.gra
 import domainNameSchema from "../graphql/airstack-domain-name-schema.graphql";
 import socialSchema from "../graphql/airstack-social-schema.graphql";
 import poapSchema from "../graphql/airstack-poap-schema.graphql"
+import dynamicNftSchema from "../graphql/airstack-dynamic-nft-schema.graphql"
 
 import dexYamlString from "../yamls/dex.yaml";
 import nftMarketPlaceYamlString from "../yamls/nft-marketplace.yaml";
 import domainNameYamlString from "../yamls/domain-name.yaml";
 import socialYamlString from "../yamls/social.yaml";
 import poapYamlString from "../yamls/poap.yaml"
+import dynamicNftYamlString from "../yamls/dynamic-nft.yaml"
 
 export namespace Utils {
   export function isVerticalSupported(verticalName: string): boolean {
@@ -51,6 +53,8 @@ export namespace Utils {
       case Vertical.Poap:
         yamlString = poapYamlString;
         break;
+      case Vertical.DynamicNft:
+        yamlString = dynamicNftYamlString;
       default:
         break;
     }
@@ -78,6 +82,8 @@ export namespace Utils {
         return socialSchema;
       case Vertical.Poap:
         return poapSchema;
+      case Vertical.DynamicNft:
+        return dynamicNftSchema;
       default:
         break;
     }

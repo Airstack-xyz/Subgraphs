@@ -1,0 +1,18 @@
+{
+  "name": "lens-subgraph",
+  "license": "MIT",
+  "scripts": {
+    "codegen": "npx @airstack/subgraph-generator dynamic-nft --version v1.0.0 --slug cropxyz_gold --name cropxyz && graph codegen",
+    "build": "graph build",
+    "test": "graph test"
+  },
+  "dependencies": {
+    "@airstack/subgraph-generator": "1.0.0-alpha.10",
+    "@graphprotocol/graph-cli": "^0.47.0",
+    "@graphprotocol/graph-ts": "^0.29.3",
+    "@protofire/subgraph-toolkit": "^0.1.2"
+  },
+  "devDependencies": {
+    "matchstick-as": "^0.5.2"
+  }
+}
