@@ -85,10 +85,9 @@ function createOrUpdateAirNftTokenURIUpdateTransaction(
         entity.nft = nft.id
         entity.tokenAddress = nft.id
         entity.tokenId = tokenId
-        entity.tokenStandard = tokenStandard
         entity.protocolType = protocolType
         entity.protocolActionType = protocolActionType
-        let dynmaicNft = createOrUpdateAirDynamicNFTUpdate(chainId, block, tokenAddress, tokenId)
+        let dynmaicNft = createOrUpdateAirDynamicNFTUpdate(chainId, block, tokenAddress, tokenId, tokenStandard)
         entity.nft = dynmaicNft.id
     }
     entity.index = updateAirEntityCounter(AIR_DYNAMIC_NFT_UPDATE_TRANSACTION_COUNTER_ID, block)
@@ -110,6 +109,7 @@ function createOrUpdateAirDynamicNFTUpdate(
     block: AirBlock,
     tokenAddress: string,
     tokenId: string,
+    tokenStandard: string,
 ): AirNFT {
     const id = GetAirDynamicNFTUpdateEntityId(chainId, tokenAddress, tokenId)
     let entity = AirNFT.load(id)
@@ -120,6 +120,7 @@ function createOrUpdateAirDynamicNFTUpdate(
         nft.save()
         entity.tokenAddress = nft.id
         entity.tokenId = tokenId
+        entity.tokenStandard = tokenStandard
     }
     entity.lastUpdatedIndex = updateAirEntityCounter(AIR_DYNAMIC_NFT_UPDATE_COUNTER_ID, block)
     entity.lastUpdatedAt = block.id
