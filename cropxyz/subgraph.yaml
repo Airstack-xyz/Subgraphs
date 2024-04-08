@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: PlotActions
-    network: matic
+    network: gold
     source:
-      address: '0xC9B265c10840A24230cf103818baeABaF31518AB'
+      address: '0x4Bad736a8A6467901c5087095e06a6e34cDb2dF5'
       abi: PlotActions
-      startBlock: 26024654
+      startBlock: 3577914
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
