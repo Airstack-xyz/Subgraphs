@@ -1,0 +1,22 @@
+{
+  "name": "farcaster_v2",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "npx @airstack/subgraph-generator social --version v2.0.0 --slug farcaster_v2_optimism --name farcaster & graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ farcaster_v2",
+    "create-local": "graph create --node http://localhost:8020/ farcaster_v2",
+    "remove-local": "graph remove --node http://localhost:8020/ farcaster_v2",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 farcaster_v2",
+    "test": "graph test"
+  },
+  "dependencies": {
+    "@airstack/subgraph-generator": "1.0.0-alpha.8",
+    "@graphprotocol/graph-cli": "0.55.0",
+    "@graphprotocol/graph-ts": "0.30.0",
+    "@protofire/subgraph-toolkit": "github:protofire/subgraph-toolkit"
+  },
+  "devDependencies": {
+    "matchstick-as": "0.5.0"
+  }
+}
