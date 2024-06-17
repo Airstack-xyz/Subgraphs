@@ -1,11 +1,6 @@
 specVersion: 0.0.5
 schema:
   file: ./schema.graphql
-# graft:
-#   base: QmaZghWsJESFAB2MPUXeJSAxY7LXfEi3HyWougnDtLTB5A
-#   block: 120801920 
-# features:
-#   - grafting
 dataSources:
   - kind: ethereum
     name: IdRegistry
