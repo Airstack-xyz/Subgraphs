@@ -201,7 +201,7 @@ export namespace social {
       new Array<string>()
     )
     airSocialProfile.user = airSocialUser.id
-    airSocialProfile.lastUpdatedAt = airBlock.id
+    // airSocialProfile.lastUpdatedAt = airBlock.id
     saveAirSocialProfile(airSocialProfile, airBlock)
     // removing profile (tokenId) from -  from user
     const airSocialUserOld = getAirSocialUser(chainId, oldSocialUserId)
@@ -506,6 +506,21 @@ export namespace social {
     }
     const airAccountTo = getOrCreateAirAccount(chainId, to, airBlock)
     airAccountTo.save()
+
+    if (airSocialUser != null && airSocialUser.profiles != null) {
+      // log.debug("Transfer: saving air social user profiles for {}", [airSocialUser.profiles!.toString()])
+      
+      for (let i = 0; i < airSocialUser.profiles!.length; i++) {
+        // log.debug("saving air social user profiles for {}, block number {}", [airSocialUser.profiles!.toString(), block.number.toString()])
+        const profileId = airSocialUser.profiles![i]
+        const profile = AirSocialProfile.load(profileId)
+        if (profile != null) {
+          // log.debug("Profile not null, saving air social user profiles for {}, block number {}", [profile.id, block.number.toString()])
+          saveAirSocialProfile(profile, airBlock)
+        }
+      }
+    }
+
     airSocialUser.address = airAccountTo.id
     airSocialUser.lastUpdatedAt = airBlock.id
     saveAirSocialUser(airSocialUser, airBlock)
@@ -581,7 +596,7 @@ export namespace social {
         airExtras.push(extraEntity.id)
       }
       airSocialProfile.extras = airExtras
-      airSocialProfile.lastUpdatedAt = airBlock.id
+      // airSocialProfile.lastUpdatedAt = airBlock.id
     }
     saveAirSocialProfile(airSocialProfile, airBlock)
     createAirSocialProfileRecoveryAddressChangeTransaction(
@@ -782,7 +797,7 @@ export namespace social {
     }
     airSocialProfile.expiryTimestamp = expiryTimestamp
     airSocialProfile.renewalCost = renewalCost
-    airSocialProfile.lastUpdatedAt = airBlock.id
+    // airSocialProfile.lastUpdatedAt = airBlock.id
     saveAirSocialProfile(airSocialProfile, airBlock)
     createAirSocialProfileRenewalTransaction(
       chainId,
@@ -1615,6 +1630,7 @@ export function trackSocialProfileHandleTransferTransaction(
       AIR_SOCIAL_PROFILE_ENTITY_LAST_UPDATED_INDEX_COUNTER_ID,
       airBlock
     )
+    airSocialProfile.lastUpdatedAt = airBlock.id
     airSocialProfile.save()
   }
   function saveAirSocialUser(airSocialUser: AirSocialUser, airBlock: AirBlock): void {
