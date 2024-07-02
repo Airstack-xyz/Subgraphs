@@ -113,6 +113,12 @@ https://github.com/Airstack-xyz/Subgraphs/tree/main/airstack-modules/modules/air
         `
         );
         break;
+ case Vertical.DynamicNft:
+        console.log(`
+        Integration for DYNAMIC NFT vertical done. For documentation and examples please check below link:
+        https://github.com/Airstack-xyz/Subgraphs/tree/main/airstack-modules/modules/airstack/dynamic-nft/Readme.md
+                `
+                );
       default:
         break;
     }

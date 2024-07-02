@@ -4,6 +4,7 @@ export enum Vertical {
     DomainName = "domain-name",
     Social = "social",
     Poap = "poap",
+    DynamicNft = "dynamic-nft",
 }
 export const SupportedVerticals: Array<string> = [
     Vertical.Dex,
@@ -11,4 +12,5 @@ export const SupportedVerticals: Array<string> = [
     Vertical.DomainName,
     Vertical.Social,
     Vertical.Poap,
+    Vertical.DynamicNft
 ]
