@@ -5,6 +5,7 @@ import {
   Transfer as TransferEvent
 } from "../generated/EnsRegistry/EnsRegistry"
 import * as airstack from "../modules/airstack/domain-name";
+import { checkValidLabel } from "../modules/airstack/domain-name/utils";
 import {
   log,
   BigInt,
@@ -17,6 +18,7 @@ import {
   getOrCreateIsMigratedMapping,
   createAirDomainEntityId,
   createReverseRegistrar,
+  getNameByLabelHash,
 } from "./utils";
 import { AirDomain } from "../generated/schema";
 /**
@@ -38,7 +40,16 @@ export function handleNewOwner(event: NewOwnerEvent): void {
   isMigratedMapping.save();
   // creating labelName from label
   let labelName = ens.nameByHash(event.params.label.toHexString());
-  if (labelName === null) {
+  if (labelName == null) {
+    // try to get the name from the labelhash to name mapping
+    labelName = getNameByLabelHash(event.params.label.toHexString());
+    if (labelName == null) {
+      log.info("handleNewOwner: labelName is null from getNameByLabelHash label {} txhash {}, converting to brackets", [event.params.label.toHexString(), event.transaction.hash.toHexString()]);
+      labelName = '[' + event.params.label.toHexString().slice(2) + ']';
+    }
+    log.info("handleNewOwner: labelName is null for label {} txhash {}", [event.params.label.toHexString(), event.transaction.hash.toHexString()]);
+  } else if (labelName && !checkValidLabel(labelName, event.transaction.hash.toHexString())) {
+    log.info("handleNewOwner: labelName is invalid for label {} txhash {}", [event.params.label.toHexString(), event.transaction.hash.toHexString()]);
     labelName = '[' + event.params.label.toHexString().slice(2) + ']';
   }
   // creating name from labelName and parentName
@@ -53,7 +64,7 @@ export function handleNewOwner(event: NewOwnerEvent): void {
     } else {
       parentName = "";
     }
-    name = labelName + "." + parentName!;
+    name = labelName! + "." + parentName!;
   }
   if (name) {
     let reverseRegistrar = createReverseRegistrar(name, domainId, ETHEREUM_MAINNET_ID, event.block);
@@ -179,7 +190,15 @@ export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
   isMigratedMapping.save();
   // creating labelName from label
   let labelName = ens.nameByHash(event.params.label.toHexString());
-  if (labelName === null) {
+  if (labelName == null) {
+    // try to get the name from the labelhash to name mapping, it can be null if mapping not present
+    labelName = getNameByLabelHash(event.params.label.toHexString());
+    if (labelName == null) {
+      log.info("handleNewOwnerOldRegistry: labelName is null from getNameByLabelHash label {} txhash {}, converting to brackets", [event.params.label.toHexString(), event.transaction.hash.toHexString()]);
+      labelName = '[' + event.params.label.toHexString().slice(2) + ']';
+    }
+  } else if (labelName && !checkValidLabel(labelName, event.transaction.hash.toHexString())) {
+    log.info("handleNewOwnerOldRegistry: labelName is invalid for label {} txhash {}", [event.params.label.toHexString(), event.transaction.hash.toHexString()]);
     labelName = '[' + event.params.label.toHexString().slice(2) + ']';
   }
   // creating name from labelName and parentName
@@ -194,7 +213,7 @@ export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
     } else {
       parentName = "";
     }
-    name = labelName + "." + parentName!;
+    name = labelName! + "." + parentName!;
   }
   if (name) {
     let reverseRegistrar = createReverseRegistrar(name, domainId, getChainId(), event.block);
