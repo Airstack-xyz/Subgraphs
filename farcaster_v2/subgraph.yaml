@@ -6,9 +6,9 @@ dataSources:
     name: IdRegistry
     network: optimism
     source:
-      address: '0x189e66031e1d47bb3c5f9b99ee029f2a0d1b8593'
+      address: '0x00000000fcaf86937e41ba038b4fa40baa4b780a'
       abi: IdRegistry
-      startBlock: 108570270
+      startBlock: 108869029
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
