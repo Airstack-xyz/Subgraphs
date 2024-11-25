@@ -4,7 +4,7 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy  erc-6551-accounts-mainnet",
+    "deploy": "graph deploy --product hosted-service sharathkrml/erc6551-base",
     "create-local": "graph create --node https://api.studio.thegraph.com/deploy erc-6551-accounts-mainnet",
     "remove-local": "graph remove --node  https://api.studio.thegraph.com/deploy erc-6551-accounts-mainnet",
     "deploy-local": "graph deploy --node  https://api.studio.thegraph.com/deploy --ipfs  https://api.thegraph.com/ipfs erc-6551-accounts-mainnet",

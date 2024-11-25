@@ -17,9 +17,9 @@ export const BIG_INT_ZERO = BigInt.fromI32(0);
 
 export const SUBGRAPH_SCHEMA_VERSION = "1.0.0";
 
-export const SUBGRAPH_NAME = "Mainnet ERC-6551";
+export const SUBGRAPH_NAME = "Base ERC-6551";
 export const SUBGRAPH_VERSION = "v1";
-export const SUBGRAPH_SLUG = "mainnet-erc-6551";
+export const SUBGRAPH_SLUG = "base-erc-6551";
 
 const AIR_CHAIN_ID_MAP = new TypedMap<string, string>();
 AIR_CHAIN_ID_MAP.set("arbitrum-one", "42161");
@@ -44,6 +44,7 @@ AIR_CHAIN_ID_MAP.set("optimism", "10");
 AIR_CHAIN_ID_MAP.set("osmosis", "osmosis-1");
 AIR_CHAIN_ID_MAP.set("matic", "137");
 AIR_CHAIN_ID_MAP.set("gnosis", "100")
+AIR_CHAIN_ID_MAP.set("base", "8453")
 
 export function getChainId(): string {
   const network = dataSource.network();
@@ -132,39 +133,4 @@ export function getOrCreateAirBlock(
     block.timestamp = blockTimestamp
   }
   return block as AirBlock;
-}
-
-/**
- * @dev this function does not save the returned entity
- * @dev this function gets or creates a new air account entity
- * @param chainId chain id
- * @param address account address
- * @param block air block object
- * @returns AirAccount entity
- */
-export function getOrCreateAirAccount(chainId: string, address: string, block: AirBlock): AirAccount {
-  const id = chainId.concat("-").concat(address);
-  let entity = AirAccount.load(id);
-  if (entity == null) {
-    entity = new AirAccount(id);
-    entity.address = address;
-    entity.createdAt = block.id;
-  }
-  return entity as AirAccount;
-}
-
-/**
- * @dev this function does not save the returned entity
- * @dev this function gets or creates a new air token entity
- * @param chainID chain id
- * @param address token address
- * @returns AirToken entity
- */
-export function getOrCreateAirToken(chainID: string, address: string): AirToken {
-  let entity = AirToken.load(chainID + "-" + address);
-  if (entity == null) {
-    entity = new AirToken(chainID + "-" + address);
-    entity.address = address;
-  }
-  return entity as AirToken;
 }
